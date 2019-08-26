@@ -6,7 +6,7 @@ This implementation currently advertises:
 
 - Depth bounds test
 
-This implemenation has been tested with a single game only: Assetto Corsa Competione, based on Unreal Engine 4. Due to the complexity of the API this implementation wont most likely work with anything else. Unreal Engine 4 is so kind to query every method is uses before actually using a method. Any engine or program that uses the NVAPI methods directly will fail.
+This implemenation has been tested with a single game only: Assetto Corsa Competizione, based on Unreal Engine 4. Due to the complexity of the API this implementation wont most likely work with anything else. Unreal Engine 4 is so kind to query every method is uses before actually using a method. Any engine or program that uses the NVAPI methods directly will fail.
 
 ## How to build
 
