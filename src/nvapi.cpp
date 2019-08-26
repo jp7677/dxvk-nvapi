@@ -1,20 +1,14 @@
 #include "nvapi_private.h"
 
-static NvAPI_Status dxvkSetDepthBounds(
-        ID3D11VkExtDevice*            device,
-        ID3D11VkExtContext*           context,
-        bool                          enabled,
-        float                         minDepth,
-        float                         maxDepth) {
+static NvAPI_Status dxvkSetDepthBounds(ID3D11VkExtDevice* device, ID3D11VkExtContext* context, bool enabled, float minDepth, float maxDepth) {
+    if (0 > minDepth || minDepth > maxDepth || maxDepth > 1)
+        return NVAPI_INVALID_ARGUMENT;
 
-  if (0 > minDepth || minDepth > maxDepth || maxDepth > 1)
-    return NVAPI_INVALID_ARGUMENT;
-
-  if (!device->GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
-    return NVAPI_ERROR;
+    if (!device->GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
+        return NVAPI_ERROR;
   
-  context->SetDepthBoundsTest(enabled, minDepth, maxDepth);
-  return NVAPI_OK;
+    context->SetDepthBoundsTest(enabled, minDepth, maxDepth);
+    return NVAPI_OK;
 }
 
 extern "C" {
@@ -36,44 +30,41 @@ extern "C" {
         return NVAPI_NO_IMPLEMENTATION;
     }
     
-    NVAPI_INTERFACE NvAPI_D3D_GetCurrentSLIState(IUnknown *pDevice, NV_GET_CURRENT_SLI_STATE *pSliState)
+    NVAPI_INTERFACE NvAPI_D3D_GetCurrentSLIState(IUnknown* pDevice, NV_GET_CURRENT_SLI_STATE* pSliState)
     {
         return NVAPI_NO_IMPLEMENTATION;
     }
 
-    NVAPI_INTERFACE NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown *pDeviceOrContext, NvU32 code, bool* supported)
+    NVAPI_INTERFACE NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported)
     {
         std::cerr << "NvAPI_D3D11_IsNvShaderExtnOpCodeSupported: Called for code " << code << std::endl;
         return NVAPI_NO_IMPLEMENTATION;
     }
 
-    NVAPI_INTERFACE NvAPI_D3D11_SetDepthBoundsTest(IUnknown *pDeviceOrContext, NvU32 enable, float minDepth, float maxDepth)
+    NVAPI_INTERFACE NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth)
     {
         ID3D11VkExtDevice* dxvkDevice = nullptr;
-        if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&dxvkDevice)))) {
-            std::cerr << "Failed to get DXVK extension device handle" << std::endl;
+        if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
             return NVAPI_ERROR;
-        }
+
         dxvkDevice->Release();
 
         ID3D11Device* d3d11Device = nullptr;
-        if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device)))) {
-            std::cerr << "Failed to get DXVK device handle" << std::endl;
+        if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device))))
             return NVAPI_ERROR;
-        }
+
         d3d11Device->Release();
     
         ID3D11DeviceContext* ctx = nullptr;
         d3d11Device->GetImmediateContext(&ctx);
 
         ID3D11VkExtContext* dxvkContext = nullptr;
-        if (FAILED(ctx->QueryInterface(IID_PPV_ARGS(&dxvkContext)))) {
-            std::cerr << "Failed to get DXVK context handle" << std::endl;
+        if (FAILED(ctx->QueryInterface(IID_PPV_ARGS(&dxvkContext))))
             return NVAPI_ERROR;
-        }
+
         dxvkContext->Release();
 
-        return dxvkSetDepthBounds(dxvkDevice, dxvkContext, enable, minDepth, maxDepth);
+        return dxvkSetDepthBounds(dxvkDevice, dxvkContext, bEnable, fMinDepth, fMaxDepth);
     }
 
     __declspec(dllexport) void* __stdcall nvapi_QueryInterface(unsigned int offset)
