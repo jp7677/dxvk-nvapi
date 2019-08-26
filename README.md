@@ -1,12 +1,10 @@
-# NVAPI D3D11 implmentation for [DXVK](https://github.com/doitsujin/dxvk)
+# Experimental non-complete NVAPI D3D11 implementation for [DXVK](https://github.com/doitsujin/dxvk)
 
-This repository provide a very (very very) basic implementation of the NVAPI extensions for DXVK. It is mostly a direct copy DXVK-AGS, but adjusted for NVAPI.
+This repository provide a very (very very) basic proof-of-concept implementation of the NVAPI extensions for DXVK. It is mostly a direct copy DXVK-AGS, but adjusted for NVAPI.
 
-This implementation currently advertises:
+This implementation currently advertises `Depth bounds test` only.
 
-- Depth bounds test
-
-This implemenation has been tested with a single game only: Assetto Corsa Competizione, based on Unreal Engine 4. Due to the complexity of the API this implementation wont most likely work with anything else. Unreal Engine 4 is so kind to query every method is uses before actually using a method. Any engine or program that uses the NVAPI methods directly will fail.
+This implemenation has been tested with a single game only: Assetto Corsa Competizione, based on Unreal Engine 4. To my own surrise it even seems that `Depth bounds test` is actually used by the game. The game does not provide an in-game benchmark, so unfortunately I'm not even sure if it improves, but at least it wont run worse. Due to the complexity of the API this implementation surely wont work with anything else. Unreal Engine 4 is so kind to query every method it uses before actually using a method. Any engine or program that uses the NVAPI methods directly will fail.
 
 ## How to build
 
@@ -32,3 +30,5 @@ Run:
 - [https://github.com/pchome/dxvk-nvapi-module](https://github.com/pchome/dxvk-nvapi-module)
 - [https://github.com/SveSop/nvapi_standalone](https://github.com/SveSop/nvapi_standalone)
 - [https://github.com/falahati/NvAPIWrapper/blob/master/NvAPIWrapper/Native/Helpers/FunctionId.cs](https://github.com/falahati/NvAPIWrapper/blob/master/NvAPIWrapper/Native/Helpers/FunctionId.cs)
+
+Many thanks to the coresponding authors!
