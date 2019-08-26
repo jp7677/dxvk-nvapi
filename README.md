@@ -30,3 +30,5 @@ Run:
 - [https://github.com/pchome/dxvk-nvapi-module](https://github.com/pchome/dxvk-nvapi-module)
 - [https://github.com/SveSop/nvapi_standalone](https://github.com/SveSop/nvapi_standalone)
 - [https://github.com/falahati/NvAPIWrapper/blob/master/NvAPIWrapper/Native/Helpers/FunctionId.cs](https://github.com/falahati/NvAPIWrapper/blob/master/NvAPIWrapper/Native/Helpers/FunctionId.cs)
+
+Many thanks to the coresponding authors!
