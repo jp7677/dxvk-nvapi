@@ -1,4 +1,4 @@
-# Experimental non-complete NVAPI D3D11 implmentation for [DXVK](https://github.com/doitsujin/dxvk)
+# Experimental non-complete NVAPI D3D11 implementation for [DXVK](https://github.com/doitsujin/dxvk)
 
 This repository provide a very (very very) basic proof-of-concept implementation of the NVAPI extensions for DXVK. It is mostly a direct copy DXVK-AGS, but adjusted for NVAPI.
 
