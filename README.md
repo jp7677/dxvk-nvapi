@@ -1,10 +1,8 @@
 # NVAPI D3D11 implmentation for [DXVK](https://github.com/doitsujin/dxvk)
 
-This repository provide a very (very very) basic implementation of the NVAPI extensions for DXVK. It is mostly a direct copy DXVK-AGS, but adjusted for NVAPI.
+This repository provide a very (very very) basic proof-of-concept implementation of the NVAPI extensions for DXVK. It is mostly a direct copy DXVK-AGS, but adjusted for NVAPI.
 
-This implementation currently advertises:
-
-- Depth bounds test
+This implementation currently advertises `Depth bounds test` only.
 
 This implemenation has been tested with a single game only: Assetto Corsa Competizione, based on Unreal Engine 4. Due to the complexity of the API this implementation wont most likely work with anything else. Unreal Engine 4 is so kind to query every method is uses before actually using a method. Any engine or program that uses the NVAPI methods directly will fail.
 
