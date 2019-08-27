@@ -1,9 +1,6 @@
 #include "nvapi_private.h"
 
 static NvAPI_Status dxvkSetDepthBounds(ID3D11VkExtDevice* device, ID3D11VkExtContext* context, bool enabled, float minDepth, float maxDepth) {
-    if (0 > minDepth || minDepth > maxDepth || maxDepth > 1)
-        return NVAPI_INVALID_ARGUMENT;
-
     if (!device->GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
         return NVAPI_ERROR;
   
