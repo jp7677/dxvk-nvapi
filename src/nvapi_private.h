@@ -54,3 +54,11 @@ typedef struct
 } NV_GET_CURRENT_SLI_STATE_V2;
 
 #define NV_GET_CURRENT_SLI_STATE NV_GET_CURRENT_SLI_STATE_V2
+
+typedef enum
+{
+    NVAPI_D3D_SRH_CATEGORY_SLI = 1
+} NVAPI_D3D_SETRESOURCEHINT_CATEGORY;
+
+#define NV_DECLARE_HANDLE(name) struct name##__ { int unused; }; typedef struct name##__ *name
+NV_DECLARE_HANDLE(NVDX_ObjectHandle);
