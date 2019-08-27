@@ -4,7 +4,7 @@ This repository provide a very (very very) basic proof-of-concept implementation
 
 This implementation currently advertises `Depth bounds test` only.
 
-This implemenation has been tested with a single game only: Assetto Corsa Competizione, based on Unreal Engine 4. To my own surrise it even seems that `Depth bounds test` is actually used by the game. The game does not provide an in-game benchmark, so unfortunately I'm not even sure if it improves, but at least it wont run worse. Due to the complexity of the API this implementation surely wont work with anything else. Unreal Engine 4 is so kind to query every method it uses before actually using a method. Any engine or program that uses the NVAPI methods directly will fail.
+This implemenation has been tested with a single game only: Assetto Corsa Competizione, based on Unreal Engine 4. To my own surrise it even seems that `Depth bounds test` is actually used by the game. The game does not provide an in-game benchmark, so unfortunately I'm not even sure if it improves, but at least it wont run worse. Due to the complexity of the API this implementation surely wont work with anything else.
 
 ## How to build
 
