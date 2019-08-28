@@ -1,13 +1,5 @@
 #include "nvapi_private.h"
 
-static NvAPI_Status dxvkSetDepthBounds(ID3D11VkExtDevice* device, ID3D11VkExtContext* context, bool enabled, float minDepth, float maxDepth) {
-    if (!device->GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
-        return NVAPI_ERROR;
-  
-    context->SetDepthBoundsTest(enabled, minDepth, maxDepth);
-    return NVAPI_OK;
-}
-
 extern "C" {
 
     NVAPI_INTERFACE NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth)
@@ -33,7 +25,19 @@ extern "C" {
 
         dxvkContext->Release();
 
-        return dxvkSetDepthBounds(dxvkDevice, dxvkContext, bEnable, fMinDepth, fMaxDepth);
+        if (!dxvkDevice->GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
+            return NVAPI_ERROR;
+  
+        dxvkContext->SetDepthBoundsTest(bEnable, fMinDepth, fMaxDepth);
+
+        static bool alreadyLogged = false;
+        if (!alreadyLogged)
+        {
+            alreadyLogged = true;
+            std::cerr << "NvAPI_D3D11_SetDepthBoundsTest: Succeeded" << std::endl;
+        }
+
+        return NVAPI_OK;
     }
 
     NVAPI_INTERFACE NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported)
@@ -44,13 +48,25 @@ extern "C" {
 
     NVAPI_INTERFACE NvAPI_D3D_GetObjectHandleForResource(IUnknown* pDevice, IUnknown* pResource, NVDX_ObjectHandle* pHandle)
     {
-        std::cerr << "NvAPI_D3D_GetObjectHandleForResource: Not implemented" << std::endl;
+        static bool alreadyLogged = false;
+        if (!alreadyLogged)
+        {
+            alreadyLogged = true;
+            std::cerr << "NvAPI_D3D_GetObjectHandleForResource: Not implemented" << std::endl;
+        }
+
         return NVAPI_NO_IMPLEMENTATION;
     }
 
     NVAPI_INTERFACE NvAPI_D3D_SetResourceHint(IUnknown *pDev, NVDX_ObjectHandle obj, NVAPI_D3D_SETRESOURCEHINT_CATEGORY dwHintCategory, NvU32 dwHintName, NvU32 *pdwHintValue)
     {
-        std::cerr << "NvAPI_D3D_SetResourceHint: Not implemented" << std::endl;
+        static bool alreadyLogged = false;
+        if (!alreadyLogged)
+        {
+            alreadyLogged = true;
+            std::cerr << "NvAPI_D3D_SetResourceHint: Not implemented" << std::endl;
+        }
+        
         return NVAPI_NO_IMPLEMENTATION;
     }
 
