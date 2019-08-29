@@ -8,14 +8,14 @@ extern "C" {
         if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
             return NVAPI_ERROR;
 
-        dxvkDevice->Release();
+        static bool alreadyTested = false;
+        if (!alreadyTested && !dxvkDevice->GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
+            return NVAPI_ERROR;
 
         ID3D11Device* d3d11Device = nullptr;
         if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device))))
             return NVAPI_ERROR;
 
-        d3d11Device->Release();
-    
         ID3D11DeviceContext* ctx = nullptr;
         d3d11Device->GetImmediateContext(&ctx);
 
@@ -23,12 +23,11 @@ extern "C" {
         if (FAILED(ctx->QueryInterface(IID_PPV_ARGS(&dxvkContext))))
             return NVAPI_ERROR;
 
-        dxvkContext->Release();
-
-        if (!dxvkDevice->GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
-            return NVAPI_ERROR;
-  
         dxvkContext->SetDepthBoundsTest(bEnable, fMinDepth, fMaxDepth);
+
+        dxvkContext->Release();
+        d3d11Device->Release();
+        dxvkDevice->Release();
 
         static bool alreadyLogged = false;
         if (!alreadyLogged)
