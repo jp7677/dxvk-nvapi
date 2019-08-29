@@ -117,7 +117,7 @@ extern "C" {
         if (offset == 0x593e8644) 
             return nullptr; /* NvAPI_Diag_ReportCallReturn, optional */
 
-        std::cerr << "nvapi_QueryInterface: Called with not implemented offset 0x" << std::hex << offset << std::endl;
+        std::cerr << "NvAPI_QueryInterface 0x" << std::hex << offset << ": Called with unknown offset" << std::endl;
         return nullptr;
     }
 }
