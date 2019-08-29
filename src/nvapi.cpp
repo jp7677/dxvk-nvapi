@@ -9,8 +9,12 @@ extern "C" {
             return NVAPI_ERROR;
 
         static bool alreadyTested = false;
-        if (!alreadyTested && !dxvkDevice->GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
-            return NVAPI_ERROR;
+        if (!alreadyTested)
+        {
+            alreadyTested = true;
+            if (!dxvkDevice->GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
+                return NVAPI_ERROR;
+        }
 
         ID3D11Device* d3d11Device = nullptr;
         if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device))))
