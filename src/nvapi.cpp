@@ -10,7 +10,7 @@ extern "C" {
         {
             alreadyTested = true;
 
-            Com<ID3D11VkExtDevice> dxvkDevice;
+            Com<ID3D11VkExtDevice> dxvkDevice = nullptr;
             if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
                 return NVAPI_ERROR;
 
@@ -18,18 +18,18 @@ extern "C" {
                 return NVAPI_ERROR;
         }
 
-        Com<ID3D11Device> d3d11Device;
+        Com<ID3D11Device> d3d11Device = nullptr;
         if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device))))
             return NVAPI_ERROR;
 
-        ID3D11DeviceContext* ctx;
-        d3d11Device->GetImmediateContext(&ctx);
+        Com<ID3D11DeviceContext> d3d11DeviceContext = nullptr;
+        d3d11Device->GetImmediateContext(&d3d11DeviceContex);
 
-        Com<ID3D11VkExtContext> dxvkContext;
-        if (FAILED(ctx->QueryInterface(IID_PPV_ARGS(&dxvkContext))))
+        Com<ID3D11VkExtContext> dxvkDeviceContext = nullptr;
+        if (FAILED(d3d11DeviceContex->QueryInterface(IID_PPV_ARGS(&dxvkDeviceContext))))
             return NVAPI_ERROR;
 
-        dxvkContext->SetDepthBoundsTest(bEnable, fMinDepth, fMaxDepth);
+        dxvkDeviceContext->SetDepthBoundsTest(bEnable, fMinDepth, fMaxDepth);
 
         static bool alreadyLogged = false;
         if (!alreadyLogged)
