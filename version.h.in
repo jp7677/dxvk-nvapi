@@ -1,0 +1,3 @@
+#pragma once
+
+#define DXVK_NVAPI_VERSION "@VCS_TAG@"

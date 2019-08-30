@@ -15,6 +15,8 @@
 #include "./dxvk/dxvk_interfaces.h"
 #include "./dxvk/com_pointer.h"
 
+#include "../version.h"
+
 typedef unsigned char NvU8;
 typedef unsigned int NvU32;
 

@@ -84,7 +84,7 @@ extern "C" {
 
     NVAPI_INTERFACE NvAPI_Initialize(void)
     {
-        std::cerr << "NvAPI_Initialize: OK" << std::endl;
+        std::cerr << "NvAPI_Initialize DXVK-NVAPI-" << DXVK_NVAPI_VERSION << ": OK" << std::endl;
         return NVAPI_OK;
     }
 
