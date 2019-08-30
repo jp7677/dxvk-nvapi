@@ -23,10 +23,10 @@ extern "C" {
             return NVAPI_ERROR;
 
         Com<ID3D11DeviceContext> d3d11DeviceContext = nullptr;
-        d3d11Device->GetImmediateContext(&d3d11DeviceContex);
+        d3d11Device->GetImmediateContext(&d3d11DeviceContext);
 
         Com<ID3D11VkExtContext> dxvkDeviceContext = nullptr;
-        if (FAILED(d3d11DeviceContex->QueryInterface(IID_PPV_ARGS(&dxvkDeviceContext))))
+        if (FAILED(d3d11DeviceContext->QueryInterface(IID_PPV_ARGS(&dxvkDeviceContext))))
             return NVAPI_ERROR;
 
         dxvkDeviceContext->SetDepthBoundsTest(bEnable, fMinDepth, fMaxDepth);
