@@ -1,10 +1,11 @@
 #include "nvapi_private.h"
 
 extern "C" {
+    using namespace dxvk;
 
     NVAPI_INTERFACE NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth)
     {
-        ID3D11VkExtDevice* dxvkDevice = nullptr;
+        Com<ID3D11VkExtDevice> dxvkDevice;
         if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
             return NVAPI_ERROR;
 
@@ -16,22 +17,18 @@ extern "C" {
                 return NVAPI_ERROR;
         }
 
-        ID3D11Device* d3d11Device = nullptr;
+        Com<ID3D11Device> d3d11Device;
         if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device))))
             return NVAPI_ERROR;
 
-        ID3D11DeviceContext* ctx = nullptr;
+        ID3D11DeviceContext* ctx;
         d3d11Device->GetImmediateContext(&ctx);
 
-        ID3D11VkExtContext* dxvkContext = nullptr;
+        Com<ID3D11VkExtContext> dxvkContext;
         if (FAILED(ctx->QueryInterface(IID_PPV_ARGS(&dxvkContext))))
             return NVAPI_ERROR;
 
         dxvkContext->SetDepthBoundsTest(bEnable, fMinDepth, fMaxDepth);
-
-        dxvkContext->Release();
-        d3d11Device->Release();
-        dxvkDevice->Release();
 
         static bool alreadyLogged = false;
         if (!alreadyLogged)
