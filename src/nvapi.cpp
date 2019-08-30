@@ -9,7 +9,6 @@ extern "C" {
         if (!alreadyTested)
         {
             alreadyTested = true;
-
             Com<ID3D11VkExtDevice> dxvkDevice = nullptr;
             if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
                 return NVAPI_ERROR;
