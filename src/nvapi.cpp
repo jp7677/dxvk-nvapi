@@ -5,14 +5,15 @@ extern "C" {
 
     NVAPI_INTERFACE NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth)
     {
-        Com<ID3D11VkExtDevice> dxvkDevice;
-        if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
-            return NVAPI_ERROR;
-
         static bool alreadyTested = false;
         if (!alreadyTested)
         {
             alreadyTested = true;
+
+            Com<ID3D11VkExtDevice> dxvkDevice;
+            if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
+                return NVAPI_ERROR;
+
             if (!dxvkDevice->GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
                 return NVAPI_ERROR;
         }
