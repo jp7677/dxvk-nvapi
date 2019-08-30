@@ -9,7 +9,7 @@ extern "C" {
         if (!alreadyTested)
         {
             alreadyTested = true;
-            Com<ID3D11VkExtDevice> dxvkDevice = nullptr;
+            Com<ID3D11VkExtDevice> dxvkDevice;
             if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
                 return NVAPI_ERROR;
 
@@ -17,14 +17,14 @@ extern "C" {
                 return NVAPI_ERROR;
         }
 
-        Com<ID3D11Device> d3d11Device = nullptr;
+        Com<ID3D11Device> d3d11Device;
         if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device))))
             return NVAPI_ERROR;
 
-        Com<ID3D11DeviceContext> d3d11DeviceContext = nullptr;
+        Com<ID3D11DeviceContext> d3d11DeviceContext;
         d3d11Device->GetImmediateContext(&d3d11DeviceContext);
 
-        Com<ID3D11VkExtContext> dxvkDeviceContext = nullptr;
+        Com<ID3D11VkExtContext> dxvkDeviceContext;
         if (FAILED(d3d11DeviceContext->QueryInterface(IID_PPV_ARGS(&dxvkDeviceContext))))
             return NVAPI_ERROR;
 
