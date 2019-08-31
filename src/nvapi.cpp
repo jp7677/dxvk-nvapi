@@ -3,11 +3,9 @@
 extern "C" {
     using namespace dxvk;
 
-    NVAPI_INTERFACE NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth)
-    {
+    NVAPI_INTERFACE NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth) {
         static bool alreadyTested = false;
-        if (!alreadyTested)
-        {
+        if (!alreadyTested) {
             alreadyTested = true;
             Com<ID3D11VkExtDevice> dxvkDevice;
             if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
@@ -31,8 +29,7 @@ extern "C" {
         dxvkDeviceContext->SetDepthBoundsTest(bEnable, fMinDepth, fMaxDepth);
 
         static bool alreadyLogged = false;
-        if (!alreadyLogged)
-        {
+        if (!alreadyLogged) {
             alreadyLogged = true;
             std::cerr << "NvAPI_D3D11_SetDepthBoundsTest: Succeeded" << std::endl;
         }
@@ -40,17 +37,14 @@ extern "C" {
         return NVAPI_OK;
     }
 
-    NVAPI_INTERFACE NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported)
-    {
+    NVAPI_INTERFACE NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported) {
         std::cerr << "NvAPI_D3D11_IsNvShaderExtnOpCodeSupported " << std::dec << code << ": OK" << std::endl;
         return NVAPI_OK;
     }
 
-    NVAPI_INTERFACE NvAPI_D3D_GetObjectHandleForResource(IUnknown* pDevice, IUnknown* pResource, NVDX_ObjectHandle* pHandle)
-    {
+    NVAPI_INTERFACE NvAPI_D3D_GetObjectHandleForResource(IUnknown* pDevice, IUnknown* pResource, NVDX_ObjectHandle* pHandle) {
         static bool alreadyLogged = false;
-        if (!alreadyLogged)
-        {
+        if (!alreadyLogged) {
             alreadyLogged = true;
             std::cerr << "NvAPI_D3D_GetObjectHandleForResource: Not implemented" << std::endl;
         }
@@ -58,11 +52,9 @@ extern "C" {
         return NVAPI_NO_IMPLEMENTATION;
     }
 
-    NVAPI_INTERFACE NvAPI_D3D_SetResourceHint(IUnknown *pDev, NVDX_ObjectHandle obj, NVAPI_D3D_SETRESOURCEHINT_CATEGORY dwHintCategory, NvU32 dwHintName, NvU32 *pdwHintValue)
-    {
+    NVAPI_INTERFACE NvAPI_D3D_SetResourceHint(IUnknown *pDev, NVDX_ObjectHandle obj, NVAPI_D3D_SETRESOURCEHINT_CATEGORY dwHintCategory, NvU32 dwHintName, NvU32 *pdwHintValue) {
         static bool alreadyLogged = false;
-        if (!alreadyLogged)
-        {
+        if (!alreadyLogged) {
             alreadyLogged = true;
             std::cerr << "NvAPI_D3D_SetResourceHint: Not implemented" << std::endl;
         }
@@ -70,38 +62,32 @@ extern "C" {
         return NVAPI_NO_IMPLEMENTATION;
     }
 
-    NVAPI_INTERFACE NvAPI_D3D_GetCurrentSLIState(IUnknown* pDevice, NV_GET_CURRENT_SLI_STATE* pSliState)
-    {
+    NVAPI_INTERFACE NvAPI_D3D_GetCurrentSLIState(IUnknown* pDevice, NV_GET_CURRENT_SLI_STATE* pSliState) {
         std::cerr << "NvAPI_D3D_GetCurrentSLIState: Not implemented" << std::endl;
         return NVAPI_NO_IMPLEMENTATION;
     }
 
-    NVAPI_INTERFACE NvAPI_DISP_GetDisplayIdByDisplayName(const char* displayName, NvU32* displayId)
-    {
+    NVAPI_INTERFACE NvAPI_DISP_GetDisplayIdByDisplayName(const char* displayName, NvU32* displayId) {
         std::cerr << "NvAPI_DISP_GetDisplayIdByDisplayName: Not implemented" << std::endl;
         return NVAPI_NO_IMPLEMENTATION;
     }
 
-    NVAPI_INTERFACE NvAPI_GetErrorMessage(NvAPI_Status nr, NvAPI_ShortString szDesc)	
-    {
+    NVAPI_INTERFACE NvAPI_GetErrorMessage(NvAPI_Status nr, NvAPI_ShortString szDesc) {
         std::cerr << "NvAPI_GetErrorMessage " << std::dec << nr << ": OK" << std::endl;
         return NVAPI_OK;
     }
 
-    NVAPI_INTERFACE NvAPI_Unload()
-    {
+    NVAPI_INTERFACE NvAPI_Unload() {
         std::cerr << "NvAPI_Unload: OK" << std::endl;
         return NVAPI_OK;
     }
 
-    NVAPI_INTERFACE NvAPI_Initialize()
-    {
+    NVAPI_INTERFACE NvAPI_Initialize() {
         std::cerr << "NvAPI_Initialize DXVK-NVAPI-" << DXVK_NVAPI_VERSION << ": OK" << std::endl;
         return NVAPI_OK;
     }
 
-    __declspec(dllexport) void* __stdcall nvapi_QueryInterface(unsigned int offset)
-    {
+    __declspec(dllexport) void* __stdcall nvapi_QueryInterface(unsigned int offset) {
         if (offset == 0x7aaf7a04)
             return reinterpret_cast<void*>(NvAPI_D3D11_SetDepthBoundsTest);
         if (offset == 0x5f68da40)

@@ -31,8 +31,7 @@ typedef unsigned int NvU32;
 #define NVAPI_SHORT_STRING_MAX 64
 typedef char NvAPI_ShortString[NVAPI_SHORT_STRING_MAX];
 
-typedef struct
-{
+typedef struct {
     NvU32 version;
     NvU32 maxNumAFRGroups;
     NvU32 numAFRGroups;
@@ -45,8 +44,7 @@ typedef struct
 
 #define NV_GET_CURRENT_SLI_STATE NV_GET_CURRENT_SLI_STATE_V2
 
-typedef enum
-{
+typedef enum {
     NVAPI_D3D_SRH_CATEGORY_SLI = 1
 } NVAPI_D3D_SETRESOURCEHINT_CATEGORY;
 
