@@ -82,15 +82,21 @@ extern "C" {
         return NVAPI_NO_IMPLEMENTATION;
     }
 
-    NVAPI_INTERFACE NvAPI_Initialize(void)
+    NVAPI_INTERFACE NvAPI_GetErrorMessage(NvAPI_Status nr, NvAPI_ShortString szDesc)	
     {
-        std::cerr << "NvAPI_Initialize DXVK-NVAPI-" << DXVK_NVAPI_VERSION << ": OK" << std::endl;
+        std::cerr << "NvAPI_GetErrorMessage " << nr << ": OK" << std::endl;
         return NVAPI_OK;
     }
 
-    NVAPI_INTERFACE NvAPI_GetErrorMessage (NvAPI_Status nr, NvAPI_ShortString szDesc)	
+    NVAPI_INTERFACE NvAPI_Unload()
     {
-        std::cerr << "NvAPI_GetErrorMessage " << nr << ": OK" << std::endl;
+        std::cerr << "NvAPI_Unload: OK" << std::endl;
+        return NVAPI_OK;
+    }
+
+    NVAPI_INTERFACE NvAPI_Initialize()
+    {
+        std::cerr << "NvAPI_Initialize DXVK-NVAPI-" << DXVK_NVAPI_VERSION << ": OK" << std::endl;
         return NVAPI_OK;
     }
 
@@ -108,10 +114,12 @@ extern "C" {
             return reinterpret_cast<void*>(NvAPI_D3D_GetCurrentSLIState);
         if (offset == 0xae457190) 
             return reinterpret_cast<void*>(NvAPI_DISP_GetDisplayIdByDisplayName);
-        if (offset == 0x0150e828)
-            return reinterpret_cast<void*>(NvAPI_Initialize);
         if (offset == 0x6c2d048c)
             return reinterpret_cast<void*>(NvAPI_GetErrorMessage);
+        if (offset == 0xd22bdd7e)
+            return reinterpret_cast<void*>(NvAPI_Unload);
+        if (offset == 0x0150e828)
+            return reinterpret_cast<void*>(NvAPI_Initialize);
         if (offset == 0x33c7358c)
             return nullptr; /* NvAPI_Diag_ReportCallStart, optional */
         if (offset == 0x593e8644) 
