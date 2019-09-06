@@ -14,16 +14,12 @@
 
 #include "./dxvk/dxvk_interfaces.h"
 #include "./dxvk/com_pointer.h"
-
 #include "../version.h"
 
 typedef unsigned char NvU8;
 typedef unsigned int NvU32;
 
 #define NvAPI_Status int
-
-#define NVAPI_INTERFACE __declspec(dllexport) NvAPI_Status __stdcall
-
 #define NVAPI_OK 0
 #define NVAPI_ERROR -1
 #define NVAPI_NO_IMPLEMENTATION -3
@@ -50,3 +46,7 @@ typedef enum {
 
 #define NV_DECLARE_HANDLE(name) struct name##__ { int unused; }; typedef struct name##__ *name
 NV_DECLARE_HANDLE(NVDX_ObjectHandle);
+
+#define NVAPI_INTERFACE __declspec(dllexport) NvAPI_Status __stdcall
+#define NVAPI_QUERYINTERFACE __declspec(dllexport) void* __stdcall 
+#define NVAPI_CAST reinterpret_cast<void*>

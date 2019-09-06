@@ -89,31 +89,22 @@ extern "C" {
         return NVAPI_OK;
     }
 
-    __declspec(dllexport) void* __stdcall nvapi_QueryInterface(unsigned int offset) {
-        if (offset == 0x7aaf7a04)
-            return reinterpret_cast<void*>(NvAPI_D3D11_SetDepthBoundsTest);
-        if (offset == 0x5f68da40)
-            return reinterpret_cast<void*>(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported);
-        if (offset == 0xfceac864) 
-            return reinterpret_cast<void*>(NvAPI_D3D_GetObjectHandleForResource);
-        if (offset == 0x6c0ed98c) 
-            return reinterpret_cast<void*>(NvAPI_D3D_SetResourceHint);
-        if (offset == 0x4b708b54)
-            return reinterpret_cast<void*>(NvAPI_D3D_GetCurrentSLIState);
-        if (offset == 0xae457190) 
-            return reinterpret_cast<void*>(NvAPI_DISP_GetDisplayIdByDisplayName);
-        if (offset == 0x6c2d048c)
-            return reinterpret_cast<void*>(NvAPI_GetErrorMessage);
-        if (offset == 0xd22bdd7e)
-            return reinterpret_cast<void*>(NvAPI_Unload);
-        if (offset == 0x0150e828)
-            return reinterpret_cast<void*>(NvAPI_Initialize);
-        if (offset == 0x33c7358c)
-            return nullptr; /* NvAPI_Diag_ReportCallStart, optional */
-        if (offset == 0x593e8644) 
-            return nullptr; /* NvAPI_Diag_ReportCallReturn, optional */
-
-        std::cerr << "NvAPI_QueryInterface 0x" << std::hex << offset << ": Called with unknown offset" << std::endl;
-        return nullptr;
+    NVAPI_QUERYINTERFACE nvapi_QueryInterface(unsigned int offset) {
+        switch(offset) {
+            case 0x7aaf7a04: return NVAPI_CAST(NvAPI_D3D11_SetDepthBoundsTest);
+            case 0x5f68da40: return NVAPI_CAST(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported);
+            case 0xfceac864: return NVAPI_CAST(NvAPI_D3D_GetObjectHandleForResource);
+            case 0x6c0ed98c: return NVAPI_CAST(NvAPI_D3D_SetResourceHint);
+            case 0x4b708b54: return NVAPI_CAST(NvAPI_D3D_GetCurrentSLIState);
+            case 0xae457190: return NVAPI_CAST(NvAPI_DISP_GetDisplayIdByDisplayName);
+            case 0x6c2d048c: return NVAPI_CAST(NvAPI_GetErrorMessage);
+            case 0xd22bdd7e: return NVAPI_CAST(NvAPI_Unload);
+            case 0x0150e828: return NVAPI_CAST(NvAPI_Initialize);
+            case 0x33c7358c: return nullptr; /* NvAPI_Diag_ReportCallStart, optional */
+            case 0x593e8644: return nullptr; /* NvAPI_Diag_ReportCallReturn, optional */
+            default: 
+                std::cerr << "NvAPI_QueryInterface 0x" << std::hex << offset << ": Called with unknown offset" << std::endl;
+                return nullptr;
+        }
     }
 }
