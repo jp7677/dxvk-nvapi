@@ -29,6 +29,7 @@ Run:
 - [NVAPI](https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__dx.html)
 - [https://github.com/pchome/dxvk-nvapi-module](https://github.com/pchome/dxvk-nvapi-module)
 - [https://github.com/SveSop/nvapi_standalone](https://github.com/SveSop/nvapi_standalone)
+- [https://stackoverflow.com/questions/13291783/how-to-get-the-id-memory-address-of-dll-function](https://stackoverflow.com/questions/13291783/how-to-get-the-id-memory-address-of-dll-function)
 - [https://github.com/falahati/NvAPIWrapper/blob/master/NvAPIWrapper/Native/Helpers/FunctionId.cs](https://github.com/falahati/NvAPIWrapper/blob/master/NvAPIWrapper/Native/Helpers/FunctionId.cs)
 
 Many thanks to the coresponding authors!
