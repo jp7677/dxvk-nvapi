@@ -62,4 +62,5 @@ function build_arch {
   fi
 }
 
+build_arch 32
 build_arch 64
