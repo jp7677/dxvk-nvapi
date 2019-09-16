@@ -47,6 +47,6 @@ typedef enum {
 #define NV_DECLARE_HANDLE(name) struct name##__ { int unused; }; typedef struct name##__ *name
 NV_DECLARE_HANDLE(NVDX_ObjectHandle);
 
-#define NVAPI_INTERFACE __declspec(dllexport) NvAPI_Status __stdcall
-#define NVAPI_QUERYINTERFACE __declspec(dllexport) void* __stdcall 
+#define NVAPI_INTERFACE __declspec(dllexport) NvAPI_Status __cdecl
+#define NVAPI_QUERYINTERFACE __declspec(dllexport) void* __cdecl 
 #define NVAPI_CAST reinterpret_cast<void*>
