@@ -12,7 +12,7 @@ lib_d3d11   = dxvk_compiler.find_library('d3d11')
 lib_dxgi    = dxvk_compiler.find_library('dxgi')
 
 dxvk_nvapi_version = vcs_tag(
-  command: ['git', 'describe', '--always', '--dirty=+'],
+  command: ['git', 'describe', '--always', '--tags', '--dirty=+'],
   input:  'version.h.in',
   output: 'version.h')
 
