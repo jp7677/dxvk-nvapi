@@ -1,10 +1,10 @@
 # Experimental non-complete NVAPI D3D11 implementation for [DXVK](https://github.com/doitsujin/dxvk)
 
-This repository provide a very (very very) basic proof-of-concept implementation of the NVAPI extensions for DXVK. It is mostly a direct copy DXVK-AGS, but adjusted for NVAPI.
+This repository provide a very (very very) basic implementation of the NVAPI extensions for DXVK. It is mostly a direct copy DXVK-AGS, but adjusted for NVAPI.
 
-This implementation currently advertises `Depth bounds test` only.
+This implementation currently advertises `Depth bounds test` only. It has been tested with a single game only: Assetto Corsa Competizione, based on Unreal Engine 4, which uses `Depth bounds test`. The game does not provide an in-game benchmark, so unfortunately I'm not sure how much it improves, but it may yield something like 1% extra performance which seems to be the norm when `Depth bounds test` is used. Due to the complexity of the API this implementation wont work with games that rely on other aspects of this rather huge API, though other games based on Unreal Engine 4 games should work with this.
 
-This implemenation has been tested with a single game only: Assetto Corsa Competizione, based on Unreal Engine 4. To my own surrise it even seems that `Depth bounds test` is actually used by the game. The game does not provide an in-game benchmark, so unfortunately I'm not even sure if it improves, but at least it wont run worse. Due to the complexity of the API this implementation surely wont work with anything else.
+The 32bits version of this implementation has been just briefly tested with the Monster Hunter Official Benchmark where it also yields a small gain in performce. 
 
 ## How to build
 
@@ -15,6 +15,8 @@ Run:
 ```bash
 ./package-release.sh master /your/path
 ```
+
+Alternatively [DXVK-Docker](https://github.com/jp7677/dxvk-docker) provides a way for a build setup using docker.
 
 ## How to use
 
