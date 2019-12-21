@@ -4,7 +4,7 @@ This repository provide a very (very very) basic implementation of the NVAPI ext
 
 This implementation currently advertises `Depth bounds test` only. It has been tested with a single game only: Assetto Corsa Competizione, based on Unreal Engine 4, which uses `Depth bounds test`. The game does not provide an in-game benchmark, so unfortunately I'm not sure how much it improves, but it may yield something like 1% extra performance which seems to be the norm when `Depth bounds test` is used. Due to the complexity of the API this implementation wont work with games that rely on other aspects of this rather huge API, though other games based on Unreal Engine 4 games should work with this.
 
-The 32bits version of this implementation has been just briefly tested with the Monster Hunter Official Benchmark where it also yields a small gain in performce. 
+The 32bits version of this implementation has been just briefly tested with the Monster Hunter Official Benchmark where it also yields a small gain in performce.
 
 ## How to build
 
