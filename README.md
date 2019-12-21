@@ -17,6 +17,7 @@ Run:
 ```
 
 Alternatively [DXVK-Docker](https://github.com/jp7677/dxvk-docker) provides a way for a build setup using docker.
+Pre-built binaries are available at [https://github.com/jp7677/dxvk-nvapi/releases](https://github.com/jp7677/dxvk-nvapi/releases).
 
 ## How to use
 
