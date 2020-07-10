@@ -91,15 +91,10 @@ extern "C" {
     }
 
     NVAPI_QUERYINTERFACE nvapi_QueryInterface(NvU32 id) {
-        if (id == 0x33c7358c) /* NvAPI_Diag_ReportCallStart, optional */
-            return nullptr;
-        if (id == 0x593e8644) /* NvAPI_Diag_ReportCallReturn, optional */
-            return nullptr; 
-
-        auto it = std::find_if(std::begin(nvapi_interface_table), std::end(nvapi_interface_table),
-            [id](const auto& item) {
-                return item.id == id;
-            });
+        auto it = std::find_if(
+            std::begin(nvapi_interface_table),
+            std::end(nvapi_interface_table),
+            [id](const auto& item) { return item.id == id; });
 
         if (it == std::end(nvapi_interface_table)) {
             std::cerr << "NvAPI_QueryInterface 0x" << std::hex << id << ": Called with unknown id" << std::endl;
