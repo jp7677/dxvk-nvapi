@@ -12,6 +12,15 @@
 #include <utility>
 #include <vector>
 
+// GCC complains about the COM interfaces
+// not having virtual destructors
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#pragma GCC diagnostic ignored "-Wattributes"
+#endif // __GNUC__
+
+#include "../inc/nvapi.h"
+
 #include "./dxvk/dxvk_interfaces.h"
 #include "./dxvk/com_pointer.h"
 #include "../version.h"
