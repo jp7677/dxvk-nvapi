@@ -11,6 +11,7 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 // GCC complains about the COM interfaces
 // not having virtual destructors

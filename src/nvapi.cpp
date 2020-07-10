@@ -1,4 +1,5 @@
 #include "nvapi_private.h"
+#include "../inc/nvapi_interface.h"
 
 extern "C" {
     using namespace dxvk;
@@ -89,22 +90,42 @@ extern "C" {
         return NVAPI_OK;
     }
 
-    NVAPI_QUERYINTERFACE nvapi_QueryInterface(NvU32 offset) {
-        switch(offset) {
-            case 0x7aaf7a04: return NVAPI_CAST(NvAPI_D3D11_SetDepthBoundsTest);
-            case 0x5f68da40: return NVAPI_CAST(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported);
-            case 0xfceac864: return NVAPI_CAST(NvAPI_D3D_GetObjectHandleForResource);
-            case 0x6c0ed98c: return NVAPI_CAST(NvAPI_D3D_SetResourceHint);
-            case 0x4b708b54: return NVAPI_CAST(NvAPI_D3D_GetCurrentSLIState);
-            case 0xae457190: return NVAPI_CAST(NvAPI_DISP_GetDisplayIdByDisplayName);
-            case 0x6c2d048c: return NVAPI_CAST(NvAPI_GetErrorMessage);
-            case 0xd22bdd7e: return NVAPI_CAST(NvAPI_Unload);
-            case 0x0150e828: return NVAPI_CAST(NvAPI_Initialize);
-            case 0x33c7358c: return nullptr; /* NvAPI_Diag_ReportCallStart, optional */
-            case 0x593e8644: return nullptr; /* NvAPI_Diag_ReportCallReturn, optional */
-            default: 
-                std::cerr << "NvAPI_QueryInterface 0x" << std::hex << offset << ": Called with unknown offset" << std::endl;
-                return nullptr;
+    NVAPI_QUERYINTERFACE nvapi_QueryInterface(NvU32 id) {
+        if (id == 0x33c7358c) /* NvAPI_Diag_ReportCallStart, optional */
+            return nullptr;
+        if (id == 0x593e8644) /* NvAPI_Diag_ReportCallReturn, optional */
+            return nullptr; 
+
+        auto it = std::find_if(std::begin(nvapi_interface_table), std::end(nvapi_interface_table),
+            [id](const auto& item) {
+                return item.id == id;
+            });
+
+        if (it == std::end(nvapi_interface_table)) {
+            std::cerr << "NvAPI_QueryInterface 0x" << std::hex << id << ": Called with unknown id" << std::endl;
+            return nullptr;
         }
+
+        if (std::string(it->func) == "NvAPI_Unload")
+            return NVAPI_CAST(NvAPI_Unload);
+        if (std::string(it->func) == "NvAPI_Initialize")
+            return NVAPI_CAST(NvAPI_Initialize);
+        if (std::string(it->func) == "NvAPI_D3D11_SetDepthBoundsTest")
+            return NVAPI_CAST(NvAPI_D3D11_SetDepthBoundsTest);
+        if (std::string(it->func) == "NvAPI_D3D11_IsNvShaderExtnOpCodeSupported")
+            return NVAPI_CAST(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported);
+        if (std::string(it->func) == "NvAPI_D3D_GetObjectHandleForResource")
+            return NVAPI_CAST(NvAPI_D3D_GetObjectHandleForResource);
+        if (std::string(it->func) == "NvAPI_D3D_SetResourceHint")
+            return NVAPI_CAST(NvAPI_D3D_SetResourceHint);
+        if (std::string(it->func) == "NvAPI_D3D_GetCurrentSLIState")
+            return NVAPI_CAST(NvAPI_D3D_GetCurrentSLIState);
+        if (std::string(it->func) == "NvAPI_DISP_GetDisplayIdByDisplayName")
+            return NVAPI_CAST(NvAPI_DISP_GetDisplayIdByDisplayName);
+        if (std::string(it->func) == "NvAPI_GetErrorMessage")
+            return NVAPI_CAST(NvAPI_GetErrorMessage);
+
+        std::cerr << "NvAPI_QueryInterface " << it->func << ": Called with not implemented method" << std::endl;
+        return nullptr;
     }
 }
