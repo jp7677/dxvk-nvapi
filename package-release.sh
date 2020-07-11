@@ -62,5 +62,12 @@ function build_arch {
   fi
 }
 
+function copy_extra {
+  cd "$SRC_DIR"
+  cp LICENSE $BUILD_DIR
+  cp README.md $BUILD_DIR
+}
+
 build_arch 32
 build_arch 64
+copy_extra
