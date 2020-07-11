@@ -27,5 +27,4 @@
 #include "../version.h"
 
 #define NVAPI_METHOD __declspec(dllexport) NvAPI_Status __cdecl
-#define NVAPI_QUERYINTERFACE __declspec(dllexport) void* __cdecl 
-#define NVAPI_CAST reinterpret_cast<void*>
+#define NVAPI_QUERYINTERFACE __declspec(dllexport) void* __cdecl

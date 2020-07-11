@@ -5,12 +5,13 @@ extern "C" {
     using namespace dxvk;
 
     typedef NvAPI_Status __cdecl (*NvapiMethod) (void); 
+
     static std::unordered_map<NvU32, NvapiMethod> registry;
 
     NVAPI_QUERYINTERFACE nvapi_QueryInterface(NvU32 id) {
         auto entry = registry.find(id);
         if (entry != registry.end()) {
-            return NVAPI_CAST(entry->second);
+            return reinterpret_cast<void*>(entry->second);
         }
 
         auto it = std::find_if(
@@ -44,6 +45,6 @@ extern "C" {
             registry.insert(std::make_pair(id, (NvapiMethod) nullptr));
         }
 
-        return NVAPI_CAST(registry.find(id)->second);
+        return reinterpret_cast<void*>(registry.find(id)->second);
     }
 }
