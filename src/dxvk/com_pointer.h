@@ -1,11 +1,5 @@
 #pragma once
 
-// GCC complains about the COM interfaces
-// not having virtual destructors
-#ifdef __GNUC__
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif // __GNUC__
-
 namespace dxvk {
   
   /**
