@@ -8,8 +8,6 @@
 #include <iostream>
 #include <algorithm>
 
-// GCC complains about the COM interfaces
-// not having virtual destructors
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #pragma GCC diagnostic ignored "-Wattributes"
