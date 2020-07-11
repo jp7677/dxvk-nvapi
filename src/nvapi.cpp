@@ -1,5 +1,4 @@
 #include "nvapi_private.h"
-#include "../inc/nvapi_interface.h"
 
 extern "C" {
     using namespace dxvk;
