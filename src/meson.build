@@ -1,6 +1,5 @@
 nvapi_src = files([
-  'nvapi.cpp',
-  
+  'nvapi_interface.cpp',
   'dxvk/dxvk_interfaces.cpp',
 ])
 
