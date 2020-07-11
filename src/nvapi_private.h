@@ -3,14 +3,9 @@
 #include <cstddef>
 #include <cstdint>
 
-#include <d3d9.h>
 #include <d3d11_1.h>
-#include <dxgi1_4.h>
 
-#include <array>
 #include <iostream>
-#include <utility>
-#include <vector>
 #include <algorithm>
 
 // GCC complains about the COM interfaces
