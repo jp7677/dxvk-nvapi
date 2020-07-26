@@ -8,6 +8,12 @@ else
   dll_suffix = ''
 endif
 
+add_project_arguments(dxvk_compiler.get_supported_arguments([
+    '-Wno-attributes',
+    '-Wno-non-virtual-dtor'
+  ]),
+  language : 'cpp')
+
 lib_d3d11 = dxvk_compiler.find_library('d3d11')
 
 dxvk_nvapi_version = vcs_tag(

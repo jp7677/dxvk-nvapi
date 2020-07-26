@@ -8,11 +8,6 @@
 #include <iostream>
 #include <algorithm>
 
-#ifdef __GNUC__
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wattributes"
-#endif // __GNUC__
-
 #include "../inc/nvapi.h"
 
 #include "./dxvk/dxvk_interfaces.h"
