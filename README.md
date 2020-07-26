@@ -23,7 +23,7 @@ Pre-built binaries are available at [https://github.com/jp7677/dxvk-nvapi/releas
 
 ## How to use
 
-- Copy `nvapi64.dll`/`nvapi.dll` into the `system32` folder of your x64/x86 Wine prefix.
+- Copy `nvapi64.dll`/`nvapi.dll` into the `system32`/`syswow64` folder of your x64/x86 Wine prefix.
 - Make sure that your prefix uses the native version of nvapi64, e.g. with `export WINEDLLOVERRIDES=nvapi,nvapi64=n`.
 - Disable the `nvapiHack` in DXVK, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L34).
 
