@@ -18,6 +18,3 @@
 #include "./dxvk/dxvk_interfaces.h"
 #include "./dxvk/com_pointer.h"
 #include "../version.h"
-
-#define NVAPI_RESULT __declspec(dllexport) NvAPI_Status __cdecl
-#define NVAPI_QUERYINTERFACE __declspec(dllexport) void* __cdecl
