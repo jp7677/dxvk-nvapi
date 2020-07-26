@@ -71,5 +71,5 @@ ID3D11VkExtContext : public IUnknown {
   
 };
 
-DXVK_DEFINE_GUID(ID3D11VkExtDevice);
-DXVK_DEFINE_GUID(ID3D11VkExtContext);
+DXVK_DEFINE_GUID(ID3D11VkExtDevice)
+DXVK_DEFINE_GUID(ID3D11VkExtContext)
