@@ -1,4 +1,11 @@
-project('dxvk-nvapi', ['cpp'], default_options: ['cpp_std=c++17'], version : 'v0.0', meson_version : '>= 0.43')
+project('dxvk-nvapi',
+  ['cpp'],
+  default_options: [
+    'cpp_std=c++17',
+    'warning_level=2'
+  ],
+  version : 'v0.0',
+  meson_version : '>= 0.46')
 
 dxvk_compiler = meson.get_compiler('cpp')
 dxvk_cpu_family = target_machine.cpu_family()
@@ -10,7 +17,9 @@ endif
 
 add_project_arguments(dxvk_compiler.get_supported_arguments([
     '-Wno-attributes',
-    '-Wno-non-virtual-dtor'
+    '-Wno-non-virtual-dtor',
+    '-Wno-unused-parameter',
+    '-Wno-cast-function-type'
   ]),
   language : 'cpp')
 
