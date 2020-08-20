@@ -3,7 +3,7 @@
 
 extern "C" {
     using namespace dxvk;
-    using NvAPI_Method = NvAPI_Status __cdecl (*) ();
+    using NvAPI_Method = NvAPI_Status (*) ();
 
     static std::unordered_map<NvU32, NvAPI_Method> registry;
 
