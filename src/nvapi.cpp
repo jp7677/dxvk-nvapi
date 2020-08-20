@@ -2,9 +2,8 @@
 
 extern "C" {
     using namespace dxvk;
-    using NvAPI_Result = __declspec(dllexport) NvAPI_Status __cdecl;
 
-    NvAPI_Result NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth) {
+    NvAPI_Status __cdecl NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth) {
         static bool alreadyTested = false;
         if (!alreadyTested) {
             alreadyTested = true;
@@ -38,14 +37,14 @@ extern "C" {
         return NVAPI_OK;
     }
 
-    NvAPI_Result NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported) {
+    NvAPI_Status __cdecl NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported) {
         *supported = false;
 
         std::cerr << "NvAPI_D3D11_IsNvShaderExtnOpCodeSupported " << std::dec << code << ": OK" << std::endl;
         return NVAPI_OK;
     }
 
-    NvAPI_Result NvAPI_D3D_GetObjectHandleForResource(IUnknown* pDevice, IUnknown* pResource, NVDX_ObjectHandle* pHandle) {
+    NvAPI_Status __cdecl NvAPI_D3D_GetObjectHandleForResource(IUnknown* pDevice, IUnknown* pResource, NVDX_ObjectHandle* pHandle) {
         static bool alreadyLogged = false;
         if (!alreadyLogged) {
             alreadyLogged = true;
@@ -55,7 +54,7 @@ extern "C" {
         return NVAPI_NO_IMPLEMENTATION;
     }
 
-    NvAPI_Result NvAPI_D3D_SetResourceHint(IUnknown *pDev, NVDX_ObjectHandle obj, NVAPI_D3D_SETRESOURCEHINT_CATEGORY dwHintCategory, NvU32 dwHintName, NvU32 *pdwHintValue) {
+    NvAPI_Status __cdecl NvAPI_D3D_SetResourceHint(IUnknown *pDev, NVDX_ObjectHandle obj, NVAPI_D3D_SETRESOURCEHINT_CATEGORY dwHintCategory, NvU32 dwHintName, NvU32 *pdwHintValue) {
         static bool alreadyLogged = false;
         if (!alreadyLogged) {
             alreadyLogged = true;
@@ -65,27 +64,27 @@ extern "C" {
         return NVAPI_NO_IMPLEMENTATION;
     }
 
-    NvAPI_Result NvAPI_D3D_GetCurrentSLIState(IUnknown* pDevice, NV_GET_CURRENT_SLI_STATE* pSliState) {
+    NvAPI_Status __cdecl NvAPI_D3D_GetCurrentSLIState(IUnknown* pDevice, NV_GET_CURRENT_SLI_STATE* pSliState) {
         std::cerr << "NvAPI_D3D_GetCurrentSLIState: Not implemented" << std::endl;
         return NVAPI_NO_IMPLEMENTATION;
     }
 
-    NvAPI_Result NvAPI_DISP_GetDisplayIdByDisplayName(const char* displayName, NvU32* displayId) {
+    NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char* displayName, NvU32* displayId) {
         std::cerr << "NvAPI_DISP_GetDisplayIdByDisplayName: Not implemented" << std::endl;
         return NVAPI_NO_IMPLEMENTATION;
     }
 
-    NvAPI_Result NvAPI_GetErrorMessage(NvAPI_Status nr, NvAPI_ShortString szDesc) {
+    NvAPI_Status __cdecl NvAPI_GetErrorMessage(NvAPI_Status nr, NvAPI_ShortString szDesc) {
         std::cerr << "NvAPI_GetErrorMessage " << std::dec << nr << ": OK" << std::endl;
         return NVAPI_OK;
     }
 
-    NvAPI_Result NvAPI_Unload() {
+    NvAPI_Status __cdecl NvAPI_Unload() {
         std::cerr << "NvAPI_Unload: OK" << std::endl;
         return NVAPI_OK;
     }
 
-    NvAPI_Result NvAPI_Initialize() {
+    NvAPI_Status __cdecl NvAPI_Initialize() {
         std::cerr << "NvAPI_Initialize DXVK-NVAPI-" << DXVK_NVAPI_VERSION << ": OK" << std::endl;
         return NVAPI_OK;
     }
