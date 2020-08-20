@@ -7,7 +7,7 @@ extern "C" {
 
     static std::unordered_map<NvU32, NvAPI_Method> registry;
 
-    __declspec(dllexport) void* __cdecl nvapi_QueryInterface(NvU32 id) {
+    void* nvapi_QueryInterface(NvU32 id) {
         auto entry = registry.find(id);
         if (entry != registry.end()) {
             return reinterpret_cast<void*>(entry->second);
