@@ -1,6 +1,10 @@
 #include "../inc/nvapi_interface.h"
 #include "nvapi.cpp"
 
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif // __GNUC__
+
 extern "C" {
     using namespace dxvk;
     using NvAPI_Method = NvAPI_Status (*) ();

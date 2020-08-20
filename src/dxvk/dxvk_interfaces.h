@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif // __GNUC__
+
 #define DXVK_DEFINE_GUID(iface) \
   template<> inline GUID const& __mingw_uuidof<iface> () { return iface::guid; }
 
