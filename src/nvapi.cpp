@@ -52,7 +52,7 @@ extern "C" {
         static bool alreadyLogged = false;
         if (!alreadyLogged) {
             alreadyLogged = true;
-            std::cerr << "NvAPI_D3D_GetObjectHandleForResource: Not implemented" << std::endl;
+            std::cerr << "NvAPI_D3D_GetObjectHandleForResource: No implementation" << std::endl;
         }
 
         return NVAPI_NO_IMPLEMENTATION;
@@ -62,19 +62,19 @@ extern "C" {
         static bool alreadyLogged = false;
         if (!alreadyLogged) {
             alreadyLogged = true;
-            std::cerr << "NvAPI_D3D_SetResourceHint: Not implemented" << std::endl;
+            std::cerr << "NvAPI_D3D_SetResourceHint: No implementation" << std::endl;
         }
         
         return NVAPI_NO_IMPLEMENTATION;
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_GetCurrentSLIState(IUnknown* pDevice, NV_GET_CURRENT_SLI_STATE* pSliState) {
-        std::cerr << "NvAPI_D3D_GetCurrentSLIState: Not implemented" << std::endl;
+        std::cerr << "NvAPI_D3D_GetCurrentSLIState: No implementation" << std::endl;
         return NVAPI_NO_IMPLEMENTATION;
     }
 
     NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char* displayName, NvU32* displayId) {
-        std::cerr << "NvAPI_DISP_GetDisplayIdByDisplayName: Not implemented" << std::endl;
+        std::cerr << "NvAPI_DISP_GetDisplayIdByDisplayName: No implementation" << std::endl;
         return NVAPI_NO_IMPLEMENTATION;
     }
 
