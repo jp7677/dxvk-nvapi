@@ -4,9 +4,9 @@
 
 This [repository](https://github.com/jp7677/dxvk-nvapi) provides a very basic alternative implementation of the NVAPI extensions for DXVK. It is mostly a direct copy DXVK-AGS, but adjusted for NVAPI.
 
-This implementation currently advertises `Depth bounds test` only. It has been tested with a single game only: Assetto Corsa Competizione, based on Unreal Engine 4, which uses `Depth bounds test`. The game does not provide an in-game benchmark, so unfortunately there are no numbers how much it improves, but it may yield something like 1% extra performance which seems to be the norm when `Depth bounds test` is used. Due to the complexity of the API, this implementation wont work with games that rely on other aspects of this rather huge API, though other games based on Unreal Engine 4 might work with this.
+This implementation currently advertises `Depth bounds test` only. It has been tested with Assetto Corsa Competizione, based on Unreal Engine 4, which uses `Depth bounds test`. The game does not provide an in-game benchmark, so unfortunately there are no numbers how much it improves, but it may yield something like 1% extra performance which seems to be the norm when `Depth bounds test` is used. Due to the complexity of the API, this implementation wont work with games that rely on other aspects of this rather huge API, though other games based on Unreal Engine 4 might work with this.
 
-The 32bits version of this implementation has been just briefly tested with the Monster Hunter Official Benchmark where it also yields a similar small gain in performce.
+The 32bits version of this implementation has been just briefly tested with the Monster Hunter Official Benchmark where it also yields a similar small gain in performance.
 
 ## How to build
 
