@@ -18,9 +18,8 @@ extern "C" {
 
     void* nvapi_QueryInterface(NvU32 id) {
         auto entry = registry.find(id);
-        if (entry != registry.end()) {
+        if (entry != registry.end())
             return reinterpret_cast<void*>(entry->second);
-        }
 
         auto it = std::find_if(
             std::begin(nvapi_interface_table),
