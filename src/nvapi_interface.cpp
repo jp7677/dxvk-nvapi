@@ -41,7 +41,7 @@ extern "C" {
         else INSERT_WHEN_EQUALS(NvAPI_Unload)
         else INSERT_WHEN_EQUALS(NvAPI_Initialize)
         else {
-            std::cerr << "NvAPI_QueryInterface " << it->func << ": Called with not implemented method" << std::endl;
+            std::cerr << "NvAPI_QueryInterface " << it->func << ": Called for not implemented method" << std::endl;
             registry.insert(std::make_pair(id, (NvAPI_Method) nullptr));
         }
 
