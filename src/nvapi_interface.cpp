@@ -25,6 +25,8 @@ extern "C" {
             return registry.insert({id, nullptr}).first->second;
         }
 
+        // This block will be validated for completeness when running package-release.sh. Do not remove the comments.
+        /* Start NVAPI methods */
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_SetDepthBoundsTest)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_GetObjectHandleForResource)
@@ -34,7 +36,8 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GetErrorMessage)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Unload)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Initialize)
-        
+        /* End */
+
         std::cerr << "NvAPI_QueryInterface " << it->func << ": Called for not implemented method" << std::endl;
         return registry.insert({id, nullptr}).first->second;
     }

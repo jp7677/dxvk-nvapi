@@ -40,6 +40,9 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+function validate_methods {
+  python validate-methods.py src/nvapi.cpp src/nvapi_interface.cpp
+}
 
 function build_arch {
   cd "$SRC_DIR"
@@ -68,6 +71,7 @@ function copy_extra {
   cp README.md $BUILD_DIR
 }
 
+validate_methods
 build_arch 32
 build_arch 64
 copy_extra
