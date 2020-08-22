@@ -10,7 +10,7 @@ The 32bits version of this implementation has been just briefly tested with the 
 
 ## How to build
 
-Like DXVK, this library is being built as a Windows DLL using MinGW, and has essentially the same build requirements.
+Like DXVK, this library is being built as a Windows DLL using MinGW, and has essentially the same build requirements. Development of DXVK-NVAPI is done with MinGW 7, older version might fail.
 
 Run:
 
