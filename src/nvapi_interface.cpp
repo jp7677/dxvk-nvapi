@@ -5,9 +5,10 @@
 #pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif // __GNUC__
 
-#define INSERT_WHEN_EQUALS(method) \
+#define INSERT_AND_RETURN_WHEN_EQUALS(method) \
     if (std::string(it->func) == #method) { \
         registry.insert(std::make_pair(id, (NvAPI_Method) method)); \
+        return reinterpret_cast<void*>(method); \
     }
 
 extern "C" {
@@ -28,24 +29,24 @@ extern "C" {
 
         if (it == std::end(nvapi_interface_table)) {
             std::cerr << "NvAPI_QueryInterface 0x" << std::hex << id << ": Called with unknown id" << std::endl;
-            registry.insert(std::make_pair(id, (NvAPI_Method) nullptr));
-        }
-        else INSERT_WHEN_EQUALS(NvAPI_D3D11_SetDepthBoundsTest)
-        else INSERT_WHEN_EQUALS(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported)
-        else INSERT_WHEN_EQUALS(NvAPI_D3D_GetObjectHandleForResource)
-        else INSERT_WHEN_EQUALS(NvAPI_D3D_SetResourceHint)
-        else INSERT_WHEN_EQUALS(NvAPI_D3D_GetCurrentSLIState)
-        else INSERT_WHEN_EQUALS(NvAPI_DISP_GetDisplayIdByDisplayName)
-        else INSERT_WHEN_EQUALS(NvAPI_GetErrorMessage)
-        else INSERT_WHEN_EQUALS(NvAPI_Unload)
-        else INSERT_WHEN_EQUALS(NvAPI_Initialize)
-        else {
-            std::cerr << "NvAPI_QueryInterface " << it->func << ": Called for not implemented method" << std::endl;
-            registry.insert(std::make_pair(id, (NvAPI_Method) nullptr));
+            registry.insert(std::make_pair(id, nullptr));
+            return nullptr;
         }
 
-        return reinterpret_cast<void*>(registry.find(id)->second);
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_SetDepthBoundsTest)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_GetObjectHandleForResource)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_SetResourceHint)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_GetCurrentSLIState)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DISP_GetDisplayIdByDisplayName)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GetErrorMessage)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Unload)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Initialize)
+        
+        std::cerr << "NvAPI_QueryInterface " << it->func << ": Called for not implemented method" << std::endl;
+        registry.insert(std::make_pair(id, nullptr));
+        return nullptr;
     }
 }
 
-#undef INSERT_WHEN_EQUALS
+#undef INSERT_AND_RETURN_WHEN_EQUALS
