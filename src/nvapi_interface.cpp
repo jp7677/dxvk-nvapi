@@ -3,7 +3,7 @@
 
 #define INSERT_AND_RETURN_WHEN_EQUALS(method) \
     if (std::string(it->func) == #method) { \
-        registry.insert(std::make_pair(id, (void*) method)); \
+        registry.insert({id, (void*) method}); \
         return (void*) method; \
     }
 
@@ -24,7 +24,7 @@ extern "C" {
 
         if (it == std::end(nvapi_interface_table)) {
             std::cerr << "NvAPI_QueryInterface 0x" << std::hex << id << ": Called with unknown id" << std::endl;
-            registry.insert(std::make_pair(id, nullptr));
+            registry.insert({id, nullptr});
             return nullptr;
         }
 
@@ -39,7 +39,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Initialize)
         
         std::cerr << "NvAPI_QueryInterface " << it->func << ": Called for not implemented method" << std::endl;
-        registry.insert(std::make_pair(id, nullptr));
+        registry.insert({id, nullptr});
         return nullptr;
     }
 }
