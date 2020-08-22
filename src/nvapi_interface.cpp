@@ -2,10 +2,8 @@
 #include "nvapi.cpp"
 
 #define INSERT_AND_RETURN_WHEN_EQUALS(method) \
-    if (std::string(it->func) == #method) { \
-        registry.insert({id, (void*) method}); \
-        return (void*) method; \
-    }
+    if (std::string(it->func) == #method) \
+        return registry.insert({id, (void*) method}).first->second;
 
 extern "C" {
     using namespace dxvk;
@@ -24,8 +22,7 @@ extern "C" {
 
         if (it == std::end(nvapi_interface_table)) {
             std::cerr << "NvAPI_QueryInterface 0x" << std::hex << id << ": Called with unknown id" << std::endl;
-            registry.insert({id, nullptr});
-            return nullptr;
+            return registry.insert({id, nullptr}).first->second;
         }
 
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_SetDepthBoundsTest)
@@ -39,8 +36,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Initialize)
         
         std::cerr << "NvAPI_QueryInterface " << it->func << ": Called for not implemented method" << std::endl;
-        registry.insert({id, nullptr});
-        return nullptr;
+        return registry.insert({id, nullptr}).first->second;
     }
 }
 
