@@ -1,26 +1,22 @@
 #include "../inc/nvapi_interface.h"
 #include "nvapi.cpp"
 
-#ifdef __GNUC__
-#pragma GCC diagnostic ignored "-Wcast-function-type"
-#endif // __GNUC__
-
 #define INSERT_AND_RETURN_WHEN_EQUALS(method) \
     if (std::string(it->func) == #method) { \
-        registry.insert(std::make_pair(id, (NvAPI_Method) method)); \
-        return reinterpret_cast<void*>(method); \
+        auto methodptr = reinterpret_cast<void*>(method); \
+        registry.insert(std::make_pair(id, methodptr)); \
+        return methodptr; \
     }
 
 extern "C" {
     using namespace dxvk;
-    using NvAPI_Method = NvAPI_Status (*) ();
 
-    static std::unordered_map<NvU32, NvAPI_Method> registry;
+    static std::unordered_map<NvU32, void*> registry;
 
     void* nvapi_QueryInterface(NvU32 id) {
         auto entry = registry.find(id);
         if (entry != registry.end())
-            return reinterpret_cast<void*>(entry->second);
+            return entry->second;
 
         auto it = std::find_if(
             std::begin(nvapi_interface_table),
