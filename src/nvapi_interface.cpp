@@ -3,9 +3,8 @@
 
 #define INSERT_AND_RETURN_WHEN_EQUALS(method) \
     if (std::string(it->func) == #method) { \
-        auto methodptr = reinterpret_cast<void*>(method); \
-        registry.insert(std::make_pair(id, methodptr)); \
-        return methodptr; \
+        registry.insert(std::make_pair(id, (void*) method)); \
+        return (void*) method; \
     }
 
 extern "C" {
