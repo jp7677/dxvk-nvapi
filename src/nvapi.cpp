@@ -78,6 +78,11 @@ extern "C" {
         return NVAPI_NO_IMPLEMENTATION;
     }
 
+    NvAPI_Status __cdecl NvAPI_EnumPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount) {
+        std::cerr << "NvAPI_EnumPhysicalGPUs: No implementation" << std::endl;
+        return NVAPI_NO_IMPLEMENTATION;
+    }
+
     NvAPI_Status __cdecl NvAPI_GetErrorMessage(NvAPI_Status nr, NvAPI_ShortString szDesc) {
         std::cerr << "NvAPI_GetErrorMessage " << std::dec << nr << ": OK" << std::endl;
         return NVAPI_OK;
