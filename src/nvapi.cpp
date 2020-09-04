@@ -1,4 +1,5 @@
 #include "nvapi_private.h"
+#include "nvapi_adapter.h"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -6,6 +7,8 @@
 
 extern "C" {
     using namespace dxvk;
+
+    NvapiAdapter* nvapiAdapter;
 
     NvAPI_Status __cdecl NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth) {
         static bool alreadyTested = false;
@@ -78,9 +81,64 @@ extern "C" {
         return NVAPI_NO_IMPLEMENTATION;
     }
 
+    NvAPI_Status __cdecl NvAPI_GPU_GetGPUType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_TYPE *pGpuType) {
+        *pGpuType = (NV_GPU_TYPE)nvapiAdapter->GetGpuType();
+
+        std::cerr << "NvAPI_GPU_GetGPUType: OK" << std::endl;
+        return NVAPI_OK;
+    }
+
+    NvAPI_Status __cdecl NvAPI_GPU_GetPCIIdentifiers(NvPhysicalGpuHandle hPhysicalGpu, NvU32 *pDeviceId, NvU32 *pSubSystemId, NvU32 *pRevisionId, NvU32 *pExtDeviceId) {
+        *pDeviceId = nvapiAdapter->GetDeviceId();
+        *pSubSystemId = 0;
+        *pRevisionId = 0;
+        *pExtDeviceId = nvapiAdapter->GetDeviceId();
+
+        std::cerr << "NvAPI_GPU_GetPCIIdentifiers: OK" << std::endl;
+        return NVAPI_OK;
+    }
+
+    NvAPI_Status __cdecl NvAPI_GPU_GetFullName(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szName) {
+        strcpy(szName, nvapiAdapter->GetDeviceName().c_str());
+
+        std::cerr << "NvAPI_GPU_GetFullName: OK" << std::endl;
+        return NVAPI_OK;
+    }
+
+    NvAPI_Status __cdecl NvAPI_SYS_GetDriverAndBranchVersion(NvU32* pDriverVersion, NvAPI_ShortString szBuildBranchString) {
+        *pDriverVersion = nvapiAdapter->GetDriverVersion();
+        strcpy(szBuildBranchString, DXVK_NVAPI_VERSION);
+
+        std::cerr << "NvAPI_SYS_GetDriverAndBranchVersion: OK" << std::endl;
+        return NVAPI_OK;
+    }
+
+    NvAPI_Status __cdecl NvAPI_EnumLogicalGPUs(NvLogicalGpuHandle nvGPUHandle[NVAPI_MAX_LOGICAL_GPUS], NvU32 *pGpuCount) {
+        nvGPUHandle[0] = 0x0;
+        *pGpuCount = 1;
+
+        std::cerr << "NvAPI_EnumLogicalGPUs: OK" << std::endl;
+        return NVAPI_OK;
+    }
+
     NvAPI_Status __cdecl NvAPI_EnumPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount) {
-        std::cerr << "NvAPI_EnumPhysicalGPUs: No implementation" << std::endl;
+        nvGPUHandle[0] = 0x0;
+        *pGpuCount = 1;
+
+        std::cerr << "NvAPI_EnumPhysicalGPUs: OK" << std::endl;
+        return NVAPI_OK;
+    }
+
+    NvAPI_Status __cdecl NvAPI_GetDisplayDriverVersion(NvDisplayHandle hNvDisplay, NV_DISPLAY_DRIVER_VERSION *pVersion) {
+        std::cerr << "NvAPI_GetDisplayDriverVersion: No implementation" << std::endl;
         return NVAPI_NO_IMPLEMENTATION;
+    }
+
+    NvAPI_Status __cdecl NvAPI_GetInterfaceVersionString(NvAPI_ShortString szDesc) {
+        strcpy(szDesc, "R440");
+
+        std::cerr << "NvAPI_GetInterfaceVersionString: OK" << std::endl;
+        return NVAPI_OK;
     }
 
     NvAPI_Status __cdecl NvAPI_GetErrorMessage(NvAPI_Status nr, NvAPI_ShortString szDesc) {
@@ -89,11 +147,20 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_Unload() {
+        delete(nvapiAdapter);
+
         std::cerr << "NvAPI_Unload: OK" << std::endl;
         return NVAPI_OK;
     }
 
     NvAPI_Status __cdecl NvAPI_Initialize() {
+        nvapiAdapter = new NvapiAdapter();
+        auto success = nvapiAdapter->Initialize();
+        if (!success) {
+            std::cerr << "NvAPI_Initialize DXVK-NVAPI-" << DXVK_NVAPI_VERSION << ": ERROR" << std::endl;
+            return NVAPI_ERROR;
+        }
+
         std::cerr << "NvAPI_Initialize DXVK-NVAPI-" << DXVK_NVAPI_VERSION << ": OK" << std::endl;
         return NVAPI_OK;
     }

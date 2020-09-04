@@ -18,6 +18,27 @@ enum D3D11_VK_BARRIER_CONTROL : uint32_t {
   D3D11_VK_BARRIER_CONTROL_IGNORE_WRITE_AFTER_WRITE   = 1 << 0,
 };
 
+/**
+￼ * \brief DXGI adapter interface for Vulkan interop
+￼ *
+￼ * Provides access to the physical device and
+￼ * instance handles for the given DXGI adapter.
+￼ */
+MIDL_INTERFACE("3a6d8f2c-b0e8-4ab4-b4dc-4fd24891bfa5")
+￼IDXGIVkInteropAdapter : public IUnknown {
+  static const GUID guid;
+
+  /**
+￼   * \brief Queries Vulkan handles used by DXVK
+￼   * 
+￼   * \param [out] pInstance The Vulkan instance
+￼   * \param [out] pPhysDev The physical device
+￼   */
+  virtual void STDMETHODCALLTYPE GetVulkanHandles(
+          VkInstance*           pInstance,
+          VkPhysicalDevice*     pPhysDev) = 0;
+};
+
 MIDL_INTERFACE("8a6e3c42-f74c-45b7-8265-a231b677ca17")
 ID3D11VkExtDevice : public IUnknown {
   static const GUID guid;
@@ -30,7 +51,6 @@ ID3D11VkExtDevice : public IUnknown {
    */
   virtual BOOL STDMETHODCALLTYPE GetExtensionSupport(
           D3D11_VK_EXTENSION      Extension) = 0;
-  
 };
 
 MIDL_INTERFACE("fd0bca13-5cb6-4c3a-987e-4750de2ca791")
@@ -72,8 +92,8 @@ ID3D11VkExtContext : public IUnknown {
   
   virtual void STDMETHODCALLTYPE SetBarrierControl(
           UINT                    ControlFlags) = 0;
-  
 };
 
+DXVK_DEFINE_GUID(￼IDXGIVkInteropAdapter)
 DXVK_DEFINE_GUID(ID3D11VkExtDevice)
 DXVK_DEFINE_GUID(ID3D11VkExtContext)
