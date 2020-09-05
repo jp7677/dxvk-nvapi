@@ -25,7 +25,7 @@ enum D3D11_VK_BARRIER_CONTROL : uint32_t {
 ￼ * instance handles for the given DXGI adapter.
 ￼ */
 MIDL_INTERFACE("3a6d8f2c-b0e8-4ab4-b4dc-4fd24891bfa5")
-￼IDXGIVkInteropAdapter : public IUnknown {
+IDXGIVkInteropAdapter : public IUnknown {
     static const GUID guid;
 
     /**
@@ -94,6 +94,6 @@ ID3D11VkExtContext : public IUnknown {
         UINT                    ControlFlags) = 0;
 };
 
-DXVK_DEFINE_GUID(￼IDXGIVkInteropAdapter)
+DXVK_DEFINE_GUID(IDXGIVkInteropAdapter)
 DXVK_DEFINE_GUID(ID3D11VkExtDevice)
 DXVK_DEFINE_GUID(ID3D11VkExtContext)
