@@ -4,24 +4,24 @@
 
 namespace dxvk {
 
-  class NvapiAdapter {
+    class NvapiAdapter {
 
-  public:
+    public:
 
-    NvapiAdapter();
-    ~NvapiAdapter();
+        NvapiAdapter();
+        ~NvapiAdapter();
 
-    bool Initialize();
-    std::string GetDeviceName();
-    u_int GetDriverVersion();
-    u_int GetDeviceId();
-    u_int GetGpuType();
+        bool Initialize();
+        std::string GetDeviceName();
+        u_int GetDriverVersion();
+        u_int GetDeviceId();
+        u_int GetGpuType();
 
-  private:
+    private:
 
-    VkPhysicalDevice m_vkDevice = VK_NULL_HANDLE;
-    VkPhysicalDeviceProperties m_deviceProperties;
-    u_int m_vkDriverVersion;
+        VkPhysicalDevice m_vkDevice = VK_NULL_HANDLE;
+        VkPhysicalDeviceProperties m_deviceProperties;
+        u_int m_vkDriverVersion;
 
-  };
+    };
 }
