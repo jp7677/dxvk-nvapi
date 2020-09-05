@@ -2,42 +2,30 @@
 
 namespace dxvk {
     NvapiAdapter::NvapiAdapter() {}
+
     NvapiAdapter::~NvapiAdapter() {}
 
-    bool NvapiAdapter::Initialize() {
-        Com<IDXGIFactory> dxgiFactory; 
-        if(FAILED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgiFactory)))
+    bool NvapiAdapter::Initialize(Com<IDXGIAdapter> dxgiAdapter) {
+        Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
+        if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter))))
             return false;
 
-        // Query all D3D11 adapter from DXVK to honor any DXVK device filtering and
-        // use the first NVIDIA card. Get the Vulkan handle  from that (DXVK) adapter
-        // to get access to Vulkan device properties which has some information we want.
-        Com<IDXGIAdapter> dxgiAdapter;
-        for (u_int i = 0; dxgiFactory->EnumAdapters(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; ++i) {
-            Com<￼IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
-            if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter))))
-                return false;
+        VkInstance vkInstance = VK_NULL_HANDLE;
+        dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &m_vkDevice);
 
-            VkInstance vkInstance = VK_NULL_HANDLE;
-            dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &m_vkDevice);
-
-            vkGetPhysicalDeviceProperties(m_vkDevice, &m_deviceProperties);
-            if (m_deviceProperties.vendorID != 0x10de)
-                continue; // No Nvidia card
-
-            m_vkDriverVersion = VK_MAKE_VERSION(
-                VK_VERSION_MAJOR(m_deviceProperties.driverVersion),
-                VK_VERSION_MINOR(m_deviceProperties.driverVersion >> 0) >> 2,
-                VK_VERSION_PATCH(m_deviceProperties.driverVersion >> 2) >> 4);
-
-            std::cerr << "NvAPI Device: " << m_deviceProperties.deviceName << " ("<< std::dec << VK_VERSION_MAJOR(m_vkDriverVersion) << "." << VK_VERSION_MINOR(m_vkDriverVersion) << "." << VK_VERSION_PATCH(m_vkDriverVersion) << ")" << std::endl;
-
-            return true;
-        }
+        vkGetPhysicalDeviceProperties(m_vkDevice, &m_deviceProperties);
 
         // TODO: Support other vendors. Currently we depend on a NVIDIA GPU, though we don't do any NVIDIA specific stuff.
-        std::cerr << "NvAPI Device: No NVIDIA GPU has been found" << std::endl;
-        return false;
+        if (m_deviceProperties.vendorID != 0x10de)
+            return false; // No Nvidia card
+
+        m_vkDriverVersion = VK_MAKE_VERSION(
+            VK_VERSION_MAJOR(m_deviceProperties.driverVersion),
+            VK_VERSION_MINOR(m_deviceProperties.driverVersion >> 0) >> 2,
+            VK_VERSION_PATCH(m_deviceProperties.driverVersion >> 2) >> 4);
+
+        std::cerr << "NvAPI Device: " << m_deviceProperties.deviceName << " ("<< std::dec << VK_VERSION_MAJOR(m_vkDriverVersion) << "." << VK_VERSION_MINOR(m_vkDriverVersion) << "." << VK_VERSION_PATCH(m_vkDriverVersion) << ")" << std::endl;
+        return true;
     }
 
     std::string NvapiAdapter::GetDeviceName() {

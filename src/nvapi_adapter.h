@@ -1,6 +1,8 @@
 #pragma once
 
 #include "nvapi_private.h"
+#include "./dxvk/dxvk_interfaces.h"
+#include "./dxvk/com_pointer.h"
 
 namespace dxvk {
 
@@ -11,7 +13,7 @@ namespace dxvk {
         NvapiAdapter();
         ~NvapiAdapter();
 
-        bool Initialize();
+        bool Initialize(Com<IDXGIAdapter> dxgiAdapter);
         std::string GetDeviceName();
         u_int GetDriverVersion();
         u_int GetDeviceId();

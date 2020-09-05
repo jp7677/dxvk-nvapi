@@ -1,5 +1,6 @@
 #include "nvapi_private.h"
-#include "nvapi_adapter.h"
+#include "nvapi_adapter_registry.h"
+#include "../version.h"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -8,7 +9,7 @@
 extern "C" {
     using namespace dxvk;
 
-    NvapiAdapter* nvapiAdapter;
+    static NvapiAdapterRegistry* nvapiAdapterRegistry;
 
     NvAPI_Status __cdecl NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth) {
         static bool alreadyTested = false;
@@ -82,31 +83,43 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetGPUType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_TYPE *pGpuType) {
-        *pGpuType = (NV_GPU_TYPE)nvapiAdapter->GetGpuType();
+        if (!nvapiAdapterRegistry->Contains((uintptr_t)hPhysicalGpu))
+            return NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE;
+
+        *pGpuType = (NV_GPU_TYPE)nvapiAdapterRegistry->ByIndex((uintptr_t)hPhysicalGpu)->GetGpuType();
 
         std::cerr << "NvAPI_GPU_GetGPUType: OK" << std::endl;
         return NVAPI_OK;
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetPCIIdentifiers(NvPhysicalGpuHandle hPhysicalGpu, NvU32 *pDeviceId, NvU32 *pSubSystemId, NvU32 *pRevisionId, NvU32 *pExtDeviceId) {
-        *pDeviceId = nvapiAdapter->GetDeviceId();
+        if (!nvapiAdapterRegistry->Contains((uintptr_t)hPhysicalGpu))
+            return NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE;
+
+        *pDeviceId = nvapiAdapterRegistry->ByIndex((uintptr_t)hPhysicalGpu)->GetDeviceId();
         *pSubSystemId = 0;
         *pRevisionId = 0;
-        *pExtDeviceId = nvapiAdapter->GetDeviceId();
+        *pExtDeviceId = nvapiAdapterRegistry->ByIndex((uintptr_t)hPhysicalGpu)->GetDeviceId();
 
         std::cerr << "NvAPI_GPU_GetPCIIdentifiers: OK" << std::endl;
         return NVAPI_OK;
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetFullName(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szName) {
-        strcpy(szName, nvapiAdapter->GetDeviceName().c_str());
+        if (!nvapiAdapterRegistry->Contains((uintptr_t)hPhysicalGpu))
+            return NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE;
+
+        strcpy(szName, nvapiAdapterRegistry->ByIndex((uintptr_t)hPhysicalGpu)->GetDeviceName().c_str());
 
         std::cerr << "NvAPI_GPU_GetFullName: OK" << std::endl;
         return NVAPI_OK;
     }
 
     NvAPI_Status __cdecl NvAPI_SYS_GetDriverAndBranchVersion(NvU32* pDriverVersion, NvAPI_ShortString szBuildBranchString) {
-        *pDriverVersion = nvapiAdapter->GetDriverVersion();
+        if (!nvapiAdapterRegistry->Any())
+            return NVAPI_NVIDIA_DEVICE_NOT_FOUND;
+
+        *pDriverVersion = nvapiAdapterRegistry->First()->GetDriverVersion();
         strcpy(szBuildBranchString, DXVK_NVAPI_VERSION);
 
         std::cerr << "NvAPI_SYS_GetDriverAndBranchVersion: OK" << std::endl;
@@ -114,16 +127,18 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_EnumLogicalGPUs(NvLogicalGpuHandle nvGPUHandle[NVAPI_MAX_LOGICAL_GPUS], NvU32 *pGpuCount) {
-        nvGPUHandle[0] = 0x0;
-        *pGpuCount = 1;
-
-        std::cerr << "NvAPI_EnumLogicalGPUs: OK" << std::endl;
-        return NVAPI_OK;
+        std::cerr << "NvAPI_EnumLogicalGPUs: No implementation" << std::endl;
+        return NVAPI_NO_IMPLEMENTATION;
     }
 
     NvAPI_Status __cdecl NvAPI_EnumPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount) {
-        nvGPUHandle[0] = 0x0;
-        *pGpuCount = 1;
+        if (!nvapiAdapterRegistry->Any())
+            return NVAPI_NVIDIA_DEVICE_NOT_FOUND;
+
+        for (u_short i = 0; i < nvapiAdapterRegistry->Size(); i++)
+            nvGPUHandle[0] = (NvPhysicalGpuHandle)(uintptr_t)i;
+
+        *pGpuCount = nvapiAdapterRegistry->Size();
 
         std::cerr << "NvAPI_EnumPhysicalGPUs: OK" << std::endl;
         return NVAPI_OK;
@@ -147,21 +162,23 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_Unload() {
-        delete(nvapiAdapter);
+        delete(nvapiAdapterRegistry);
 
         std::cerr << "NvAPI_Unload: OK" << std::endl;
         return NVAPI_OK;
     }
 
     NvAPI_Status __cdecl NvAPI_Initialize() {
-        nvapiAdapter = new NvapiAdapter();
-        auto success = nvapiAdapter->Initialize();
-        if (!success) {
+        std::cerr << "DXVK-NVAPI-" << DXVK_NVAPI_VERSION << std::endl;
+        nvapiAdapterRegistry = new NvapiAdapterRegistry();
+        nvapiAdapterRegistry->Initialize();
+        if (!nvapiAdapterRegistry->Any()) {
+            std::cerr << "NvAPI Device: No NVIDIA GPU has been found" << std::endl;
             std::cerr << "NvAPI_Initialize DXVK-NVAPI-" << DXVK_NVAPI_VERSION << ": ERROR" << std::endl;
-            return NVAPI_ERROR;
+            return NVAPI_NVIDIA_DEVICE_NOT_FOUND;
         }
 
-        std::cerr << "NvAPI_Initialize DXVK-NVAPI-" << DXVK_NVAPI_VERSION << ": OK" << std::endl;
+        std::cerr << "NvAPI_Initialize: OK" << std::endl;
         return NVAPI_OK;
     }
 }

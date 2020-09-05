@@ -1,7 +1,8 @@
 nvapi_src = files([
-  'nvapi_interface.cpp',
-  'nvapi_adapter.cpp',
   'dxvk/dxvk_interfaces.cpp',
+  'nvapi_adapter.cpp',
+  'nvapi_adapter_registry.cpp',
+  'nvapi_interface.cpp',
 ])
 
 nvapi_dll = shared_library('nvapi'+dll_suffix, nvapi_src,

@@ -21,7 +21,3 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif // __GNUC__
-
-#include "./dxvk/dxvk_interfaces.h"
-#include "./dxvk/com_pointer.h"
-#include "../version.h"
