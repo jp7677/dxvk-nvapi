@@ -6,6 +6,7 @@ namespace dxvk {
     NvapiAdapter::~NvapiAdapter() {}
 
     bool NvapiAdapter::Initialize(Com<IDXGIAdapter> dxgiAdapter) {
+        // Get the Vulkan handle  from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
         if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter))))
             return false;
@@ -19,6 +20,7 @@ namespace dxvk {
         if (m_deviceProperties.vendorID != 0x10de)
             return false; // No Nvidia card
 
+        // Handle NVIDIA version notation
         m_vkDriverVersion = VK_MAKE_VERSION(
             VK_VERSION_MAJOR(m_deviceProperties.driverVersion),
             VK_VERSION_MINOR(m_deviceProperties.driverVersion >> 0) >> 2,
@@ -44,7 +46,7 @@ namespace dxvk {
     }
 
     u_int NvapiAdapter::GetGpuType() {
-        // The enum values for discrete and unknown GPU are the same for Vulkan and NvAPI.
+        // The enum values for discrete, integrated and unknown GPU are the same for Vulkan and NvAPI
         VkPhysicalDeviceType vkDeviceType = m_deviceProperties.deviceType;
         if (vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
             return vkDeviceType;

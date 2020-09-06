@@ -10,9 +10,7 @@ namespace dxvk {
         if(FAILED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgiFactory)))
             return;
 
-        // Query all D3D11 adapter from DXVK to honor any DXVK device filtering and
-        // use the first NVIDIA card. Get the Vulkan handle  from that (DXVK) adapter
-        // to get access to Vulkan device properties which has some information we want.
+        // Query all D3D11 adapter from DXVK to honor any DXVK device filtering 
         Com<IDXGIAdapter> dxgiAdapter;
         for (u_short i = 0; dxgiFactory->EnumAdapters(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; ++i) {
             auto nvapiAdapter = new NvapiAdapter();
