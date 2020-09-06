@@ -46,7 +46,7 @@ namespace dxvk {
     }
 
     u_int NvapiAdapter::GetDeviceId() {
-        return m_deviceProperties.deviceID;
+        return (m_deviceProperties.deviceID << 16) + m_deviceProperties.vendorID;
     }
 
     u_int NvapiAdapter::GetGpuType() {
