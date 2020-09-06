@@ -19,6 +19,8 @@ namespace dxvk {
             auto success = nvapiAdapter->Initialize(dxgiAdapter);
             if (success)
                 m_registry.push_back(nvapiAdapter);
+            else
+                delete (nvapiAdapter);
         }
     }
 
@@ -43,7 +45,7 @@ namespace dxvk {
 
     NvapiAdapter* NvapiAdapterRegistry::First() {
         if (!m_registry.empty())
-            return m_registry.at(0);
+            return m_registry.front();
 
         return nullptr;
     }
