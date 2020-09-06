@@ -145,8 +145,17 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GetDisplayDriverVersion(NvDisplayHandle hNvDisplay, NV_DISPLAY_DRIVER_VERSION *pVersion) {
-        std::cerr << "NvAPI_GetDisplayDriverVersion: No implementation" << std::endl;
-        return NVAPI_NO_IMPLEMENTATION;
+        if (!nvapiAdapterRegistry->Any())
+            return NVAPI_NVIDIA_DEVICE_NOT_FOUND;
+
+        pVersion->version = NV_DISPLAY_DRIVER_VERSION_VER;
+        pVersion->drvVersion = nvapiAdapterRegistry->First()->GetDriverVersion();
+        pVersion->bldChangeListNum = 0;
+        strcpy(pVersion->szBuildBranchString, DXVK_NVAPI_VERSION);
+        strcpy(pVersion->szAdapterString, nvapiAdapterRegistry->First()->GetDeviceName().c_str()); // Use a default device name, might not be correct.
+
+        std::cerr << "NvAPI_GetDisplayDriverVersion: OK" << std::endl;
+        return NVAPI_OK;
     }
 
     NvAPI_Status __cdecl NvAPI_GetInterfaceVersionString(NvAPI_ShortString szDesc) {
