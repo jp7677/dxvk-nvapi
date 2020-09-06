@@ -83,33 +83,33 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetGPUType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_TYPE *pGpuType) {
-        if (!nvapiAdapterRegistry->Contains((uintptr_t)hPhysicalGpu))
+        if (!nvapiAdapterRegistry->Contains(hPhysicalGpu))
             return NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE;
 
-        *pGpuType = (NV_GPU_TYPE)nvapiAdapterRegistry->ByIndex((uintptr_t)hPhysicalGpu)->GetGpuType();
+        *pGpuType = (NV_GPU_TYPE)nvapiAdapterRegistry->From(hPhysicalGpu)->GetGpuType();
 
         std::cerr << "NvAPI_GPU_GetGPUType: OK" << std::endl;
         return NVAPI_OK;
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetPCIIdentifiers(NvPhysicalGpuHandle hPhysicalGpu, NvU32 *pDeviceId, NvU32 *pSubSystemId, NvU32 *pRevisionId, NvU32 *pExtDeviceId) {
-        if (!nvapiAdapterRegistry->Contains((uintptr_t)hPhysicalGpu))
+        if (!nvapiAdapterRegistry->Contains(hPhysicalGpu))
             return NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE;
 
-        *pDeviceId = nvapiAdapterRegistry->ByIndex((uintptr_t)hPhysicalGpu)->GetDeviceId();
+        *pDeviceId = nvapiAdapterRegistry->From(hPhysicalGpu)->GetDeviceId();
         *pSubSystemId = 0;
         *pRevisionId = 0;
-        *pExtDeviceId = nvapiAdapterRegistry->ByIndex((uintptr_t)hPhysicalGpu)->GetDeviceId();
+        *pExtDeviceId = nvapiAdapterRegistry->From(hPhysicalGpu)->GetDeviceId();
 
         std::cerr << "NvAPI_GPU_GetPCIIdentifiers: OK" << std::endl;
         return NVAPI_OK;
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetFullName(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szName) {
-        if (!nvapiAdapterRegistry->Contains((uintptr_t)hPhysicalGpu))
+        if (!nvapiAdapterRegistry->Contains(hPhysicalGpu))
             return NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE;
 
-        strcpy(szName, nvapiAdapterRegistry->ByIndex((uintptr_t)hPhysicalGpu)->GetDeviceName().c_str());
+        strcpy(szName, nvapiAdapterRegistry->From(hPhysicalGpu)->GetDeviceName().c_str());
 
         std::cerr << "NvAPI_GPU_GetFullName: OK" << std::endl;
         return NVAPI_OK;
@@ -136,7 +136,7 @@ extern "C" {
             return NVAPI_NVIDIA_DEVICE_NOT_FOUND;
 
         for (u_short i = 0; i < nvapiAdapterRegistry->Size(); i++)
-            nvGPUHandle[0] = (NvPhysicalGpuHandle)(uintptr_t)i;
+            nvGPUHandle[i] = nvapiAdapterRegistry->GetHandle(i);
 
         *pGpuCount = nvapiAdapterRegistry->Size();
 

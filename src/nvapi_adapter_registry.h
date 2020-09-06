@@ -15,15 +15,19 @@ namespace dxvk {
         ~NvapiAdapterRegistry();
 
         void Initialize();
+        NvPhysicalGpuHandle GetHandle(u_short index);
         bool Any();
-        bool Contains(u_short index);
+        bool Contains(NvPhysicalGpuHandle handle);
         u_short Size();
-        NvapiAdapter* ByIndex(u_short index);
+        NvapiAdapter* From(NvPhysicalGpuHandle handle);
         NvapiAdapter* First();
     
     private:
 
         std::vector<NvapiAdapter*> m_registry;
+
+        NvPhysicalGpuHandle IndexToHandle(u_short index);
+        u_short HandleToIndex(NvPhysicalGpuHandle handle);
 
     };
 }
