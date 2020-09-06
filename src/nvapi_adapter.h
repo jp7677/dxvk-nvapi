@@ -13,6 +13,7 @@ namespace dxvk {
         NvapiAdapter();
         ~NvapiAdapter();
 
+        NvapiAdapter& GetHandle();
         bool Initialize(Com<IDXGIAdapter> dxgiAdapter);
         std::string GetDeviceName();
         u_int GetDriverVersion();

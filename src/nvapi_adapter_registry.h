@@ -26,8 +26,5 @@ namespace dxvk {
 
         std::vector<NvapiAdapter*> m_registry;
 
-        NvPhysicalGpuHandle IndexToHandle(u_short index);
-        u_short HandleToIndex(NvPhysicalGpuHandle handle);
-
     };
 }

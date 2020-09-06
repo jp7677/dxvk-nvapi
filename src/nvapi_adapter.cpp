@@ -5,6 +5,10 @@ namespace dxvk {
 
     NvapiAdapter::~NvapiAdapter() {}
 
+    NvapiAdapter& NvapiAdapter::GetHandle() {
+        return *this;
+    }
+
     bool NvapiAdapter::Initialize(Com<IDXGIAdapter> dxgiAdapter) {
         // Get the Vulkan handle  from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;

@@ -23,7 +23,7 @@ namespace dxvk {
     }
 
     NvPhysicalGpuHandle NvapiAdapterRegistry::GetHandle(u_short index) {
-        return IndexToHandle(index);
+        return (NvPhysicalGpuHandle) &(m_registry.at(index)->GetHandle());
     }
 
     bool NvapiAdapterRegistry::Any() {
@@ -31,8 +31,11 @@ namespace dxvk {
     }
 
     bool NvapiAdapterRegistry::Contains(NvPhysicalGpuHandle handle) {
-        auto index = HandleToIndex(handle);
-        return m_registry.size() > index;
+        for (auto const& adapter : m_registry)
+            if (handle == (NvPhysicalGpuHandle) &(adapter->GetHandle()))
+                return true;
+
+        return false;
     }
 
     u_short NvapiAdapterRegistry::Size() {
@@ -40,11 +43,7 @@ namespace dxvk {
     }
 
     NvapiAdapter* NvapiAdapterRegistry::From(NvPhysicalGpuHandle handle) {
-        auto index = HandleToIndex(handle);
-        if (m_registry.size() > index)
-            return m_registry.at(index);
-
-        return nullptr;
+        return (NvapiAdapter*) handle;
     }
 
     NvapiAdapter* NvapiAdapterRegistry::First() {
@@ -52,20 +51,5 @@ namespace dxvk {
             return m_registry.front();
 
         return nullptr;
-    }
-
-    NvPhysicalGpuHandle NvapiAdapterRegistry::IndexToHandle(u_short index) {
-        // Beware, ugliness ahead!
-        // The handles are just mean to be passed back to NvAPI for identifying
-        // Instead of real handles we just pass the vector position as identifier.
-        // Use offset by one in case somebody checks for zero.
-        return (NvPhysicalGpuHandle)(uintptr_t)(index + 1);
-    }
-
-    u_short NvapiAdapterRegistry::HandleToIndex(NvPhysicalGpuHandle handle) {
-        // Beware, ugliness ahead!
-        // See `IndexToHandle`. Getting the index works only for single digits (1 up to 8).
-        // Hence this really really ugly.
-        return ((uintptr_t)handle) - 1;
     }
 }
