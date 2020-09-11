@@ -3,7 +3,13 @@
 namespace dxvk {
 
     NvapiAdapterRegistry::NvapiAdapterRegistry() {}
-    NvapiAdapterRegistry::~NvapiAdapterRegistry() {}
+    NvapiAdapterRegistry::~NvapiAdapterRegistry() {
+        for (auto const& output : m_nvapiOutputs)
+            delete (output);
+
+        for (auto const& adapter : m_nvapiAdapters)
+            delete (adapter);
+    }
 
     bool NvapiAdapterRegistry::Initialize() {
         Com<IDXGIFactory> dxgiFactory; 
