@@ -32,12 +32,12 @@ namespace dxvk {
         return m_nvapiAdapters.size();
     }
 
-    NvapiAdapter* NvapiAdapterRegistry::First() {
+    NvapiAdapter* NvapiAdapterRegistry::GetAdapter() {
         return m_nvapiAdapters.front();
     }
 
     NvapiAdapter* NvapiAdapterRegistry::GetAdapter(u_short index) {
-        if (index > m_nvapiAdapters.size())
+        if (index >= m_nvapiAdapters.size())
             return nullptr;
 
         return m_nvapiAdapters.at(index);
@@ -60,7 +60,7 @@ namespace dxvk {
     }
 
     NvapiOutput* NvapiAdapterRegistry::GetOutput(u_short index) {
-        if (index > m_nvapiOutputs.size())
+        if (index >= m_nvapiOutputs.size())
             return nullptr;
 
         return m_nvapiOutputs.at(index);

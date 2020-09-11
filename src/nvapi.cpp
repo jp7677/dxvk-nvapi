@@ -138,7 +138,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_SYS_GetDriverAndBranchVersion(NvU32* pDriverVersion, NvAPI_ShortString szBuildBranchString) {
-        *pDriverVersion = nvapiAdapterRegistry->First()->GetDriverVersion();
+        *pDriverVersion = nvapiAdapterRegistry->GetAdapter()->GetDriverVersion();
         strcpy(szBuildBranchString, DXVK_NVAPI_VERSION);
 
         std::cerr << "NvAPI_SYS_GetDriverAndBranchVersion: OK" << std::endl;
@@ -172,10 +172,10 @@ extern "C" {
         }
 
         // Ignore hNvDisplay and query the first adapter
-        pVersion->drvVersion = nvapiAdapterRegistry->First()->GetDriverVersion();
+        pVersion->drvVersion = nvapiAdapterRegistry->GetAdapter()->GetDriverVersion();
         pVersion->bldChangeListNum = 0;
         strcpy(pVersion->szBuildBranchString, DXVK_NVAPI_VERSION);
-        strcpy(pVersion->szAdapterString, nvapiAdapterRegistry->First()->GetDeviceName().c_str());
+        strcpy(pVersion->szAdapterString, nvapiAdapterRegistry->GetAdapter()->GetDeviceName().c_str());
 
         std::cerr << "NvAPI_GetDisplayDriverVersion: OK" << std::endl;
         return NVAPI_OK;
