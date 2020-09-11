@@ -15,16 +15,29 @@ namespace dxvk {
         ~NvapiAdapterRegistry();
 
         void Initialize();
-        NvPhysicalGpuHandle GetHandle(u_short index);
+        
         bool Any();
-        bool Contains(NvPhysicalGpuHandle handle);
         u_short Size();
-        NvapiAdapter* From(NvPhysicalGpuHandle handle);
         NvapiAdapter* First();
+
+        NvapiAdapter* At(u_short index);
+
+        bool Contains(NvPhysicalGpuHandle handle);
+        NvapiAdapter* From(NvPhysicalGpuHandle handle);
+
+        bool Contains(NvLogicalGpuHandle handle);
+        NvapiAdapter* From(NvLogicalGpuHandle handle);
+
+        bool HasOutput(u_short index);
+        NvapiOutput* GetOutput(u_short index);
+        short GetOutput(std::string displayName);
+        bool Contains(NvDisplayHandle handle);
+        NvapiOutput* From(NvDisplayHandle handle);
     
     private:
 
-        std::vector<NvapiAdapter*> m_registry;
+        std::vector<NvapiAdapter*> m_nvapiAdapters;
+        std::vector<NvapiOutput*> m_nvapiOutputs;
 
     };
 }

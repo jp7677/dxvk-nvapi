@@ -4,6 +4,8 @@
 #include "./dxvk/dxvk_interfaces.h"
 #include "./dxvk/com_pointer.h"
 
+#include "nvapi_output.h"
+
 namespace dxvk {
 
     class NvapiAdapter {
@@ -13,14 +15,17 @@ namespace dxvk {
         NvapiAdapter();
         ~NvapiAdapter();
 
-        NvapiAdapter& GetHandle();
         bool Initialize(Com<IDXGIAdapter> dxgiAdapter);
+        NvapiAdapter& GetHandle();
+        std::vector<NvapiOutput*> GetOutputs();
         std::string GetDeviceName();
         u_int GetDriverVersion();
         u_int GetDeviceId();
         u_int GetGpuType();
 
     private:
+
+        std::vector<NvapiOutput*> m_nvapiOutputs;
 
         VkPhysicalDevice m_vkDevice = VK_NULL_HANDLE;
         VkPhysicalDeviceProperties m_deviceProperties;
