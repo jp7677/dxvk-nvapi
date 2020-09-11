@@ -15,6 +15,7 @@ namespace dxvk {
 
         uintptr_t GetParent();
         void Initialize(Com<IDXGIOutput> dxgiOutput);
+
         std::string GetDeviceName();
 
     private:
