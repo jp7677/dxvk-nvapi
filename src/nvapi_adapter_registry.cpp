@@ -33,68 +33,53 @@ namespace dxvk {
     }
 
     NvapiAdapter* NvapiAdapterRegistry::First() {
-        if (!m_nvapiAdapters.empty())
-            return m_nvapiAdapters.front();
+        return m_nvapiAdapters.front();
+    }
+
+    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(u_short index) {
+        if (index > m_nvapiAdapters.size())
+            return nullptr;
+
+        return m_nvapiAdapters.at(index);
+    }
+
+    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(NvPhysicalGpuHandle handle) {
+        for (auto const& adapter : m_nvapiAdapters)
+            if (handle == (NvPhysicalGpuHandle) adapter)
+                return adapter;
 
         return nullptr;
     }
 
-    NvapiAdapter* NvapiAdapterRegistry::At(u_short index) {
-        return m_nvapiAdapters.at(index);
-    }
-
-
-    bool NvapiAdapterRegistry::Contains(NvPhysicalGpuHandle handle) {
-        for (auto const& adapter : m_nvapiAdapters)
-            if (handle == (NvPhysicalGpuHandle) adapter)
-                return true;
-
-        return false;
-    }
-
-    NvapiAdapter* NvapiAdapterRegistry::From(NvPhysicalGpuHandle handle) {
-        return (NvapiAdapter*) handle;
-    }
-
-
-    bool NvapiAdapterRegistry::Contains(NvLogicalGpuHandle handle) {
+    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(NvLogicalGpuHandle handle) {
         for (auto const& adapter : m_nvapiAdapters)
             if (handle == (NvLogicalGpuHandle) adapter)
-                return true;
+                return adapter;
 
-        return false;
-    }
-
-    NvapiAdapter* NvapiAdapterRegistry::From(NvLogicalGpuHandle handle) {
-        return (NvapiAdapter*) handle;
-    }
-
-    bool NvapiAdapterRegistry::HasOutput(u_short index) {
-        return m_nvapiOutputs.size() > index;
+        return nullptr;
     }
 
     NvapiOutput* NvapiAdapterRegistry::GetOutput(u_short index) {
+        if (index > m_nvapiOutputs.size())
+            return nullptr;
+
         return m_nvapiOutputs.at(index);
     }
 
-    short NvapiAdapterRegistry::GetOutput(std::string displayName) {
+    NvapiOutput* NvapiAdapterRegistry::GetOutput(NvDisplayHandle handle) {
+        for (auto const& output : m_nvapiOutputs)
+            if (handle == (NvDisplayHandle) output)
+                return output;
+
+        return nullptr;
+    }
+
+    short NvapiAdapterRegistry::GetOutputId(std::string displayName) {
         for (auto i = 0U; i <= m_nvapiOutputs.size(); i++) {
             if (m_nvapiOutputs.at(i)->GetDeviceName() == displayName)
                 return i;
         }
 
         return -1;
-    }
-
-    bool NvapiAdapterRegistry::Contains(NvDisplayHandle handle) {
-        for (auto const& output : m_nvapiOutputs)
-            if (handle == (NvDisplayHandle) output)
-                return true;
-
-        return false;
-    }
-
-    NvapiOutput* NvapiAdapterRegistry::From(NvDisplayHandle handle) {
-        return (NvapiOutput*) handle;
     }
 }

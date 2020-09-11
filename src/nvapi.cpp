@@ -78,39 +78,42 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetGPUType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_TYPE *pGpuType) {
-        if (!nvapiAdapterRegistry->Contains(hPhysicalGpu)) {
+        auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
+        if (adapter ==  nullptr) {
             std::cerr << "NvAPI_GPU_GetGPUType: EXPECTED_PHYSICAL_GPU_HANDLE" << std::endl;
             return NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE;
         }
 
-        *pGpuType = (NV_GPU_TYPE) nvapiAdapterRegistry->From(hPhysicalGpu)->GetGpuType();
+        *pGpuType = (NV_GPU_TYPE) adapter->GetGpuType();
 
         std::cerr << "NvAPI_GPU_GetGPUType: OK" << std::endl;
         return NVAPI_OK;
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetPCIIdentifiers(NvPhysicalGpuHandle hPhysicalGpu, NvU32 *pDeviceId, NvU32 *pSubSystemId, NvU32 *pRevisionId, NvU32 *pExtDeviceId) {
-        if (!nvapiAdapterRegistry->Contains(hPhysicalGpu)) {
+        auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
+        if (adapter ==  nullptr) {
             std::cerr << "NvAPI_GPU_GetPCIIdentifiers: EXPECTED_PHYSICAL_GPU_HANDLE" << std::endl;
             return NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE;
         }
 
-        *pDeviceId = nvapiAdapterRegistry->From(hPhysicalGpu)->GetDeviceId();
+        *pDeviceId = adapter->GetDeviceId();
         *pSubSystemId = 0;
         *pRevisionId = 0;
-        *pExtDeviceId = nvapiAdapterRegistry->From(hPhysicalGpu)->GetDeviceId();
+        *pExtDeviceId = adapter->GetDeviceId();
 
         std::cerr << "NvAPI_GPU_GetPCIIdentifiers: OK" << std::endl;
         return NVAPI_OK;
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetFullName(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szName) {
-        if (!nvapiAdapterRegistry->Contains(hPhysicalGpu)) {
+        auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
+        if (adapter ==  nullptr) {
             std::cerr << "NvAPI_GPU_GetFullName: EXPECTED_PHYSICAL_GPU_HANDLE" << std::endl;
             return NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE;
         }
 
-        strcpy(szName, nvapiAdapterRegistry->From(hPhysicalGpu)->GetDeviceName().c_str());
+        strcpy(szName, adapter->GetDeviceName().c_str());
 
         std::cerr << "NvAPI_GPU_GetFullName: OK" << std::endl;
         return NVAPI_OK;
@@ -122,7 +125,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char *displayName, NvU32* displayId) {
-        auto id = nvapiAdapterRegistry->GetOutput(std::string(displayName));
+        auto id = nvapiAdapterRegistry->GetOutputId(std::string(displayName));
         if (id == -1) {
             std::cerr << "NvAPI_DISP_GetDisplayIdByDisplayName " << displayName << ": NVAPI_INVALID_ARGUMENT" << std::endl;
             return NVAPI_INVALID_ARGUMENT;
@@ -144,7 +147,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_EnumLogicalGPUs(NvLogicalGpuHandle nvGPUHandle[NVAPI_MAX_LOGICAL_GPUS], NvU32 *pGpuCount) {
         for (auto i = 0U; i < nvapiAdapterRegistry->Size(); i++)
-            nvGPUHandle[i] = (NvLogicalGpuHandle) nvapiAdapterRegistry->At(i);
+            nvGPUHandle[i] = (NvLogicalGpuHandle) nvapiAdapterRegistry->GetAdapter(i);
 
         *pGpuCount = nvapiAdapterRegistry->Size();
 
@@ -154,7 +157,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_EnumPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount) {
         for (auto i = 0U; i < nvapiAdapterRegistry->Size(); i++)
-            nvGPUHandle[i] = (NvPhysicalGpuHandle) nvapiAdapterRegistry->At(i);
+            nvGPUHandle[i] = (NvPhysicalGpuHandle) nvapiAdapterRegistry->GetAdapter(i);
 
         *pGpuCount = nvapiAdapterRegistry->Size();
 
@@ -179,12 +182,13 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GetPhysicalGPUsFromDisplay(NvDisplayHandle hNvDisp, NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount) {
-        if (!nvapiAdapterRegistry->Contains(hNvDisp)) {
+        auto output = nvapiAdapterRegistry->GetOutput(hNvDisp);
+        if (output == nullptr) {
             std::cerr << "NvAPI_GetPhysicalGPUsFromDisplay: EXPECTED_DISPLAY_HANDLE" << std::endl;
             return NVAPI_EXPECTED_DISPLAY_HANDLE;
         }
 
-        nvGPUHandle[0] = (NvPhysicalGpuHandle) nvapiAdapterRegistry->From(hNvDisp)->GetParent();
+        nvGPUHandle[0] = (NvPhysicalGpuHandle) output->GetParent();
         *pGpuCount = 1;
 
         std::cerr << "NvAPI_GetPhysicalGPUsFromDisplay: OK" << std::endl;
@@ -192,12 +196,13 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_EnumNvidiaDisplayHandle(NvU32 thisEnum, NvDisplayHandle *pNvDispHandle) {
-        if (!nvapiAdapterRegistry->HasOutput(thisEnum)) {
+        auto output = nvapiAdapterRegistry->GetOutput(thisEnum);
+        if (output == nullptr) {
             std::cerr << "NvAPI_EnumNvidiaDisplayHandle " << thisEnum << ": INVALID_DISPLAY_ID" << std::endl;
             return NVAPI_INVALID_DISPLAY_ID;
         }
 
-        *pNvDispHandle = (NvDisplayHandle) nvapiAdapterRegistry->GetOutput(thisEnum);
+        *pNvDispHandle = (NvDisplayHandle) output;
 
         std::cerr << "NvAPI_EnumNvidiaDisplayHandle " << thisEnum << ": OK" << std::endl;
         return NVAPI_OK;

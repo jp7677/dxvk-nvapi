@@ -19,20 +19,13 @@ namespace dxvk {
         bool Any();
         u_short Size();
         NvapiAdapter* First();
+        NvapiAdapter* GetAdapter(u_short index);
+        NvapiAdapter* GetAdapter(NvPhysicalGpuHandle handle);
+        NvapiAdapter* GetAdapter(NvLogicalGpuHandle handle);
 
-        NvapiAdapter* At(u_short index);
-
-        bool Contains(NvPhysicalGpuHandle handle);
-        NvapiAdapter* From(NvPhysicalGpuHandle handle);
-
-        bool Contains(NvLogicalGpuHandle handle);
-        NvapiAdapter* From(NvLogicalGpuHandle handle);
-
-        bool HasOutput(u_short index);
         NvapiOutput* GetOutput(u_short index);
-        short GetOutput(std::string displayName);
-        bool Contains(NvDisplayHandle handle);
-        NvapiOutput* From(NvDisplayHandle handle);
+        NvapiOutput* GetOutput(NvDisplayHandle handle);
+        short GetOutputId(std::string displayName);
     
     private:
 
