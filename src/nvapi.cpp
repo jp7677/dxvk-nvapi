@@ -83,7 +83,7 @@ extern "C" {
             return NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE;
         }
 
-        *pGpuType = (NV_GPU_TYPE)nvapiAdapterRegistry->From(hPhysicalGpu)->GetGpuType();
+        *pGpuType = (NV_GPU_TYPE) nvapiAdapterRegistry->From(hPhysicalGpu)->GetGpuType();
 
         std::cerr << "NvAPI_GPU_GetGPUType: OK" << std::endl;
         return NVAPI_OK;
@@ -197,7 +197,7 @@ extern "C" {
             return NVAPI_INVALID_DISPLAY_ID;
         }
 
-        *pNvDispHandle = (NvDisplayHandle) &(nvapiAdapterRegistry->GetOutput(thisEnum)->GetHandle());
+        *pNvDispHandle = (NvDisplayHandle) nvapiAdapterRegistry->GetOutput(thisEnum);
 
         std::cerr << "NvAPI_EnumNvidiaDisplayHandle " << thisEnum << ": OK" << std::endl;
         return NVAPI_OK;

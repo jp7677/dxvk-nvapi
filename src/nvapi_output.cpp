@@ -18,10 +18,6 @@ namespace dxvk {
     uintptr_t NvapiOutput::GetParent() {
         return m_parent;
     }
-    
-    NvapiOutput& NvapiOutput::GetHandle() {
-        return *this;
-    }
 
     std::string NvapiOutput::GetDeviceName() {
         return m_deviceName;

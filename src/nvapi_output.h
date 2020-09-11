@@ -14,7 +14,6 @@ namespace dxvk {
         ~NvapiOutput();
 
         uintptr_t GetParent();
-        NvapiOutput& GetHandle();
         void Initialize(Com<IDXGIOutput> dxgiOutput);
         std::string GetDeviceName();
 

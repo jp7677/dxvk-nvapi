@@ -40,13 +40,13 @@ namespace dxvk {
     }
 
     NvapiAdapter* NvapiAdapterRegistry::At(u_short index) {
-        return &(m_nvapiAdapters.at(index)->GetHandle());
+        return m_nvapiAdapters.at(index);
     }
 
 
     bool NvapiAdapterRegistry::Contains(NvPhysicalGpuHandle handle) {
         for (auto const& adapter : m_nvapiAdapters)
-            if (handle == (NvPhysicalGpuHandle) &(adapter->GetHandle()))
+            if (handle == (NvPhysicalGpuHandle) adapter)
                 return true;
 
         return false;
@@ -59,7 +59,7 @@ namespace dxvk {
 
     bool NvapiAdapterRegistry::Contains(NvLogicalGpuHandle handle) {
         for (auto const& adapter : m_nvapiAdapters)
-            if (handle == (NvLogicalGpuHandle) &(adapter->GetHandle()))
+            if (handle == (NvLogicalGpuHandle) adapter)
                 return true;
 
         return false;
@@ -88,7 +88,7 @@ namespace dxvk {
 
     bool NvapiAdapterRegistry::Contains(NvDisplayHandle handle) {
         for (auto const& output : m_nvapiOutputs)
-            if (handle == (NvDisplayHandle) &(output->GetHandle()))
+            if (handle == (NvDisplayHandle) output)
                 return true;
 
         return false;

@@ -39,10 +39,6 @@ namespace dxvk {
         return true;
     }
 
-    NvapiAdapter& NvapiAdapter::GetHandle() {
-        return *this;
-    }
-
     std::vector<NvapiOutput*> NvapiAdapter::GetOutputs() {
         return m_nvapiOutputs;
     }
