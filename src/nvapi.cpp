@@ -230,8 +230,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Initialize() {
         std::cerr << "DXVK-NVAPI-" << DXVK_NVAPI_VERSION << std::endl;
         nvapiAdapterRegistry = new NvapiAdapterRegistry();
-        nvapiAdapterRegistry->Initialize();
-        if (!nvapiAdapterRegistry->Any()) {
+        auto success = nvapiAdapterRegistry->Initialize();
+        if (!success) {
             std::cerr << "NvAPI Device: No NVIDIA GPU has been found" << std::endl;
             std::cerr << "NvAPI_Initialize DXVK-NVAPI-" << DXVK_NVAPI_VERSION << ": ERROR" << std::endl;
             return NVAPI_NVIDIA_DEVICE_NOT_FOUND;

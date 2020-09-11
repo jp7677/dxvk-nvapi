@@ -5,10 +5,10 @@ namespace dxvk {
     NvapiAdapterRegistry::NvapiAdapterRegistry() {}
     NvapiAdapterRegistry::~NvapiAdapterRegistry() {}
 
-    void NvapiAdapterRegistry::Initialize() {
+    bool NvapiAdapterRegistry::Initialize() {
         Com<IDXGIFactory> dxgiFactory; 
         if(FAILED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgiFactory)))
-            return;
+            return false;
 
         // Query all D3D11 adapter from DXVK to honor any DXVK device filtering 
         Com<IDXGIAdapter> dxgiAdapter;
@@ -22,9 +22,7 @@ namespace dxvk {
             } else
                 delete (nvapiAdapter);
         }
-    }
 
-    bool NvapiAdapterRegistry::Any() {
         return !m_nvapiAdapters.empty();
     }
 

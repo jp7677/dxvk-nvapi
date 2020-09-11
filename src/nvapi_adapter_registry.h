@@ -14,9 +14,8 @@ namespace dxvk {
         NvapiAdapterRegistry();
         ~NvapiAdapterRegistry();
 
-        void Initialize();
+        bool Initialize();
         
-        bool Any();
         u_short Size();
         NvapiAdapter* GetAdapter();
         NvapiAdapter* GetAdapter(u_short index);
