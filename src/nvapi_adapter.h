@@ -15,16 +15,13 @@ namespace dxvk {
         NvapiAdapter();
         ~NvapiAdapter();
 
-        bool Initialize(Com<IDXGIAdapter> dxgiAdapter);
-        std::vector<NvapiOutput*> GetOutputs();
+        bool Initialize(Com<IDXGIAdapter> dxgiAdapter, std::vector<NvapiOutput*>* outputs);
         std::string GetDeviceName();
         u_int GetDriverVersion();
         u_int GetDeviceId();
         u_int GetGpuType();
 
     private:
-
-        std::vector<NvapiOutput*> m_nvapiOutputs;
 
         VkPhysicalDevice m_vkDevice = VK_NULL_HANDLE;
         VkPhysicalDeviceProperties m_deviceProperties;

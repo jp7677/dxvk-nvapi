@@ -5,16 +5,7 @@ namespace dxvk {
 
     NvapiAdapter::~NvapiAdapter() {}
 
-    bool NvapiAdapter::Initialize(Com<IDXGIAdapter> dxgiAdapter) {
-        // Query all outputs from DXVK (just one, unless changed from the DXVK dxgi-multi-monitor branch are used)
-        // Mosaic setup is not supported, thus one display output refers to one GPU
-        Com<IDXGIOutput> dxgiOutput;
-        for (auto i = 0U; dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
-            auto nvapiOutput = new NvapiOutput((uintptr_t)this);
-            nvapiOutput->Initialize(dxgiOutput);
-            m_nvapiOutputs.push_back(nvapiOutput);
-        }
-
+    bool NvapiAdapter::Initialize(Com<IDXGIAdapter> dxgiAdapter, std::vector<NvapiOutput*>* outputs) {
         // Get the Vulkan handle  from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
         if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter))))
@@ -36,11 +27,17 @@ namespace dxvk {
             VK_VERSION_PATCH(m_deviceProperties.driverVersion >> 2) >> 4);
 
         std::cerr << "NvAPI Device: " << m_deviceProperties.deviceName << " ("<< std::dec << VK_VERSION_MAJOR(m_vkDriverVersion) << "." << VK_VERSION_MINOR(m_vkDriverVersion) << "." << VK_VERSION_PATCH(m_vkDriverVersion) << ")" << std::endl;
-        return true;
-    }
 
-    std::vector<NvapiOutput*> NvapiAdapter::GetOutputs() {
-        return m_nvapiOutputs;
+        // Query all outputs from DXVK (just one, unless the DXVK dxgi-multi-monitor branch is used)
+        // Mosaic setup is not supported, thus one display output refers to one GPU
+        Com<IDXGIOutput> dxgiOutput;
+        for (auto i = 0U; dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
+            auto nvapiOutput = new NvapiOutput((uintptr_t) this);
+            nvapiOutput->Initialize(dxgiOutput);
+            outputs->push_back(nvapiOutput);
+        }
+
+        return true;
     }
 
     std::string NvapiAdapter::GetDeviceName() {

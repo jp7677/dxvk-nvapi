@@ -14,11 +14,9 @@ namespace dxvk {
         Com<IDXGIAdapter> dxgiAdapter;
         for (auto i = 0U; dxgiFactory->EnumAdapters(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; i++) {
             auto nvapiAdapter = new NvapiAdapter();
-            auto success = nvapiAdapter->Initialize(dxgiAdapter);
+            auto success = nvapiAdapter->Initialize(dxgiAdapter, &m_nvapiOutputs);
             if (success) {
                 m_nvapiAdapters.push_back(nvapiAdapter);
-                for (auto j = 0U; j < nvapiAdapter->GetOutputs().size(); j++)
-                    m_nvapiOutputs.push_back(nvapiAdapter->GetOutputs().at(j));
             } else
                 delete (nvapiAdapter);
         }
