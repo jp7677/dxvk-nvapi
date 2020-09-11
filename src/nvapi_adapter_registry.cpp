@@ -24,7 +24,7 @@ namespace dxvk {
         return !m_nvapiAdapters.empty();
     }
 
-    u_short NvapiAdapterRegistry::Size() {
+    u_short NvapiAdapterRegistry::GetAdapterCount() {
         return m_nvapiAdapters.size();
     }
 

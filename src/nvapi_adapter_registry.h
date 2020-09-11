@@ -16,7 +16,7 @@ namespace dxvk {
 
         bool Initialize();
         
-        u_short Size();
+        u_short GetAdapterCount();
         NvapiAdapter* GetAdapter();
         NvapiAdapter* GetAdapter(u_short index);
         NvapiAdapter* GetAdapter(NvPhysicalGpuHandle handle);
