@@ -9,7 +9,7 @@ namespace dxvk {
         // Query all outputs from DXVK (just one, unless changed from the DXVK dxgi-multi-monitor branch are used)
         // Mosaic setup is not supported, thus one display output refers to one GPU
         Com<IDXGIOutput> dxgiOutput;
-        for (u_short i = 0; dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
+        for (auto i = 0U; dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
             auto nvapiOutput = new NvapiOutput((uintptr_t)this);
             nvapiOutput->Initialize(dxgiOutput);
             m_nvapiOutputs.push_back(nvapiOutput);

@@ -12,12 +12,12 @@ namespace dxvk {
 
         // Query all D3D11 adapter from DXVK to honor any DXVK device filtering 
         Com<IDXGIAdapter> dxgiAdapter;
-        for (u_short i = 0; dxgiFactory->EnumAdapters(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; i++) {
+        for (auto i = 0U; dxgiFactory->EnumAdapters(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; i++) {
             auto nvapiAdapter = new NvapiAdapter();
             auto success = nvapiAdapter->Initialize(dxgiAdapter);
             if (success) {
                 m_nvapiAdapters.push_back(nvapiAdapter);
-                for (u_short j = 0; j < nvapiAdapter->GetOutputs().size(); j++)
+                for (auto j = 0U; j < nvapiAdapter->GetOutputs().size(); j++)
                     m_nvapiOutputs.push_back(nvapiAdapter->GetOutputs().at(j));
             } else
                 delete (nvapiAdapter);
@@ -78,7 +78,7 @@ namespace dxvk {
     }
 
     short NvapiAdapterRegistry::GetOutput(std::string displayName) {
-        for (u_short i = 0; i <= m_nvapiOutputs.size(); i++) {
+        for (auto i = 0U; i <= m_nvapiOutputs.size(); i++) {
             if (m_nvapiOutputs.at(i)->GetDeviceName() == displayName)
                 return i;
         }

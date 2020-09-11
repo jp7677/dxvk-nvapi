@@ -143,7 +143,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_EnumLogicalGPUs(NvLogicalGpuHandle nvGPUHandle[NVAPI_MAX_LOGICAL_GPUS], NvU32 *pGpuCount) {
-        for (u_short i = 0; i < nvapiAdapterRegistry->Size(); i++)
+        for (auto i = 0U; i < nvapiAdapterRegistry->Size(); i++)
             nvGPUHandle[i] = (NvLogicalGpuHandle) nvapiAdapterRegistry->At(i);
 
         *pGpuCount = nvapiAdapterRegistry->Size();
@@ -153,7 +153,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_EnumPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount) {
-        for (u_short i = 0; i < nvapiAdapterRegistry->Size(); i++)
+        for (auto i = 0U; i < nvapiAdapterRegistry->Size(); i++)
             nvGPUHandle[i] = (NvPhysicalGpuHandle) nvapiAdapterRegistry->At(i);
 
         *pGpuCount = nvapiAdapterRegistry->Size();
