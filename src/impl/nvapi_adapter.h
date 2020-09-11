@@ -1,8 +1,8 @@
 #pragma once
 
-#include "nvapi_private.h"
-#include "./dxvk/dxvk_interfaces.h"
-#include "./dxvk/com_pointer.h"
+#include "../nvapi_private.h"
+#include "../dxvk/dxvk_interfaces.h"
+#include "../dxvk/com_pointer.h"
 
 #include "nvapi_output.h"
 

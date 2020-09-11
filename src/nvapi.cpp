@@ -1,5 +1,5 @@
 #include "nvapi_private.h"
-#include "nvapi_adapter_registry.h"
+#include "impl/nvapi_adapter_registry.h"
 #include "../version.h"
 
 #ifdef __GNUC__
