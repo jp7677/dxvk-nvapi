@@ -1,11 +1,3 @@
-#include "nvapi_private.h"
-#include "impl/nvapi_adapter_registry.h"
-#include "../version.h"
-
-#ifdef __GNUC__
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif // __GNUC__
-
 extern "C" {
     using namespace dxvk;
 
@@ -13,7 +5,7 @@ extern "C" {
         static bool alreadyLogged = false;
         if (!alreadyLogged) {
             alreadyLogged = true;
-            std::cerr << "NvAPI_D3D_GetObjectHandleForResource: No implementation" << std::endl;
+            return NoImplementation("NvAPI_D3D_GetObjectHandleForResource");
         }
 
         return NVAPI_NO_IMPLEMENTATION;
@@ -23,14 +15,13 @@ extern "C" {
         static bool alreadyLogged = false;
         if (!alreadyLogged) {
             alreadyLogged = true;
-            std::cerr << "NvAPI_D3D_SetResourceHint: No implementation" << std::endl;
+            return NoImplementation("NvAPI_D3D_SetResourceHint");
         }
         
         return NVAPI_NO_IMPLEMENTATION;
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_GetCurrentSLIState(IUnknown* pDevice, NV_GET_CURRENT_SLI_STATE* pSliState) {
-        std::cerr << "NvAPI_D3D_GetCurrentSLIState: No implementation" << std::endl;
-        return NVAPI_NO_IMPLEMENTATION;
+        return NoImplementation("NvAPI_D3D_GetCurrentSLIState");
     }
 }

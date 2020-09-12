@@ -1,29 +1,17 @@
-#include "nvapi_private.h"
-#include "impl/nvapi_adapter_registry.h"
-#include "../version.h"
-
-#ifdef __GNUC__
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif // __GNUC__
-
 extern "C" {
     using namespace dxvk;
 
     NvAPI_Status __cdecl NvAPI_Disp_GetHdrCapabilities(NvU32 displayId, NV_HDR_CAPABILITIES *pHdrCapabilities) {
-        std::cerr << "NvAPI_Disp_GetHdrCapabilities " << displayId << ": No implementation" << std::endl;
-        return NVAPI_NO_IMPLEMENTATION;
+        return NoImplementation(str::format("NvAPI_Disp_GetHdrCapabilities ", displayId));
     }
 
     NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char *displayName, NvU32* displayId) {
         auto id = nvapiAdapterRegistry->GetOutputId(std::string(displayName));
-        if (id == -1) {
-            std::cerr << "NvAPI_DISP_GetDisplayIdByDisplayName " << displayName << ": NVAPI_INVALID_ARGUMENT" << std::endl;
-            return NVAPI_INVALID_ARGUMENT;
-        }
+        if (id == -1)
+            return InvalidArgument(str::format("NvAPI_DISP_GetDisplayIdByDisplayName ", displayName));
 
         *displayId = id;
 
-        std::cerr << "NvAPI_DISP_GetDisplayIdByDisplayName " << displayName << ": OK" << std::endl;
-        return NVAPI_OK;
+        return Ok(str::format("NvAPI_DISP_GetDisplayIdByDisplayName ", displayName));
     }
 }

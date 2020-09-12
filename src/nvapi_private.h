@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
