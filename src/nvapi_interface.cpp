@@ -1,5 +1,10 @@
 #include "../inc/nvapi_interface.h"
 #include "nvapi.cpp"
+#include "nvapi_sys.cpp"
+#include "nvapi_disp.cpp"
+#include "nvapi_gpu.cpp"
+#include "nvapi_d3d.cpp"
+#include "nvapi_d3d11.cpp"
 
 #define INSERT_AND_RETURN_WHEN_EQUALS(method) \
     if (std::string(it->func) == #method) \
@@ -32,8 +37,18 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_GetObjectHandleForResource)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_SetResourceHint)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_GetCurrentSLIState)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetGPUType)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetPCIIdentifiers)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetFullName)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Disp_GetHdrCapabilities)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DISP_GetDisplayIdByDisplayName)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_SYS_GetDriverAndBranchVersion)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_EnumLogicalGPUs)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_EnumPhysicalGPUs)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GetDisplayDriverVersion)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GetPhysicalGPUsFromDisplay)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_EnumNvidiaDisplayHandle)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GetInterfaceVersionString)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GetErrorMessage)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Unload)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Initialize)

@@ -3,7 +3,9 @@
 #include <cstddef>
 #include <cstdint>
 
+#include <dxgi.h>
 #include <d3d11_1.h>
+#include <../inc/vulkan_core.h>
 
 #include <iostream>
 #include <algorithm>
@@ -19,7 +21,3 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif // __GNUC__
-
-#include "./dxvk/dxvk_interfaces.h"
-#include "./dxvk/com_pointer.h"
-#include "../version.h"
