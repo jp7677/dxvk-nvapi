@@ -14,7 +14,12 @@ namespace dxvk {
         VkInstance vkInstance = VK_NULL_HANDLE;
         dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &m_vkDevice);
 
-        vkGetPhysicalDeviceProperties(m_vkDevice, &m_deviceProperties);
+        VkPhysicalDeviceProperties2 properties2;
+        properties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        properties2.pNext = nullptr; 
+
+        vkGetPhysicalDeviceProperties2(m_vkDevice, &properties2);
+        m_deviceProperties = properties2.properties;
 
         // TODO: Support other vendors. Currently we depend on a NVIDIA GPU, though we don't do any NVIDIA specific stuff.
         if (m_deviceProperties.vendorID != 0x10de)
