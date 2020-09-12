@@ -2,7 +2,7 @@
 
 #include "../nvapi_private.h"
 #include "../dxvk/dxvk_interfaces.h"
-#include "../dxvk/com_pointer.h"
+#include "../util/com_pointer.h"
 #include "../util/util_string.h"
 
 namespace dxvk {
