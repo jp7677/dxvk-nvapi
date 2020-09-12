@@ -36,6 +36,4 @@ namespace dxvk::str {
         return stream.str();
     }
 
-    std::string tohexs(u_int number);
-
 }

@@ -32,10 +32,4 @@ namespace dxvk::str {
         ::MultiByteToWideChar(CP_UTF8, 0, mbs, -1, &result.at(0), len);
         return result;
     }
-
-    std::string tohexs(u_int number) {
-        std::stringstream sstream;
-        sstream << std::hex << number;
-        return sstream.str();
-    }
 }
