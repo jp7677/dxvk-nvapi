@@ -58,11 +58,11 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_EnumNvidiaDisplayHandle(NvU32 thisEnum, NvDisplayHandle *pNvDispHandle) {
         auto output = nvapiAdapterRegistry->GetOutput(thisEnum);
         if (output == nullptr)
-            return InvalidDisplayId(str::format("NvAPI_EnumNvidiaDisplay", thisEnum));
+            return InvalidDisplayId(str::format("NvAPI_EnumNvidiaDisplayHandle ", thisEnum));
 
         *pNvDispHandle = (NvDisplayHandle) output;
 
-        return Ok("NvAPI_EnumNvidiaDisplayHandle");
+        return Ok(str::format("NvAPI_EnumNvidiaDisplayHandle ", thisEnum));
     }
 
     NvAPI_Status __cdecl NvAPI_GetInterfaceVersionString(NvAPI_ShortString szDesc) {
