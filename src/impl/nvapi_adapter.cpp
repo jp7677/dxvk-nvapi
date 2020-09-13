@@ -14,9 +14,12 @@ namespace dxvk {
         VkInstance vkInstance = VK_NULL_HANDLE;
         dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &m_vkDevice);
 
+        m_devicePciBusProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT;
+        m_devicePciBusProperties.pNext = nullptr;
+
         VkPhysicalDeviceProperties2 properties2;
         properties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-        properties2.pNext = nullptr; 
+        properties2.pNext = &m_devicePciBusProperties;
 
         vkGetPhysicalDeviceProperties2(m_vkDevice, &properties2);
         m_deviceProperties = properties2.properties;
@@ -31,7 +34,7 @@ namespace dxvk {
             VK_VERSION_MINOR(m_deviceProperties.driverVersion >> 0) >> 2,
             VK_VERSION_PATCH(m_deviceProperties.driverVersion >> 2) >> 4);
 
-        std::cerr << "NvAPI Device: " << m_deviceProperties.deviceName << " ("<< std::dec << VK_VERSION_MAJOR(m_vkDriverVersion) << "." << VK_VERSION_MINOR(m_vkDriverVersion) << "." << VK_VERSION_PATCH(m_vkDriverVersion) << ")" << std::endl;
+        std::cerr << "NvAPI Device: " << m_deviceProperties.deviceName << " (" << std::dec << VK_VERSION_MAJOR(m_vkDriverVersion) << "." << VK_VERSION_MINOR(m_vkDriverVersion) << "." << VK_VERSION_PATCH(m_vkDriverVersion) << ")" << std::endl;
 
         // Query all outputs from DXVK (just one, unless the DXVK dxgi-multi-monitor branch is used)
         // Mosaic setup is not supported, thus one display output refers to one GPU
@@ -67,5 +70,9 @@ namespace dxvk {
             return vkDeviceType;
         
         return VK_PHYSICAL_DEVICE_TYPE_OTHER;
+    }
+
+    u_int NvapiAdapter::GetBusId() {
+        return m_devicePciBusProperties.pciBus;
     }
 }

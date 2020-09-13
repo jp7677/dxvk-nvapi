@@ -21,11 +21,13 @@ namespace dxvk {
         u_int GetDriverVersion();
         u_int GetDeviceId();
         u_int GetGpuType();
+        u_int GetBusId();
 
     private:
 
         VkPhysicalDevice m_vkDevice = VK_NULL_HANDLE;
         VkPhysicalDeviceProperties m_deviceProperties;
+        VkPhysicalDevicePCIBusInfoPropertiesEXT m_devicePciBusProperties;
         u_int m_vkDriverVersion;
 
     };

@@ -57,4 +57,22 @@ extern "C" {
 
         return Ok(n);
     }
+
+    NvAPI_Status __cdecl NvAPI_GPU_GetBusId(NvPhysicalGpuHandle hPhysicalGpu, NvU32 *pBusId) {
+        constexpr auto n = "NvAPI_GPU_GetBusId";
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (hPhysicalGpu == 0 || pBusId == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
+        if (adapter ==  nullptr)
+            return ExpectedPhysicalGpuHandle(n);
+
+        *pBusId = adapter->GetBusId();
+
+        return Ok(n);
+    }
 }
