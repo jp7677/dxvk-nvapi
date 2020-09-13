@@ -33,7 +33,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (displayName == nullptr || displayId)
+        if (displayName == nullptr || displayId == nullptr)
             return InvalidArgument(n);
 
         auto id = nvapiAdapterRegistry->GetOutputId(std::string(displayName));
