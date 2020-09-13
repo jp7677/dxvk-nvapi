@@ -1,5 +1,5 @@
 #include "nvapi_private.h"
-#include "impl/nvapi_adapter_registry.h"
+#include "sysinfo/nvapi_adapter_registry.h"
 #include "util/util_statuscode.h"
 #include "util/util_string.h"
 #include "../version.h"

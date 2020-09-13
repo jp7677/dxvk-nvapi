@@ -1,9 +1,9 @@
 nvapi_src = files([
   'dxvk/dxvk_interfaces.cpp',
   'util/util_string.cpp',
-  'impl/nvapi_output.cpp',
-  'impl/nvapi_adapter.cpp',
-  'impl/nvapi_adapter_registry.cpp',
+  'sysinfo/nvapi_output.cpp',
+  'sysinfo/nvapi_adapter.cpp',
+  'sysinfo/nvapi_adapter_registry.cpp',
   'nvapi_interface.cpp',
 ])
 
