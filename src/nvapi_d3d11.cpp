@@ -3,6 +3,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth) {
         constexpr auto n = "NvAPI_D3D11_SetDepthBoundsTest";
+
         static bool alreadyTested = false;
         if (!alreadyTested) {
             alreadyTested = true;
@@ -42,6 +43,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported) {
         constexpr auto n = "NvAPI_D3D11_IsNvShaderExtnOpCodeSupported";
+
         if (pDeviceOrContext == nullptr || supported == nullptr)
                 return InvalidArgument(n);
 

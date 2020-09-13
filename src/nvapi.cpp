@@ -15,6 +15,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_EnumLogicalGPUs(NvLogicalGpuHandle nvGPUHandle[NVAPI_MAX_LOGICAL_GPUS], NvU32 *pGpuCount) {
         constexpr auto n = "NvAPI_EnumLogicalGPUs";
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -31,6 +32,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_EnumPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount) {
         constexpr auto n = "NvAPI_EnumPhysicalGPUs";
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -47,6 +49,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GetDisplayDriverVersion(NvDisplayHandle hNvDisplay, NV_DISPLAY_DRIVER_VERSION *pVersion) {
         constexpr auto n = "NvAPI_GetDisplayDriverVersion";
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -67,6 +70,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GetPhysicalGPUsFromDisplay(NvDisplayHandle hNvDisp, NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount) {
         constexpr auto n = "NvAPI_GetPhysicalGPUsFromDisplay";
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -85,6 +89,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_EnumNvidiaDisplayHandle(NvU32 thisEnum, NvDisplayHandle *pNvDispHandle) {
         constexpr auto n = "NvAPI_EnumNvidiaDisplayHandle";
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -102,6 +107,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GetInterfaceVersionString(NvAPI_ShortString szDesc) {
         constexpr auto n = "NvAPI_GetInterfaceVersionString";
+
         if (szDesc == nullptr)
             return InvalidArgument(n);
 
@@ -112,6 +118,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GetErrorMessage(NvAPI_Status nr, NvAPI_ShortString szDesc) {
         constexpr auto n = "NvAPI_GetErrorMessage";
+
         if (szDesc == nullptr)
             return InvalidArgument(n);
 
@@ -120,6 +127,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_Unload() {
         constexpr auto n = "NvAPI_Unload";
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -130,6 +138,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_Initialize() {
         constexpr auto n = "NvAPI_Initialize";
+
         std::cerr << "DXVK-NVAPI-" << DXVK_NVAPI_VERSION << std::endl;
         nvapiAdapterRegistry = new NvapiAdapterRegistry();
         auto success = nvapiAdapterRegistry->Initialize();

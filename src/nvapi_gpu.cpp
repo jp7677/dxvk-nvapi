@@ -3,6 +3,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetGPUType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_TYPE *pGpuType) {
         constexpr auto n = "NvAPI_GPU_GetGPUType";
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -20,6 +21,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetPCIIdentifiers(NvPhysicalGpuHandle hPhysicalGpu, NvU32 *pDeviceId, NvU32 *pSubSystemId, NvU32 *pRevisionId, NvU32 *pExtDeviceId) {
         constexpr auto n = "NvAPI_GPU_GetPCIIdentifiers";
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -40,6 +42,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetFullName(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szName) {
         constexpr auto n = "NvAPI_GPU_GetFullName";
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 

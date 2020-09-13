@@ -3,6 +3,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_Disp_GetHdrCapabilities(NvU32 displayId, NV_HDR_CAPABILITIES *pHdrCapabilities) {
         constexpr auto n = "NvAPI_Disp_GetHdrCapabilities";
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -28,6 +29,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char *displayName, NvU32* displayId) {
         constexpr auto n = "NvAPI_DISP_GetDisplayIdByDisplayName";
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
