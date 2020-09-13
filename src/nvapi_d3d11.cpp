@@ -18,6 +18,40 @@ extern "C" {
         return success ? Ok() : Error();
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D11_BeginUAVOverlap(IUnknown *pDeviceOrContext) {
+        constexpr auto n = "NvAPI_D3D11_BeginUAVOverlap";
+
+        if (pDeviceOrContext == nullptr)
+            return InvalidArgument(n);
+
+        auto success = NvapiD3d11Device::BeginUAVOverlap(pDeviceOrContext);
+
+        static bool alreadyLogged = false;
+        if (!alreadyLogged) {
+            alreadyLogged = true;
+            return success ? Ok(n) : Error(n);
+        }
+
+        return success ? Ok() : Error();
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_EndUAVOverlap(IUnknown *pDeviceOrContext) {
+        constexpr auto n = "NvAPI_D3D11_EndUAVOverlap";
+
+        if (pDeviceOrContext == nullptr)
+            return InvalidArgument(n);
+
+        auto success = NvapiD3d11Device::EndUAVOverlap(pDeviceOrContext);
+
+        static bool alreadyLogged = false;
+        if (!alreadyLogged) {
+            alreadyLogged = true;
+            return success ? Ok(n) : Error(n);
+        }
+
+        return success ? Ok() : Error();
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported) {
         constexpr auto n = "NvAPI_D3D11_IsNvShaderExtnOpCodeSupported";
 

@@ -33,6 +33,8 @@ extern "C" {
         // This block will be validated for completeness when running package-release.sh. Do not remove the comments.
         /* Start NVAPI methods */
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_SetDepthBoundsTest)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_BeginUAVOverlap)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_EndUAVOverlap)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_GetObjectHandleForResource)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_SetResourceHint)

@@ -3,29 +3,72 @@
 namespace dxvk {
     bool NvapiD3d11Device::SetDepthBoundsTest(IUnknown* device, u_int enable, float minDepth, float maxDepth) {
         static bool alreadyTested = false;
-        if (!alreadyTested) {
-            alreadyTested = true;
+        if (!IsSupportedExtension(device, D3D11_VK_EXT_DEPTH_BOUNDS, &alreadyTested))
+            return false;
 
-            Com<ID3D11VkExtDevice> dxvkDevice;
-            if (FAILED(device->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
-                return false;
+        Com<ID3D11VkExtContext> dxvkDeviceContext = GetDxvkDeviceContext(device);
+        if (dxvkDeviceContext == nullptr)
+            return false;
 
-            if (!dxvkDevice->GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
-                return false;
-        }
+        dxvkDeviceContext->SetDepthBoundsTest(enable, minDepth, maxDepth);
+        return true;
+    }
 
+    bool NvapiD3d11Device::BeginUAVOverlap(IUnknown* device) {
+        static bool alreadyTested = false;
+        if (!IsSupportedExtension(device, D3D11_VK_EXT_BARRIER_CONTROL, &alreadyTested))
+            return false;
+
+
+        Com<ID3D11VkExtContext> dxvkDeviceContext = GetDxvkDeviceContext(device);
+        if (dxvkDeviceContext == nullptr)
+            return false;
+
+        dxvkDeviceContext->SetBarrierControl(D3D11_VK_BARRIER_CONTROL_IGNORE_WRITE_AFTER_WRITE);
+        return true;
+    }
+
+    bool NvapiD3d11Device::EndUAVOverlap(IUnknown* device) {
+        static bool alreadyTested = false;
+        if (!IsSupportedExtension(device, D3D11_VK_EXT_BARRIER_CONTROL, &alreadyTested))
+            return false;
+
+        Com<ID3D11VkExtContext> dxvkDeviceContext = GetDxvkDeviceContext(device);
+        if (dxvkDeviceContext == nullptr)
+            return false;
+
+        dxvkDeviceContext->SetBarrierControl(0);
+        return true;
+    }
+
+    bool NvapiD3d11Device::IsSupportedExtension(IUnknown* device, D3D11_VK_EXTENSION extension, bool* alreadyTested) {
+        if (*alreadyTested)
+            return true;
+
+        *alreadyTested = true;
+
+        Com<ID3D11VkExtDevice> dxvkDevice;
+        if (FAILED(device->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
+            return false;
+
+        if (!dxvkDevice->GetExtensionSupport(extension))
+            return false;
+
+        return true;
+    }
+
+    Com<ID3D11VkExtContext> NvapiD3d11Device::GetDxvkDeviceContext(IUnknown* device) {
         Com<ID3D11Device> d3d11Device;
         if (FAILED(device->QueryInterface(IID_PPV_ARGS(&d3d11Device))))
-            return false;
+            return nullptr;
 
         Com<ID3D11DeviceContext> d3d11DeviceContext;
         d3d11Device->GetImmediateContext(&d3d11DeviceContext);
 
         Com<ID3D11VkExtContext> dxvkDeviceContext;
         if (FAILED(d3d11DeviceContext->QueryInterface(IID_PPV_ARGS(&dxvkDeviceContext))))
-            return false;
+            return nullptr;
 
-        dxvkDeviceContext->SetDepthBoundsTest(enable, minDepth, maxDepth);
-        return true;
+        return dxvkDeviceContext;
     }
 }
