@@ -38,6 +38,6 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported) {
         *supported = false;
 
-        return Ok(str::format("NvAPI_D3D11_IsNvShaderExtnOpCodeSupported ", std::hex, code));
+        return Ok(str::format("NvAPI_D3D11_IsNvShaderExtnOpCodeSupported ", code));
     }
 }
