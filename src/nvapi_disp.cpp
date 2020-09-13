@@ -2,14 +2,15 @@ extern "C" {
     using namespace dxvk;
 
     NvAPI_Status __cdecl NvAPI_Disp_GetHdrCapabilities(NvU32 displayId, NV_HDR_CAPABILITIES *pHdrCapabilities) {
+        constexpr auto n = "NvAPI_Disp_GetHdrCapabilities";
         if (nvapiAdapterRegistry == nullptr)
-            return ApiNotInitialized("NvAPI_Disp_GetHdrCapabilities");
+            return ApiNotInitialized(n);
 
         if (pHdrCapabilities == nullptr)
-            return InvalidArgument("NvAPI_Disp_GetHdrCapabilities");
+            return InvalidArgument(n);
 
         if (pHdrCapabilities->version != NV_HDR_CAPABILITIES_VER1 && pHdrCapabilities->version != NV_HDR_CAPABILITIES_VER2)
-            return IncompatibleStructVersion("NvAPI_Disp_GetHdrCapabilities");
+            return IncompatibleStructVersion(n);
 
         pHdrCapabilities->isST2084EotfSupported = false;
         pHdrCapabilities->isTraditionalHdrGammaSupported = false;
@@ -22,22 +23,23 @@ extern "C" {
             pHdrCapabilities->isDolbyVisionSupported = false;
             // pHdrCapabilities->dv_static_metadata
 
-        return Ok(str::format("NvAPI_Disp_GetHdrCapabilities ", displayId));
+        return Ok(str::format(n, " ", displayId));
     }
 
     NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char *displayName, NvU32* displayId) {
+        constexpr auto n = "NvAPI_DISP_GetDisplayIdByDisplayName";
         if (nvapiAdapterRegistry == nullptr)
-            return ApiNotInitialized("NvAPI_DISP_GetDisplayIdByDisplayName");
+            return ApiNotInitialized(n);
 
         if (displayName == nullptr || displayId)
-            return InvalidArgument("NvAPI_DISP_GetDisplayIdByDisplayName");
+            return InvalidArgument(n);
 
         auto id = nvapiAdapterRegistry->GetOutputId(std::string(displayName));
         if (id == -1)
-            return InvalidArgument(str::format("NvAPI_DISP_GetDisplayIdByDisplayName ", displayName));
+            return InvalidArgument(str::format(n, " ", displayName));
 
         *displayId = id;
 
-        return Ok(str::format("NvAPI_DISP_GetDisplayIdByDisplayName ", displayName));
+        return Ok(str::format(n, " ", displayName));
     }
 }
