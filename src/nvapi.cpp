@@ -1,5 +1,6 @@
 #include "nvapi_private.h"
 #include "sysinfo/nvapi_adapter_registry.h"
+#include "d3d11/nvapi_d3d11_device.h"
 #include "util/util_statuscode.h"
 #include "util/util_string.h"
 #include "../version.h"
@@ -143,8 +144,7 @@ extern "C" {
 
         nvapiAdapterRegistry = new NvapiAdapterRegistry();
         auto success = nvapiAdapterRegistry->Initialize();
-        return success
-            ? Ok(n)
-            : NvidiaDeviceNotFound(n);
+
+        return success ? Ok(n) : NvidiaDeviceNotFound(n);
     }
 }
