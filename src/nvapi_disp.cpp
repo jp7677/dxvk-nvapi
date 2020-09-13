@@ -2,8 +2,14 @@ extern "C" {
     using namespace dxvk;
 
     NvAPI_Status __cdecl NvAPI_Disp_GetHdrCapabilities(NvU32 displayId, NV_HDR_CAPABILITIES *pHdrCapabilities) {
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized("NvAPI_Disp_GetHdrCapabilities");
+
+        if (pHdrCapabilities == nullptr)
+            return InvalidArgument("NvAPI_Disp_GetHdrCapabilities");
+
         if (pHdrCapabilities->version != NV_HDR_CAPABILITIES_VER1 && pHdrCapabilities->version != NV_HDR_CAPABILITIES_VER2)
-            return IncompatibleStructVersion(str::format("NvAPI_Disp_GetHdrCapabilities ", displayId));
+            return IncompatibleStructVersion("NvAPI_Disp_GetHdrCapabilities");
 
         pHdrCapabilities->isST2084EotfSupported = false;
         pHdrCapabilities->isTraditionalHdrGammaSupported = false;
@@ -20,6 +26,12 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char *displayName, NvU32* displayId) {
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized("NvAPI_DISP_GetDisplayIdByDisplayName");
+
+        if (displayName == nullptr || displayId)
+            return InvalidArgument("NvAPI_DISP_GetDisplayIdByDisplayName");
+
         auto id = nvapiAdapterRegistry->GetOutputId(std::string(displayName));
         if (id == -1)
             return InvalidArgument(str::format("NvAPI_DISP_GetDisplayIdByDisplayName ", displayName));

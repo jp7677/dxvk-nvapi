@@ -5,6 +5,10 @@ extern "C" {
         static bool alreadyTested = false;
         if (!alreadyTested) {
             alreadyTested = true;
+
+            if (pDeviceOrContext == nullptr)
+                return InvalidArgument("NvAPI_D3D11_SetDepthBoundsTest");
+
             Com<ID3D11VkExtDevice> dxvkDevice;
             if (FAILED(pDeviceOrContext->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
                 return Error("NvAPI_D3D11_SetDepthBoundsTest");
@@ -32,10 +36,13 @@ extern "C" {
             return Ok("NvAPI_D3D11_SetDepthBoundsTest");
         }
 
-        return NVAPI_OK;
+        return Ok();
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported) {
+        if (pDeviceOrContext == nullptr || supported == nullptr)
+                return InvalidArgument("NvAPI_D3D11_IsNvShaderExtnOpCodeSupported");
+
         *supported = false;
 
         return Ok(str::format("NvAPI_D3D11_IsNvShaderExtnOpCodeSupported ", code));

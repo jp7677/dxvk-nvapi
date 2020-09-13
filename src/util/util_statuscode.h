@@ -1,6 +1,10 @@
 #pragma once
 
 namespace dxvk {
+    inline NvAPI_Status Ok() {
+        return NVAPI_OK;
+    }
+
     inline NvAPI_Status Ok(std::string logMessage) {
         std::cerr << logMessage << ": OK" << std::endl;
         return NVAPI_OK;
@@ -11,9 +15,18 @@ namespace dxvk {
         return NVAPI_ERROR;
     }
 
+    inline NvAPI_Status NoImplementation() {
+        return NVAPI_NO_IMPLEMENTATION;
+    }
+
     inline NvAPI_Status NoImplementation(std::string logMessage) {
         std::cerr << logMessage << ": No implementation" << std::endl;
         return NVAPI_NO_IMPLEMENTATION;
+    }
+
+    inline NvAPI_Status ApiNotInitialized(std::string logMessage) {
+        std::cerr << logMessage << ": API not initialized" << std::endl;
+        return NVAPI_API_NOT_INTIALIZED;
     }
 
     inline NvAPI_Status InvalidArgument(std::string logMessage) {
