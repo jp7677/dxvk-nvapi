@@ -52,6 +52,40 @@ extern "C" {
         return success ? Ok() : Error();
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D11_MultiDrawInstancedIndirect(ID3D11DeviceContext *pDevContext11, NvU32 drawCount, ID3D11Buffer *pBuffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs) {
+        constexpr auto n = "NvAPI_D3D11_MultiDrawInstancedIndirect";
+
+        if (pDevContext11 == nullptr || pBuffer == nullptr)
+            return InvalidArgument(n);
+
+        auto success = NvapiD3d11Device::MultiDrawInstancedIndirect(pDevContext11, drawCount, pBuffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
+
+        static bool alreadyLogged = false;
+        if (!alreadyLogged) {
+            alreadyLogged = true;
+            return success ? Ok(n) : Error(n);
+        }
+
+        return success ? Ok() : Error();
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(ID3D11DeviceContext *pDevContext11, NvU32 drawCount, ID3D11Buffer *pBuffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs) {
+        constexpr auto n = "NvAPI_D3D11_MultiDrawIndexedInstancedIndirect";
+
+        if (pDevContext11 == nullptr || pBuffer == nullptr)
+            return InvalidArgument(n);
+
+        auto success = NvapiD3d11Device::MultiDrawIndexedInstancedIndirect(pDevContext11, drawCount, pBuffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
+
+        static bool alreadyLogged = false;
+        if (!alreadyLogged) {
+            alreadyLogged = true;
+            return success ? Ok(n) : Error(n);
+        }
+
+        return success ? Ok() : Error();
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported) {
         constexpr auto n = "NvAPI_D3D11_IsNvShaderExtnOpCodeSupported";
 

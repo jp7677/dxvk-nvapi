@@ -41,6 +41,32 @@ namespace dxvk {
         return true;
     }
 
+    bool NvapiD3d11Device::MultiDrawInstancedIndirect(ID3D11DeviceContext *context, NvU32 drawCount, ID3D11Buffer *buffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs) {
+        static bool alreadyTested = false;
+        if (!IsSupportedExtension(context, D3D11_VK_EXT_MULTI_DRAW_INDIRECT, &alreadyTested))
+            return false;
+
+        Com<ID3D11VkExtContext> dxvkDeviceContext = GetDxvkDeviceContext(context);
+        if (dxvkDeviceContext == nullptr)
+            return false;
+
+        dxvkDeviceContext->MultiDrawIndirect(drawCount, buffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
+        return true;
+    }
+
+    bool NvapiD3d11Device::MultiDrawIndexedInstancedIndirect(ID3D11DeviceContext *context, NvU32 drawCount, ID3D11Buffer *buffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs) {
+        static bool alreadyTested = false;
+        if (!IsSupportedExtension(context, D3D11_VK_EXT_MULTI_DRAW_INDIRECT, &alreadyTested))
+            return false;
+
+        Com<ID3D11VkExtContext> dxvkDeviceContext = GetDxvkDeviceContext(context);
+        if (dxvkDeviceContext == nullptr)
+            return false;
+
+        dxvkDeviceContext->MultiDrawIndexedIndirect(drawCount, buffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
+        return true;
+    }
+
     bool NvapiD3d11Device::IsSupportedExtension(IUnknown* device, D3D11_VK_EXTENSION extension, bool* alreadyTested) {
         if (*alreadyTested)
             return true;
