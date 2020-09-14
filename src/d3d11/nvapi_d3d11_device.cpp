@@ -19,7 +19,6 @@ namespace dxvk {
         if (!IsSupportedExtension(device, D3D11_VK_EXT_BARRIER_CONTROL, &alreadyTested))
             return false;
 
-
         Com<ID3D11VkExtContext> dxvkDeviceContext = GetDxvkDeviceContext(device);
         if (dxvkDeviceContext == nullptr)
             return false;
