@@ -37,7 +37,6 @@ extern "C" {
             return InvalidArgument(n);
 
         auto success = NvapiD3d11Device::EndUAVOverlap(pDeviceOrContext);
-
         if (!success)
             return Error(n, &alreadyLogged);
 
