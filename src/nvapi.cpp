@@ -144,7 +144,9 @@ extern "C" {
 
         nvapiAdapterRegistry = new NvapiAdapterRegistry();
         auto success = nvapiAdapterRegistry->Initialize();
+        if (!success)
+            return NvidiaDeviceNotFound(n);
 
-        return success ? Ok(n) : NvidiaDeviceNotFound(n);
+        return Ok(n);
     }
 }

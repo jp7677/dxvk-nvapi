@@ -10,11 +10,31 @@ namespace dxvk {
         return NVAPI_OK;
     }
 
+    inline NvAPI_Status Ok(std::string logMessage, bool* alreadyLogged) {
+        if (*alreadyLogged)
+            return NVAPI_OK;
+
+        *alreadyLogged = true;
+
+        std::cerr << logMessage << ": OK" << std::endl;
+        return NVAPI_OK;
+    }
+
     inline NvAPI_Status Error() {
         return NVAPI_ERROR;
     }
 
     inline NvAPI_Status Error(std::string logMessage) {
+        std::cerr << logMessage << ": Error" << std::endl;
+        return NVAPI_ERROR;
+    }
+
+    inline NvAPI_Status Error(std::string logMessage, bool* alreadyLogged) {
+        if (*alreadyLogged)
+            return NVAPI_ERROR;
+
+        *alreadyLogged = true;
+
         std::cerr << logMessage << ": Error" << std::endl;
         return NVAPI_ERROR;
     }
