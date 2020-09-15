@@ -21,9 +21,9 @@ namespace dxvk {
         for (auto i = 0U; dxgiFactory->EnumAdapters(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; i++) {
             auto nvapiAdapter = new NvapiAdapter();
             auto success = nvapiAdapter->Initialize(dxgiAdapter, &m_nvapiOutputs);
-            if (success) {
+            if (success)
                 m_nvapiAdapters.push_back(nvapiAdapter);
-            } else
+            else
                 delete (nvapiAdapter);
         }
 
@@ -77,10 +77,9 @@ namespace dxvk {
     }
 
     short NvapiAdapterRegistry::GetOutputId(std::string displayName) {
-        for (auto i = 0U; i <= m_nvapiOutputs.size(); i++) {
+        for (auto i = 0U; i <= m_nvapiOutputs.size(); i++)
             if (m_nvapiOutputs.at(i)->GetDeviceName() == displayName)
                 return i;
-        }
 
         return -1;
     }
