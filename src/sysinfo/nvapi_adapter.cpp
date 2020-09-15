@@ -17,12 +17,19 @@ namespace dxvk {
         m_devicePciBusProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT;
         m_devicePciBusProperties.pNext = nullptr;
 
-        VkPhysicalDeviceProperties2 properties2;
-        properties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-        properties2.pNext = &m_devicePciBusProperties;
+        VkPhysicalDeviceProperties2 deviceProperties2;
+        deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        deviceProperties2.pNext = &m_devicePciBusProperties;
 
-        vkGetPhysicalDeviceProperties2(m_vkDevice, &properties2);
-        m_deviceProperties = properties2.properties;
+        vkGetPhysicalDeviceProperties2(m_vkDevice, &deviceProperties2);
+        m_deviceProperties = deviceProperties2.properties;
+
+        VkPhysicalDeviceMemoryProperties2 memoryProperties2;
+        memoryProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
+        memoryProperties2.pNext = nullptr;
+
+        vkGetPhysicalDeviceMemoryProperties2(m_vkDevice, &memoryProperties2);
+        m_memoryProperties = memoryProperties2.memoryProperties;
 
         // TODO: Support other vendors. Currently we depend on a NVIDIA GPU, though we don't do any NVIDIA specific stuff.
         if (m_deviceProperties.vendorID != 0x10de)
@@ -74,5 +81,17 @@ namespace dxvk {
 
     u_int NvapiAdapter::GetBusId() {
         return m_devicePciBusProperties.pciBus;
+    }
+
+    u_int NvapiAdapter::GetVRamSize() {
+        // Not sure if it is completely correct to just look at the first DEVICE_LOCAL heap,
+        // but it seems to give the correct result.
+        for (auto i = 0U; i < m_memoryProperties.memoryHeapCount; i++) {
+            VkMemoryHeap heap = m_memoryProperties.memoryHeaps[i];
+            if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
+                return heap.size / 1024;
+        }
+
+        return 0;
     }
 }

@@ -75,4 +75,22 @@ extern "C" {
 
         return Ok(n);
     }
+
+    NvAPI_Status __cdecl NvAPI_GPU_GetPhysicalFrameBufferSize(NvPhysicalGpuHandle hPhysicalGpu,NvU32 *pSize) {
+        constexpr auto n = "NvAPI_GPU_GetPhysicalFrameBufferSize";
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pSize == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
+        if (adapter ==  nullptr)
+            return ExpectedPhysicalGpuHandle(n);
+
+        *pSize = adapter->GetVRamSize();
+
+        return Ok(n);
+    }
 }
