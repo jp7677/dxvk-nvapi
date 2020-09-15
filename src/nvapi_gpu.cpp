@@ -35,7 +35,7 @@ extern "C" {
         *pDeviceId = adapter->GetDeviceId();
         *pSubSystemId = 0;
         *pRevisionId = 0;
-        *pExtDeviceId = adapter->GetDeviceId();
+        *pExtDeviceId = 0;
 
         return Ok(n);
     }
