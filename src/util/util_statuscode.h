@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../nvapi_private.h"
+
 namespace dxvk {
     inline NvAPI_Status Ok() {
         return NVAPI_OK;
