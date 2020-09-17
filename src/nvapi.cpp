@@ -75,7 +75,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hNvDisp == 0 || nvGPUHandle == nullptr || pGpuCount == nullptr)
+        if (hNvDisp == nullptr || nvGPUHandle == nullptr || pGpuCount == nullptr)
             return InvalidArgument(n);
 
         auto output = nvapiAdapterRegistry->GetOutput(hNvDisp);

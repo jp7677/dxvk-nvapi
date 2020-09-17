@@ -7,7 +7,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == 0 || pGpuType == nullptr)
+        if (hPhysicalGpu == nullptr || pGpuType == nullptr)
             return InvalidArgument(n);
 
         auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
@@ -25,7 +25,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == 0 || pDeviceId == nullptr || pSubSystemId == nullptr || pRevisionId == nullptr || pExtDeviceId == nullptr)
+        if (hPhysicalGpu == nullptr || pDeviceId == nullptr || pSubSystemId == nullptr || pRevisionId == nullptr || pExtDeviceId == nullptr)
             return InvalidArgument(n);
 
         auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
@@ -46,7 +46,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == 0 || szName == nullptr)
+        if (hPhysicalGpu == nullptr || szName == nullptr)
             return InvalidArgument(n);
 
         auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
@@ -64,7 +64,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == 0 || pBusId == nullptr)
+        if (hPhysicalGpu == nullptr || pBusId == nullptr)
             return InvalidArgument(n);
 
         auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
