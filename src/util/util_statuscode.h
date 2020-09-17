@@ -50,6 +50,16 @@ namespace dxvk {
         return NVAPI_NO_IMPLEMENTATION;
     }
 
+    inline NvAPI_Status NoImplementation(std::string logMessage, bool* alreadyLogged) {
+        if (*alreadyLogged)
+            return NVAPI_NO_IMPLEMENTATION;
+
+        *alreadyLogged = true;
+
+        std::cerr << logMessage << ": No implementation" << std::endl;
+        return NVAPI_NO_IMPLEMENTATION;
+    }
+
     inline NvAPI_Status ApiNotInitialized(std::string logMessage) {
         std::cerr << logMessage << ": API not initialized" << std::endl;
         return NVAPI_API_NOT_INTIALIZED;

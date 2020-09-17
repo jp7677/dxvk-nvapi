@@ -5,24 +5,14 @@ extern "C" {
         constexpr auto n = "NvAPI_D3D_GetObjectHandleForResource";
 
         static bool alreadyLogged = false;
-        if (!alreadyLogged) {
-            alreadyLogged = true;
-            return NoImplementation(n);
-        }
-
-        return NoImplementation();
+        return NoImplementation(n, &alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_SetResourceHint(IUnknown *pDev, NVDX_ObjectHandle obj, NVAPI_D3D_SETRESOURCEHINT_CATEGORY dwHintCategory, NvU32 dwHintName, NvU32 *pdwHintValue) {
         constexpr auto n = "NvAPI_D3D_SetResourceHint";
 
         static bool alreadyLogged = false;
-        if (!alreadyLogged) {
-            alreadyLogged = true;
-            return NoImplementation(n);
-        }
-
-        return NoImplementation();
+        return NoImplementation(n, &alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_GetCurrentSLIState(IUnknown* pDevice, NV_GET_CURRENT_SLI_STATE* pSliState) {
