@@ -32,7 +32,7 @@ IDXGIVkInteropAdapter : public IUnknown {
 
     /**
      * \brief Queries Vulkan handles used by DXVK
-     * 
+     *
      * \param [out] pInstance The Vulkan instance
      * \param [out] pPhysDev The physical device
      */
@@ -44,10 +44,10 @@ IDXGIVkInteropAdapter : public IUnknown {
 MIDL_INTERFACE("8a6e3c42-f74c-45b7-8265-a231b677ca17")
 ID3D11VkExtDevice : public IUnknown {
     static const GUID guid;
-  
+
     /**
      * \brief Checks whether an extension is supported
-     * 
+     *
      * \param [in] Extension The extension to check
      * \returns \c TRUE if the extension is supported
      */
@@ -58,19 +58,19 @@ ID3D11VkExtDevice : public IUnknown {
 MIDL_INTERFACE("fd0bca13-5cb6-4c3a-987e-4750de2ca791")
 ID3D11VkExtContext : public IUnknown {
     static const GUID guid;
-  
+
     virtual void STDMETHODCALLTYPE MultiDrawIndirect(
         UINT                    DrawCount,
         ID3D11Buffer*           pBufferForArgs,
         UINT                    ByteOffsetForArgs,
         UINT                    ByteStrideForArgs) = 0;
-  
+
     virtual void STDMETHODCALLTYPE MultiDrawIndexedIndirect(
         UINT                    DrawCount,
         ID3D11Buffer*           pBufferForArgs,
         UINT                    ByteOffsetForArgs,
         UINT                    ByteStrideForArgs) = 0;
-  
+
     virtual void STDMETHODCALLTYPE MultiDrawIndirectCount(
         UINT                    MaxDrawCount,
         ID3D11Buffer*           pBufferForCount,
@@ -78,7 +78,7 @@ ID3D11VkExtContext : public IUnknown {
         ID3D11Buffer*           pBufferForArgs,
         UINT                    ByteOffsetForArgs,
         UINT                    ByteStrideForArgs) = 0;
-  
+
     virtual void STDMETHODCALLTYPE MultiDrawIndexedIndirectCount(
         UINT                    MaxDrawCount,
         ID3D11Buffer*           pBufferForCount,
@@ -86,12 +86,12 @@ ID3D11VkExtContext : public IUnknown {
         ID3D11Buffer*           pBufferForArgs,
         UINT                    ByteOffsetForArgs,
         UINT                    ByteStrideForArgs) = 0;
-  
+
   virtual void STDMETHODCALLTYPE SetDepthBoundsTest(
         BOOL                    Enable,
         FLOAT                   MinDepthBounds,
         FLOAT                   MaxDepthBounds) = 0;
-  
+
   virtual void STDMETHODCALLTYPE SetBarrierControl(
         UINT                    ControlFlags) = 0;
 };

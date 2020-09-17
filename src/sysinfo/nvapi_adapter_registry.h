@@ -15,7 +15,7 @@ namespace dxvk {
         ~NvapiAdapterRegistry();
 
         bool Initialize();
-        
+
         u_short GetAdapterCount();
         NvapiAdapter* GetAdapter();
         NvapiAdapter* GetAdapter(u_short index);
@@ -25,7 +25,7 @@ namespace dxvk {
         NvapiOutput* GetOutput(u_short index);
         NvapiOutput* GetOutput(NvDisplayHandle handle);
         short GetOutputId(std::string displayName);
-    
+
     private:
 
         std::vector<NvapiAdapter*> m_nvapiAdapters;

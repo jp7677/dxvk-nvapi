@@ -43,7 +43,7 @@ namespace dxvk {
 
         std::cerr << str::format("NvAPI Device: ", m_deviceProperties.deviceName, " (",
             VK_VERSION_MAJOR(m_vkDriverVersion), ".",
-            VK_VERSION_MINOR(m_vkDriverVersion), ".", 
+            VK_VERSION_MINOR(m_vkDriverVersion), ".",
             VK_VERSION_PATCH(m_vkDriverVersion),
             ")") << std::endl;
 
@@ -67,7 +67,7 @@ namespace dxvk {
         // Windows releases can only ever have a two digit minor version
         // and does not have a patch number
         return VK_VERSION_MAJOR(m_vkDriverVersion) * 100 +
-            std::min(VK_VERSION_MINOR(m_vkDriverVersion), (u_int)99); 
+            std::min(VK_VERSION_MINOR(m_vkDriverVersion), (u_int)99);
     }
 
     u_int NvapiAdapter::GetDeviceId() {
@@ -79,7 +79,7 @@ namespace dxvk {
         VkPhysicalDeviceType vkDeviceType = m_deviceProperties.deviceType;
         if (vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
             return vkDeviceType;
-        
+
         return VK_PHYSICAL_DEVICE_TYPE_OTHER;
     }
 

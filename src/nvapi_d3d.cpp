@@ -21,7 +21,7 @@ extern "C" {
             alreadyLogged = true;
             return NoImplementation(n);
         }
-        
+
         return NoImplementation();
     }
 

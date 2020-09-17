@@ -12,11 +12,11 @@ namespace dxvk {
     }
 
     bool NvapiAdapterRegistry::Initialize() {
-        Com<IDXGIFactory> dxgiFactory; 
+        Com<IDXGIFactory> dxgiFactory;
         if(FAILED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgiFactory)))
             return false;
 
-        // Query all D3D11 adapter from DXVK to honor any DXVK device filtering 
+        // Query all D3D11 adapter from DXVK to honor any DXVK device filtering
         Com<IDXGIAdapter> dxgiAdapter;
         for (auto i = 0U; dxgiFactory->EnumAdapters(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; i++) {
             auto nvapiAdapter = new NvapiAdapter();
