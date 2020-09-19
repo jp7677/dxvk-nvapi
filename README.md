@@ -14,13 +14,17 @@ It also implements some methods for adapater/display tolopogy and system informa
 
 This implemenation has mostly been tested against Unreal Engine 4, mostly the game Assetto Corsa Competizione and several UE4 technology demos. Unreal Engine 4 utilizes `SetDepthBoundsTest`, it may yield something like 1% extra performance which seems to be the norm when `Depth bounds test` is used.
 
-The 32bits version of this implementation has been briefly tested with the Monster Hunter Official Benchmark where it also yields a similar small gain in performance.
+The 32bits version of this implementation has been briefly tested with the `Monster Hunter Official Benchmark` where it also yields a similar small gain in performance.
 
 Basic topology and system information (vendor ID, driver version etc) has been tested with `GPU Caps Viewer` and `GPU-Shark`.
 
+## Requirements
+
+This implementation uses several DXVK extension points, thus using DXVK is a hard requirements. Using Wine's D3D11 implemenation will fail. Initialization of this implemention currently fails when no NVIDIA card is exposed through DXVK. This might change since no specific NVIDIA features are used. Please leave a note in the issue tracker if it makes sense to change this requirement.
+
 ## How to build
 
-Like DXVK, this library is being built as a Windows DLL using MinGW, and has essentially the same build requirements. Development of DXVK-NVAPI is done with MinGW 7, older version might fail.
+Like DXVK, this library is being built as a Windows DLL using MinGW, and has essentially the same build requirements. Development of DXVK-NVAPI is done with MinGW 7, older versions might fail.
 
 Run:
 
