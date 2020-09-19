@@ -2,7 +2,7 @@
 
 ## Experimental non-complete NVAPI implementation on top of [DXVK](https://github.com/doitsujin/dxvk)
 
-This [repository](https://github.com/jp7677/dxvk-nvapi) provides a basic alternative implementation of the NVAPI extensions for DXVK. It is mostly a direct copy DXVK-AGS, but adjusted for NVAPI.
+This [repository](https://github.com/jp7677/dxvk-nvapi) provides a basic alternative implementation of the NVAPI extensions for DXVK. It is mostly a direct copy of DXVK-AGS, but adjusted for NVAPI.
 
 This implementation currently forwards the following NVAPI D3D11 features to DXVK:
 
@@ -10,9 +10,9 @@ This implementation currently forwards the following NVAPI D3D11 features to DXV
 - `BeginUAVOverlap`/`EndUAVOverlap`
 - `MultiDrawInstancedIndirect`/`MultiDrawIndexedInstancedIndirect`
 
-It also implements some methods for adapater/display tolopogy and system information.
+It also implements some methods for adapter/display topology and system information.
 
-This implemenation has been tested against Unreal Engine 4, mostly the game `Assetto Corsa Competizione` and several UE4 technology demos. Unreal Engine 4 utilizes `SetDepthBoundsTest`, it may yield like 1% extra performance which seems to be the norm when `Depth bounds test` is used.
+This implementation has been tested with Unreal Engine 4, mostly the game `Assetto Corsa Competizione` and several UE4 technology demos. Unreal Engine 4 utilizes `SetDepthBoundsTest`, it may yield like 1% extra performance which seems to be the norm when `Depth bounds test` is used.
 
 The 32bits version of this implementation has been briefly tested with the `Monster Hunter Official Benchmark` where it also yields a similar small gain in performance.
 
@@ -20,7 +20,7 @@ Basic topology and system information (vendor ID, driver version etc) has been t
 
 ## Requirements
 
-This implementation uses several DXVK extension points, thus using DXVK is a requirements. Using Wine's D3D11 implemenation will fail. Initialization of this implemention currently fails when no NVIDIA card is exposed through DXVK. Please leave a note in the issue tracker if it makes sense to change this requirement since no specific NVIDIA hardware features are used.
+This implementation uses several DXVK extension points, thus using DXVK is a requirements. Using Wine's D3D11 will fail. Initialization of NVAPI-DXVK currently fails when no NVIDIA card is exposed through DXVK. Please leave a note in the issue tracker if it makes sense to change this requirement since no specific NVIDIA hardware features are needed.
 
 ## How to build
 
@@ -49,4 +49,4 @@ Pre-built binaries are available at [https://github.com/jp7677/dxvk-nvapi/releas
 - [NVAPI Open Source SDK](http://download.nvidia.com/XFree86/nvapi-open-source-sdk/)
 - [https://github.com/SveSop/nvapi_standalone](https://github.com/SveSop/nvapi_standalone)
 
-Many thanks to the coresponding authors!
+Many thanks to the corresponding authors!
