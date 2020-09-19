@@ -13,6 +13,7 @@ extern "C" {
         if (pHdrCapabilities->version != NV_HDR_CAPABILITIES_VER1 && pHdrCapabilities->version != NV_HDR_CAPABILITIES_VER2)
             return IncompatibleStructVersion(n);
 
+        // Report that HDR is not available
         pHdrCapabilities->isST2084EotfSupported = false;
         pHdrCapabilities->isTraditionalHdrGammaSupported = false;
         pHdrCapabilities->isEdrSupported = false;

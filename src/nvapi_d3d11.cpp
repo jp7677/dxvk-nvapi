@@ -77,6 +77,7 @@ extern "C" {
         if (pDeviceOrContext == nullptr || supported == nullptr)
                 return InvalidArgument(n);
 
+        // DXVK does not know any special NVIDIA intrinsics
         *supported = false;
 
         return Ok(str::format(n, " ", code));

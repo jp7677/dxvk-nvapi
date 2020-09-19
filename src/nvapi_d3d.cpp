@@ -24,7 +24,7 @@ extern "C" {
         if (pSliState->version != NV_GET_CURRENT_SLI_STATE_VER1 && pSliState->version != NV_GET_CURRENT_SLI_STATE_VER2)
             return IncompatibleStructVersion(n);
 
-        // Report that SLI is not enabled
+        // Report that SLI is not available
         pSliState->maxNumAFRGroups = 1;
         pSliState->numAFRGroups = 1;
         pSliState->currentAFRIndex = 0;

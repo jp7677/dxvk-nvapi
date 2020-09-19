@@ -41,7 +41,7 @@ namespace dxvk {
             VK_VERSION_MINOR(m_deviceProperties.driverVersion >> 0) >> 2,
             VK_VERSION_PATCH(m_deviceProperties.driverVersion >> 2) >> 4);
 
-        std::cerr << str::format("NvAPI Device: ", m_deviceProperties.deviceName, " (",
+        std::cerr << str::format("NvAPI Device:", " ", m_deviceProperties.deviceName, " (",
             VK_VERSION_MAJOR(m_vkDriverVersion), ".",
             VK_VERSION_MINOR(m_vkDriverVersion), ".",
             VK_VERSION_PATCH(m_vkDriverVersion),

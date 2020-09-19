@@ -12,7 +12,7 @@ namespace dxvk {
         dxgiOutput->GetDesc(&desc);
 
         m_deviceName = str::fromws(desc.DeviceName);
-        std::cerr << str::format("NvAPI Output: ", m_deviceName) << std::endl;
+        std::cerr << str::format("NvAPI Output:", " ", m_deviceName) << std::endl;
     }
 
     uintptr_t NvapiOutput::GetParent() {
