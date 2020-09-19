@@ -1,12 +1,22 @@
 # [DXVK-NVAPI](https://github.com/jp7677/dxvk-nvapi)
 
-## Experimental non-complete NVAPI D3D11 implementation for [DXVK](https://github.com/doitsujin/dxvk)
+## Experimental non-complete NVAPI implementation on top of [DXVK](https://github.com/doitsujin/dxvk)
 
 This [repository](https://github.com/jp7677/dxvk-nvapi) provides a very basic alternative implementation of the NVAPI extensions for DXVK. It is mostly a direct copy DXVK-AGS, but adjusted for NVAPI.
 
-This implementation currently advertises `Depth bounds test` only. It has been tested with Assetto Corsa Competizione, based on Unreal Engine 4, which uses `Depth bounds test`. The game does not provide an in-game benchmark, so unfortunately there are no numbers how much it improves, but it may yield something like 1% extra performance which seems to be the norm when `Depth bounds test` is used. Due to the complexity of the API, this implementation wont work with games that rely on other aspects of this rather huge API, though other games based on Unreal Engine 4 might work with this.
+This implementation currently forwards the following NVAPI D3D11 features to DXVK:
 
-The 32bits version of this implementation has been just briefly tested with the Monster Hunter Official Benchmark where it also yields a similar small gain in performance.
+- `SetDepthBoundsTest`
+- `BeginUAVOverlap`/`EndUAVOverlap`
+- `MultiDrawInstancedIndirect`/`MultiDrawIndexedInstancedIndirect`
+
+It also implements some methods for adapater/display tolopogy and system information.
+
+This implemenation has mostly been tested against Unreal Engine 4, mostly the game Assetto Corsa Competizione and several UE4 technology demos. Unreal Engine 4 utilizes `SetDepthBoundsTest`, it may yield something like 1% extra performance which seems to be the norm when `Depth bounds test` is used.
+
+The 32bits version of this implementation has been briefly tested with the Monster Hunter Official Benchmark where it also yields a similar small gain in performance.
+
+Basic topology and system information (vendor ID, driver version etc) has been tested with `GPU Caps Viewer` and `GPU-Shark`.
 
 ## How to build
 
@@ -33,9 +43,6 @@ Pre-built binaries are available at [https://github.com/jp7677/dxvk-nvapi/releas
 - [DXVK-AGS](https://github.com/doitsujin/dxvk-ags)
 - [NVAPI](https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__dx.html)
 - [NVAPI Open Source SDK](http://download.nvidia.com/XFree86/nvapi-open-source-sdk/)
-- [https://github.com/pchome/dxvk-nvapi-module](https://github.com/pchome/dxvk-nvapi-module)
 - [https://github.com/SveSop/nvapi_standalone](https://github.com/SveSop/nvapi_standalone)
-- [https://stackoverflow.com/questions/13291783/how-to-get-the-id-memory-address-of-dll-function](https://stackoverflow.com/questions/13291783/how-to-get-the-id-memory-address-of-dll-function)
-- [https://github.com/falahati/NvAPIWrapper/blob/master/NvAPIWrapper/Native/Helpers/FunctionId.cs](https://github.com/falahati/NvAPIWrapper/blob/master/NvAPIWrapper/Native/Helpers/FunctionId.cs)
 
 Many thanks to the coresponding authors!
