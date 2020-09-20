@@ -90,6 +90,11 @@ namespace dxvk {
         return NVAPI_INVALID_DISPLAY_ID;
     }
 
+    inline NvAPI_Status MosaicNotActive(std::string logMessage) {
+        std::cerr << logMessage << ": Mosaic not active" << std::endl;
+        return NVAPI_MOSAIC_NOT_ACTIVE;
+    }
+
     inline NvAPI_Status NvidiaDeviceNotFound(std::string logMessage) {
         std::cerr << logMessage << ": NVIDIA device not found" << std::endl;
         return NVAPI_NVIDIA_DEVICE_NOT_FOUND;

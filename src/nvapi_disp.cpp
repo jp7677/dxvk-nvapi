@@ -45,4 +45,19 @@ extern "C" {
 
         return Ok(str::format(n, " ", displayName));
     }
+
+    NvAPI_Status __cdecl NvAPI_DISP_GetGDIPrimaryDisplayId(NvU32* displayId) {
+        constexpr auto n = "NvAPI_DISP_GetGDIPrimaryDisplayId";
+
+        if (displayId == nullptr)
+            return InvalidArgument(n);
+
+        auto id = nvapiAdapterRegistry->GetPrimaryOutputId();
+        if (id == -1)
+            return NvidiaDeviceNotFound(n);
+
+        *displayId = id;
+
+        return Ok(n);
+    }
 }

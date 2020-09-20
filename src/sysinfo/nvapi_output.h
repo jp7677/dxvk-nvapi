@@ -18,11 +18,13 @@ namespace dxvk {
         void Initialize(Com<IDXGIOutput> dxgiOutput);
 
         std::string GetDeviceName();
+        bool IsPrimary();
 
     private:
 
         uintptr_t m_parent;
         std::string m_deviceName;
+        bool m_isPrimary;
 
     };
 }

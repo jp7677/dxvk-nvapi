@@ -76,6 +76,14 @@ namespace dxvk {
         return nullptr;
     }
 
+    short NvapiAdapterRegistry::GetPrimaryOutputId() {
+        for (auto i = 0U; i <= m_nvapiOutputs.size(); i++)
+            if (m_nvapiOutputs.at(i)->IsPrimary())
+                return i;
+
+        return -1;
+    }
+
     short NvapiAdapterRegistry::GetOutputId(std::string displayName) {
         for (auto i = 0U; i <= m_nvapiOutputs.size(); i++)
             if (m_nvapiOutputs.at(i)->GetDeviceName() == displayName)

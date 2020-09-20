@@ -2,6 +2,7 @@
 #include "nvapi.cpp"
 #include "nvapi_sys.cpp"
 #include "nvapi_disp.cpp"
+#include "nvapi_mosaic.cpp"
 #include "nvapi_gpu.cpp"
 #include "nvapi_d3d.cpp"
 #include "nvapi_d3d11.cpp"
@@ -48,6 +49,8 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetPhysicalFrameBufferSize)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Disp_GetHdrCapabilities)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DISP_GetDisplayIdByDisplayName)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DISP_GetGDIPrimaryDisplayId)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Mosaic_GetDisplayViewportsByResolution)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_SYS_GetDriverAndBranchVersion)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_EnumLogicalGPUs)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_EnumPhysicalGPUs)

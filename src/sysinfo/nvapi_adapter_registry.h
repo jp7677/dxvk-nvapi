@@ -24,6 +24,7 @@ namespace dxvk {
 
         NvapiOutput* GetOutput(u_short index);
         NvapiOutput* GetOutput(NvDisplayHandle handle);
+        short GetPrimaryOutputId();
         short GetOutputId(std::string displayName);
 
     private:
