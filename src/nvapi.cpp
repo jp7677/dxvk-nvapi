@@ -4,6 +4,7 @@
 #include "util/util_statuscode.h"
 #include "util/util_string.h"
 #include "util/util_error.h"
+#include "util/util_op_code.h"
 #include "../version.h"
 
 #ifdef __GNUC__

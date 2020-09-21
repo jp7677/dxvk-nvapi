@@ -80,6 +80,6 @@ extern "C" {
         // DXVK does not know any special NVIDIA intrinsics
         *supported = false;
 
-        return Ok(str::format(n, " ", code));
+        return Ok(str::format(n, " ", code, " (", FromCode(code), ")"));
     }
 }
