@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <map>
 #include <sstream>
 
 #ifdef __GNUC__

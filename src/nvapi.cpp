@@ -3,6 +3,7 @@
 #include "d3d11/nvapi_d3d11_device.h"
 #include "util/util_statuscode.h"
 #include "util/util_string.h"
+#include "util/util_error.h"
 #include "../version.h"
 
 #ifdef __GNUC__
@@ -123,7 +124,10 @@ extern "C" {
         if (szDesc == nullptr)
             return InvalidArgument(n);
 
-        return Ok(str::format(n, " ", nr));
+        auto error = FromErrorNr(nr);
+        strcpy(szDesc, error.c_str());
+
+        return Ok(str::format(n, " ", nr, " (", error, ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_Unload() {
