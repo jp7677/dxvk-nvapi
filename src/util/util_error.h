@@ -148,6 +148,9 @@ namespace dxvk {
         };
 
         auto it = errors.find(errorNr);
-        return it != errors.end() ? it->second : "UNKNOWN_ERROR";
+        if (it != errors.end())
+            return it->second;
+
+        return "UNKNOWN_ERROR";
     }
 }
