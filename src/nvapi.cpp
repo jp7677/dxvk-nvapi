@@ -101,11 +101,16 @@ extern "C" {
 
         auto output = nvapiAdapterRegistry->GetOutput(thisEnum);
         if (output == nullptr)
-            return InvalidDisplayId(str::format(n, " ", thisEnum));
+            return EndEnumeration(str::format(n, " ", thisEnum));
 
         *pNvDispHandle = (NvDisplayHandle) output;
 
         return Ok(str::format(n, " ", thisEnum));
+    }
+
+    NvAPI_Status __cdecl NvAPI_EnumNvidiaUnAttachedDisplayHandle(NvU32 thisEnum, NvUnAttachedDisplayHandle *pNvUnAttachedDispHandle) {
+        // DXVK does not know about unattached displays
+        return EndEnumeration(str::format("NvAPI_EnumNvidiaUnAttachedDisplayHandle ", thisEnum));
     }
 
     NvAPI_Status __cdecl NvAPI_GetInterfaceVersionString(NvAPI_ShortString szDesc) {

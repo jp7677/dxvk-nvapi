@@ -60,6 +60,11 @@ namespace dxvk {
         return NVAPI_NO_IMPLEMENTATION;
     }
 
+    inline NvAPI_Status EndEnumeration(std::string logMessage) {
+        std::cerr << logMessage << ": End enumeration" << std::endl;
+        return NVAPI_END_ENUMERATION;
+    }
+
     inline NvAPI_Status ApiNotInitialized(std::string logMessage) {
         std::cerr << logMessage << ": API not initialized" << std::endl;
         return NVAPI_API_NOT_INTIALIZED;
