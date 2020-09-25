@@ -67,7 +67,7 @@ namespace dxvk {
         // Windows releases can only ever have a two digit minor version
         // and does not have a patch number
         return VK_VERSION_MAJOR(m_vkDriverVersion) * 100 +
-            std::min(VK_VERSION_MINOR(m_vkDriverVersion), (u_int)99);
+            std::min(VK_VERSION_MINOR(m_vkDriverVersion), (u_int) 99);
     }
 
     u_int NvapiAdapter::GetDeviceId() {
