@@ -16,7 +16,7 @@ This implementation has been tested with Unreal Engine 4, mostly the game `Asset
 
 The 32bits version of this implementation has been briefly tested with the `Monster Hunter Official Benchmark` where it also yields a similar small gain in performance.
 
-Basic topology and system information (vendor ID, driver version etc) has been tested with `GPU Caps Viewer` and `GPU-Shark`.
+Basic topology and system information (vendor ID, driver version etc) has been tested with `GPU Caps Viewer` and `GPU-Shark`. The game `Get Even`, which seem to verify the driver version during launch, starts fine with this implementation.
 
 ## Requirements
 
