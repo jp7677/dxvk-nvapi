@@ -1,13 +1,13 @@
 #include "nvapi_output.h"
 
 namespace dxvk {
-    NvapiOutput::NvapiOutput(uintptr_t parent) {
+    NvapiOutput::NvapiOutput(const uintptr_t parent) {
         m_parent = parent;
     }
 
     NvapiOutput::~NvapiOutput() { }
 
-    void NvapiOutput::Initialize(Com<IDXGIOutput> dxgiOutput) {
+    void NvapiOutput::Initialize(const Com<IDXGIOutput> dxgiOutput) {
         DXGI_OUTPUT_DESC desc;
         dxgiOutput->GetDesc(&desc);
 

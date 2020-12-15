@@ -4,10 +4,10 @@ namespace dxvk {
 
     NvapiAdapterRegistry::NvapiAdapterRegistry() {}
     NvapiAdapterRegistry::~NvapiAdapterRegistry() {
-        for (auto const& output : m_nvapiOutputs)
+        for (const auto& output : m_nvapiOutputs)
             delete (output);
 
-        for (auto const& adapter : m_nvapiAdapters)
+        for (const auto& adapter : m_nvapiAdapters)
             delete (adapter);
     }
 
@@ -38,38 +38,38 @@ namespace dxvk {
         return m_nvapiAdapters.front();
     }
 
-    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(u_short index) {
+    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(const u_short index) {
         if (index >= m_nvapiAdapters.size())
             return nullptr;
 
         return m_nvapiAdapters.at(index);
     }
 
-    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(NvPhysicalGpuHandle handle) {
-        for (auto const& adapter : m_nvapiAdapters)
+    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(const NvPhysicalGpuHandle handle) {
+        for (const auto& adapter : m_nvapiAdapters)
             if (handle == (NvPhysicalGpuHandle) adapter)
                 return adapter;
 
         return nullptr;
     }
 
-    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(NvLogicalGpuHandle handle) {
-        for (auto const& adapter : m_nvapiAdapters)
+    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(const NvLogicalGpuHandle handle) {
+        for (const auto& adapter : m_nvapiAdapters)
             if (handle == (NvLogicalGpuHandle) adapter)
                 return adapter;
 
         return nullptr;
     }
 
-    NvapiOutput* NvapiAdapterRegistry::GetOutput(u_short index) {
+    NvapiOutput* NvapiAdapterRegistry::GetOutput(const u_short index) {
         if (index >= m_nvapiOutputs.size())
             return nullptr;
 
         return m_nvapiOutputs.at(index);
     }
 
-    NvapiOutput* NvapiAdapterRegistry::GetOutput(NvDisplayHandle handle) {
-        for (auto const& output : m_nvapiOutputs)
+    NvapiOutput* NvapiAdapterRegistry::GetOutput(const NvDisplayHandle handle) {
+        for (const auto& output : m_nvapiOutputs)
             if (handle == (NvDisplayHandle) output)
                 return output;
 
@@ -84,7 +84,7 @@ namespace dxvk {
         return -1;
     }
 
-    short NvapiAdapterRegistry::GetOutputId(std::string displayName) {
+    short NvapiAdapterRegistry::GetOutputId(const std::string& displayName) {
         for (auto i = 0U; i <= m_nvapiOutputs.size(); i++)
             if (m_nvapiOutputs.at(i)->GetDeviceName() == displayName)
                 return i;

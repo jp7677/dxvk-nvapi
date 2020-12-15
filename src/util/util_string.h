@@ -4,7 +4,7 @@
 
 namespace dxvk::str {
 
-    std::string fromws(const WCHAR *ws);
+    std::string fromws(const WCHAR* ws);
 
     void tows(const char* mbs, WCHAR* wcs, size_t wcsLen);
 

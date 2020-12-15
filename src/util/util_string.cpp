@@ -1,7 +1,7 @@
 #include "util_string.h"
 
 namespace dxvk::str {
-    std::string fromws(const WCHAR *ws) {
+    std::string fromws(const WCHAR* ws) {
         size_t len = ::WideCharToMultiByte(CP_UTF8, 0, ws, -1, nullptr, 0, nullptr, nullptr);
 
         if (len <= 1)
