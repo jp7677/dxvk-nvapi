@@ -10,9 +10,9 @@ extern "C" {
 
         auto success = NvapiD3d11Device::SetDepthBoundsTest(pDeviceOrContext, bEnable, fMinDepth, fMaxDepth);
         if (!success)
-            return Error(n, &alreadyLogged);
+            return Error(n, alreadyLogged);
 
-        return Ok(n, &alreadyLogged);
+        return Ok(n, alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_BeginUAVOverlap(IUnknown *pDeviceOrContext) {
@@ -24,9 +24,9 @@ extern "C" {
 
         auto success = NvapiD3d11Device::BeginUAVOverlap(pDeviceOrContext);
         if (!success)
-            return Error(n, &alreadyLogged);
+            return Error(n, alreadyLogged);
 
-        return Ok(n, &alreadyLogged);
+        return Ok(n, alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_EndUAVOverlap(IUnknown *pDeviceOrContext) {
@@ -38,9 +38,9 @@ extern "C" {
 
         auto success = NvapiD3d11Device::EndUAVOverlap(pDeviceOrContext);
         if (!success)
-            return Error(n, &alreadyLogged);
+            return Error(n, alreadyLogged);
 
-        return Ok(n, &alreadyLogged);
+        return Ok(n, alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_MultiDrawInstancedIndirect(ID3D11DeviceContext *pDevContext11, NvU32 drawCount, ID3D11Buffer *pBuffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs) {
@@ -52,9 +52,9 @@ extern "C" {
 
         auto success = NvapiD3d11Device::MultiDrawInstancedIndirect(pDevContext11, drawCount, pBuffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
         if (!success)
-            return Error(n, &alreadyLogged);
+            return Error(n, alreadyLogged);
 
-        return Ok(n, &alreadyLogged);
+        return Ok(n, alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(ID3D11DeviceContext *pDevContext11, NvU32 drawCount, ID3D11Buffer *pBuffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs) {
@@ -66,9 +66,9 @@ extern "C" {
 
         auto success = NvapiD3d11Device::MultiDrawIndexedInstancedIndirect(pDevContext11, drawCount, pBuffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
         if (!success)
-            return Error(n, &alreadyLogged);
+            return Error(n, alreadyLogged);
 
-        return Ok(n, &alreadyLogged);
+        return Ok(n, alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported) {
