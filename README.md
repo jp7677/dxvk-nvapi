@@ -32,7 +32,7 @@ Run:
 ./package-release.sh master /your/path
 ```
 
-Alternatively [DXVK-Docker](https://github.com/jp7677/dxvk-docker) provides a way for a build setup using docker.
+Alternatively [DXVK-Docker](https://github.com/jp7677/dxvk-docker) provides a way for a build setup using docker/podman.
 Pre-built binaries are available at [https://github.com/jp7677/dxvk-nvapi/releases](https://github.com/jp7677/dxvk-nvapi/releases).
 
 ## How to use
@@ -40,7 +40,7 @@ Pre-built binaries are available at [https://github.com/jp7677/dxvk-nvapi/releas
 - Copy `nvapi64.dll`/`nvapi.dll` into the `system32`/`syswow64` folder of your x64/x86 Wine prefix.
 - Make sure that your prefix uses the native version of nvapi64, e.g. with `WINEDLLOVERRIDES=nvapi,nvapi64=n`.
 - Disable the `nvapiHack` in DXVK, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L34), this needs DXVK's `dxgi.dll`, use it e.g. with `WINEDLLOVERRIDES=dxgi=n`.
-- Eventually the Wine prefix needs to be set to `Windows 7`. The exact circumstances when this is needed are (yet) unknown.
+- Eventually the Wine prefix needs to be *touched* by a wine-staging version. Running `winecfg` is sufficient. The exact circumstances why this is needed are (still) unknown, that said `Assetto Corsa Competizione` wants that with a Proton 5.13 created prefix.
 
 ## References and inspirations
 
