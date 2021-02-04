@@ -8,8 +8,7 @@ extern "C" {
         if (pDeviceOrContext == nullptr)
             return InvalidArgument(n);
 
-        auto success = NvapiD3d11Device::SetDepthBoundsTest(pDeviceOrContext, bEnable, fMinDepth, fMaxDepth);
-        if (!success)
+        if (!NvapiD3d11Device::SetDepthBoundsTest(pDeviceOrContext, bEnable, fMinDepth, fMaxDepth))
             return Error(n, alreadyLogged);
 
         return Ok(n, alreadyLogged);
@@ -22,8 +21,7 @@ extern "C" {
         if (pDeviceOrContext == nullptr)
             return InvalidArgument(n);
 
-        auto success = NvapiD3d11Device::BeginUAVOverlap(pDeviceOrContext);
-        if (!success)
+        if (!NvapiD3d11Device::BeginUAVOverlap(pDeviceOrContext))
             return Error(n, alreadyLogged);
 
         return Ok(n, alreadyLogged);
@@ -36,8 +34,7 @@ extern "C" {
         if (pDeviceOrContext == nullptr)
             return InvalidArgument(n);
 
-        auto success = NvapiD3d11Device::EndUAVOverlap(pDeviceOrContext);
-        if (!success)
+        if (!NvapiD3d11Device::EndUAVOverlap(pDeviceOrContext))
             return Error(n, alreadyLogged);
 
         return Ok(n, alreadyLogged);
@@ -50,8 +47,7 @@ extern "C" {
         if (pDevContext11 == nullptr || pBuffer == nullptr)
             return InvalidArgument(n);
 
-        auto success = NvapiD3d11Device::MultiDrawInstancedIndirect(pDevContext11, drawCount, pBuffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
-        if (!success)
+        if (!NvapiD3d11Device::MultiDrawInstancedIndirect(pDevContext11, drawCount, pBuffer, alignedByteOffsetForArgs, alignedByteStrideForArgs))
             return Error(n, alreadyLogged);
 
         return Ok(n, alreadyLogged);
@@ -64,8 +60,7 @@ extern "C" {
         if (pDevContext11 == nullptr || pBuffer == nullptr)
             return InvalidArgument(n);
 
-        auto success = NvapiD3d11Device::MultiDrawIndexedInstancedIndirect(pDevContext11, drawCount, pBuffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
-        if (!success)
+        if (!NvapiD3d11Device::MultiDrawIndexedInstancedIndirect(pDevContext11, drawCount, pBuffer, alignedByteOffsetForArgs, alignedByteStrideForArgs))
             return Error(n, alreadyLogged);
 
         return Ok(n, alreadyLogged);

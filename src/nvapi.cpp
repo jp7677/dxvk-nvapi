@@ -153,8 +153,7 @@ extern "C" {
         std::cerr << str::format("DXVK-NVAPI", " ", DXVK_NVAPI_VERSION) << std::endl;
 
         nvapiAdapterRegistry = new NvapiAdapterRegistry();
-        auto success = nvapiAdapterRegistry->Initialize();
-        if (!success)
+        if (!nvapiAdapterRegistry->Initialize())
             return NvidiaDeviceNotFound(n);
 
         return Ok(n);
