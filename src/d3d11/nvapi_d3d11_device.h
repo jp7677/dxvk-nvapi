@@ -18,7 +18,7 @@ namespace dxvk {
 
     private:
 
-        static bool IsSupportedExtension(IUnknown* device, const D3D11_VK_EXTENSION extension, bool* alreadyTested);
+        static bool IsSupportedExtension(IUnknown* device, const D3D11_VK_EXTENSION extension, bool& alreadyTested);
         static Com<ID3D11VkExtContext> GetDxvkDeviceContext(IUnknown* device);
 
     };
