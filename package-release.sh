@@ -48,11 +48,11 @@ function build_arch {
   cd "$SRC_DIR"
 
   meson --cross-file "$SRC_DIR/$crossfile$1.txt" \
-        --buildtype "release"                         \
+        --buildtype "release"                    \
         --prefix "$BUILD_DIR"                    \
-        --strip                                       \
-        --bindir "x$1"                                \
-        --libdir "x$1"                                \
+        --strip                                  \
+        --bindir "x$1"                           \
+        --libdir "x$1"                           \
         "$BUILD_DIR/build.$1"
 
   cd "$BUILD_DIR/build.$1"
