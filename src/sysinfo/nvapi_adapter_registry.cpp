@@ -45,7 +45,7 @@ namespace dxvk {
         return m_nvapiAdapters.at(index);
     }
 
-    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(const NvPhysicalGpuHandle handle) const {
+    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(NvPhysicalGpuHandle handle) const {
         for (const auto& adapter : m_nvapiAdapters)
             if (handle == (NvPhysicalGpuHandle) adapter)
                 return adapter;
@@ -53,7 +53,7 @@ namespace dxvk {
         return nullptr;
     }
 
-    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(const NvLogicalGpuHandle handle) const {
+    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(NvLogicalGpuHandle handle) const {
         for (const auto& adapter : m_nvapiAdapters)
             if (handle == (NvLogicalGpuHandle) adapter)
                 return adapter;
@@ -68,7 +68,7 @@ namespace dxvk {
         return m_nvapiOutputs.at(index);
     }
 
-    NvapiOutput* NvapiAdapterRegistry::GetOutput(const NvDisplayHandle handle) const {
+    NvapiOutput* NvapiAdapterRegistry::GetOutput(NvDisplayHandle handle) const {
         for (const auto& output : m_nvapiOutputs)
             if (handle == (NvDisplayHandle) output)
                 return output;
