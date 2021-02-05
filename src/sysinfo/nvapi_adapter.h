@@ -27,10 +27,10 @@ namespace dxvk {
     private:
 
         VkPhysicalDevice m_vkDevice = VK_NULL_HANDLE;
-        VkPhysicalDeviceProperties m_deviceProperties;
-        VkPhysicalDevicePCIBusInfoPropertiesEXT m_devicePciBusProperties;
-        VkPhysicalDeviceMemoryProperties m_memoryProperties;
-        u_int m_vkDriverVersion;
+        VkPhysicalDeviceProperties m_deviceProperties{};
+        VkPhysicalDevicePCIBusInfoPropertiesEXT m_devicePciBusProperties{};
+        VkPhysicalDeviceMemoryProperties m_memoryProperties{};
+        u_int m_vkDriverVersion{};
 
     };
 }
