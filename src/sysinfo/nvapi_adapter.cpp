@@ -5,7 +5,7 @@ namespace dxvk {
 
     NvapiAdapter::~NvapiAdapter() = default;
 
-    bool NvapiAdapter::Initialize(const Com<IDXGIAdapter> dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
+    bool NvapiAdapter::Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
         // Get the Vulkan handle  from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
         if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter))))

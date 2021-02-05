@@ -7,7 +7,7 @@ namespace dxvk {
 
     NvapiOutput::~NvapiOutput() = default;
 
-    void NvapiOutput::Initialize(const Com<IDXGIOutput> dxgiOutput) {
+    void NvapiOutput::Initialize(Com<IDXGIOutput>& dxgiOutput) {
         DXGI_OUTPUT_DESC desc;
         dxgiOutput->GetDesc(&desc);
 
