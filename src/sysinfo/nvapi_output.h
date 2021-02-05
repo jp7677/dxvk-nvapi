@@ -11,7 +11,7 @@ namespace dxvk {
 
     public:
 
-        NvapiOutput(uintptr_t parent);
+        explicit NvapiOutput(uintptr_t parent);
         ~NvapiOutput();
 
         void Initialize(Com<IDXGIOutput> dxgiOutput);
