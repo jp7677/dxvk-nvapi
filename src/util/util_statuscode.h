@@ -26,7 +26,7 @@ namespace dxvk {
         return NVAPI_ERROR;
     }
 
-    inline NvAPI_Status Error(const std::string logMessage) {
+    inline NvAPI_Status Error(const std::string& logMessage) {
         std::cerr << logMessage << ": Error" << std::endl;
         return NVAPI_ERROR;
     }
