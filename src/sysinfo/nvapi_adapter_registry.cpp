@@ -2,7 +2,8 @@
 
 namespace dxvk {
 
-    NvapiAdapterRegistry::NvapiAdapterRegistry() {}
+    NvapiAdapterRegistry::NvapiAdapterRegistry() = default;
+
     NvapiAdapterRegistry::~NvapiAdapterRegistry() {
         for (const auto& output : m_nvapiOutputs)
             delete (output);

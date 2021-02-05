@@ -1,9 +1,9 @@
 #include "nvapi_adapter.h"
 
 namespace dxvk {
-    NvapiAdapter::NvapiAdapter() {}
+    NvapiAdapter::NvapiAdapter() = default;
 
-    NvapiAdapter::~NvapiAdapter() {}
+    NvapiAdapter::~NvapiAdapter() = default;
 
     bool NvapiAdapter::Initialize(const Com<IDXGIAdapter> dxgiAdapter, std::vector<NvapiOutput*>* outputs) {
         // Get the Vulkan handle  from the DXGI adapter to get access to Vulkan device properties which has some information we want.

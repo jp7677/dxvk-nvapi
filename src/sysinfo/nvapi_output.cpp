@@ -5,7 +5,7 @@ namespace dxvk {
         m_parent = parent;
     }
 
-    NvapiOutput::~NvapiOutput() { }
+    NvapiOutput::~NvapiOutput() = default;
 
     void NvapiOutput::Initialize(const Com<IDXGIOutput> dxgiOutput) {
         DXGI_OUTPUT_DESC desc;
