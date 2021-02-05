@@ -24,7 +24,7 @@ namespace dxvk {
 
         uintptr_t m_parent;
         std::string m_deviceName;
-        bool m_isPrimary;
+        bool m_isPrimary{};
 
     };
 }
