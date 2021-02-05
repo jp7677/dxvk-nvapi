@@ -11,11 +11,11 @@ namespace dxvk {
 
     public:
 
-        NvapiOutput(const uintptr_t parent);
+        NvapiOutput(uintptr_t parent);
         ~NvapiOutput();
 
         uintptr_t GetParent();
-        void Initialize(const Com<IDXGIOutput> dxgiOutput);
+        void Initialize(Com<IDXGIOutput> dxgiOutput);
 
         std::string GetDeviceName();
         bool IsPrimary();
