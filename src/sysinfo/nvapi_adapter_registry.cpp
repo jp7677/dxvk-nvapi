@@ -21,7 +21,7 @@ namespace dxvk {
         Com<IDXGIAdapter> dxgiAdapter;
         for (auto i = 0U; dxgiFactory->EnumAdapters(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; i++) {
             auto nvapiAdapter = new NvapiAdapter();
-            if (nvapiAdapter->Initialize(dxgiAdapter, &m_nvapiOutputs))
+            if (nvapiAdapter->Initialize(dxgiAdapter, m_nvapiOutputs))
                 m_nvapiAdapters.push_back(nvapiAdapter);
             else
                 delete (nvapiAdapter);
