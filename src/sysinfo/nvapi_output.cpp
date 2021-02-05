@@ -21,15 +21,15 @@ namespace dxvk {
         m_isPrimary = (info.dwFlags & MONITORINFOF_PRIMARY);
     }
 
-    uintptr_t NvapiOutput::GetParent() {
+    uintptr_t NvapiOutput::GetParent() const {
         return m_parent;
     }
 
-    std::string NvapiOutput::GetDeviceName() {
+    std::string NvapiOutput::GetDeviceName() const {
         return m_deviceName;
     }
 
-    bool NvapiOutput::IsPrimary() {
+    bool NvapiOutput::IsPrimary() const {
         return m_isPrimary;
     }
 }
