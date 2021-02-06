@@ -10,6 +10,9 @@ namespace dxvk {
 
         for (const auto& adapter : m_nvapiAdapters)
             delete (adapter);
+
+        m_nvapiOutputs.clear();
+        m_nvapiAdapters.clear();
     }
 
     bool NvapiAdapterRegistry::Initialize() {
