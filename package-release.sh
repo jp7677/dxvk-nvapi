@@ -39,8 +39,13 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-function validate_methods {
+function prepare {
   python validate-methods.py src/nvapi.cpp src/nvapi_sys.cpp src/nvapi_disp.cpp src/nvapi_mosaic.cpp src/nvapi_gpu.cpp src/nvapi_d3d.cpp src/nvapi_d3d11.cpp src/nvapi_interface.cpp
+
+  # remove existing version.h, because otherwise the existing one gets into the build instead of the generated one
+  if [ -e version.h ]; then
+    rm version.h
+  fi
 }
 
 function build_arch {
@@ -57,6 +62,8 @@ function build_arch {
   cd "$BUILD_DIR/build.$1"
   ninja install
 
+  cp version.h "$SRC_DIR"
+
   if [ $opt_devbuild -eq 0 ]; then
     # get rid of some useless .a files
     rm "$BUILD_DIR/x$1/"*.!(dll)
@@ -70,7 +77,7 @@ function copy_extra {
   cp README.md "$BUILD_DIR"
 }
 
-validate_methods
+prepare
 build_arch 32
 build_arch 64
 copy_extra
