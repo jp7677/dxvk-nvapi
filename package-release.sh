@@ -10,7 +10,7 @@ if [ -z "$1" ] || [ -z "$2" ]; then
 fi
 
 VERSION="$1"
-SRC_DIR=`dirname $(readlink -f $0)`
+SRC_DIR=$(dirname "$(readlink -f "$0")")
 BUILD_DIR=$(realpath "$2")"/dxvk-nvapi-$VERSION"
 
 if [ -e "$BUILD_DIR" ]; then
@@ -20,7 +20,6 @@ fi
 
 shift 2
 
-opt_nopackage=0
 opt_devbuild=0
 
 crossfile="build-win"
@@ -28,7 +27,7 @@ crossfile="build-win"
 while [ $# -gt 0 ]; do
   case "$1" in
   "--no-package")
-    opt_nopackage=1
+    echo "Ignoring option: --no-package"
     ;;
   "--dev-build")
     opt_devbuild=1
@@ -67,8 +66,8 @@ function build_arch {
 
 function copy_extra {
   cd "$SRC_DIR"
-  cp LICENSE $BUILD_DIR
-  cp README.md $BUILD_DIR
+  cp LICENSE "$BUILD_DIR"
+  cp README.md "$BUILD_DIR"
 }
 
 validate_methods
