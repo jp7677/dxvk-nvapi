@@ -1,3 +1,8 @@
+#include "nvapi_private.h"
+#include "nvapi_static.h"
+#include "util/util_statuscode.h"
+#include "../version.h"
+
 extern "C" {
     using namespace dxvk;
 

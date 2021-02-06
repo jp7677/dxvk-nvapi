@@ -1,10 +1,8 @@
 #include "nvapi_private.h"
-#include "sysinfo/nvapi_adapter_registry.h"
-#include "d3d11/nvapi_d3d11_device.h"
+#include "nvapi_static.h"
 #include "util/util_statuscode.h"
 #include "util/util_string.h"
 #include "util/util_error.h"
-#include "util/util_op_code.h"
 #include "../version.h"
 
 #ifdef __GNUC__
@@ -13,8 +11,6 @@
 
 extern "C" {
     using namespace dxvk;
-
-    static NvapiAdapterRegistry* nvapiAdapterRegistry = nullptr;
 
     NvAPI_Status __cdecl NvAPI_EnumLogicalGPUs(NvLogicalGpuHandle nvGPUHandle[NVAPI_MAX_LOGICAL_GPUS], NvU32 *pGpuCount) {
         constexpr auto n = "NvAPI_EnumLogicalGPUs";
