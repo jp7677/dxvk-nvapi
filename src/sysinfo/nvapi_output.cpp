@@ -1,6 +1,6 @@
 #include "nvapi_output.h"
-#include "../util/util_log.h"
 #include "../util/util_string.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
     NvapiOutput::NvapiOutput(const uintptr_t parent) {

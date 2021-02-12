@@ -1,6 +1,4 @@
 #include "../inc/nvapi_interface.h"
-#include "util/util_log.h"
-#include "util/util_string.h"
 #include "nvapi.cpp"
 #include "nvapi_sys.cpp"
 #include "nvapi_disp.cpp"
@@ -8,6 +6,8 @@
 #include "nvapi_gpu.cpp"
 #include "nvapi_d3d.cpp"
 #include "nvapi_d3d11.cpp"
+#include "util/util_string.h"
+#include "util/util_log.h"
 
 #define INSERT_AND_RETURN_WHEN_EQUALS(method) \
     if (std::string(it->func) == #method) \

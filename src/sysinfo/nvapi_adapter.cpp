@@ -1,7 +1,7 @@
 #include "nvapi_adapter.h"
 #include "../dxvk/dxvk_interfaces.h"
-#include "../util/util_log.h"
 #include "../util/util_string.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
     NvapiAdapter::NvapiAdapter() = default;
