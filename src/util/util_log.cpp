@@ -17,6 +17,7 @@ namespace dxvk::log {
 
                 auto fullPath = logPath + logFileName;
                 filestream = std::ofstream(fullPath, std::ios::app);
+                filestream << "----------" << std::endl;
                 std::cerr << str::format(logPathEnvName, " is set to '", logPath,"', appending log statements to ", fullPath) << std::endl;
             }
 
