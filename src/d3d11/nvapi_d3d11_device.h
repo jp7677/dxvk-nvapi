@@ -18,8 +18,8 @@ namespace dxvk {
 
     private:
 
-        static bool IsSupportedExtension(IUnknown* device, D3D11_VK_EXTENSION extension, bool& alreadyTested);
-        static Com<ID3D11VkExtContext> GetDxvkDeviceContext(IUnknown* device);
+        [[nodiscard]] static bool IsSupportedExtension(IUnknown* device, D3D11_VK_EXTENSION extension, bool& alreadyTested);
+        [[nodiscard]] static Com<ID3D11VkExtContext> GetDxvkDeviceContext(IUnknown* device);
 
     };
 }
