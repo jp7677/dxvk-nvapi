@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../nvapi_private.h"
-#include "../util/com_pointer.h"
 #include "nvapi_adapter.h"
+#include "nvapi_output.h"
 
 namespace dxvk {
     class NvapiAdapterRegistry {
