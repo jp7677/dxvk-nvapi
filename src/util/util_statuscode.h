@@ -1,5 +1,8 @@
 #pragma once
 
+#include "util_string.h"
+#include "util_log.h"
+
 namespace dxvk {
     inline NvAPI_Status Ok() {
         return NVAPI_OK;
