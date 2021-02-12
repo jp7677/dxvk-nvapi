@@ -148,6 +148,9 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Initialize() {
         constexpr auto n = "NvAPI_Initialize";
 
+        if (nvapiAdapterRegistry != nullptr)
+            return Ok(n);
+
         log::write(str::format("DXVK-NVAPI ", DXVK_NVAPI_VERSION, " (", env::getExecutableName(), ")"));
 
         nvapiAdapterRegistry = new NvapiAdapterRegistry();
