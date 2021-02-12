@@ -2,32 +2,32 @@
 #include "util_string.h"
 
 namespace dxvk::env {
-    std::string getEnvVar(const std::string& name) {
-        std::vector<WCHAR> result;
-        result.resize(MAX_PATH + 1);
+    std::string getEnvVariable(const std::string& name) {
+        std::vector<WCHAR> variable;
+        variable.resize(MAX_PATH + 1);
 
-        DWORD len = ::GetEnvironmentVariableW(str::tows(name.c_str()).c_str(), result.data(), MAX_PATH);
-        result.resize(len);
+        auto length = ::GetEnvironmentVariableW(str::tows(name.c_str()).c_str(), variable.data(), MAX_PATH);
+        variable.resize(length);
 
-        return str::fromws(result.data());
+        return str::fromws(variable.data());
     }
 
-    std::string getExePath() {
-        std::vector<WCHAR> exePath;
-        exePath.resize(MAX_PATH + 1);
+    std::string getExecutablePath() {
+        std::vector<WCHAR> path;
+        path.resize(MAX_PATH + 1);
 
-        DWORD length = ::GetModuleFileNameW(nullptr, exePath.data(), MAX_PATH);
-        exePath.resize(length);
+        auto length = ::GetModuleFileNameW(nullptr, path.data(), MAX_PATH);
+        path.resize(length);
 
-        return str::fromws(exePath.data());
+        return str::fromws(path.data());
     }
 
-    std::string getExeName() {
-        std::string fullPath = getExePath();
-        auto name = fullPath.find_last_of('\\');
+    std::string getExecutableName() {
+        auto path = getExecutablePath();
+        auto name = path.find_last_of('\\');
 
         return (name != std::string::npos)
-            ? fullPath.substr(name + 1)
-            : fullPath;
+            ? path.substr(name + 1)
+            : path;
     }
 }

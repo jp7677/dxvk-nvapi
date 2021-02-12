@@ -8,7 +8,7 @@ namespace dxvk::log {
 
         static bool alreadyInitialized = false;
         if (!alreadyInitialized) {
-            std::string logPath = env::getEnvVar(logPathEnvName);
+            auto logPath = env::getEnvVariable(logPathEnvName);
             if (!logPath.empty())
                 filestream = std::ofstream(logPath + "/dxvk_nvapi.log", std::ios::app);
 

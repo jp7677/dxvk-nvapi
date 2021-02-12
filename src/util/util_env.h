@@ -3,9 +3,9 @@
 #include "../nvapi_private.h"
 
 namespace dxvk::env {
-    std::string getEnvVar(const std::string& name);
+    std::string getEnvVariable(const std::string& name);
 
-    std::string getExePath();
+    std::string getExecutablePath();
 
-    std::string getExeName();
+    std::string getExecutableName();
 }
