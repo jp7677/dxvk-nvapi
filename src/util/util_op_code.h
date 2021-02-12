@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../nvapi_private.h"
-
 namespace dxvk {
     inline std::string FromCode(const short code) {
         static const std::map<u_int, std::string> codes {

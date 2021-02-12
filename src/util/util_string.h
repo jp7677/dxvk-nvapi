@@ -3,7 +3,6 @@
 #include "../nvapi_private.h"
 
 namespace dxvk::str {
-
     std::string fromws(const WCHAR* ws);
 
     void tows(const char* mbs, WCHAR* wcs, size_t wcsLen);
@@ -35,5 +34,4 @@ namespace dxvk::str {
         format1(stream, args...);
         return stream.str();
     }
-
 }
