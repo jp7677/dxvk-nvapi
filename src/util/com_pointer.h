@@ -1,7 +1,6 @@
 #pragma once
 
 namespace dxvk {
-
     /**
      * \brief COM pointer
      *
@@ -12,7 +11,6 @@ namespace dxvk {
     class Com {
 
     public:
-
         Com() { }
         Com(std::nullptr_t) { }
         Com(T* object) : m_ptr(object) {
@@ -84,7 +82,6 @@ namespace dxvk {
         }
 
     private:
-
         T* m_ptr = nullptr;
 
         void incRef() const {
@@ -106,5 +103,4 @@ namespace dxvk {
 
           return object;
       }
-
 }

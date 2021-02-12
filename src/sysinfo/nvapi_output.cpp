@@ -1,4 +1,6 @@
 #include "nvapi_output.h"
+#include "../util/util_string.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
     NvapiOutput::NvapiOutput(const uintptr_t parent) {
@@ -12,7 +14,7 @@ namespace dxvk {
         dxgiOutput->GetDesc(&desc);
 
         m_deviceName = str::fromws(desc.DeviceName);
-        std::cerr << str::format("NvAPI Output:", " ", m_deviceName) << std::endl;
+        log::write(str::format("NvAPI Output: ", m_deviceName));
 
         MONITORINFO info;
         info.cbSize = sizeof(MONITORINFO);

@@ -1,8 +1,10 @@
 #include "nvapi_private.h"
 #include "nvapi_static.h"
 #include "util/util_statuscode.h"
-#include "util/util_string.h"
 #include "util/util_error.h"
+#include "util/util_string.h"
+#include "util/util_env.h"
+#include "util/util_log.h"
 #include "../version.h"
 
 #ifdef __GNUC__
@@ -146,7 +148,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Initialize() {
         constexpr auto n = "NvAPI_Initialize";
 
-        std::cerr << str::format("DXVK-NVAPI", " ", DXVK_NVAPI_VERSION) << std::endl;
+        log::write(str::format("DXVK-NVAPI ", DXVK_NVAPI_VERSION, " (", env::getExecutableName(), ")"));
 
         nvapiAdapterRegistry = new NvapiAdapterRegistry();
         if (!nvapiAdapterRegistry->Initialize())

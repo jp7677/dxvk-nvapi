@@ -6,6 +6,8 @@
 #include "nvapi_gpu.cpp"
 #include "nvapi_d3d.cpp"
 #include "nvapi_d3d11.cpp"
+#include "util/util_string.h"
+#include "util/util_log.h"
 
 #define INSERT_AND_RETURN_WHEN_EQUALS(method) \
     if (std::string(it->func) == #method) \
@@ -27,7 +29,7 @@ extern "C" {
             [id](const auto& item) { return item.id == id; });
 
         if (it == std::end(nvapi_interface_table)) {
-            std::cerr << "NvAPI_QueryInterface 0x" << std::hex << id << ": Unknown function ID" << std::endl;
+            log::write(str::format("NvAPI_QueryInterface 0x", std::hex, id, ": Unknown function ID"));
             return registry.insert({id, nullptr}).first->second;
         }
 
@@ -64,7 +66,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Initialize)
         /* End */
 
-        std::cerr << "NvAPI_QueryInterface " << it->func << ": Not implemented method" << std::endl;
+        log::write(str::format("NvAPI_QueryInterface ", it->func, ": Not implemented method"));
         return registry.insert({id, nullptr}).first->second;
     }
 }

@@ -1,4 +1,7 @@
 #include "nvapi_adapter.h"
+#include "../dxvk/dxvk_interfaces.h"
+#include "../util/util_string.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
     NvapiAdapter::NvapiAdapter() = default;
@@ -41,11 +44,10 @@ namespace dxvk {
             VK_VERSION_MINOR(m_deviceProperties.driverVersion >> 0) >> 2,
             VK_VERSION_PATCH(m_deviceProperties.driverVersion >> 2) >> 4);
 
-        std::cerr << str::format("NvAPI Device:", " ", m_deviceProperties.deviceName, " (",
+        log::write(str::format("NvAPI Device: ", m_deviceProperties.deviceName, " (",
             VK_VERSION_MAJOR(m_vkDriverVersion), ".",
             VK_VERSION_MINOR(m_vkDriverVersion), ".",
-            VK_VERSION_PATCH(m_vkDriverVersion),
-            ")") << std::endl;
+            VK_VERSION_PATCH(m_vkDriverVersion), ")"));
 
         // Query all outputs from DXVK (just one, unless the DXVK dxgi-multi-monitor branch is used)
         // Mosaic setup is not supported, thus one display output refers to one GPU

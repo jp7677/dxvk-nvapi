@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <map>
 #include <sstream>
+#include <fstream>
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push

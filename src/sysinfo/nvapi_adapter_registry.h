@@ -1,16 +1,13 @@
 #pragma once
 
 #include "../nvapi_private.h"
-#include "../dxvk/dxvk_interfaces.h"
-#include "../util/com_pointer.h"
 #include "nvapi_adapter.h"
+#include "nvapi_output.h"
 
 namespace dxvk {
-
     class NvapiAdapterRegistry {
 
     public:
-
         NvapiAdapterRegistry();
         ~NvapiAdapterRegistry();
 
@@ -28,9 +25,7 @@ namespace dxvk {
         [[nodiscard]] short GetOutputId(const std::string& displayName) const;
 
     private:
-
         std::vector<NvapiAdapter*> m_nvapiAdapters;
         std::vector<NvapiOutput*> m_nvapiOutputs;
-
     };
 }
