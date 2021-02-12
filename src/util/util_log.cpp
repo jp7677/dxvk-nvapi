@@ -1,6 +1,6 @@
 #include "util_log.h"
-#include "util_env.h"
 #include "util_string.h"
+#include "util_env.h"
 
 namespace dxvk::log {
     void write(const std::string& message) {
