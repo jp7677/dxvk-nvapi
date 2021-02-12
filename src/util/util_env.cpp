@@ -30,4 +30,11 @@ namespace dxvk::env {
             ? path.substr(name + 1)
             : path;
     }
+
+    std::string getCurrentDateTime() {
+        auto currentDateTime = std::time(nullptr);
+        std::stringstream stream;
+        stream << std::put_time(std::localtime(&currentDateTime), "%Y-%m-%d %H:%M:%S");
+        return stream.str();
+    }
 }
