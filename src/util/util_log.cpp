@@ -1,5 +1,6 @@
 #include "util_log.h"
 #include "util_env.h"
+#include "util_string.h"
 
 namespace dxvk::log {
     void write(const std::string& message) {
@@ -14,7 +15,9 @@ namespace dxvk::log {
                 if ((*logPath.rbegin()) != '/')
                     logPath += '/';
 
-                filestream = std::ofstream(logPath + logFileName, std::ios::app);
+                auto fullPath = logPath + logFileName;
+                filestream = std::ofstream(fullPath, std::ios::app);
+                std::cerr << str::format(logPathEnvName, " is set to '", logPath,"', appending log statements to ", fullPath) << std::endl;
             }
 
             alreadyInitialized = true;
