@@ -14,7 +14,7 @@ namespace dxvk {
         dxgiOutput->GetDesc(&desc);
 
         m_deviceName = str::fromws(desc.DeviceName);
-        log::write(str::format("NvAPI Output:", " ", m_deviceName));
+        log::write(str::format("NvAPI Output: ", m_deviceName));
 
         MONITORINFO info;
         info.cbSize = sizeof(MONITORINFO);
