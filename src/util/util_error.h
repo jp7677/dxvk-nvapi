@@ -3,7 +3,7 @@
 #include "../nvapi_private.h"
 
 namespace dxvk {
-    inline std::string FromErrorNr(const short errorNr) {
+    inline std::string fromErrorNr(const short errorNr) {
         static const std::map<short, std::string> errors {
             {   -1, "NVAPI_ERROR" },
             {   -2, "NVAPI_LIBRARY_NOT_FOUND" },

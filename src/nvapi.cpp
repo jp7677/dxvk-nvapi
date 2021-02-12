@@ -128,7 +128,7 @@ extern "C" {
         if (szDesc == nullptr)
             return InvalidArgument(n);
 
-        auto error = FromErrorNr(nr);
+        auto error = fromErrorNr(nr);
         strcpy(szDesc, error.c_str());
 
         return Ok(str::format(n, " ", nr, " (", error, ")"));

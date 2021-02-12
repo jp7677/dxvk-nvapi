@@ -1,7 +1,7 @@
 #pragma once
 
 namespace dxvk {
-    inline std::string FromCode(const short code) {
+    inline std::string fromCode(const short code) {
         static const std::map<u_int, std::string> codes {
             {  1, "NV_EXTN_OP_SHFL" },
             {  2, "NV_EXTN_OP_SHFL_UP" },

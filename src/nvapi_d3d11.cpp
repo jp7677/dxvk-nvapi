@@ -81,6 +81,6 @@ extern "C" {
         // DXVK does not know any NVIDIA intrinsics backdoors
         *supported = false;
 
-        return Ok(str::format(n, " ", code, " (", FromCode(code), ")"));
+        return Ok(str::format(n, " ", code, " (", fromCode(code), ")"));
     }
 }
