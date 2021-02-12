@@ -2,6 +2,16 @@
 #include "util_string.h"
 
 namespace dxvk::env {
+    std::string getEnvVar(const std::string& name) {
+        std::vector<WCHAR> result;
+        result.resize(MAX_PATH + 1);
+
+        DWORD len = ::GetEnvironmentVariableW(str::tows(name.c_str()).c_str(), result.data(), MAX_PATH);
+        result.resize(len);
+
+        return str::fromws(result.data());
+    }
+
     std::string getExePath() {
         std::vector<WCHAR> exePath;
         exePath.resize(MAX_PATH + 1);
