@@ -4,7 +4,7 @@
 namespace dxvk::log {
     void initialize(std::ofstream& filestream, bool& alreadyInitialized) {
         constexpr auto logPathEnvName = "DXVK_NVAPI_LOG_PATH";
-        constexpr auto logFileName = "dxvk_nvapi.log";
+        constexpr auto logFileName = "dxvk-nvapi.log";
 
         alreadyInitialized = true;
         auto logPath = env::getEnvVariable(logPathEnvName);
