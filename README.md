@@ -24,7 +24,7 @@ This implementation uses several DXVK extension points, thus using DXVK is a req
 
 ## How to build
 
-Like DXVK, this library is being built as a Windows DLL using MinGW, and has essentially the same build requirements. Development of DXVK-NVAPI is done with MinGW 7, older versions might fail.
+Like DXVK, this library is being built as a Windows DLL using MinGW, and has essentially the same build requirements. Using MinGW versions older than MinGW 7 might fail.
 
 Run:
 
