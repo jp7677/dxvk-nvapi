@@ -40,13 +40,13 @@ Pre-built binaries are available at [https://github.com/jp7677/dxvk-nvapi/releas
 - Copy `nvapi64.dll`/`nvapi.dll` into the `system32`/`syswow64` folder of your x64/x86 Wine prefix.
 - Make sure that your prefix uses the native version of nvapi64, e.g. with `WINEDLLOVERRIDES=nvapi,nvapi64=n`.
 - Disable the `nvapiHack` in DXVK, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L34), this needs DXVK's `dxgi.dll`, use it e.g. with `WINEDLLOVERRIDES=dxgi=n`.
-- Eventually the Wine prefix needs to be *touched* by a wine-staging version. Running `winecfg` is sufficient. The exact circumstances why this is needed are (still) unknown, that said `Assetto Corsa Competizione` wants that with a Proton 5.13 created prefix.
+- Eventually the Wine prefix needs to be *touched* by a wine-staging version. Running `winecfg` is sufficient. The exact circumstances why this is needed are (still) unknown, that said `Assetto Corsa Competizione` wants that with a prefix created with Proton 5.13.
 
 ## Debugging
 
-DXVK-NVAPI prints some logging statements to the console. Optionally those statements can be written to a log file.
+DXVK-NVAPI prints some logging statements to the console. Optionally those statements can be written to a log file using the following environment variable:
 
-- `DXVK_NVAPI_LOG_PATH` Enables file logging and sets the path where the log file `dxvk_nvapi.log` should be written to. Loging is appended to an existing file. Please remove this file once in a while to prevent excessive grow.
+- `DXVK_NVAPI_LOG_PATH` Enables file logging and sets the path where the log file `dxvk-nvapi.log` should be written to. Loging is appended to an existing file. Please remove this file once in a while to prevent excessive grow.
 
 ## References and inspirations
 
