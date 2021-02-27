@@ -8,6 +8,7 @@ nvapi_src = files([
   'sysinfo/nvapi_adapter.cpp',
   'sysinfo/nvapi_adapter_registry.cpp',
   'd3d11/nvapi_d3d11_device.cpp',
+  'nvml/nvml.cpp',
   'nvapi_interface.cpp',
 ])
 
