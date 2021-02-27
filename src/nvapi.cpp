@@ -140,7 +140,8 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        delete(nvapiAdapterRegistry);
+        delete nvapiAdapterRegistry;
+        nvapiAdapterRegistry = nullptr;
 
         return Ok(n);
     }
