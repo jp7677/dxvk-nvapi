@@ -2,14 +2,15 @@
 
 #include "../nvapi_private.h"
 #include "../util/com_pointer.h"
-#include "nvapi_output.h"
 #include "vulkan.h"
+#include "nvml.h"
+#include "nvapi_output.h"
 
 namespace dxvk {
     class NvapiAdapter {
 
     public:
-        explicit NvapiAdapter(Vulkan& vulkan);
+        explicit NvapiAdapter(Vulkan& vulkan, Nvml& nvml);
         ~NvapiAdapter();
 
         bool Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs);
@@ -22,9 +23,11 @@ namespace dxvk {
         [[nodiscard]] uint32_t GetVRamSize() const;
         [[nodiscard]] bool GetLUID(LUID* luid) const;
         [[nodiscard]] NV_GPU_ARCHITECTURE_ID GetArchitectureId() const;
+        [[nodiscard]] nvmlDevice_t GetNvmlDevice() const;
 
     private:
         Vulkan& m_vulkan;
+        Nvml& m_nvml;
 
         VkPhysicalDeviceProperties m_deviceProperties{};
         VkPhysicalDeviceIDProperties m_deviceIdProperties{};
@@ -34,6 +37,8 @@ namespace dxvk {
         VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_deviceFragmentShadingRateProperties{};
         uint32_t m_vkDriverVersion{};
         std::set<std::string> m_deviceExtensions{};
+
+        nvmlDevice_t m_nvmlDevice{};
 
         [[nodiscard]] bool isVkDeviceExtensionSupported(std::string name) const;
     };
