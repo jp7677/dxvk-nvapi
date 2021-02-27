@@ -5,11 +5,11 @@ namespace dxvk {
     NvapiAdapterRegistry::NvapiAdapterRegistry() = default;
 
     NvapiAdapterRegistry::~NvapiAdapterRegistry() {
-        for (const auto& output : m_nvapiOutputs)
-            delete (output);
+        for (const auto output : m_nvapiOutputs)
+            delete output;
 
-        for (const auto& adapter : m_nvapiAdapters)
-            delete (adapter);
+        for (const auto adapter : m_nvapiAdapters)
+            delete adapter;
 
         m_nvapiOutputs.clear();
         m_nvapiAdapters.clear();
@@ -27,7 +27,7 @@ namespace dxvk {
             if (nvapiAdapter->Initialize(dxgiAdapter, m_nvapiOutputs))
                 m_nvapiAdapters.push_back(nvapiAdapter);
             else
-                delete (nvapiAdapter);
+                delete nvapiAdapter;
         }
 
         return !m_nvapiAdapters.empty();
