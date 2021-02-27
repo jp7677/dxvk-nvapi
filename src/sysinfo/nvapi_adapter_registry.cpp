@@ -38,7 +38,7 @@ namespace dxvk {
         // Query all D3D11 adapter from DXVK to honor any DXVK device filtering
         Com<IDXGIAdapter> dxgiAdapter;
         for (auto i = 0U; dxgiFactory->EnumAdapters(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; i++) {
-            auto nvapiAdapter = new NvapiAdapter(*m_vulkan);
+            auto nvapiAdapter = new NvapiAdapter(*m_vulkan, *m_nvml);
             if (nvapiAdapter->Initialize(dxgiAdapter, m_nvapiOutputs))
                 m_nvapiAdapters.push_back(nvapiAdapter);
             else

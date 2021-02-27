@@ -14,6 +14,10 @@ namespace dxvk {
         return nvml;
     }
 
+    bool Nvml::IsAvailable() {
+        return _nvml != nullptr;
+    }
+
     nvmlReturn_t Nvml::InitGetResult() const { return _initResult; }
 
     const char* Nvml::ErrorString(nvmlReturn_t result) const {

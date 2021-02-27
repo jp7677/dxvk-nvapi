@@ -12,6 +12,7 @@ namespace dxvk {
         Nvml& operator=(Nvml&&) = default;
         ~Nvml();
 
+        [[nodiscard]] bool IsAvailable();
         [[nodiscard]] static Nvml* TryLoadLibrary();
         [[nodiscard]] nvmlReturn_t InitGetResult() const;
         [[nodiscard]] const char* ErrorString(nvmlReturn_t result) const;

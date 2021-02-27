@@ -4,8 +4,8 @@
 #include "../util/util_log.h"
 
 namespace dxvk {
-    NvapiAdapter::NvapiAdapter(Vulkan& vulkan)
-        : m_vulkan(vulkan) {}
+    NvapiAdapter::NvapiAdapter(Vulkan& vulkan, Nvml& nvml)
+        : m_vulkan(vulkan), m_nvml(nvml) {}
 
     NvapiAdapter::~NvapiAdapter() = default;
 
@@ -87,6 +87,22 @@ namespace dxvk {
             VK_VERSION_MAJOR(m_vkDriverVersion), ".",
             VK_VERSION_MINOR(m_vkDriverVersion), ".",
             VK_VERSION_PATCH(m_vkDriverVersion), ")"));
+
+        if (m_nvml.IsAvailable()) {
+            char pciId[NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE];
+
+            snprintf(pciId, NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE, NVML_DEVICE_PCI_BUS_ID_FMT,
+                m_devicePciBusProperties.pciDomain,
+                m_devicePciBusProperties.pciBus,
+                m_devicePciBusProperties.pciDevice);
+
+            nvmlDevice_t nvmlDevice;
+            auto result = m_nvml.DeviceGetHandleByPciBusId_v2(pciId, &nvmlDevice);
+            if (result == NVML_SUCCESS)
+                m_nvmlDevice = nvmlDevice;
+            else
+                log::write(str::format("NVML failed to find device with PCI BusId [", pciId, "]: ", m_nvml.ErrorString(result)));
+        }
 
         return true;
     }
@@ -172,5 +188,9 @@ namespace dxvk {
 
     bool NvapiAdapter::isVkDeviceExtensionSupported(const std::string name) const { // NOLINT(performance-unnecessary-value-param)
         return m_deviceExtensions.find(name) != m_deviceExtensions.end();
+    }
+
+    nvmlDevice_t NvapiAdapter::GetNvmlDevice() const {
+        return m_nvmlDevice;
     }
 }
