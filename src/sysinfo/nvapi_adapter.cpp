@@ -9,7 +9,7 @@ namespace dxvk {
 
     NvapiAdapter::~NvapiAdapter() = default;
 
-    bool NvapiAdapter::Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
+    bool NvapiAdapter::Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs, const Nvml* nvml) {
         // Query all outputs from DXVK
         // Mosaic setup is not supported, thus one display output refers to one GPU
         Com<IDXGIOutput> dxgiOutput;
@@ -87,6 +87,22 @@ namespace dxvk {
             VK_VERSION_MAJOR(m_vkDriverVersion), ".",
             VK_VERSION_MINOR(m_vkDriverVersion), ".",
             VK_VERSION_PATCH(m_vkDriverVersion), ")"));
+
+        if (nvml != nullptr) {
+            char pciId[NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE];
+
+            snprintf(pciId, NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE, NVML_DEVICE_PCI_BUS_ID_FMT,
+                m_devicePciBusProperties.pciDomain,
+                m_devicePciBusProperties.pciBus,
+                m_devicePciBusProperties.pciDevice);
+
+            nvmlDevice_t nvmlDevice;
+
+            if (auto result = nvml->DeviceGetHandleByPciBusId_v2(pciId, &nvmlDevice); result == NVML_SUCCESS)
+                m_nvmlDevice = nvmlDevice;
+            else
+                log::write(str::format("NVML failed to find device with PCI BusId [", pciId, "]: ", nvml->ErrorString(result)));
+        }
 
         return true;
     }
@@ -172,5 +188,9 @@ namespace dxvk {
 
     bool NvapiAdapter::isVkDeviceExtensionSupported(const std::string name) const { // NOLINT(performance-unnecessary-value-param)
         return m_deviceExtensions.find(name) != m_deviceExtensions.end();
+    }
+
+    nvmlDevice_t NvapiAdapter::GetNvmlDevice() const {
+        return m_nvmlDevice;
     }
 }
