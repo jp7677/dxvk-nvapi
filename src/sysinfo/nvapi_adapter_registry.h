@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../nvapi_private.h"
+#include "vulkan.h"
+#include "nvml.h"
 #include "nvapi_adapter.h"
 #include "nvapi_output.h"
 
@@ -25,6 +27,7 @@ namespace dxvk {
 
     private:
         std::unique_ptr<Vulkan> m_vulkan;
+        std::unique_ptr<Nvml> m_nvml;
         std::vector<NvapiAdapter*> m_nvapiAdapters;
         std::vector<NvapiOutput*> m_nvapiOutputs;
     };

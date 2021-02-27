@@ -23,6 +23,14 @@ namespace dxvk {
         if (!m_vulkan->IsAvailable())
             return false;
 
+        m_nvml = std::unique_ptr<Nvml>(Nvml::TryLoadLibrary());
+        if (m_nvml) {
+            if (m_nvml->InitGetResult() == NVML_SUCCESS)
+                log::write("NVML loaded and initialized successfully");
+            else
+                m_nvml.reset();
+        }
+
         Com<IDXGIFactory> dxgiFactory;
         if(FAILED(::CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory)))
             return false;
