@@ -97,4 +97,12 @@ namespace dxvk {
     const char* NvapiAdapterRegistry::NvmlErrorString(nvmlReturn_t result) const {
         return m_nvml->ErrorString(result);
     }
+
+    nvmlReturn_t NvapiAdapterRegistry::NvmlDeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int *temp) const {
+        return m_nvml->DeviceGetTemperature(device, sensorType, temp);
+    }
+
+    nvmlReturn_t NvapiAdapterRegistry::NvmlDeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t *utilization) const {
+        return m_nvml->DeviceGetUtilizationRates(device, utilization);
+    }
 }

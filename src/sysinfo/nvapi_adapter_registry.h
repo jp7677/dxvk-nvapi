@@ -26,6 +26,8 @@ namespace dxvk {
 
         [[nodiscard]] bool HasNvml() const;
         [[nodiscard]] const char* NvmlErrorString(nvmlReturn_t result) const;
+        [[nodiscard]] nvmlReturn_t NvmlDeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int* temp) const;
+        [[nodiscard]] nvmlReturn_t NvmlDeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t* utilization) const;
 
     private:
         std::unique_ptr<Vulkan> m_vulkan;
