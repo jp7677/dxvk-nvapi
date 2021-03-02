@@ -53,6 +53,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DISP_GetDisplayIdByDisplayName)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DISP_GetGDIPrimaryDisplayId)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Mosaic_GetDisplayViewportsByResolution)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_SYS_GetPhysicalGpuFromDisplayId)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_SYS_GetDriverAndBranchVersion)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_EnumLogicalGPUs)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_EnumPhysicalGPUs)
