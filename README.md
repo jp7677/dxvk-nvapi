@@ -20,7 +20,7 @@ Basic topology and system information (vendor ID, driver version etc) has been t
 
 ## Requirements
 
-This implementation uses several DXVK extension points, thus using DXVK is a requirements. Using Wine's D3D11 will fail. Initialization of NVAPI-DXVK currently fails when no NVIDIA card is exposed through DXVK. Please leave a note in the issue tracker if it makes sense to change this requirement since no specific NVIDIA hardware features are needed.
+This implementation uses several DXVK extension points, thus using DXVK is a requirements. Using Wine's D3D11 will fail. Usage of NVAPI-DXVK is not restricted to NVIDIA-GPU's since no specific NVIDIA hardware features are needed.
 
 ## How to build
 
