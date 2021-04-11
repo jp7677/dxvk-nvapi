@@ -8,6 +8,10 @@ project('dxvk-nvapi',
   meson_version : '>= 0.46')
 
 dxvk_compiler = meson.get_compiler('cpp')
+if dxvk_compiler.has_link_argument('-Wl,--file-alignment=4096')
+  add_global_link_arguments('-Wl,--file-alignment=4096', language: 'cpp')
+endif
+
 dxvk_cpu_family = target_machine.cpu_family()
 if (dxvk_cpu_family == 'x86_64')
   dxvk_library_path = meson.source_root() + '/lib'
