@@ -39,7 +39,7 @@ Pre-built binaries are available at [https://github.com/jp7677/dxvk-nvapi/releas
 
 - Copy `nvapi64.dll`/`nvapi.dll` into the `system32`/`syswow64` folder of your x64/x86 Wine prefix.
 - Make sure that your prefix uses the native version of nvapi64, e.g. with `WINEDLLOVERRIDES=nvapi,nvapi64=n`.
-- Disable the `nvapiHack` in DXVK, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L34), this needs DXVK's `dxgi.dll`, use it e.g. with `WINEDLLOVERRIDES=dxgi=n`.
+- Disable the `nvapiHack` in DXVK, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L34). Spoof an NVIDIA GPU when running a non-NVIDIA GPU, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L22). This needs DXVK's `dxgi.dll`, use it e.g. with `WINEDLLOVERRIDES=dxgi=n`.
 - Eventually the Wine prefix needs to be *touched* by a wine-staging version. Running `winecfg` is sufficient. The exact circumstances why this is needed are (still) unknown, that said `Assetto Corsa Competizione` wants that with a prefix created with Proton 5.13.
 
 ## Debugging
