@@ -102,7 +102,7 @@ namespace dxvk {
     }
 
     inline NvAPI_Status NvidiaDeviceNotFound(const std::string& logMessage) {
-        log::write(str::format(logMessage, ": NVIDIA device not found"));
+        log::write(str::format(logMessage, ": NVIDIA (or other suitable) device not found"));
         return NVAPI_NVIDIA_DEVICE_NOT_FOUND;
     }
 }

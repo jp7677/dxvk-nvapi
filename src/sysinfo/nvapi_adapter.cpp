@@ -34,15 +34,14 @@ namespace dxvk {
         vkGetPhysicalDeviceMemoryProperties2(m_vkDevice, &memoryProperties2);
         m_memoryProperties = memoryProperties2.memoryProperties;
 
-        // TODO: Support other vendors. Currently we depend on a NVIDIA GPU, though we don't do any NVIDIA specific stuff.
-        if (m_deviceProperties.vendorID != 0x10de)
-            return false; // No Nvidia card
-
-        // Handle NVIDIA version notation
-        m_vkDriverVersion = VK_MAKE_VERSION(
-            VK_VERSION_MAJOR(m_deviceProperties.driverVersion),
-            VK_VERSION_MINOR(m_deviceProperties.driverVersion >> 0) >> 2,
-            VK_VERSION_PATCH(m_deviceProperties.driverVersion >> 2) >> 4);
+        if (m_deviceProperties.vendorID == 0x10de)
+            // Handle NVIDIA version notation
+            m_vkDriverVersion = VK_MAKE_VERSION(
+                VK_VERSION_MAJOR(m_deviceProperties.driverVersion),
+                VK_VERSION_MINOR(m_deviceProperties.driverVersion >> 0) >> 2,
+                VK_VERSION_PATCH(m_deviceProperties.driverVersion >> 2) >> 4);
+        else
+            m_vkDriverVersion = m_deviceProperties.driverVersion;
 
         log::write(str::format("NvAPI Device: ", m_deviceProperties.deviceName, " (",
             VK_VERSION_MAJOR(m_vkDriverVersion), ".",
