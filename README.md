@@ -45,7 +45,7 @@ Pre-built binaries are available at [https://github.com/jp7677/dxvk-nvapi/releas
 
 DXVK-NVAPI prints some logging statements to the console. Optionally those statements can be written to a log file using the following environment variable:
 
-- `DXVK_NVAPI_LOG_PATH` Enables file logging and sets the path where the log file `dxvk-nvapi.log` should be written to. Loging is appended to an existing file. Please remove this file once in a while to prevent excessive grow.
+- `DXVK_NVAPI_LOG_PATH` Enables file logging and sets the path where the log file `dxvk-nvapi.log` should be written to. Log statements are appended to an existing file. Please remove this file once in a while to prevent excessive grow.
 
 ## References and inspirations
 
