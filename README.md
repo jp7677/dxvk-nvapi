@@ -20,7 +20,7 @@ Basic topology and system information (vendor ID, driver version etc) has been t
 
 ## Requirements
 
-This implementation uses several DXVK extension points, thus using DXVK is a requirements. Using Wine's D3D11 will fail. Usage of NVAPI-DXVK is not restricted to NVIDIA-GPU's since no specific NVIDIA hardware features are needed.
+This implementation is supposed to be used on Linux using Wine or derivates like Proton. It uses several DXVK extension points, having DXVK (D3D11 and DXGI) is a requirements. Using Wine's D3D11 or DXGI will fail. Usage of NVAPI-DXVK is not restricted to NVIDIA-GPU's since no specific NVIDIA hardware features are needed. 
 
 ## How to build
 
