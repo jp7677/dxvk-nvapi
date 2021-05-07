@@ -15,7 +15,10 @@ namespace dxvk {
             return false;
 
         HMODULE vkModule = LoadLibraryA("vulkan-1.dll");
-        PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(reinterpret_cast<void*>(GetProcAddress(vkModule, "vkGetInstanceProcAddr")));
+        PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
+            reinterpret_cast<PFN_vkGetInstanceProcAddr>(
+                reinterpret_cast<void*>(
+                    GetProcAddress(vkModule, "vkGetInstanceProcAddr")));
 
         VkInstance vkInstance = VK_NULL_HANDLE;
         dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &m_vkDevice);
@@ -27,7 +30,10 @@ namespace dxvk {
         deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
         deviceProperties2.pNext = &m_devicePciBusProperties;
 
-        PFN_vkGetPhysicalDeviceProperties2 vkGetPhysicalDeviceProperties2 = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceProperties2"));
+        PFN_vkGetPhysicalDeviceProperties2 vkGetPhysicalDeviceProperties2 =
+            reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(
+                vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceProperties2"));
+
         vkGetPhysicalDeviceProperties2(m_vkDevice, &deviceProperties2);
         m_deviceProperties = deviceProperties2.properties;
 
@@ -35,7 +41,10 @@ namespace dxvk {
         memoryProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
         memoryProperties2.pNext = nullptr;
 
-        PFN_vkGetPhysicalDeviceMemoryProperties2 vkGetPhysicalDeviceMemoryProperties2 = reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties2>(vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceMemoryProperties2"));
+        PFN_vkGetPhysicalDeviceMemoryProperties2 vkGetPhysicalDeviceMemoryProperties2 =
+            reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties2>(
+                vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceMemoryProperties2"));
+
         vkGetPhysicalDeviceMemoryProperties2(m_vkDevice, &memoryProperties2);
         m_memoryProperties = memoryProperties2.memoryProperties;
 
