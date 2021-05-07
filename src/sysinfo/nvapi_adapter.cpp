@@ -21,7 +21,8 @@ namespace dxvk {
                     GetProcAddress(vkModule, "vkGetInstanceProcAddr")));
 
         VkInstance vkInstance = VK_NULL_HANDLE;
-        dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &m_vkDevice);
+        VkPhysicalDevice vkDevice = VK_NULL_HANDLE;
+        dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &vkDevice);
 
         m_devicePciBusProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT;
         m_devicePciBusProperties.pNext = nullptr;
@@ -34,7 +35,7 @@ namespace dxvk {
             reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(
                 vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceProperties2"));
 
-        vkGetPhysicalDeviceProperties2(m_vkDevice, &deviceProperties2);
+        vkGetPhysicalDeviceProperties2(vkDevice, &deviceProperties2);
         m_deviceProperties = deviceProperties2.properties;
 
         VkPhysicalDeviceMemoryProperties2 memoryProperties2;
@@ -45,7 +46,7 @@ namespace dxvk {
             reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties2>(
                 vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceMemoryProperties2"));
 
-        vkGetPhysicalDeviceMemoryProperties2(m_vkDevice, &memoryProperties2);
+        vkGetPhysicalDeviceMemoryProperties2(vkDevice, &memoryProperties2);
         m_memoryProperties = memoryProperties2.memoryProperties;
 
         if (m_deviceProperties.vendorID == 0x10de)
