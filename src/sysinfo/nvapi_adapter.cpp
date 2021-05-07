@@ -11,10 +11,18 @@ namespace dxvk {
     bool NvapiAdapter::Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
         // Get the Vulkan handle  from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
-        if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter))))
+        if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter)))) {
+            log::write("Querying Vulkan handle from DXGI adapter failed. Please ensure that DXVK's dxgi.dll is loaded.");
             return false;
+        }
 
-        auto vkModule = LoadLibraryA("vulkan-1.dll");
+        const auto vkModuleName = "vulkan-1.dll";
+        auto vkModule = LoadLibraryA(vkModuleName);
+        if (vkModule == nullptr) {
+            log::write(str::format("Loading ", vkModuleName, " failed with error code ", GetLastError()));
+            return false;
+        }
+
         auto vkGetInstanceProcAddr =
             reinterpret_cast<PFN_vkGetInstanceProcAddr>(
                 reinterpret_cast<void*>(
