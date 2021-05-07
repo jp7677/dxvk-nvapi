@@ -5,7 +5,7 @@
 
 #include <dxgi.h>
 #include <d3d11_1.h>
-#include <../inc/vulkan_core.h>
+#include <vulkan/vulkan.h>
 
 #include <iostream>
 #include <iomanip>
