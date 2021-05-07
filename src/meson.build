@@ -12,6 +12,6 @@ nvapi_src = files([
 
 nvapi_dll = shared_library('nvapi'+dll_suffix, [ nvapi_src, dxvk_nvapi_version ],
   name_prefix         : '',
-  dependencies        : [ lib_d3d11, lib_dxgi, lib_vulkan ],
+  dependencies        : [ lib_d3d11, lib_dxgi ],
   include_directories : vk_headers,
   install             : true)

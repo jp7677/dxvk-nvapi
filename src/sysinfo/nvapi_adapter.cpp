@@ -11,11 +11,26 @@ namespace dxvk {
     bool NvapiAdapter::Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
         // Get the Vulkan handle  from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
-        if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter))))
+        if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter)))) {
+            log::write("Querying Vulkan handle from DXGI adapter failed, please ensure that DXVK's dxgi.dll is loaded");
             return false;
+        }
+
+        const auto vkModuleName = "vulkan-1.dll";
+        auto vkModule = ::LoadLibraryA(vkModuleName);
+        if (vkModule == nullptr) {
+            log::write(str::format("Loading ", vkModuleName, " failed with error code ", ::GetLastError()));
+            return false;
+        }
+
+        auto vkGetInstanceProcAddr =
+            reinterpret_cast<PFN_vkGetInstanceProcAddr>(
+                reinterpret_cast<void*>(
+                    GetProcAddress(vkModule, "vkGetInstanceProcAddr")));
 
         VkInstance vkInstance = VK_NULL_HANDLE;
-        dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &m_vkDevice);
+        VkPhysicalDevice vkDevice = VK_NULL_HANDLE;
+        dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &vkDevice);
 
         m_devicePciBusProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT;
         m_devicePciBusProperties.pNext = nullptr;
@@ -24,14 +39,22 @@ namespace dxvk {
         deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
         deviceProperties2.pNext = &m_devicePciBusProperties;
 
-        vkGetPhysicalDeviceProperties2(m_vkDevice, &deviceProperties2);
+        auto vkGetPhysicalDeviceProperties2 =
+            reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(
+                vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceProperties2"));
+
+        vkGetPhysicalDeviceProperties2(vkDevice, &deviceProperties2);
         m_deviceProperties = deviceProperties2.properties;
 
         VkPhysicalDeviceMemoryProperties2 memoryProperties2;
         memoryProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
         memoryProperties2.pNext = nullptr;
 
-        vkGetPhysicalDeviceMemoryProperties2(m_vkDevice, &memoryProperties2);
+        auto vkGetPhysicalDeviceMemoryProperties2 =
+            reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties2>(
+                vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceMemoryProperties2"));
+
+        vkGetPhysicalDeviceMemoryProperties2(vkDevice, &memoryProperties2);
         m_memoryProperties = memoryProperties2.memoryProperties;
 
         if (m_deviceProperties.vendorID == 0x10de)
@@ -57,6 +80,7 @@ namespace dxvk {
             outputs.push_back(nvapiOutput);
         }
 
+        FreeLibrary(vkModule);
         return true;
     }
 
@@ -77,7 +101,7 @@ namespace dxvk {
 
     u_int NvapiAdapter::GetGpuType() const {
         // The enum values for discrete, integrated and unknown GPU are the same for Vulkan and NvAPI
-        VkPhysicalDeviceType vkDeviceType = m_deviceProperties.deviceType;
+        auto vkDeviceType = m_deviceProperties.deviceType;
         if (vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
             return vkDeviceType;
 
@@ -92,7 +116,7 @@ namespace dxvk {
         // Not sure if it is completely correct to just look at the first DEVICE_LOCAL heap,
         // but it seems to give the correct result.
         for (auto i = 0U; i < m_memoryProperties.memoryHeapCount; i++) {
-            VkMemoryHeap heap = m_memoryProperties.memoryHeaps[i];
+            auto heap = m_memoryProperties.memoryHeaps[i];
             if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
                 return heap.size / 1024;
         }

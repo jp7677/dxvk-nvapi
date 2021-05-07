@@ -20,7 +20,6 @@ namespace dxvk {
         [[nodiscard]] u_int GetVRamSize() const;
 
     private:
-        VkPhysicalDevice m_vkDevice = VK_NULL_HANDLE;
         VkPhysicalDeviceProperties m_deviceProperties{};
         VkPhysicalDevicePCIBusInfoPropertiesEXT m_devicePciBusProperties{};
         VkPhysicalDeviceMemoryProperties m_memoryProperties{};

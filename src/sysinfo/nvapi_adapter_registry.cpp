@@ -17,7 +17,7 @@ namespace dxvk {
 
     bool NvapiAdapterRegistry::Initialize() {
         Com<IDXGIFactory> dxgiFactory;
-        if(FAILED(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory)))
+        if(FAILED(::CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory)))
             return false;
 
         // Query all D3D11 adapter from DXVK to honor any DXVK device filtering
