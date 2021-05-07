@@ -19,10 +19,10 @@ else
   dll_suffix = ''
 endif
 
+vk_headers = include_directories('./external/Vulkan-Headers/include')
+
 lib_dxgi = dxvk_compiler.find_library('dxgi')
 lib_d3d11 = dxvk_compiler.find_library('d3d11')
-
-vk_headers = include_directories('./external/Vulkan-Headers/include')
 
 dxvk_nvapi_version = vcs_tag(
   command: ['git', 'describe', '--always', '--tags', '--dirty=+'],
