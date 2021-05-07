@@ -15,7 +15,7 @@ namespace dxvk {
             return false;
 
         HMODULE vkModule = LoadLibraryA("vulkan-1.dll");
-        PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(GetProcAddress(vkModule, "vkGetInstanceProcAddr"));
+        PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(reinterpret_cast<void*>(GetProcAddress(vkModule, "vkGetInstanceProcAddr")));
 
         VkInstance vkInstance = VK_NULL_HANDLE;
         dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &m_vkDevice);
