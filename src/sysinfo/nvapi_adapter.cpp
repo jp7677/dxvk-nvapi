@@ -14,8 +14,8 @@ namespace dxvk {
         if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter))))
             return false;
 
-        HMODULE vkModule = LoadLibraryA("vulkan-1.dll");
-        PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
+        auto vkModule = LoadLibraryA("vulkan-1.dll");
+        auto vkGetInstanceProcAddr =
             reinterpret_cast<PFN_vkGetInstanceProcAddr>(
                 reinterpret_cast<void*>(
                     GetProcAddress(vkModule, "vkGetInstanceProcAddr")));
@@ -30,7 +30,7 @@ namespace dxvk {
         deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
         deviceProperties2.pNext = &m_devicePciBusProperties;
 
-        PFN_vkGetPhysicalDeviceProperties2 vkGetPhysicalDeviceProperties2 =
+        auto vkGetPhysicalDeviceProperties2 =
             reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(
                 vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceProperties2"));
 
@@ -41,7 +41,7 @@ namespace dxvk {
         memoryProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
         memoryProperties2.pNext = nullptr;
 
-        PFN_vkGetPhysicalDeviceMemoryProperties2 vkGetPhysicalDeviceMemoryProperties2 =
+        auto vkGetPhysicalDeviceMemoryProperties2 =
             reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties2>(
                 vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceMemoryProperties2"));
 
@@ -92,7 +92,7 @@ namespace dxvk {
 
     u_int NvapiAdapter::GetGpuType() const {
         // The enum values for discrete, integrated and unknown GPU are the same for Vulkan and NvAPI
-        VkPhysicalDeviceType vkDeviceType = m_deviceProperties.deviceType;
+        auto vkDeviceType = m_deviceProperties.deviceType;
         if (vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
             return vkDeviceType;
 
@@ -107,7 +107,7 @@ namespace dxvk {
         // Not sure if it is completely correct to just look at the first DEVICE_LOCAL heap,
         // but it seems to give the correct result.
         for (auto i = 0U; i < m_memoryProperties.memoryHeapCount; i++) {
-            VkMemoryHeap heap = m_memoryProperties.memoryHeaps[i];
+            auto heap = m_memoryProperties.memoryHeaps[i];
             if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
                 return heap.size / 1024;
         }
