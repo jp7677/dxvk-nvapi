@@ -17,9 +17,9 @@ namespace dxvk {
         }
 
         const auto vkModuleName = "vulkan-1.dll";
-        auto vkModule = LoadLibraryA(vkModuleName);
+        auto vkModule = ::LoadLibraryA(vkModuleName);
         if (vkModule == nullptr) {
-            log::write(str::format("Loading ", vkModuleName, " failed with error code ", GetLastError()));
+            log::write(str::format("Loading ", vkModuleName, " failed with error code ", ::GetLastError()));
             return false;
         }
 
