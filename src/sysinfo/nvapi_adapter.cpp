@@ -26,7 +26,7 @@ namespace dxvk {
         VkPhysicalDeviceProperties2 deviceProperties2;
         deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
         deviceProperties2.pNext = &m_devicePciBusProperties;
-        
+
         PFN_vkGetPhysicalDeviceProperties2 vkGetPhysicalDeviceProperties2 = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceProperties2"));
         vkGetPhysicalDeviceProperties2(m_vkDevice, &deviceProperties2);
         m_deviceProperties = deviceProperties2.properties;
