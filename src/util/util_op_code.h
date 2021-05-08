@@ -27,9 +27,6 @@ namespace dxvk {
         };
 
         auto it = codes.find(code);
-        if (it != codes.end())
-            return it->second;
-
-        return "UNKNOWN_EXTN_OP";
+        return it != codes.end() ? it->second : "UNKNOWN_EXTN_OP";
     }
 }
