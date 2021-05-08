@@ -4,6 +4,8 @@
 #include "../util/com_pointer.h"
 #include "nvapi_output.h"
 
+#include <set>
+
 namespace dxvk {
     class NvapiAdapter {
 
@@ -20,9 +22,12 @@ namespace dxvk {
         [[nodiscard]] u_int GetVRamSize() const;
 
     private:
+        bool isVkDeviceExtensionSupported(std::string extName);
+
         VkPhysicalDeviceProperties m_deviceProperties{};
         VkPhysicalDevicePCIBusInfoPropertiesEXT m_devicePciBusProperties{};
         VkPhysicalDeviceMemoryProperties m_memoryProperties{};
         u_int m_vkDriverVersion{};
+        std::set<std::string> m_deviceExtensions{};
     };
 }

@@ -28,9 +28,32 @@ namespace dxvk {
                 reinterpret_cast<void*>(
                     GetProcAddress(vkModule, "vkGetInstanceProcAddr")));
 
+        auto vkEnumerateDeviceExtensionProperties =
+            reinterpret_cast<PFN_vkEnumerateDeviceExtensionProperties>(
+                reinterpret_cast<void*>(
+                    GetProcAddress(vkModule, "vkEnumerateDeviceExtensionProperties")));
+
         VkInstance vkInstance = VK_NULL_HANDLE;
         VkPhysicalDevice vkDevice = VK_NULL_HANDLE;
         dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &vkDevice);
+
+        uint32_t extCount = 0;
+        // Grab last of valid extensions for this device
+        if (VK_SUCCESS != vkEnumerateDeviceExtensionProperties(vkDevice,
+                                                               nullptr,
+                                                               &extCount,
+                                                               nullptr))
+            return false;
+
+        std::vector<VkExtensionProperties> extensions(extCount);
+        if (VK_SUCCESS != vkEnumerateDeviceExtensionProperties(vkDevice,
+                                                               nullptr,
+                                                               &extCount,
+                                                               extensions.data()))
+            return false;
+
+        for (const auto& ext : extensions)
+            m_deviceExtensions.insert(std::string(ext.extensionName));
 
         m_devicePciBusProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT;
         m_devicePciBusProperties.pNext = nullptr;
@@ -121,5 +144,9 @@ namespace dxvk {
         }
 
         return 0;
+    }
+
+    bool NvapiAdapter::isVkDeviceExtensionSupported(std::string extName) {
+        return m_deviceExtensions.find(extName) != m_deviceExtensions.end();
     }
 }
