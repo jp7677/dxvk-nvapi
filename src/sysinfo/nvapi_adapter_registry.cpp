@@ -49,19 +49,21 @@ namespace dxvk {
     }
 
     NvapiAdapter* NvapiAdapterRegistry::GetAdapter(NvPhysicalGpuHandle handle) const {
-        for (const auto& adapter : m_nvapiAdapters)
-            if (handle == (NvPhysicalGpuHandle) adapter)
-                return adapter;
+        auto it = std::find_if(m_nvapiAdapters.begin(), m_nvapiAdapters.end(),
+            [&handle](const auto& adapter) {
+                return (NvPhysicalGpuHandle) adapter == handle;
+            });
 
-        return nullptr;
+        return it != m_nvapiAdapters.end() ? *it : nullptr;
     }
 
     NvapiAdapter* NvapiAdapterRegistry::GetAdapter(NvLogicalGpuHandle handle) const {
-        for (const auto& adapter : m_nvapiAdapters)
-            if (handle == (NvLogicalGpuHandle) adapter)
-                return adapter;
+        auto it = std::find_if(m_nvapiAdapters.begin(), m_nvapiAdapters.end(),
+            [&handle](const auto& adapter) {
+                return (NvLogicalGpuHandle) adapter == handle;
+            });
 
-        return nullptr;
+        return it != m_nvapiAdapters.end() ? *it : nullptr;
     }
 
     NvapiOutput* NvapiAdapterRegistry::GetOutput(const u_short index) const {
@@ -72,26 +74,29 @@ namespace dxvk {
     }
 
     NvapiOutput* NvapiAdapterRegistry::GetOutput(NvDisplayHandle handle) const {
-        for (const auto& output : m_nvapiOutputs)
-            if (handle == (NvDisplayHandle) output)
-                return output;
+        auto it = std::find_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(),
+            [&handle](const auto& output) {
+                return (NvDisplayHandle) output == handle;
+            });
 
-        return nullptr;
+        return it != m_nvapiOutputs.end() ? *it : nullptr;
     }
 
     short NvapiAdapterRegistry::GetPrimaryOutputId() const {
-        for (auto i = 0U; i < m_nvapiOutputs.size(); i++)
-            if (m_nvapiOutputs.at(i)->IsPrimary())
-                return static_cast<short>(i);
+        auto it = std::find_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(),
+            [](const auto& output) {
+                return output->IsPrimary();
+            });
 
-        return -1;
+        return static_cast<short>(it != m_nvapiOutputs.end() ? std::distance(m_nvapiOutputs.begin(), it) : -1);
     }
 
     short NvapiAdapterRegistry::GetOutputId(const std::string& displayName) const {
-        for (auto i = 0U; i < m_nvapiOutputs.size(); i++)
-            if (m_nvapiOutputs.at(i)->GetDeviceName() == displayName)
-                return static_cast<short>(i);
+        auto it = std::find_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(),
+            [&displayName](const auto& output) {
+                return output->GetDeviceName() == displayName;
+            });
 
-        return -1;
+        return static_cast<short>(it != m_nvapiOutputs.end() ? std::distance(m_nvapiOutputs.begin(), it) : -1);
     }
 }
