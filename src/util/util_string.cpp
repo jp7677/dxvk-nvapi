@@ -16,7 +16,7 @@ namespace dxvk::str {
     }
 
     void tows(const char* mbs, WCHAR* wcs, size_t wcsLen) {
-        ::MultiByteToWideChar(CP_UTF8, 0, mbs, -1, wcs, wcsLen);
+        ::MultiByteToWideChar(CP_UTF8, 0, mbs, -1, wcs, static_cast<int>(wcsLen));
     }
 
     std::wstring tows(const char* mbs) {

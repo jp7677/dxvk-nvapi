@@ -1,7 +1,7 @@
 #include "nvapi_d3d11_device.h"
 
 namespace dxvk {
-    bool NvapiD3d11Device::SetDepthBoundsTest(IUnknown* device, const u_int enable, const float minDepth, const float maxDepth) {
+    bool NvapiD3d11Device::SetDepthBoundsTest(IUnknown* device, const bool enable, const float minDepth, const float maxDepth) {
         static bool alreadyTested = false;
         if (!IsSupportedExtension(device, D3D11_VK_EXT_DEPTH_BOUNDS, alreadyTested))
             return false;
