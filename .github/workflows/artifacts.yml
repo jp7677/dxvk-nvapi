@@ -1,6 +1,12 @@
 name: Artifacts (Package)
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  # Allows you to run this workflow manually
+  workflow_dispatch:
 
 jobs:
   build-artifacts:
