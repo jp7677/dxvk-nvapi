@@ -14,10 +14,8 @@ namespace dxvk {
     }
 
     inline NvAPI_Status Ok(const std::string& logMessage, bool& alreadyLogged) {
-        if (alreadyLogged)
+        if (std::exchange(alreadyLogged, true))
             return NVAPI_OK;
-
-        alreadyLogged = true;
 
         log::write(str::format(logMessage, ": OK"));
         return NVAPI_OK;
@@ -33,10 +31,8 @@ namespace dxvk {
     }
 
     inline NvAPI_Status Error(const std::string& logMessage, bool& alreadyLogged) {
-        if (alreadyLogged)
+        if (std::exchange(alreadyLogged, true))
             return NVAPI_ERROR;
-
-        alreadyLogged = true;
 
         log::write(str::format(logMessage, ": Error"));
         return NVAPI_ERROR;
@@ -52,10 +48,8 @@ namespace dxvk {
     }
 
     inline NvAPI_Status NoImplementation(const std::string& logMessage, bool& alreadyLogged) {
-        if (alreadyLogged)
+        if (std::exchange(alreadyLogged, true))
             return NVAPI_NO_IMPLEMENTATION;
-
-        alreadyLogged = true;
 
         log::write(str::format(logMessage, ": No implementation"));
         return NVAPI_NO_IMPLEMENTATION;
