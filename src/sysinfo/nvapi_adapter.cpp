@@ -118,18 +118,18 @@ namespace dxvk {
         return std::string(m_deviceProperties.deviceName);
     }
 
-    u_int NvapiAdapter::GetDriverVersion() const {
+    uint32_t NvapiAdapter::GetDriverVersion() const {
         // Windows releases can only ever have a two digit minor version
         // and does not have a patch number
         return VK_VERSION_MAJOR(m_vkDriverVersion) * 100 +
-            std::min(VK_VERSION_MINOR(m_vkDriverVersion), (u_int) 99);
+            std::min(VK_VERSION_MINOR(m_vkDriverVersion), (uint32_t) 99);
     }
 
-    u_int NvapiAdapter::GetDeviceId() const {
+    uint32_t NvapiAdapter::GetDeviceId() const {
         return (m_deviceProperties.deviceID << 16) + m_deviceProperties.vendorID;
     }
 
-    u_int NvapiAdapter::GetGpuType() const {
+    uint32_t NvapiAdapter::GetGpuType() const {
         // The enum values for discrete, integrated and unknown GPU are the same for Vulkan and NvAPI
         auto vkDeviceType = m_deviceProperties.deviceType;
         return vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
@@ -137,11 +137,11 @@ namespace dxvk {
             : VK_PHYSICAL_DEVICE_TYPE_OTHER;
     }
 
-    u_int NvapiAdapter::GetBusId() const {
+    uint32_t NvapiAdapter::GetBusId() const {
         return m_devicePciBusProperties.pciBus;
     }
 
-    u_int NvapiAdapter::GetVRamSize() const {
+    uint32_t NvapiAdapter::GetVRamSize() const {
         // Not sure if it is completely correct to just look at the first DEVICE_LOCAL heap,
         // but it seems to give the correct result.
         for (auto i = 0U; i < m_memoryProperties.memoryHeapCount; i++) {
