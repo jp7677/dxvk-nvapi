@@ -2,7 +2,7 @@
 
 namespace dxvk::str {
     std::string fromws(const WCHAR* ws) {
-        size_t len = ::WideCharToMultiByte(CP_UTF8, 0, ws, -1, nullptr, 0, nullptr, nullptr);
+        auto len = ::WideCharToMultiByte(CP_UTF8, 0, ws, -1, nullptr, 0, nullptr, nullptr);
 
         if (len <= 1)
             return "";
@@ -11,7 +11,7 @@ namespace dxvk::str {
 
         std::string result;
         result.resize(len);
-        ::WideCharToMultiByte(CP_UTF8, 0, ws, -1, &result.at(0), len, nullptr, nullptr);
+        ::WideCharToMultiByte(CP_UTF8, 0, ws, -1, &result[0], len, nullptr, nullptr);
         return result;
     }
 
@@ -20,7 +20,7 @@ namespace dxvk::str {
     }
 
     std::wstring tows(const char* mbs) {
-        size_t len = ::MultiByteToWideChar(CP_UTF8, 0, mbs, -1, nullptr, 0);
+        auto len = ::MultiByteToWideChar(CP_UTF8, 0, mbs, -1, nullptr, 0);
 
         if (len <= 1)
             return L"";
@@ -29,7 +29,7 @@ namespace dxvk::str {
 
         std::wstring result;
         result.resize(len);
-        ::MultiByteToWideChar(CP_UTF8, 0, mbs, -1, &result.at(0), len);
+        ::MultiByteToWideChar(CP_UTF8, 0, mbs, -1, &result[0], len);
         return result;
     }
 }
