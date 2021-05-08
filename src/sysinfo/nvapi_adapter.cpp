@@ -55,12 +55,19 @@ namespace dxvk {
         for (const auto& ext : extensions)
             m_deviceExtensions.insert(std::string(ext.extensionName));
 
-        m_devicePciBusProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT;
-        m_devicePciBusProperties.pNext = nullptr;
-
+        // Query Properties for this device. Per section 4.1.2. Extending Physical Device From Device Extensions of the Vulkan
+        // 1.2.177 Specification, we must first query that a device extension is
+        // supported before requesting information on its physical-device-level
+        // functionality (ie: Properties).
         VkPhysicalDeviceProperties2 deviceProperties2;
         deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-        deviceProperties2.pNext = &m_devicePciBusProperties;
+        deviceProperties2.pNext = nullptr;
+
+        if (isVkDeviceExtensionSupported(VK_EXT_PCI_BUS_INFO_EXTENSION_NAME)) {
+            m_devicePciBusProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT;
+            m_devicePciBusProperties.pNext = deviceProperties2.pNext;
+            deviceProperties2.pNext = &m_devicePciBusProperties;
+        }
 
         auto vkGetPhysicalDeviceProperties2 =
             reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(
