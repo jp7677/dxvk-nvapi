@@ -24,7 +24,7 @@ extern "C" {
             return InvalidArgument(n);
 
         for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++)
-            nvGPUHandle[i] = (NvLogicalGpuHandle) nvapiAdapterRegistry->GetAdapter(i);
+            nvGPUHandle[i] = reinterpret_cast<NvLogicalGpuHandle>(nvapiAdapterRegistry->GetAdapter(i));
 
         *pGpuCount = nvapiAdapterRegistry->GetAdapterCount();
 
@@ -41,7 +41,7 @@ extern "C" {
             return InvalidArgument(n);
 
         for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++)
-            nvGPUHandle[i] = (NvPhysicalGpuHandle) nvapiAdapterRegistry->GetAdapter(i);
+            nvGPUHandle[i] = reinterpret_cast<NvPhysicalGpuHandle>(nvapiAdapterRegistry->GetAdapter(i));
 
         *pGpuCount = nvapiAdapterRegistry->GetAdapterCount();
 
@@ -78,11 +78,11 @@ extern "C" {
         if (hNvDisp == nullptr || nvGPUHandle == nullptr || pGpuCount == nullptr)
             return InvalidArgument(n);
 
-        auto output = nvapiAdapterRegistry->GetOutput(hNvDisp);
-        if (output == nullptr)
+        auto output = reinterpret_cast<NvapiOutput*>(hNvDisp);
+        if (!nvapiAdapterRegistry->IsOutput(output))
             return ExpectedDisplayHandle(n);
 
-        nvGPUHandle[0] = (NvPhysicalGpuHandle) output->GetParent();
+        nvGPUHandle[0] = reinterpret_cast<NvPhysicalGpuHandle>(output->GetParent());
         *pGpuCount = 1;
 
         return Ok(n);
@@ -101,7 +101,7 @@ extern "C" {
         if (output == nullptr)
             return EndEnumeration(str::format(n, " ", thisEnum));
 
-        *pNvDispHandle = (NvDisplayHandle) output;
+        *pNvDispHandle = reinterpret_cast<NvDisplayHandle>(output);
 
         return Ok(str::format(n, " ", thisEnum));
     }

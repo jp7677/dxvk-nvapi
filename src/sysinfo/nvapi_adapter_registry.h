@@ -16,11 +16,10 @@ namespace dxvk {
         [[nodiscard]] u_short GetAdapterCount() const;
         [[nodiscard]] NvapiAdapter* GetAdapter() const;
         [[nodiscard]] NvapiAdapter* GetAdapter(u_short index) const;
-        [[nodiscard]] NvapiAdapter* GetAdapter(NvPhysicalGpuHandle handle) const;
-        [[nodiscard]] NvapiAdapter* GetAdapter(NvLogicalGpuHandle handle) const;
+        [[nodiscard]] bool IsAdapter(NvapiAdapter* handle) const;
 
         [[nodiscard]] NvapiOutput* GetOutput(u_short index) const;
-        [[nodiscard]] NvapiOutput* GetOutput(NvDisplayHandle handle) const;
+        [[nodiscard]] bool IsOutput(NvapiOutput* handle) const;
         [[nodiscard]] short GetPrimaryOutputId() const;
         [[nodiscard]] short GetOutputId(const std::string& displayName) const;
 

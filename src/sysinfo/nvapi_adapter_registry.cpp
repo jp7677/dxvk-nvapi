@@ -45,35 +45,16 @@ namespace dxvk {
         return index < m_nvapiAdapters.size() ? m_nvapiAdapters[index] : nullptr;
     }
 
-    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(NvPhysicalGpuHandle handle) const {
-        auto it = std::find_if(m_nvapiAdapters.begin(), m_nvapiAdapters.end(),
-            [&handle](const auto& adapter) {
-                return (NvPhysicalGpuHandle) adapter == handle;
-            });
-
-        return it != m_nvapiAdapters.end() ? *it : nullptr;
-    }
-
-    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(NvLogicalGpuHandle handle) const {
-        auto it = std::find_if(m_nvapiAdapters.begin(), m_nvapiAdapters.end(),
-            [&handle](const auto& adapter) {
-                return (NvLogicalGpuHandle) adapter == handle;
-            });
-
-        return it != m_nvapiAdapters.end() ? *it : nullptr;
+    bool NvapiAdapterRegistry::IsAdapter(NvapiAdapter* handle) const {
+        return std::find(m_nvapiAdapters.begin(), m_nvapiAdapters.end(), handle) != m_nvapiAdapters.end();
     }
 
     NvapiOutput* NvapiAdapterRegistry::GetOutput(const u_short index) const {
         return index < m_nvapiOutputs.size() ? m_nvapiOutputs[index] : nullptr;
     }
 
-    NvapiOutput* NvapiAdapterRegistry::GetOutput(NvDisplayHandle handle) const {
-        auto it = std::find_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(),
-            [&handle](const auto& output) {
-                return (NvDisplayHandle) output == handle;
-            });
-
-        return it != m_nvapiOutputs.end() ? *it : nullptr;
+    bool NvapiAdapterRegistry::IsOutput(NvapiOutput* handle) const {
+        return std::find(m_nvapiOutputs.begin(), m_nvapiOutputs.end(), handle) != m_nvapiOutputs.end();
     }
 
     short NvapiAdapterRegistry::GetPrimaryOutputId() const {

@@ -14,8 +14,8 @@ extern "C" {
         if (hPhysicalGpu == nullptr || pGpuType == nullptr)
             return InvalidArgument(n);
 
-        auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
-        if (adapter ==  nullptr)
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
         *pGpuType = (NV_GPU_TYPE) adapter->GetGpuType();
@@ -32,8 +32,8 @@ extern "C" {
         if (hPhysicalGpu == nullptr || pDeviceId == nullptr || pSubSystemId == nullptr || pRevisionId == nullptr || pExtDeviceId == nullptr)
             return InvalidArgument(n);
 
-        auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
-        if (adapter ==  nullptr)
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
         *pDeviceId = adapter->GetDeviceId();
@@ -53,8 +53,8 @@ extern "C" {
         if (hPhysicalGpu == nullptr || szName == nullptr)
             return InvalidArgument(n);
 
-        auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
-        if (adapter ==  nullptr)
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
         strcpy(szName, adapter->GetDeviceName().c_str());
@@ -71,8 +71,8 @@ extern "C" {
         if (hPhysicalGpu == nullptr || pBusId == nullptr)
             return InvalidArgument(n);
 
-        auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
-        if (adapter ==  nullptr)
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
         *pBusId = adapter->GetBusId();
@@ -89,8 +89,8 @@ extern "C" {
         if (pSize == nullptr)
             return InvalidArgument(n);
 
-        auto adapter = nvapiAdapterRegistry->GetAdapter(hPhysicalGpu);
-        if (adapter ==  nullptr)
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
         *pSize = adapter->GetVRamSize();
