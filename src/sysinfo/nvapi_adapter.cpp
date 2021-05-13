@@ -28,16 +28,46 @@ namespace dxvk {
                 reinterpret_cast<void*>(
                     GetProcAddress(vkModule, "vkGetInstanceProcAddr")));
 
+        auto vkEnumerateDeviceExtensionProperties =
+            reinterpret_cast<PFN_vkEnumerateDeviceExtensionProperties>(
+                reinterpret_cast<void*>(
+                    GetProcAddress(vkModule, "vkEnumerateDeviceExtensionProperties")));
+
         VkInstance vkInstance = VK_NULL_HANDLE;
         VkPhysicalDevice vkDevice = VK_NULL_HANDLE;
         dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &vkDevice);
 
-        m_devicePciBusProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT;
-        m_devicePciBusProperties.pNext = nullptr;
+        uint32_t extCount = 0;
+        // Grab last of valid extensions for this device
+        if (VK_SUCCESS != vkEnumerateDeviceExtensionProperties(vkDevice,
+                                                               nullptr,
+                                                               &extCount,
+                                                               nullptr))
+            return false;
 
+        std::vector<VkExtensionProperties> extensions(extCount);
+        if (VK_SUCCESS != vkEnumerateDeviceExtensionProperties(vkDevice,
+                                                               nullptr,
+                                                               &extCount,
+                                                               extensions.data()))
+            return false;
+
+        for (const auto& ext : extensions)
+            m_deviceExtensions.insert(std::string(ext.extensionName));
+
+        // Query Properties for this device. Per section 4.1.2. Extending Physical Device From Device Extensions of the Vulkan
+        // 1.2.177 Specification, we must first query that a device extension is
+        // supported before requesting information on its physical-device-level
+        // functionality (ie: Properties).
         VkPhysicalDeviceProperties2 deviceProperties2;
         deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-        deviceProperties2.pNext = &m_devicePciBusProperties;
+        deviceProperties2.pNext = nullptr;
+
+        if (isVkDeviceExtensionSupported(VK_EXT_PCI_BUS_INFO_EXTENSION_NAME)) {
+            m_devicePciBusProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT;
+            m_devicePciBusProperties.pNext = deviceProperties2.pNext;
+            deviceProperties2.pNext = &m_devicePciBusProperties;
+        }
 
         auto vkGetPhysicalDeviceProperties2 =
             reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(
@@ -88,18 +118,18 @@ namespace dxvk {
         return std::string(m_deviceProperties.deviceName);
     }
 
-    u_int NvapiAdapter::GetDriverVersion() const {
+    uint32_t NvapiAdapter::GetDriverVersion() const {
         // Windows releases can only ever have a two digit minor version
         // and does not have a patch number
         return VK_VERSION_MAJOR(m_vkDriverVersion) * 100 +
-            std::min(VK_VERSION_MINOR(m_vkDriverVersion), (u_int) 99);
+            std::min(VK_VERSION_MINOR(m_vkDriverVersion), (uint32_t) 99);
     }
 
-    u_int NvapiAdapter::GetDeviceId() const {
+    uint32_t NvapiAdapter::GetDeviceId() const {
         return (m_deviceProperties.deviceID << 16) + m_deviceProperties.vendorID;
     }
 
-    u_int NvapiAdapter::GetGpuType() const {
+    uint32_t NvapiAdapter::GetGpuType() const {
         // The enum values for discrete, integrated and unknown GPU are the same for Vulkan and NvAPI
         auto vkDeviceType = m_deviceProperties.deviceType;
         return vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
@@ -107,11 +137,11 @@ namespace dxvk {
             : VK_PHYSICAL_DEVICE_TYPE_OTHER;
     }
 
-    u_int NvapiAdapter::GetBusId() const {
+    uint32_t NvapiAdapter::GetBusId() const {
         return m_devicePciBusProperties.pciBus;
     }
 
-    u_int NvapiAdapter::GetVRamSize() const {
+    uint32_t NvapiAdapter::GetVRamSize() const {
         // Not sure if it is completely correct to just look at the first DEVICE_LOCAL heap,
         // but it seems to give the correct result.
         for (auto i = 0U; i < m_memoryProperties.memoryHeapCount; i++) {
@@ -121,5 +151,9 @@ namespace dxvk {
         }
 
         return 0;
+    }
+
+    bool NvapiAdapter::isVkDeviceExtensionSupported(std::string extName) {
+        return m_deviceExtensions.find(extName) != m_deviceExtensions.end();
     }
 }
