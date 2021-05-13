@@ -147,7 +147,7 @@ namespace dxvk {
         return 0;
     }
 
-    bool NvapiAdapter::isVkDeviceExtensionSupported(const std::string name) {
+    bool NvapiAdapter::isVkDeviceExtensionSupported(const std::string name) { // NOLINT(performance-unnecessary-value-param)
         return m_deviceExtensions.find(name) != m_deviceExtensions.end();
     }
 }
