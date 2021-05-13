@@ -95,7 +95,7 @@ namespace dxvk {
             VK_VERSION_MINOR(m_vkDriverVersion), ".",
             VK_VERSION_PATCH(m_vkDriverVersion), ")"));
 
-        // Query all outputs from DXVK (just one, unless the DXVK dxgi-multi-monitor branch is used)
+        // Query all outputs from DXVK
         // Mosaic setup is not supported, thus one display output refers to one GPU
         Com<IDXGIOutput> dxgiOutput;
         for (auto i = 0U; dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
