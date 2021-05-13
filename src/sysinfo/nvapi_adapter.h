@@ -22,7 +22,7 @@ namespace dxvk {
         [[nodiscard]] uint32_t GetVRamSize() const;
 
     private:
-        bool isVkDeviceExtensionSupported(std::string extName);
+        bool isVkDeviceExtensionSupported(std::string name);
 
         VkPhysicalDeviceProperties m_deviceProperties{};
         VkPhysicalDevicePCIBusInfoPropertiesEXT m_devicePciBusProperties{};

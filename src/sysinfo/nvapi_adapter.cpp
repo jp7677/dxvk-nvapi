@@ -37,23 +37,17 @@ namespace dxvk {
         VkPhysicalDevice vkDevice = VK_NULL_HANDLE;
         dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &vkDevice);
 
-        uint32_t extCount = 0;
         // Grab last of valid extensions for this device
-        if (VK_SUCCESS != vkEnumerateDeviceExtensionProperties(vkDevice,
-                                                               nullptr,
-                                                               &extCount,
-                                                               nullptr))
+        auto count = 0U;
+        if (vkEnumerateDeviceExtensionProperties(vkDevice, nullptr, &count, nullptr) != VK_SUCCESS)
             return false;
 
-        std::vector<VkExtensionProperties> extensions(extCount);
-        if (VK_SUCCESS != vkEnumerateDeviceExtensionProperties(vkDevice,
-                                                               nullptr,
-                                                               &extCount,
-                                                               extensions.data()))
+        std::vector<VkExtensionProperties> extensions(count);
+        if (vkEnumerateDeviceExtensionProperties(vkDevice, nullptr, &count, extensions.data()) != VK_SUCCESS)
             return false;
 
-        for (const auto& ext : extensions)
-            m_deviceExtensions.insert(std::string(ext.extensionName));
+        for (const auto& extension : extensions)
+            m_deviceExtensions.insert(std::string(extension.extensionName));
 
         // Query Properties for this device. Per section 4.1.2. Extending Physical Device From Device Extensions of the Vulkan
         // 1.2.177 Specification, we must first query that a device extension is
@@ -153,7 +147,7 @@ namespace dxvk {
         return 0;
     }
 
-    bool NvapiAdapter::isVkDeviceExtensionSupported(std::string extName) {
-        return m_deviceExtensions.find(extName) != m_deviceExtensions.end();
+    bool NvapiAdapter::isVkDeviceExtensionSupported(const std::string name) {
+        return m_deviceExtensions.find(name) != m_deviceExtensions.end();
     }
 }
