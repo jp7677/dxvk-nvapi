@@ -20,11 +20,13 @@ namespace dxvk {
         [[nodiscard]] uint32_t GetGpuType() const;
         [[nodiscard]] uint32_t GetBusId() const;
         [[nodiscard]] uint32_t GetVRamSize() const;
+        [[nodiscard]] bool GetLUID(LUID *luid) const;
 
     private:
         bool isVkDeviceExtensionSupported(std::string name);
 
         VkPhysicalDeviceProperties m_deviceProperties{};
+        VkPhysicalDeviceIDProperties m_deviceIdProperties{};
         VkPhysicalDevicePCIBusInfoPropertiesEXT m_devicePciBusProperties{};
         VkPhysicalDeviceMemoryProperties m_memoryProperties{};
         uint32_t m_vkDriverVersion{};

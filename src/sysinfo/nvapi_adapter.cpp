@@ -63,6 +63,10 @@ namespace dxvk {
             deviceProperties2.pNext = &m_devicePciBusProperties;
         }
 
+        m_deviceIdProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
+        m_deviceIdProperties.pNext = deviceProperties2.pNext;
+        deviceProperties2.pNext = &m_deviceIdProperties;
+
         auto vkGetPhysicalDeviceProperties2 =
             reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(
                 vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceProperties2"));
@@ -145,6 +149,14 @@ namespace dxvk {
         }
 
         return 0;
+    }
+
+    bool NvapiAdapter::GetLUID(LUID *luid) const {
+        if (m_deviceIdProperties.deviceLUIDValid) {
+            memcpy(luid, &m_deviceIdProperties.deviceLUID, sizeof(*luid));
+            return true;
+        }
+        return false;
     }
 
     bool NvapiAdapter::isVkDeviceExtensionSupported(const std::string name) { // NOLINT(performance-unnecessary-value-param)

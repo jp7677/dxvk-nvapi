@@ -97,4 +97,23 @@ extern "C" {
 
         return Ok(n);
     }
+
+    NvAPI_Status __cdecl NvAPI_GPU_GetAdapterIdFromPhysicalGpu(NvPhysicalGpuHandle hPhysicalGpu, void *pOSAdapterId) {
+        constexpr auto n = "NvAPI_GPU_GetAdapterIdFromPhysicalGpu";
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pOSAdapterId == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        if (!adapter->GetLUID((LUID *)pOSAdapterId))
+            return Error(n);
+
+        return Ok(n);
+    }
 }
