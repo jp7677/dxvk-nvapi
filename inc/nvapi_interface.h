@@ -1,6 +1,6 @@
 /*****************************************************************************\
 |*                                                                             *|
-|* Copyright (c) 2019, NVIDIA CORPORATION. All rights reserved.                *|
+|* Copyright (c) 2019-2021, NVIDIA CORPORATION. All rights reserved.           *|
 |*                                                                             *|
 |* Permission is hereby granted, free of charge, to any person obtaining a     *|
 |* copy of this software and associated documentation files (the "Software"),  *|
@@ -81,6 +81,7 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_GPU_GetVirtualFrameBufferSize", 0x5a04b644 },
     { "NvAPI_GPU_GetQuadroStatus", 0xe332fa47 },
     { "NvAPI_GPU_GetBoardInfo", 0x22d54523 },
+    { "NvAPI_GPU_GetArchInfo", 0xd8265d24 },
     { "NvAPI_I2CRead", 0x2fde12c5 },
     { "NvAPI_I2CWrite", 0xe812eb07 },
     { "NvAPI_GPU_WorkstationFeatureSetup", 0x6c1f3fe4 },
@@ -101,7 +102,11 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_GPU_GetScanoutCompositionParameter", 0x58fe51e6 },
     { "NvAPI_GPU_GetScanoutConfiguration", 0x6a9f5b63 },
     { "NvAPI_GPU_GetScanoutConfigurationEx", 0xe2e1e6f0 },
+    { "NvAPI_GPU_GetAdapterIdFromPhysicalGpu", 0x0ff07fde },
+    { "NvAPI_GPU_GetVirtualizationInfo", 0x44e022a9 },
     { "NvAPI_GPU_GetLogicalGpuInfo", 0x842b066e },
+    { "NvAPI_GPU_GetLicensableFeatures", 0x3fc596aa },
+    { "NvAPI_GPU_GetVRReadyData", 0x81d629c5 },
     { "NvAPI_GPU_GetPerfDecreaseInfo", 0x7f7f4600 },
     { "NvAPI_GPU_GetPstatesInfoEx", 0x843c0256 },
     { "NvAPI_GPU_GetPstates20", 0x6ff81213 },
@@ -118,6 +123,8 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_GPU_ClientIllumZonesGetInfo", 0x4b81241b },
     { "NvAPI_GPU_ClientIllumZonesGetControl", 0x3dbf5764 },
     { "NvAPI_GPU_ClientIllumZonesSetControl", 0x197d065e },
+    { "NvAPI_Event_RegisterCallback", 0xe6dbea69 },
+    { "NvAPI_Event_UnregisterCallback", 0xde1f9b45 },
     { "NvAPI_EnumNvidiaDisplayHandle", 0x9abdd40d },
     { "NvAPI_EnumNvidiaUnAttachedDisplayHandle", 0x20de9260 },
     { "NvAPI_CreateDisplayFromUnAttachedDisplay", 0x63f9799e },
@@ -152,6 +159,8 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_DISP_GetGDIPrimaryDisplayId", 0x1e9d8a31 },
     { "NvAPI_DISP_GetDisplayConfig", 0x11abccf8 },
     { "NvAPI_DISP_SetDisplayConfig", 0x5d8cf8de },
+    { "NvAPI_DISP_GetAdaptiveSyncData", 0xb73d1ee9 },
+    { "NvAPI_DISP_SetAdaptiveSyncData", 0x3eebba1d },
     { "NvAPI_Mosaic_GetSupportedTopoInfo", 0xfdb63c81 },
     { "NvAPI_Mosaic_GetTopoGroup", 0xcb89381d },
     { "NvAPI_Mosaic_GetOverlapLimits", 0x989685f0 },
@@ -241,6 +250,8 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_D3D12_SetDepthBoundsTestValues", 0xb9333fe9 },
     { "NvAPI_D3D12_CreateReservedResource", 0x2c85f101 },
     { "NvAPI_D3D12_CreateHeap", 0x5cb397cf },
+    { "NvAPI_D3D12_CreateHeap2", 0x924be9d6 },
+    { "NvAPI_D3D12_QueryCpuVisibleVidmem", 0x26322bc3 },
     { "NvAPI_D3D12_ReservedResourceGetDesc", 0x9aa2aabb },
     { "NvAPI_D3D12_UpdateTileMappings", 0xc6017a7d },
     { "NvAPI_D3D12_CopyTileMappings", 0x47f78194 },
@@ -253,6 +264,9 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_D3D12_CreateMetaCommand", 0xeb29634b },
     { "NvAPI_D3D12_InitializeMetaCommand", 0xa4125399 },
     { "NvAPI_D3D12_ExecuteMetaCommand", 0xde24fc3d },
+    { "NvAPI_D3D12_CreateCommittedResource", 0x027e98ae },
+    { "NvAPI_D3D12_GetCopyableFootprints", 0xf6305eb5 },
+    { "NvAPI_D3D12_CopyTextureRegion", 0x82b91b25 },
     { "NvAPI_D3D12_IsNvShaderExtnOpCodeSupported", 0x3dfacec8 },
     { "NvAPI_D3D_IsGSyncCapable", 0x9c1eed78 },
     { "NvAPI_D3D_IsGSyncActive", 0xe942b0ff },
@@ -290,6 +304,11 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_D3D_InitializeNvGazeHandler", 0x5b3b7479 },
     { "NvAPI_D3D_InitializeSMPAssist", 0x42763d0c },
     { "NvAPI_D3D_QuerySMPAssistSupport", 0xc57921de },
+    { "NvAPI_D3D_GetSleepStatus", 0xaef96ca1 },
+    { "NvAPI_D3D_SetSleepMode", 0xac1ca9e0 },
+    { "NvAPI_D3D_Sleep", 0x852cd1d2 },
+    { "NvAPI_D3D_GetLatency", 0x1a587f9c },
+    { "NvAPI_D3D_SetLatencyMarker", 0xd9984c05 },
     { "NvAPI_VIO_GetCapabilities", 0x1dc91303 },
     { "NvAPI_VIO_Open", 0x44ee4841 },
     { "NvAPI_VIO_Close", 0xd01bd237 },
