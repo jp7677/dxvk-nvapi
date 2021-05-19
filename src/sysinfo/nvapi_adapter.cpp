@@ -159,7 +159,7 @@ namespace dxvk {
         return false;
     }
 
-    bool NvapiAdapter::isVkDeviceExtensionSupported(const std::string name) { // NOLINT(performance-unnecessary-value-param)
+    bool NvapiAdapter::isVkDeviceExtensionSupported(const std::string name) const { // NOLINT(performance-unnecessary-value-param)
         return m_deviceExtensions.find(name) != m_deviceExtensions.end();
     }
 }

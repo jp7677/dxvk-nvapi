@@ -23,7 +23,7 @@ namespace dxvk {
         [[nodiscard]] bool GetLUID(LUID *luid) const;
 
     private:
-        bool isVkDeviceExtensionSupported(std::string name);
+        bool isVkDeviceExtensionSupported(std::string name) const;
 
         VkPhysicalDeviceProperties m_deviceProperties{};
         VkPhysicalDeviceIDProperties m_deviceIdProperties{};
