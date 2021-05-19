@@ -116,4 +116,57 @@ extern "C" {
 
         return Ok(n);
     }
+
+    NvAPI_Status __cdecl NvAPI_GPU_GetArchInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_ARCH_INFO *pGpuArchInfo) {
+        constexpr auto n = "NvAPI_GPU_GetArchInfo";
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pGpuArchInfo == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        if (pGpuArchInfo->version != NV_GPU_ARCH_INFO_VER_1 && pGpuArchInfo->version != NV_GPU_ARCH_INFO_VER_2)
+            return IncompatibleStructVersion(n);
+
+        if (adapter->GetDriverId() != VK_DRIVER_ID_NVIDIA_PROPRIETARY)
+            return NvidiaDeviceNotFound(n);
+
+        pGpuArchInfo->architecture_id = adapter->GetArchitectureId();
+
+        // Assume the implementation ID from the architecture ID. No simple way
+        // to do a more fine-grained query at this time. Would need wine-nvml
+        // usage.
+        switch(pGpuArchInfo->architecture_id) {
+            case NV_GPU_ARCHITECTURE_GK100:
+                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GK104;
+                break;
+            case NV_GPU_ARCHITECTURE_GM200:
+                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GM204;
+                break;
+            case NV_GPU_ARCHITECTURE_GP100:
+                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GP102;
+                break;
+            case NV_GPU_ARCHITECTURE_GV100:
+                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GV100;
+                break;
+            case NV_GPU_ARCHITECTURE_TU100:
+                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_TU102;
+                break;
+            case NV_GPU_ARCHITECTURE_GA100:
+                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GA102;
+                break;
+            default:
+                return Error(n);
+        }
+
+        // Assume first revision, no way to query currently.
+        pGpuArchInfo->revision_id = NV_GPU_CHIP_REV_A01;
+
+        return Ok(n);
+    }
 }
