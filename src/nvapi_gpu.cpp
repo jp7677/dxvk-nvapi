@@ -111,7 +111,7 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        if (!adapter->GetLUID((LUID *)pOSAdapterId))
+        if (!adapter->GetLUID(static_cast<LUID*>(pOSAdapterId)))
             return Error(n);
 
         return Ok(n);
