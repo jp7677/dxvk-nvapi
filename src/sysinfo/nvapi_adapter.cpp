@@ -9,7 +9,7 @@ namespace dxvk {
     NvapiAdapter::~NvapiAdapter() = default;
 
     bool NvapiAdapter::Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
-        // Get the Vulkan handle  from the DXGI adapter to get access to Vulkan device properties which has some information we want.
+        // Get the Vulkan handle from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
         if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter)))) {
             log::write("Querying Vulkan handle from DXGI adapter failed, please ensure that DXVK's dxgi.dll is loaded");
@@ -167,22 +167,21 @@ namespace dxvk {
         return 0;
     }
 
-    bool NvapiAdapter::GetLUID(LUID *luid) const {
-        if (m_deviceIdProperties.deviceLUIDValid) {
-            memcpy(luid, &m_deviceIdProperties.deviceLUID, sizeof(*luid));
-            return true;
-        }
-        return false;
+    bool NvapiAdapter::GetLUID(LUID* luid) const {
+        if (!m_deviceIdProperties.deviceLUIDValid)
+            return false;
+
+        memcpy(luid, &m_deviceIdProperties.deviceLUID, sizeof(*luid));
+        return true;
     }
 
     NV_GPU_ARCHITECTURE_ID NvapiAdapter::GetArchitectureId() const {
         // KHR_fragment_shading_rate's
         // primitiveFragmentShadingRateWithMultipleViewports is supported on
         // Ampere and newer
-        if (isVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
-            if (m_deviceFragmentShadingRateProperties.primitiveFragmentShadingRateWithMultipleViewports)
-                return NV_GPU_ARCHITECTURE_GA100;
-        }
+        if (isVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
+            && m_deviceFragmentShadingRateProperties.primitiveFragmentShadingRateWithMultipleViewports)
+            return NV_GPU_ARCHITECTURE_GA100;
 
         // Variable rate shading is supported on Turing and newer
         if (isVkDeviceExtensionSupported(VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME))
@@ -200,7 +199,7 @@ namespace dxvk {
         if (isVkDeviceExtensionSupported(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME))
             return NV_GPU_ARCHITECTURE_GM200;
 
-        // Start at Kepler and update as features are detected
+        // Fall back to Kepler
         return NV_GPU_ARCHITECTURE_GK100;
     }
 
