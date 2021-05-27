@@ -63,6 +63,22 @@ namespace dxvk {
             deviceProperties2.pNext = &m_devicePciBusProperties;
         }
 
+        if (isVkDeviceExtensionSupported(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME)) {
+            m_deviceDriverProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR;
+            m_deviceDriverProperties.pNext = deviceProperties2.pNext;
+            deviceProperties2.pNext = &m_deviceDriverProperties;
+        }
+
+        if (isVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
+            m_deviceFragmentShadingRateProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
+            m_deviceFragmentShadingRateProperties.pNext = deviceProperties2.pNext;
+            deviceProperties2.pNext = &m_deviceFragmentShadingRateProperties;
+        }
+
+        m_deviceIdProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
+        m_deviceIdProperties.pNext = deviceProperties2.pNext;
+        deviceProperties2.pNext = &m_deviceIdProperties;
+
         auto vkGetPhysicalDeviceProperties2 =
             reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(
                 vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceProperties2"));
@@ -81,7 +97,7 @@ namespace dxvk {
         vkGetPhysicalDeviceMemoryProperties2(vkDevice, &memoryProperties2);
         m_memoryProperties = memoryProperties2.memoryProperties;
 
-        if (m_deviceProperties.vendorID == 0x10de)
+        if (GetDriverId() == VK_DRIVER_ID_NVIDIA_PROPRIETARY)
             // Handle NVIDIA version notation
             m_vkDriverVersion = VK_MAKE_VERSION(
                 VK_VERSION_MAJOR(m_deviceProperties.driverVersion),
@@ -119,6 +135,10 @@ namespace dxvk {
             std::min(VK_VERSION_MINOR(m_vkDriverVersion), (uint32_t) 99);
     }
 
+    VkDriverIdKHR NvapiAdapter::GetDriverId() const {
+        return m_deviceDriverProperties.driverID;
+    }
+
     uint32_t NvapiAdapter::GetDeviceId() const {
         return (m_deviceProperties.deviceID << 16) + m_deviceProperties.vendorID;
     }
@@ -147,7 +167,44 @@ namespace dxvk {
         return 0;
     }
 
-    bool NvapiAdapter::isVkDeviceExtensionSupported(const std::string name) { // NOLINT(performance-unnecessary-value-param)
+    bool NvapiAdapter::GetLUID(LUID *luid) const {
+        if (m_deviceIdProperties.deviceLUIDValid) {
+            memcpy(luid, &m_deviceIdProperties.deviceLUID, sizeof(*luid));
+            return true;
+        }
+        return false;
+    }
+
+    NV_GPU_ARCHITECTURE_ID NvapiAdapter::GetArchitectureId() const {
+        // KHR_fragment_shading_rate's
+        // primitiveFragmentShadingRateWithMultipleViewports is supported on
+        // Ampere and newer
+        if (isVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
+            if (m_deviceFragmentShadingRateProperties.primitiveFragmentShadingRateWithMultipleViewports)
+                return NV_GPU_ARCHITECTURE_GA100;
+        }
+
+        // Variable rate shading is supported on Turing and newer
+        if (isVkDeviceExtensionSupported(VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME))
+            return NV_GPU_ARCHITECTURE_TU100;
+
+        // VK_NVX_image_view_handle is supported on Volta and newer
+        if (isVkDeviceExtensionSupported(VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME))
+            return NV_GPU_ARCHITECTURE_GV100;
+
+        // VK_NV_clip_space_w_scaling is supported on Pascal and newer
+        if (isVkDeviceExtensionSupported(VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME))
+            return NV_GPU_ARCHITECTURE_GP100;
+
+        // VK_NV_viewport_array2 is supported on Maxwell and newer
+        if (isVkDeviceExtensionSupported(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME))
+            return NV_GPU_ARCHITECTURE_GM200;
+
+        // Start at Kepler and update as features are detected
+        return NV_GPU_ARCHITECTURE_GK100;
+    }
+
+    bool NvapiAdapter::isVkDeviceExtensionSupported(const std::string name) const { // NOLINT(performance-unnecessary-value-param)
         return m_deviceExtensions.find(name) != m_deviceExtensions.end();
     }
 }
