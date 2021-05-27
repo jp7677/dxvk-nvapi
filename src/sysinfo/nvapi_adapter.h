@@ -15,6 +15,7 @@ namespace dxvk {
 
         bool Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs);
         [[nodiscard]] std::string GetDeviceName() const;
+        [[nodiscard]] VkDriverIdKHR GetDriverId() const;
         [[nodiscard]] uint32_t GetDriverVersion() const;
         [[nodiscard]] uint32_t GetDeviceId() const;
         [[nodiscard]] uint32_t GetGpuType() const;
@@ -29,6 +30,7 @@ namespace dxvk {
         VkPhysicalDeviceIDProperties m_deviceIdProperties{};
         VkPhysicalDevicePCIBusInfoPropertiesEXT m_devicePciBusProperties{};
         VkPhysicalDeviceMemoryProperties m_memoryProperties{};
+        VkPhysicalDeviceDriverPropertiesKHR m_deviceDriverProperties{};
         uint32_t m_vkDriverVersion{};
         std::set<std::string> m_deviceExtensions{};
     };

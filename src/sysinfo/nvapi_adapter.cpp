@@ -63,6 +63,12 @@ namespace dxvk {
             deviceProperties2.pNext = &m_devicePciBusProperties;
         }
 
+        if (isVkDeviceExtensionSupported(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME)) {
+            m_deviceDriverProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR;
+            m_deviceDriverProperties.pNext = deviceProperties2.pNext;
+            deviceProperties2.pNext = &m_deviceDriverProperties;
+        }
+
         m_deviceIdProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
         m_deviceIdProperties.pNext = deviceProperties2.pNext;
         deviceProperties2.pNext = &m_deviceIdProperties;
@@ -85,7 +91,7 @@ namespace dxvk {
         vkGetPhysicalDeviceMemoryProperties2(vkDevice, &memoryProperties2);
         m_memoryProperties = memoryProperties2.memoryProperties;
 
-        if (m_deviceProperties.vendorID == 0x10de)
+        if (GetDriverId() == VK_DRIVER_ID_NVIDIA_PROPRIETARY)
             // Handle NVIDIA version notation
             m_vkDriverVersion = VK_MAKE_VERSION(
                 VK_VERSION_MAJOR(m_deviceProperties.driverVersion),
@@ -121,6 +127,10 @@ namespace dxvk {
         // and does not have a patch number
         return VK_VERSION_MAJOR(m_vkDriverVersion) * 100 +
             std::min(VK_VERSION_MINOR(m_vkDriverVersion), (uint32_t) 99);
+    }
+
+    VkDriverIdKHR NvapiAdapter::GetDriverId() const {
+        return m_deviceDriverProperties.driverID;
     }
 
     uint32_t NvapiAdapter::GetDeviceId() const {
