@@ -25,7 +25,7 @@ namespace dxvk {
         [[nodiscard]] NV_GPU_ARCHITECTURE_ID GetArchitectureId() const;
 
     private:
-        bool isVkDeviceExtensionSupported(std::string name) const;
+        [[nodiscard]] bool isVkDeviceExtensionSupported(std::string name) const;
 
         VkPhysicalDeviceProperties m_deviceProperties{};
         VkPhysicalDeviceIDProperties m_deviceIdProperties{};
