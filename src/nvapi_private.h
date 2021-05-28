@@ -27,6 +27,8 @@
 
 #include "../inc/nvapi.h"
 
+#undef ID3D12GraphicsCommandList1
+
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif // __GNUC__
