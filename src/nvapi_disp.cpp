@@ -33,7 +33,7 @@ extern "C" {
         return Ok(str::format(n, " ", displayId));
     }
 
-    NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char *displayName, NvU32* displayId) {
+    NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char *displayName, NvU32 *displayId) {
         constexpr auto n = "NvAPI_DISP_GetDisplayIdByDisplayName";
 
         if (nvapiAdapterRegistry == nullptr)
@@ -51,7 +51,7 @@ extern "C" {
         return Ok(str::format(n, " ", displayName));
     }
 
-    NvAPI_Status __cdecl NvAPI_DISP_GetGDIPrimaryDisplayId(NvU32* displayId) {
+    NvAPI_Status __cdecl NvAPI_DISP_GetGDIPrimaryDisplayId(NvU32 *displayId) {
         constexpr auto n = "NvAPI_DISP_GetGDIPrimaryDisplayId";
 
         if (displayId == nullptr)

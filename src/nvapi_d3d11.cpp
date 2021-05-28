@@ -7,7 +7,7 @@
 extern "C" {
     using namespace dxvk;
 
-    NvAPI_Status __cdecl NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth) {
+    NvAPI_Status __cdecl NvAPI_D3D11_SetDepthBoundsTest(IUnknown *pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth) {
         constexpr auto n = "NvAPI_D3D11_SetDepthBoundsTest";
         static bool alreadyLogged = false;
 
@@ -72,7 +72,7 @@ extern "C" {
         return Ok(n, alreadyLogged);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported) {
+    NvAPI_Status __cdecl NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown *pDeviceOrContext, NvU32 code, bool *supported) {
         constexpr auto n = "NvAPI_D3D11_IsNvShaderExtnOpCodeSupported";
 
         if (pDeviceOrContext == nullptr || supported == nullptr)

@@ -80,7 +80,7 @@ extern "C" {
         return Ok(n);
     }
 
-    NvAPI_Status __cdecl NvAPI_GPU_GetPhysicalFrameBufferSize(NvPhysicalGpuHandle hPhysicalGpu,NvU32 *pSize) {
+    NvAPI_Status __cdecl NvAPI_GPU_GetPhysicalFrameBufferSize(NvPhysicalGpuHandle hPhysicalGpu, NvU32 *pSize) {
         constexpr auto n = "NvAPI_GPU_GetPhysicalFrameBufferSize";
 
         if (nvapiAdapterRegistry == nullptr)

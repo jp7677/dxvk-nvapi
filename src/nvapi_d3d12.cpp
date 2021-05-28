@@ -6,7 +6,7 @@
 extern "C" {
     using namespace dxvk;
 
-    NvAPI_Status __cdecl NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device* pDevice, NvU32 opCode, bool* pSupported) {
+    NvAPI_Status __cdecl NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device *pDevice, NvU32 opCode, bool *pSupported) {
         constexpr auto n = "NvAPI_D3D12_IsNvShaderExtnOpCodeSupported";
 
         if (pDevice == nullptr || pSupported == nullptr)
