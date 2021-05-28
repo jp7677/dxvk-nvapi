@@ -6,6 +6,7 @@
 #include "nvapi_gpu.cpp"
 #include "nvapi_d3d.cpp"
 #include "nvapi_d3d11.cpp"
+#include "nvapi_d3d12.cpp"
 #include "util/util_string.h"
 #include "util/util_log.h"
 
@@ -41,6 +42,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_MultiDrawInstancedIndirect)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_MultiDrawIndexedInstancedIndirect)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_IsNvShaderExtnOpCodeSupported)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_GetObjectHandleForResource)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_SetResourceHint)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_GetCurrentSLIState)

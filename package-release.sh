@@ -40,7 +40,16 @@ while [ $# -gt 0 ]; do
 done
 
 function prepare {
-  python validate-methods.py src/nvapi.cpp src/nvapi_sys.cpp src/nvapi_disp.cpp src/nvapi_mosaic.cpp src/nvapi_gpu.cpp src/nvapi_d3d.cpp src/nvapi_d3d11.cpp src/nvapi_interface.cpp
+  python validate-methods.py \
+    src/nvapi.cpp \
+    src/nvapi_sys.cpp \
+    src/nvapi_disp.cpp \
+    src/nvapi_mosaic.cpp \
+    src/nvapi_gpu.cpp \
+    src/nvapi_d3d.cpp \
+    src/nvapi_d3d11.cpp \
+    src/nvapi_d3d12.cpp \
+    src/nvapi_interface.cpp
 
   # remove existing version.h, because otherwise the existing one gets into the build instead of the generated one
   if [ -e version.h ]; then
