@@ -117,7 +117,7 @@ extern "C" {
         if (szDesc == nullptr)
             return InvalidArgument(n);
 
-        strcpy(szDesc, "R440");
+        strcpy(szDesc, "R465");
 
         return Ok(n);
     }
