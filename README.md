@@ -52,7 +52,7 @@ DXVK-NVAPI prints some logging statements to the console. Optionally those state
 - [DXVK](https://github.com/doitsujin/dxvk)
 - [DXVK-AGS](https://github.com/doitsujin/dxvk-ags)
 - [NVAPI](https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__dx.html)
-- [NVAPI Open Source SDK](http://download.nvidia.com/XFree86/nvapi-open-source-sdk/)
+- [NVAPI Open Source SDK](https://download.nvidia.com/XFree86/nvapi-open-source-sdk/)
 - [https://github.com/SveSop/nvapi_standalone](https://github.com/SveSop/nvapi_standalone)
 
 Many thanks to the corresponding authors!
