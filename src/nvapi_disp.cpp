@@ -54,6 +54,9 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DISP_GetGDIPrimaryDisplayId(NvU32 *displayId) {
         constexpr auto n = "NvAPI_DISP_GetGDIPrimaryDisplayId";
 
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
         if (displayId == nullptr)
             return InvalidArgument(n);
 
