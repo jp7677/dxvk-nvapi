@@ -8,7 +8,7 @@ namespace dxvk {
 
     NvapiAdapter::~NvapiAdapter() = default;
 
-    bool NvapiAdapter::Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
+    bool NvapiAdapter::Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs, HMODULE vkModule) {
         // Get the Vulkan handle from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
         if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter)))) {
@@ -16,26 +16,18 @@ namespace dxvk {
             return false;
         }
 
-        const auto vkModuleName = "vulkan-1.dll";
-        auto vkModule = ::LoadLibraryA(vkModuleName);
-        if (vkModule == nullptr) {
-            log::write(str::format("Loading ", vkModuleName, " failed with error code ", ::GetLastError()));
-            return false;
-        }
-
         auto vkGetInstanceProcAddr =
             reinterpret_cast<PFN_vkGetInstanceProcAddr>(
                 reinterpret_cast<void*>(
-                    GetProcAddress(vkModule, "vkGetInstanceProcAddr")));
-
-        auto vkEnumerateDeviceExtensionProperties =
-            reinterpret_cast<PFN_vkEnumerateDeviceExtensionProperties>(
-                reinterpret_cast<void*>(
-                    GetProcAddress(vkModule, "vkEnumerateDeviceExtensionProperties")));
+                    ::GetProcAddress(vkModule, "vkGetInstanceProcAddr")));
 
         VkInstance vkInstance = VK_NULL_HANDLE;
         VkPhysicalDevice vkDevice = VK_NULL_HANDLE;
         dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &vkDevice);
+
+        auto vkEnumerateDeviceExtensionProperties =
+            reinterpret_cast<PFN_vkEnumerateDeviceExtensionProperties>(
+                vkGetInstanceProcAddr(vkInstance, "vkEnumerateDeviceExtensionProperties"));
 
         // Grab last of valid extensions for this device
         auto count = 0U;
@@ -120,7 +112,6 @@ namespace dxvk {
             outputs.push_back(nvapiOutput);
         }
 
-        FreeLibrary(vkModule);
         return true;
     }
 

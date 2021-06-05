@@ -1,4 +1,6 @@
 #include "nvapi_adapter_registry.h"
+#include "../util/util_string.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
 
@@ -16,6 +18,13 @@ namespace dxvk {
     }
 
     bool NvapiAdapterRegistry::Initialize() {
+        const auto vkModuleName = "vulkan-1.dll";
+        auto vkModule = ::LoadLibraryA(vkModuleName);
+        if (vkModule == nullptr) {
+            log::write(str::format("Loading ", vkModuleName, " failed with error code ", ::GetLastError()));
+            return false;
+        }
+
         Com<IDXGIFactory> dxgiFactory;
         if(FAILED(::CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory)))
             return false;
@@ -24,11 +33,13 @@ namespace dxvk {
         Com<IDXGIAdapter> dxgiAdapter;
         for (auto i = 0U; dxgiFactory->EnumAdapters(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; i++) {
             auto nvapiAdapter = new NvapiAdapter();
-            if (nvapiAdapter->Initialize(dxgiAdapter, m_nvapiOutputs))
+            if (nvapiAdapter->Initialize(dxgiAdapter, m_nvapiOutputs, vkModule))
                 m_nvapiAdapters.push_back(nvapiAdapter);
             else
                 delete nvapiAdapter;
         }
+
+        FreeLibrary(vkModule);
 
         return !m_nvapiAdapters.empty();
     }
