@@ -4,8 +4,6 @@
 #include "../util/com_pointer.h"
 #include "nvapi_output.h"
 
-#include <set>
-
 namespace dxvk {
     class NvapiAdapter {
 
