@@ -140,8 +140,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        delete nvapiAdapterRegistry;
-        nvapiAdapterRegistry = nullptr;
+        nvapiAdapterRegistry.reset();
 
         return Ok(n);
     }
@@ -154,7 +153,7 @@ extern "C" {
 
         log::write(str::format("DXVK-NVAPI ", DXVK_NVAPI_VERSION, " (", env::getExecutableName(), ")"));
 
-        nvapiAdapterRegistry = new NvapiAdapterRegistry();
+        nvapiAdapterRegistry = std::make_unique<NvapiAdapterRegistry>();
         if (!nvapiAdapterRegistry->Initialize())
             return NvidiaDeviceNotFound(n);
 

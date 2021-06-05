@@ -2,4 +2,4 @@
 
 #include "sysinfo/nvapi_adapter_registry.h"
 
-static dxvk::NvapiAdapterRegistry* nvapiAdapterRegistry = nullptr;
+static std::unique_ptr<dxvk::NvapiAdapterRegistry> nvapiAdapterRegistry;
