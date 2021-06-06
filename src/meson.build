@@ -3,6 +3,7 @@ nvapi_src = files([
   'util/util_string.cpp',
   'util/util_env.cpp',
   'util/util_log.cpp',
+  'sysinfo/vulkan.cpp',
   'sysinfo/nvapi_output.cpp',
   'sysinfo/nvapi_adapter.cpp',
   'sysinfo/nvapi_adapter_registry.cpp',
