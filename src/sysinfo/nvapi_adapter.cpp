@@ -4,11 +4,21 @@
 #include "../util/util_log.h"
 
 namespace dxvk {
-    NvapiAdapter::NvapiAdapter() = default;
+    NvapiAdapter::NvapiAdapter(Vulkan& vulkan)
+        : m_vulkan(vulkan) {}
 
     NvapiAdapter::~NvapiAdapter() = default;
 
-    bool NvapiAdapter::Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs, HMODULE vkModule) {
+    bool NvapiAdapter::Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
+        // Query all outputs from DXVK
+        // Mosaic setup is not supported, thus one display output refers to one GPU
+        Com<IDXGIOutput> dxgiOutput;
+        for (auto i = 0U; dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
+            auto nvapiOutput = new NvapiOutput((uintptr_t) this);
+            nvapiOutput->Initialize(dxgiOutput);
+            outputs.push_back(nvapiOutput);
+        }
+
         // Get the Vulkan handle from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
         if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter)))) {
@@ -16,30 +26,13 @@ namespace dxvk {
             return false;
         }
 
-        auto vkGetInstanceProcAddr =
-            reinterpret_cast<PFN_vkGetInstanceProcAddr>(
-                reinterpret_cast<void*>(
-                    ::GetProcAddress(vkModule, "vkGetInstanceProcAddr")));
-
         VkInstance vkInstance = VK_NULL_HANDLE;
         VkPhysicalDevice vkDevice = VK_NULL_HANDLE;
         dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &vkDevice);
 
-        auto vkEnumerateDeviceExtensionProperties =
-            reinterpret_cast<PFN_vkEnumerateDeviceExtensionProperties>(
-                vkGetInstanceProcAddr(vkInstance, "vkEnumerateDeviceExtensionProperties"));
-
-        // Grab last of valid extensions for this device
-        auto count = 0U;
-        if (vkEnumerateDeviceExtensionProperties(vkDevice, nullptr, &count, nullptr) != VK_SUCCESS)
+        m_deviceExtensions = m_vulkan.GetDeviceExtensions(vkInstance, vkDevice);
+        if (m_deviceExtensions.empty())
             return false;
-
-        std::vector<VkExtensionProperties> extensions(count);
-        if (vkEnumerateDeviceExtensionProperties(vkDevice, nullptr, &count, extensions.data()) != VK_SUCCESS)
-            return false;
-
-        for (const auto& extension : extensions)
-            m_deviceExtensions.insert(std::string(extension.extensionName));
 
         // Query Properties for this device. Per section 4.1.2. Extending Physical Device From Device Extensions of the Vulkan
         // 1.2.177 Specification, we must first query that a device extension is
@@ -71,22 +64,14 @@ namespace dxvk {
         m_deviceIdProperties.pNext = deviceProperties2.pNext;
         deviceProperties2.pNext = &m_deviceIdProperties;
 
-        auto vkGetPhysicalDeviceProperties2 =
-            reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(
-                vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceProperties2"));
-
-        vkGetPhysicalDeviceProperties2(vkDevice, &deviceProperties2);
+        m_vulkan.vkGetPhysicalDeviceProperties2(vkInstance, vkDevice, &deviceProperties2);
         m_deviceProperties = deviceProperties2.properties;
 
         VkPhysicalDeviceMemoryProperties2 memoryProperties2;
         memoryProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
         memoryProperties2.pNext = nullptr;
 
-        auto vkGetPhysicalDeviceMemoryProperties2 =
-            reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties2>(
-                vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceMemoryProperties2"));
-
-        vkGetPhysicalDeviceMemoryProperties2(vkDevice, &memoryProperties2);
+        m_vulkan.vkGetPhysicalDeviceMemoryProperties2(vkInstance, vkDevice, &memoryProperties2);
         m_memoryProperties = memoryProperties2.memoryProperties;
 
         if (GetDriverId() == VK_DRIVER_ID_NVIDIA_PROPRIETARY)
@@ -102,15 +87,6 @@ namespace dxvk {
             VK_VERSION_MAJOR(m_vkDriverVersion), ".",
             VK_VERSION_MINOR(m_vkDriverVersion), ".",
             VK_VERSION_PATCH(m_vkDriverVersion), ")"));
-
-        // Query all outputs from DXVK
-        // Mosaic setup is not supported, thus one display output refers to one GPU
-        Com<IDXGIOutput> dxgiOutput;
-        for (auto i = 0U; dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
-            auto nvapiOutput = new NvapiOutput((uintptr_t) this);
-            nvapiOutput->Initialize(dxgiOutput);
-            outputs.push_back(nvapiOutput);
-        }
 
         return true;
     }

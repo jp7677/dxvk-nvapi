@@ -24,6 +24,7 @@ namespace dxvk {
         [[nodiscard]] short GetOutputId(const std::string& displayName) const;
 
     private:
+        std::unique_ptr<Vulkan> m_vulkan;
         std::vector<NvapiAdapter*> m_nvapiAdapters;
         std::vector<NvapiOutput*> m_nvapiOutputs;
     };

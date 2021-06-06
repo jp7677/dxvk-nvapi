@@ -1,4 +1,5 @@
 #include "nvapi_adapter_registry.h"
+#include "vulkan.h"
 #include "../util/util_string.h"
 #include "../util/util_log.h"
 
@@ -18,12 +19,9 @@ namespace dxvk {
     }
 
     bool NvapiAdapterRegistry::Initialize() {
-        const auto vkModuleName = "vulkan-1.dll";
-        auto vkModule = ::LoadLibraryA(vkModuleName);
-        if (vkModule == nullptr) {
-            log::write(str::format("Loading ", vkModuleName, " failed with error code ", ::GetLastError()));
+        m_vulkan = std::make_unique<Vulkan>();
+        if (!m_vulkan->IsLoaded())
             return false;
-        }
 
         Com<IDXGIFactory> dxgiFactory;
         if(FAILED(::CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory)))
@@ -32,14 +30,12 @@ namespace dxvk {
         // Query all D3D11 adapter from DXVK to honor any DXVK device filtering
         Com<IDXGIAdapter> dxgiAdapter;
         for (auto i = 0U; dxgiFactory->EnumAdapters(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; i++) {
-            auto nvapiAdapter = new NvapiAdapter();
-            if (nvapiAdapter->Initialize(dxgiAdapter, m_nvapiOutputs, vkModule))
+            auto nvapiAdapter = new NvapiAdapter(*m_vulkan);
+            if (nvapiAdapter->Initialize(dxgiAdapter, m_nvapiOutputs))
                 m_nvapiAdapters.push_back(nvapiAdapter);
             else
                 delete nvapiAdapter;
         }
-
-        FreeLibrary(vkModule);
 
         return !m_nvapiAdapters.empty();
     }
