@@ -26,7 +26,7 @@ namespace dxvk {
         m_vkModule = nullptr;
     }
 
-    bool Vulkan::IsLoaded() {
+    bool Vulkan::IsAvailable() {
         return m_vkModule != nullptr;
     }
 
@@ -52,7 +52,7 @@ namespace dxvk {
         return deviceExtensions;
     }
 
-    void Vulkan::vkGetPhysicalDeviceProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceProperties2* deviceProperties2) {
+    void Vulkan::GetPhysicalDeviceProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceProperties2* deviceProperties2) {
         auto vkGetPhysicalDeviceProperties2 =
             reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(
                 m_vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceProperties2"));
@@ -60,7 +60,7 @@ namespace dxvk {
         vkGetPhysicalDeviceProperties2(vkDevice, deviceProperties2);
     }
 
-    void Vulkan::vkGetPhysicalDeviceMemoryProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceMemoryProperties2* memoryProperties2) {
+    void Vulkan::GetPhysicalDeviceMemoryProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceMemoryProperties2* memoryProperties2) {
         auto vkGetPhysicalDeviceMemoryProperties2 =
             reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties2>(
                 m_vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceMemoryProperties2"));

@@ -20,7 +20,7 @@ namespace dxvk {
 
     bool NvapiAdapterRegistry::Initialize() {
         m_vulkan = std::make_unique<Vulkan>();
-        if (!m_vulkan->IsLoaded())
+        if (!m_vulkan->IsAvailable())
             return false;
 
         Com<IDXGIFactory> dxgiFactory;

@@ -64,14 +64,14 @@ namespace dxvk {
         m_deviceIdProperties.pNext = deviceProperties2.pNext;
         deviceProperties2.pNext = &m_deviceIdProperties;
 
-        m_vulkan.vkGetPhysicalDeviceProperties2(vkInstance, vkDevice, &deviceProperties2);
+        m_vulkan.GetPhysicalDeviceProperties2(vkInstance, vkDevice, &deviceProperties2);
         m_deviceProperties = deviceProperties2.properties;
 
         VkPhysicalDeviceMemoryProperties2 memoryProperties2;
         memoryProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
         memoryProperties2.pNext = nullptr;
 
-        m_vulkan.vkGetPhysicalDeviceMemoryProperties2(vkInstance, vkDevice, &memoryProperties2);
+        m_vulkan.GetPhysicalDeviceMemoryProperties2(vkInstance, vkDevice, &memoryProperties2);
         m_memoryProperties = memoryProperties2.memoryProperties;
 
         if (GetDriverId() == VK_DRIVER_ID_NVIDIA_PROPRIETARY)
