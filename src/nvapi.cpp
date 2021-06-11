@@ -154,8 +154,10 @@ extern "C" {
         log::write(str::format("DXVK-NVAPI ", DXVK_NVAPI_VERSION, " (", env::getExecutableName(), ")"));
 
         nvapiAdapterRegistry = std::make_unique<NvapiAdapterRegistry>();
-        if (!nvapiAdapterRegistry->Initialize())
+        if (!nvapiAdapterRegistry->Initialize()) {
+            nvapiAdapterRegistry.reset();
             return NvidiaDeviceNotFound(n);
+        }
 
         return Ok(n);
     }
