@@ -134,13 +134,19 @@ extern "C" {
         return Ok(str::format(n, " ", nr, " (", error, ")"));
     }
 
+    static auto initializationMutex = std::mutex{};
+    static auto initializationCount = 0ULL;
+
     NvAPI_Status __cdecl NvAPI_Unload() {
         constexpr auto n = "NvAPI_Unload";
 
-        if (nvapiAdapterRegistry == nullptr)
+        std::scoped_lock lock(initializationMutex);
+
+        if (initializationCount == 0)
             return ApiNotInitialized(n);
 
-        nvapiAdapterRegistry.reset();
+        if (--initializationCount == 0)
+            nvapiAdapterRegistry.reset();
 
         return Ok(n);
     }
@@ -148,7 +154,9 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Initialize() {
         constexpr auto n = "NvAPI_Initialize";
 
-        if (nvapiAdapterRegistry != nullptr)
+        std::scoped_lock lock(initializationMutex);
+
+        if (++initializationCount > 1)
             return Ok(n);
 
         log::write(str::format("DXVK-NVAPI ", DXVK_NVAPI_VERSION, " (", env::getExecutableName(), ")"));
@@ -156,6 +164,7 @@ extern "C" {
         nvapiAdapterRegistry = std::make_unique<NvapiAdapterRegistry>();
         if (!nvapiAdapterRegistry->Initialize()) {
             nvapiAdapterRegistry.reset();
+            --initializationCount;
             return NvidiaDeviceNotFound(n);
         }
 
