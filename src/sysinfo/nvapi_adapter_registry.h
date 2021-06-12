@@ -24,6 +24,9 @@ namespace dxvk {
         [[nodiscard]] short GetPrimaryOutputId() const;
         [[nodiscard]] short GetOutputId(const std::string& displayName) const;
 
+        [[nodiscard]] bool HasNvml() const;
+        [[nodiscard]] const char* NvmlErrorString(nvmlReturn_t result) const;
+
     private:
         std::unique_ptr<Vulkan> m_vulkan;
         std::unique_ptr<Nvml> m_nvml;

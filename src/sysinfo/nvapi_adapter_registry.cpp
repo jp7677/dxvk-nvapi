@@ -89,4 +89,12 @@ namespace dxvk {
 
         return static_cast<short>(it != m_nvapiOutputs.end() ? std::distance(m_nvapiOutputs.begin(), it) : -1);
     }
+
+    bool NvapiAdapterRegistry::HasNvml() const {
+        return !!m_nvml;
+    }
+
+    const char* NvapiAdapterRegistry::NvmlErrorString(nvmlReturn_t result) const {
+        return m_nvml->ErrorString(result);
+    }
 }
