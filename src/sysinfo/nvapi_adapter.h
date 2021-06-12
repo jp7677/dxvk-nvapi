@@ -23,7 +23,11 @@ namespace dxvk {
         [[nodiscard]] uint32_t GetVRamSize() const;
         [[nodiscard]] bool GetLUID(LUID* luid) const;
         [[nodiscard]] NV_GPU_ARCHITECTURE_ID GetArchitectureId() const;
-        [[nodiscard]] nvmlDevice_t GetNvmlDevice() const;
+
+        [[nodiscard]] bool HasNvml() const;
+        [[nodiscard]] std::string NvmlErrorString(nvmlReturn_t result) const;
+        [[nodiscard]] nvmlReturn_t NvmlDeviceGetTemperature(nvmlTemperatureSensors_t sensorType, unsigned int* temp) const;
+        [[nodiscard]] nvmlReturn_t NvmlDeviceGetUtilizationRates(nvmlUtilization_t* utilization) const;
 
     private:
         Vulkan& m_vulkan;

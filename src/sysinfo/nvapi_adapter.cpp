@@ -190,7 +190,19 @@ namespace dxvk {
         return m_deviceExtensions.find(name) != m_deviceExtensions.end();
     }
 
-    nvmlDevice_t NvapiAdapter::GetNvmlDevice() const {
-        return m_nvmlDevice;
+    bool NvapiAdapter::HasNvml() const {
+        return m_nvml.IsAvailable() && m_nvmlDevice != nullptr;
+    }
+
+    std::string NvapiAdapter::NvmlErrorString(nvmlReturn_t result) const {
+        return std::string(m_nvml.ErrorString(result));
+    }
+
+    nvmlReturn_t NvapiAdapter::NvmlDeviceGetTemperature(nvmlTemperatureSensors_t sensorType, unsigned int *temp) const {
+        return m_nvml.DeviceGetTemperature(m_nvmlDevice, sensorType, temp);
+    }
+
+    nvmlReturn_t NvapiAdapter::NvmlDeviceGetUtilizationRates(nvmlUtilization_t *utilization) const {
+        return m_nvml.DeviceGetUtilizationRates(m_nvmlDevice, utilization);
     }
 }
