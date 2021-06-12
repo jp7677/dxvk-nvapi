@@ -10,6 +10,7 @@
 #include <sstream>
 #include <fstream>
 #include <ctime>
+#include <mutex>
 
 #include <dxgi.h>
 #include <d3d11_1.h>
