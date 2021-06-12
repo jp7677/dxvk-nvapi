@@ -80,9 +80,19 @@ namespace dxvk {
         return NVAPI_INCOMPATIBLE_STRUCT_VERSION;
     }
 
+    inline NvAPI_Status HandleInvalidated(const std::string& logMessage) {
+        log::write(str::format(logMessage, ": Handle invalidated"));
+        return NVAPI_HANDLE_INVALIDATED;
+    }
+
     inline NvAPI_Status ExpectedDisplayHandle(const std::string& logMessage) {
         log::write(str::format(logMessage, ": Expected display handle"));
         return NVAPI_EXPECTED_DISPLAY_HANDLE;
+    }
+
+    inline NvAPI_Status NotSupported(const std::string& logMessage) {
+        log::write(str::format(logMessage, ": Not supported"));
+        return NVAPI_NOT_SUPPORTED;
     }
 
     inline NvAPI_Status InvalidDisplayId(const std::string& logMessage) {
