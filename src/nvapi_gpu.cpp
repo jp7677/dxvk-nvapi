@@ -175,6 +175,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetDynamicPstatesInfoEx(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_DYNAMIC_PSTATES_INFO_EX *pDynamicPstatesInfoEx) {
         constexpr auto n = "NvAPI_GPU_GetDynamicPstatesInfoEx";
         static bool alreadyLoggedNoNvml = false;
+        static bool alreadyLoggedNoDevice = false;
+        static bool alreadyLoggedOk = false;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -194,7 +196,7 @@ extern "C" {
 
         auto nvmlDevice = adapter->GetNvmlDevice();
         if (nvmlDevice == nullptr)
-            return HandleInvalidated(str::format(n, ": No NVML device"));
+            return HandleInvalidated(str::format(n, ": No NVML device"), alreadyLoggedNoDevice);
 
         nvmlUtilization_t utilization;
         switch (auto result = nvapiAdapterRegistry->NvmlDeviceGetUtilizationRates(nvmlDevice, &utilization); result) {
@@ -217,7 +219,7 @@ extern "C" {
                     pDynamicPstatesInfoEx->utilization[i].bIsPresent = 0;
                 }
 
-                return Ok(n);
+                return Ok(n, alreadyLoggedOk);
 
             case NVML_ERROR_NOT_SUPPORTED:
                 pDynamicPstatesInfoEx->flags = 0;
@@ -239,6 +241,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetThermalSettings(NvPhysicalGpuHandle hPhysicalGpu, NvU32 sensorIndex, NV_GPU_THERMAL_SETTINGS *pThermalSettings) {
         constexpr auto n = "NvAPI_GPU_GetThermalSettings";
         static bool alreadyLoggedNoNvml = false;
+        static bool alreadyLoggedNoDevice = false;
+        static bool alreadyLoggedOk = false;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -258,12 +262,12 @@ extern "C" {
 
         if (sensorIndex != 0 && sensorIndex != NVAPI_THERMAL_TARGET_ALL) {
             pThermalSettings->count = 0;
-            return Ok(n);
+            return Ok(n, alreadyLoggedOk);
         }
 
         auto nvmlDevice = adapter->GetNvmlDevice();
         if (nvmlDevice == nullptr)
-            return HandleInvalidated(str::format(n, ": No NVML device"));
+            return HandleInvalidated(str::format(n, ": No NVML device"), alreadyLoggedNoDevice);
 
         unsigned int temp;
         switch (auto result = nvapiAdapterRegistry->NvmlDeviceGetTemperature(nvmlDevice, NVML_TEMPERATURE_GPU, &temp); result) {
@@ -288,7 +292,7 @@ extern "C" {
                         break;
                 }
 
-                return Ok(n);
+                return Ok(n, alreadyLoggedOk);
 
             case NVML_ERROR_NOT_SUPPORTED:
                 switch (pThermalSettings->version) {
