@@ -7,8 +7,9 @@ namespace dxvk {
         const auto nvmlModuleName = "nvml.dll";
         m_nvmlModule = ::LoadLibraryA(nvmlModuleName);
         if (m_nvmlModule == nullptr) {
-            if (::GetLastError() != ERROR_MOD_NOT_FOUND) // Ignore library not found
-                log::write(str::format("Loading ", nvmlModuleName, " failed with error code ", ::GetLastError()));
+            auto lastError = ::GetLastError();
+            if (lastError != ERROR_MOD_NOT_FOUND) // Ignore library not found
+                log::write(str::format("Loading ", nvmlModuleName, " failed with error code: ", lastError));
 
             return;
         }
@@ -43,13 +44,23 @@ namespace dxvk {
                 reinterpret_cast<void*>(
                     ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetUtilizationRates")));
 
-        auto result = nvmlInit_v2();
-        if (result != NVML_SUCCESS) {
-            log::write(str::format("NVML loaded but initialization failed with ", ErrorString(result)));
-            ::FreeLibrary(m_nvmlModule);
-            m_nvmlModule = nullptr;
-            return;
+        if (nvmlInit_v2 == nullptr
+            || nvmlShutdown == nullptr
+            || nvmlErrorString == nullptr
+            || nvmlDeviceGetHandleByPciBusId_v2 == nullptr
+            || nvmlDeviceGetTemperature == nullptr
+            || nvmlDeviceGetUtilizationRates == nullptr)
+            log::write(str::format("NVML loaded but initialization failed"));
+        else {
+            auto result = nvmlInit_v2();
+            if (result == NVML_SUCCESS)
+                return;
+
+            log::write(str::format("NVML loaded but initialization failed with error: ", ErrorString(result)));
         }
+
+        ::FreeLibrary(m_nvmlModule);
+        m_nvmlModule = nullptr;
     }
 
     Nvml::~Nvml() {
