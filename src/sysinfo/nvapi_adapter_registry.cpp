@@ -1,6 +1,5 @@
 #include "nvapi_adapter_registry.h"
 #include "vulkan.h"
-#include "../util/util_string.h"
 #include "../util/util_log.h"
 
 namespace dxvk {
@@ -23,13 +22,9 @@ namespace dxvk {
         if (!m_vulkan->IsAvailable())
             return false;
 
-        m_nvml = std::unique_ptr<Nvml>(Nvml::TryLoadLibrary());
-        if (m_nvml) {
-            if (m_nvml->InitGetResult() == NVML_SUCCESS)
-                log::write("NVML loaded and initialized successfully");
-            else
-                m_nvml.reset();
-        }
+        m_nvml = std::make_unique<Nvml>();
+        if (m_nvml->IsAvailable())
+            log::write("NVML loaded and initialized successfully");
 
         Com<IDXGIFactory> dxgiFactory;
         if(FAILED(::CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory)))
