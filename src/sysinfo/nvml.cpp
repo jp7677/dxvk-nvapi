@@ -1,60 +1,77 @@
 #include "nvml.h"
+#include "../util/util_string.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
-    Nvml* Nvml::TryLoadLibrary() {
-        auto nvml = new Nvml;
+    Nvml::Nvml() {
+        const auto nvmlModuleName = "nvml.dll";
+        m_nvmlModule = ::LoadLibraryA(nvmlModuleName);
+        if (m_nvmlModule == nullptr) {
+            if (::GetLastError() != ERROR_MOD_NOT_FOUND) // Ignore library not found
+                log::write(str::format("Loading ", nvmlModuleName, " failed with error code ", ::GetLastError()));
 
-        if (nvml->_nvml == nullptr) {
-            delete nvml;
-            return nullptr;
+            return;
         }
 
-        nvml->_initResult = nvml->_nvmlInit_v2();
+        nvmlInit_v2 = reinterpret_cast<PFN_nvmlInit_v2>(
+            reinterpret_cast<void*>(
+                ::GetProcAddress(m_nvmlModule, "nvmlInit_v2")));
 
-        return nvml;
-    }
+        nvmlShutdown = reinterpret_cast<PFN_nvmlShutdown>(
+            reinterpret_cast<void*>(
+                ::GetProcAddress(m_nvmlModule, "nvmlShutdown")));
 
-    bool Nvml::IsAvailable() {
-        return _nvml != nullptr;
-    }
+        nvmlErrorString = reinterpret_cast<PFN_nvmlErrorString>(
+            reinterpret_cast<void*>(
+                ::GetProcAddress(m_nvmlModule, "nvmlErrorString")));
 
-    nvmlReturn_t Nvml::InitGetResult() const { return _initResult; }
+        nvmlDeviceGetHandleByPciBusId_v2 = reinterpret_cast<PFN_nvmlDeviceGetHandleByPciBusId_v2>(
+            reinterpret_cast<void*>(
+                ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetHandleByPciBusId_v2")));
 
-    const char* Nvml::ErrorString(nvmlReturn_t result) const {
-        return _nvmlErrorString(result);
-    }
+        nvmlDeviceGetTemperature = reinterpret_cast<PFN_nvmlDeviceGetTemperature>(
+            reinterpret_cast<void*>(
+                ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetTemperature")));
 
-    nvmlReturn_t Nvml::DeviceGetHandleByPciBusId_v2(const char *pciBusId, nvmlDevice_t *device) const {
-        return _nvmlDeviceGetHandleByPciBusId_v2(pciBusId, device);
-    }
+        nvmlDeviceGetUtilizationRates = reinterpret_cast<PFN_nvmlDeviceGetUtilizationRates>(
+            reinterpret_cast<void*>(
+                ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetUtilizationRates")));
 
-    nvmlReturn_t Nvml::DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int *temp) const {
-        return _nvmlDeviceGetTemperature(device, sensorType, temp);
-    }
-
-    nvmlReturn_t Nvml::DeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t *utilization) const {
-        return _nvmlDeviceGetUtilizationRates(device, utilization);
-    }
-
-    Nvml::Nvml() : _nvml(LoadLibraryA("nvml.dll"), FreeLibrary) {
-        if (_nvml.get() == nullptr)
+        auto result = nvmlInit_v2();
+        if (result != NVML_SUCCESS) {
+            log::write(str::format("NVML loaded but initialization failed with ", ErrorString(result)));
+            ::FreeLibrary(m_nvmlModule);
+            m_nvmlModule = nullptr;
             return;
-
-        #define LOAD_FUNCPTR(f) if (!(*(void**)(&_##f) = (void*)GetProcAddress(_nvml.get(), #f))) { _nvml.reset(nullptr); return; }
-
-        LOAD_FUNCPTR(nvmlErrorString);
-        LOAD_FUNCPTR(nvmlInitWithFlags);
-        LOAD_FUNCPTR(nvmlInit_v2);
-        LOAD_FUNCPTR(nvmlShutdown);
-        LOAD_FUNCPTR(nvmlDeviceGetHandleByPciBusId_v2);
-        LOAD_FUNCPTR(nvmlDeviceGetTemperature);
-        LOAD_FUNCPTR(nvmlDeviceGetUtilizationRates);
-
-        #undef LOAD_FUNCPTR
+        }
     }
 
     Nvml::~Nvml() {
-        if (_nvml && _initResult == NVML_SUCCESS)
-            _nvmlShutdown();
+        if (m_nvmlModule == nullptr)
+            return;
+
+        nvmlShutdown();
+        ::FreeLibrary(m_nvmlModule);
+        m_nvmlModule = nullptr;
+    }
+
+    bool Nvml::IsAvailable() {
+        return m_nvmlModule != nullptr;
+    }
+
+    const char* Nvml::ErrorString(nvmlReturn_t result) const {
+        return nvmlErrorString(result);
+    }
+
+    nvmlReturn_t Nvml::DeviceGetHandleByPciBusId_v2(const char *pciBusId, nvmlDevice_t *device) const {
+        return nvmlDeviceGetHandleByPciBusId_v2(pciBusId, device);
+    }
+
+    nvmlReturn_t Nvml::DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int *temp) const {
+        return nvmlDeviceGetTemperature(device, sensorType, temp);
+    }
+
+    nvmlReturn_t Nvml::DeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t *utilization) const {
+        return nvmlDeviceGetUtilizationRates(device, utilization);
     }
 }
