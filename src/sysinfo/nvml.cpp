@@ -44,12 +44,18 @@ namespace dxvk {
                 reinterpret_cast<void*>(
                     ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetUtilizationRates")));
 
+        m_nvmlDeviceGetVbiosVersion =
+            reinterpret_cast<PFN_nvmlDeviceGetVbiosVersion>(
+                reinterpret_cast<void*>(
+                    ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetVbiosVersion")));
+
         if (m_nvmlInit_v2 == nullptr
             || m_nvmlShutdown == nullptr
             || m_nvmlErrorString == nullptr
             || m_nvmlDeviceGetHandleByPciBusId_v2 == nullptr
             || m_nvmlDeviceGetTemperature == nullptr
-            || m_nvmlDeviceGetUtilizationRates == nullptr)
+            || m_nvmlDeviceGetUtilizationRates == nullptr
+            || m_nvmlDeviceGetVbiosVersion == nullptr)
             log::write(str::format("NVML loaded but initialization failed"));
         else {
             auto result = m_nvmlInit_v2();
@@ -90,5 +96,9 @@ namespace dxvk {
 
     nvmlReturn_t Nvml::DeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t *utilization) const {
         return m_nvmlDeviceGetUtilizationRates(device, utilization);
+    }
+
+    nvmlReturn_t Nvml::DeviceGetVbiosVersion(nvmlDevice_t device, char *version, unsigned int length) const {
+        return m_nvmlDeviceGetVbiosVersion(device, version, length);
     }
 }

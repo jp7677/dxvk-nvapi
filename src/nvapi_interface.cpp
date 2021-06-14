@@ -55,6 +55,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetArchInfo)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetDynamicPstatesInfoEx)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetThermalSettings)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetVbiosVersionString)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Disp_GetHdrCapabilities)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DISP_GetDisplayIdByDisplayName)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DISP_GetGDIPrimaryDisplayId)
