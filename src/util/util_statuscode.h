@@ -85,6 +85,14 @@ namespace dxvk {
         return NVAPI_HANDLE_INVALIDATED;
     }
 
+    inline NvAPI_Status HandleInvalidated(const std::string& logMessage, bool& alreadyLogged) {
+        if (std::exchange(alreadyLogged, true))
+            return NVAPI_HANDLE_INVALIDATED;
+
+        log::write(str::format(logMessage, ": Handle invalidated"));
+        return NVAPI_HANDLE_INVALIDATED;
+    }
+
     inline NvAPI_Status ExpectedDisplayHandle(const std::string& logMessage) {
         log::write(str::format(logMessage, ": Expected display handle"));
         return NVAPI_EXPECTED_DISPLAY_HANDLE;
