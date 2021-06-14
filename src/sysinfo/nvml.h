@@ -24,11 +24,11 @@ namespace dxvk {
         typedef decltype(&nvmlDeviceGetUtilizationRates) PFN_nvmlDeviceGetUtilizationRates;
 
         HMODULE m_nvmlModule{};
-        PFN_nvmlInit_v2 nvmlInit_v2{};
-        PFN_nvmlShutdown nvmlShutdown{};
-        PFN_nvmlErrorString nvmlErrorString{};
-        PFN_nvmlDeviceGetHandleByPciBusId_v2 nvmlDeviceGetHandleByPciBusId_v2{};
-        PFN_nvmlDeviceGetTemperature nvmlDeviceGetTemperature{};
-        PFN_nvmlDeviceGetUtilizationRates nvmlDeviceGetUtilizationRates{};
+        PFN_nvmlInit_v2 m_nvmlInit_v2{};
+        PFN_nvmlShutdown m_nvmlShutdown{};
+        PFN_nvmlErrorString m_nvmlErrorString{};
+        PFN_nvmlDeviceGetHandleByPciBusId_v2 m_nvmlDeviceGetHandleByPciBusId_v2{};
+        PFN_nvmlDeviceGetTemperature m_nvmlDeviceGetTemperature{};
+        PFN_nvmlDeviceGetUtilizationRates m_nvmlDeviceGetUtilizationRates{};
     };
 }
