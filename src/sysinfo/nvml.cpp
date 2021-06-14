@@ -14,45 +14,45 @@ namespace dxvk {
             return;
         }
 
-        nvmlInit_v2 =
+        m_nvmlInit_v2 =
             reinterpret_cast<PFN_nvmlInit_v2>(
                 reinterpret_cast<void*>(
                     ::GetProcAddress(m_nvmlModule, "nvmlInit_v2")));
 
-        nvmlShutdown =
+        m_nvmlShutdown =
             reinterpret_cast<PFN_nvmlShutdown>(
                 reinterpret_cast<void*>(
                     ::GetProcAddress(m_nvmlModule, "nvmlShutdown")));
 
-        nvmlErrorString =
+        m_nvmlErrorString =
             reinterpret_cast<PFN_nvmlErrorString>(
                 reinterpret_cast<void*>(
                     ::GetProcAddress(m_nvmlModule, "nvmlErrorString")));
 
-        nvmlDeviceGetHandleByPciBusId_v2 =
+        m_nvmlDeviceGetHandleByPciBusId_v2 =
             reinterpret_cast<PFN_nvmlDeviceGetHandleByPciBusId_v2>(
                 reinterpret_cast<void*>(
                     ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetHandleByPciBusId_v2")));
 
-        nvmlDeviceGetTemperature =
+        m_nvmlDeviceGetTemperature =
             reinterpret_cast<PFN_nvmlDeviceGetTemperature>(
                 reinterpret_cast<void*>(
                     ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetTemperature")));
 
-        nvmlDeviceGetUtilizationRates =
+        m_nvmlDeviceGetUtilizationRates =
             reinterpret_cast<PFN_nvmlDeviceGetUtilizationRates>(
                 reinterpret_cast<void*>(
                     ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetUtilizationRates")));
 
-        if (nvmlInit_v2 == nullptr
-            || nvmlShutdown == nullptr
-            || nvmlErrorString == nullptr
-            || nvmlDeviceGetHandleByPciBusId_v2 == nullptr
-            || nvmlDeviceGetTemperature == nullptr
-            || nvmlDeviceGetUtilizationRates == nullptr)
+        if (m_nvmlInit_v2 == nullptr
+            || m_nvmlShutdown == nullptr
+            || m_nvmlErrorString == nullptr
+            || m_nvmlDeviceGetHandleByPciBusId_v2 == nullptr
+            || m_nvmlDeviceGetTemperature == nullptr
+            || m_nvmlDeviceGetUtilizationRates == nullptr)
             log::write(str::format("NVML loaded but initialization failed"));
         else {
-            auto result = nvmlInit_v2();
+            auto result = m_nvmlInit_v2();
             if (result == NVML_SUCCESS)
                 return;
 
@@ -67,7 +67,7 @@ namespace dxvk {
         if (m_nvmlModule == nullptr)
             return;
 
-        nvmlShutdown();
+        m_nvmlShutdown();
         ::FreeLibrary(m_nvmlModule);
         m_nvmlModule = nullptr;
     }
@@ -77,18 +77,18 @@ namespace dxvk {
     }
 
     const char* Nvml::ErrorString(nvmlReturn_t result) const {
-        return nvmlErrorString(result);
+        return m_nvmlErrorString(result);
     }
 
     nvmlReturn_t Nvml::DeviceGetHandleByPciBusId_v2(const char *pciBusId, nvmlDevice_t *device) const {
-        return nvmlDeviceGetHandleByPciBusId_v2(pciBusId, device);
+        return m_nvmlDeviceGetHandleByPciBusId_v2(pciBusId, device);
     }
 
     nvmlReturn_t Nvml::DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int *temp) const {
-        return nvmlDeviceGetTemperature(device, sensorType, temp);
+        return m_nvmlDeviceGetTemperature(device, sensorType, temp);
     }
 
     nvmlReturn_t Nvml::DeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t *utilization) const {
-        return nvmlDeviceGetUtilizationRates(device, utilization);
+        return m_nvmlDeviceGetUtilizationRates(device, utilization);
     }
 }
