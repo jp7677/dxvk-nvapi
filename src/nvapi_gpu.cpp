@@ -210,18 +210,16 @@ extern "C" {
                 pDynamicPstatesInfoEx->utilization[3].bIsPresent = 1;
                 pDynamicPstatesInfoEx->utilization[3].percentage = 0;
 
-                for (int i = 4; i < NVAPI_MAX_GPU_UTILIZATIONS; ++i) {
+                for (auto i = 4U; i < NVAPI_MAX_GPU_UTILIZATIONS; i++)
                     pDynamicPstatesInfoEx->utilization[i].bIsPresent = 0;
-                }
 
                 return Ok(n, alreadyLoggedOk);
 
             case NVML_ERROR_NOT_SUPPORTED:
                 pDynamicPstatesInfoEx->flags = 0;
 
-                for (int i = 0; i < NVAPI_MAX_GPU_UTILIZATIONS; ++i) {
-                    pDynamicPstatesInfoEx->utilization[i].bIsPresent = 0;
-                }
+                for (auto& util : pDynamicPstatesInfoEx->utilization)
+                    util.bIsPresent = 0;
 
                 return NotSupported(n);
             
@@ -268,7 +266,7 @@ extern "C" {
                         pThermalSettings->count = 1;
                         pThermalSettings->sensor[0].controller = NVAPI_THERMAL_CONTROLLER_UNKNOWN;
                         pThermalSettings->sensor[0].target = NVAPI_THERMAL_TARGET_GPU;
-                        pThermalSettings->sensor[0].currentTemp = temp;
+                        pThermalSettings->sensor[0].currentTemp = static_cast<int>(temp);
                         pThermalSettings->sensor[0].defaultMaxTemp = 127;
                         pThermalSettings->sensor[0].defaultMinTemp = -256;
                         break;
