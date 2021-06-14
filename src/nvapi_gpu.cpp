@@ -174,6 +174,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetDynamicPstatesInfoEx(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_DYNAMIC_PSTATES_INFO_EX *pDynamicPstatesInfoEx) {
         constexpr auto n = "NvAPI_GPU_GetDynamicPstatesInfoEx";
         static bool alreadyLoggedNoNvml = false;
+        static bool alreadyLoggedHandleInvalidated = false;
         static bool alreadyLoggedOk = false;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -190,7 +191,10 @@ extern "C" {
             return ExpectedPhysicalGpuHandle(n);
 
         if (!adapter->HasNvml())
-            return NoImplementation(str::format(n, ": NVML not loaded"), alreadyLoggedNoNvml);
+            return NoImplementation(str::format(n, ": NVML not available"), alreadyLoggedNoNvml);
+
+        if (!adapter->HasNvmlDevice())
+            return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
         nvmlUtilization_t utilization;
         auto result = adapter->NvmlDeviceGetUtilizationRates(&utilization);
@@ -234,6 +238,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetThermalSettings(NvPhysicalGpuHandle hPhysicalGpu, NvU32 sensorIndex, NV_GPU_THERMAL_SETTINGS *pThermalSettings) {
         constexpr auto n = "NvAPI_GPU_GetThermalSettings";
         static bool alreadyLoggedNoNvml = false;
+        static bool alreadyLoggedHandleInvalidated = false;
         static bool alreadyLoggedOk = false;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -255,7 +260,10 @@ extern "C" {
         }
 
         if (!adapter->HasNvml())
-            return NoImplementation(str::format(n, ": NVML not loaded"), alreadyLoggedNoNvml);
+            return NoImplementation(str::format(n, ": NVML not available"), alreadyLoggedNoNvml);
+
+        if (!adapter->HasNvmlDevice())
+            return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
         unsigned int temp;
         auto result = adapter->NvmlDeviceGetTemperature(NVML_TEMPERATURE_GPU, &temp);
