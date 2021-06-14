@@ -25,6 +25,7 @@ namespace dxvk {
         [[nodiscard]] NV_GPU_ARCHITECTURE_ID GetArchitectureId() const;
 
         [[nodiscard]] bool HasNvml() const;
+        [[nodiscard]] bool HasNvmlDevice() const;
         [[nodiscard]] std::string NvmlErrorString(nvmlReturn_t result) const;
         [[nodiscard]] nvmlReturn_t NvmlDeviceGetTemperature(nvmlTemperatureSensors_t sensorType, unsigned int* temp) const;
         [[nodiscard]] nvmlReturn_t NvmlDeviceGetUtilizationRates(nvmlUtilization_t* utilization) const;

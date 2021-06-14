@@ -191,6 +191,10 @@ namespace dxvk {
     }
 
     bool NvapiAdapter::HasNvml() const {
+        return m_nvml.IsAvailable();
+    }
+
+    bool NvapiAdapter::HasNvmlDevice() const {
         return m_nvml.IsAvailable() && m_nvmlDevice != nullptr;
     }
 
