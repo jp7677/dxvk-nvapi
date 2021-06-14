@@ -10,7 +10,7 @@ namespace dxvk {
     class NvapiAdapter {
 
     public:
-        explicit NvapiAdapter(Vulkan& vulkan, Nvml& nvml);
+        NvapiAdapter(Vulkan& vulkan, Nvml& nvml);
         ~NvapiAdapter();
 
         bool Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs);

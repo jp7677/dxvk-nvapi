@@ -13,29 +13,35 @@ namespace dxvk {
             return;
         }
 
-        nvmlInit_v2 = reinterpret_cast<PFN_nvmlInit_v2>(
-            reinterpret_cast<void*>(
-                ::GetProcAddress(m_nvmlModule, "nvmlInit_v2")));
+        nvmlInit_v2 =
+            reinterpret_cast<PFN_nvmlInit_v2>(
+                reinterpret_cast<void*>(
+                    ::GetProcAddress(m_nvmlModule, "nvmlInit_v2")));
 
-        nvmlShutdown = reinterpret_cast<PFN_nvmlShutdown>(
-            reinterpret_cast<void*>(
-                ::GetProcAddress(m_nvmlModule, "nvmlShutdown")));
+        nvmlShutdown =
+            reinterpret_cast<PFN_nvmlShutdown>(
+                reinterpret_cast<void*>(
+                    ::GetProcAddress(m_nvmlModule, "nvmlShutdown")));
 
-        nvmlErrorString = reinterpret_cast<PFN_nvmlErrorString>(
-            reinterpret_cast<void*>(
-                ::GetProcAddress(m_nvmlModule, "nvmlErrorString")));
+        nvmlErrorString =
+            reinterpret_cast<PFN_nvmlErrorString>(
+                reinterpret_cast<void*>(
+                    ::GetProcAddress(m_nvmlModule, "nvmlErrorString")));
 
-        nvmlDeviceGetHandleByPciBusId_v2 = reinterpret_cast<PFN_nvmlDeviceGetHandleByPciBusId_v2>(
-            reinterpret_cast<void*>(
-                ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetHandleByPciBusId_v2")));
+        nvmlDeviceGetHandleByPciBusId_v2 =
+            reinterpret_cast<PFN_nvmlDeviceGetHandleByPciBusId_v2>(
+                reinterpret_cast<void*>(
+                    ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetHandleByPciBusId_v2")));
 
-        nvmlDeviceGetTemperature = reinterpret_cast<PFN_nvmlDeviceGetTemperature>(
-            reinterpret_cast<void*>(
-                ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetTemperature")));
+        nvmlDeviceGetTemperature =
+            reinterpret_cast<PFN_nvmlDeviceGetTemperature>(
+                reinterpret_cast<void*>(
+                    ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetTemperature")));
 
-        nvmlDeviceGetUtilizationRates = reinterpret_cast<PFN_nvmlDeviceGetUtilizationRates>(
-            reinterpret_cast<void*>(
-                ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetUtilizationRates")));
+        nvmlDeviceGetUtilizationRates =
+            reinterpret_cast<PFN_nvmlDeviceGetUtilizationRates>(
+                reinterpret_cast<void*>(
+                    ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetUtilizationRates")));
 
         auto result = nvmlInit_v2();
         if (result != NVML_SUCCESS) {
