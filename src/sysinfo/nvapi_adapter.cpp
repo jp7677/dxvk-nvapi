@@ -209,4 +209,8 @@ namespace dxvk {
     nvmlReturn_t NvapiAdapter::NvmlDeviceGetUtilizationRates(nvmlUtilization_t *utilization) const {
         return m_nvml.DeviceGetUtilizationRates(m_nvmlDevice, utilization);
     }
+
+    nvmlReturn_t NvapiAdapter::NvmlDeviceGetVbiosVersion(char* version, unsigned int length) const {
+        return m_nvml.DeviceGetVbiosVersion(m_nvmlDevice, version, length);
+    }
 }

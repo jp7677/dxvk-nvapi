@@ -311,4 +311,41 @@ extern "C" {
                 return Error(str::format(n, ": ", adapter->NvmlErrorString(result)));
         }
     }
+    NvAPI_Status __cdecl NvAPI_GPU_GetVbiosVersionString(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szBiosRevision) {
+        constexpr auto n = "NvAPI_GPU_GetVbiosVersionString";
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (szBiosRevision == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        if (!adapter->HasNvml())
+            return NoImplementation(str::format(n, ": NVML not loaded"));
+
+        if (!adapter->HasNvmlDevice())
+            return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"));
+
+        char version[NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE];
+        auto result = adapter->NvmlDeviceGetVbiosVersion(version, NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE);
+        switch (result) {
+            case NVML_SUCCESS:
+                strcpy(szBiosRevision, version);
+                return Ok(n);
+
+            case NVML_ERROR_NOT_SUPPORTED:
+                szBiosRevision = 0;
+                return NotSupported(n);
+
+            case NVML_ERROR_GPU_IS_LOST:
+                return HandleInvalidated(n);
+
+            default:
+                return Error(str::format(n, ": ", adapter->NvmlErrorString(result)));
+        }
+    }
 }
