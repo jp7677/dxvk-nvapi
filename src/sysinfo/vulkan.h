@@ -17,5 +17,8 @@ namespace dxvk {
     private:
         HMODULE m_vkModule{};
         PFN_vkGetInstanceProcAddr m_vkGetInstanceProcAddr{};
+
+        template<typename T> T GetProcAddress(const char* name);
+        template<typename T> T GetInstanceProcAddress(VkInstance vkInstance, const char* name);
     };
 }

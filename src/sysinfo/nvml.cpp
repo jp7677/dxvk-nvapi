@@ -14,40 +14,13 @@ namespace dxvk {
             return;
         }
 
-        m_nvmlInit_v2 =
-            reinterpret_cast<PFN_nvmlInit_v2>(
-                reinterpret_cast<void*>(
-                    ::GetProcAddress(m_nvmlModule, "nvmlInit_v2")));
-
-        m_nvmlShutdown =
-            reinterpret_cast<PFN_nvmlShutdown>(
-                reinterpret_cast<void*>(
-                    ::GetProcAddress(m_nvmlModule, "nvmlShutdown")));
-
-        m_nvmlErrorString =
-            reinterpret_cast<PFN_nvmlErrorString>(
-                reinterpret_cast<void*>(
-                    ::GetProcAddress(m_nvmlModule, "nvmlErrorString")));
-
-        m_nvmlDeviceGetHandleByPciBusId_v2 =
-            reinterpret_cast<PFN_nvmlDeviceGetHandleByPciBusId_v2>(
-                reinterpret_cast<void*>(
-                    ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetHandleByPciBusId_v2")));
-
-        m_nvmlDeviceGetTemperature =
-            reinterpret_cast<PFN_nvmlDeviceGetTemperature>(
-                reinterpret_cast<void*>(
-                    ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetTemperature")));
-
-        m_nvmlDeviceGetUtilizationRates =
-            reinterpret_cast<PFN_nvmlDeviceGetUtilizationRates>(
-                reinterpret_cast<void*>(
-                    ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetUtilizationRates")));
-
-        m_nvmlDeviceGetVbiosVersion =
-            reinterpret_cast<PFN_nvmlDeviceGetVbiosVersion>(
-                reinterpret_cast<void*>(
-                    ::GetProcAddress(m_nvmlModule, "nvmlDeviceGetVbiosVersion")));
+        m_nvmlInit_v2 = GetProcAddress<PFN_nvmlInit_v2>("nvmlInit_v2");
+        m_nvmlShutdown = GetProcAddress<PFN_nvmlShutdown>("nvmlShutdown");
+        m_nvmlErrorString = GetProcAddress<PFN_nvmlErrorString>("nvmlErrorString");
+        m_nvmlDeviceGetHandleByPciBusId_v2 = GetProcAddress<PFN_nvmlDeviceGetHandleByPciBusId_v2>("nvmlDeviceGetHandleByPciBusId_v2");
+        m_nvmlDeviceGetTemperature = GetProcAddress<PFN_nvmlDeviceGetTemperature>("nvmlDeviceGetTemperature");
+        m_nvmlDeviceGetUtilizationRates = GetProcAddress<PFN_nvmlDeviceGetUtilizationRates>("nvmlDeviceGetUtilizationRates");
+        m_nvmlDeviceGetVbiosVersion = GetProcAddress<PFN_nvmlDeviceGetVbiosVersion>("nvmlDeviceGetVbiosVersion");
 
         if (m_nvmlInit_v2 == nullptr
             || m_nvmlShutdown == nullptr
@@ -100,5 +73,10 @@ namespace dxvk {
 
     nvmlReturn_t Nvml::DeviceGetVbiosVersion(nvmlDevice_t device, char *version, unsigned int length) const {
         return m_nvmlDeviceGetVbiosVersion(device, version, length);
+    }
+
+    template<typename T>
+    T Nvml::GetProcAddress(const char* name) {
+        return reinterpret_cast<T>(reinterpret_cast<void*>(::GetProcAddress(m_nvmlModule, name)));
     }
 }

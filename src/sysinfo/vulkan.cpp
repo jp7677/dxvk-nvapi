@@ -11,10 +11,7 @@ namespace dxvk {
             return;
         }
 
-        m_vkGetInstanceProcAddr =
-            reinterpret_cast<PFN_vkGetInstanceProcAddr>(
-                reinterpret_cast<void*>(
-                    ::GetProcAddress(m_vkModule, "vkGetInstanceProcAddr")));
+        m_vkGetInstanceProcAddr = GetProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
     }
 
     Vulkan::~Vulkan() {
@@ -31,8 +28,8 @@ namespace dxvk {
 
     std::set<std::string> Vulkan::GetDeviceExtensions(VkInstance vkInstance, VkPhysicalDevice vkDevice) {
         auto vkEnumerateDeviceExtensionProperties =
-            reinterpret_cast<PFN_vkEnumerateDeviceExtensionProperties>(
-                m_vkGetInstanceProcAddr(vkInstance, "vkEnumerateDeviceExtensionProperties"));
+            GetInstanceProcAddress<PFN_vkEnumerateDeviceExtensionProperties>(
+                vkInstance, "vkEnumerateDeviceExtensionProperties");
 
         std::set<std::string> deviceExtensions;
 
@@ -53,17 +50,27 @@ namespace dxvk {
 
     void Vulkan::GetPhysicalDeviceProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceProperties2* deviceProperties2) {
         auto vkGetPhysicalDeviceProperties2 =
-            reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2>(
-                m_vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceProperties2"));
+            GetInstanceProcAddress<PFN_vkGetPhysicalDeviceProperties2>(
+                vkInstance, "vkGetPhysicalDeviceProperties2");
 
         vkGetPhysicalDeviceProperties2(vkDevice, deviceProperties2);
     }
 
     void Vulkan::GetPhysicalDeviceMemoryProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceMemoryProperties2* memoryProperties2) {
         auto vkGetPhysicalDeviceMemoryProperties2 =
-            reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties2>(
-                m_vkGetInstanceProcAddr(vkInstance, "vkGetPhysicalDeviceMemoryProperties2"));
+            GetInstanceProcAddress<PFN_vkGetPhysicalDeviceMemoryProperties2>(
+                vkInstance, "vkGetPhysicalDeviceMemoryProperties2");
 
         vkGetPhysicalDeviceMemoryProperties2(vkDevice, memoryProperties2);
+    }
+
+    template<typename T>
+    T Vulkan::GetProcAddress(const char* name) {
+        return reinterpret_cast<T>(reinterpret_cast<void*>(::GetProcAddress(m_vkModule, name)));
+    }
+
+    template<typename T>
+    T Vulkan::GetInstanceProcAddress(VkInstance vkInstance, const char* name) {
+        return reinterpret_cast<T>(m_vkGetInstanceProcAddr(vkInstance, name));
     }
 }

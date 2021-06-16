@@ -33,5 +33,7 @@ namespace dxvk {
         PFN_nvmlDeviceGetTemperature m_nvmlDeviceGetTemperature{};
         PFN_nvmlDeviceGetUtilizationRates m_nvmlDeviceGetUtilizationRates{};
         PFN_nvmlDeviceGetVbiosVersion m_nvmlDeviceGetVbiosVersion{};
+
+        template<typename T> T GetProcAddress(const char* name);
     };
 }
