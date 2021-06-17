@@ -1,5 +1,6 @@
 nvapi_src = files([
   '../src/dxvk/dxvk_interfaces.cpp',
+  '../src/vkd3d-proton/vkd3d-proton_interfaces.cpp',
   '../src/util/util_string.cpp',
   '../src/util/util_env.cpp',
   '../src/util/util_log.cpp',
@@ -10,6 +11,7 @@ nvapi_src = files([
   '../src/sysinfo/nvapi_adapter_registry.cpp',
   '../src/sysinfo/resource_factory.cpp',
   '../src/d3d11/nvapi_d3d11_device.cpp',
+  '../src/d3d12/nvapi_d3d12_device.cpp',
 ])
 
 nvapi_tests_src = files([
