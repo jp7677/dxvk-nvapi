@@ -15,6 +15,7 @@ namespace dxvk {
         [[nodiscard]] nvmlReturn_t DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int *temp) const;
         [[nodiscard]] nvmlReturn_t DeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t *utilization) const;
         [[nodiscard]] nvmlReturn_t DeviceGetVbiosVersion(nvmlDevice_t device, char *version, unsigned int length) const;
+        [[nodiscard]] nvmlReturn_t DeviceGetClockInfo(nvmlDevice_t device, nvmlClockType_t type, unsigned int *clock) const;
 
     private:
         typedef decltype(&nvmlInit_v2) PFN_nvmlInit_v2;
@@ -24,6 +25,7 @@ namespace dxvk {
         typedef decltype(&nvmlDeviceGetTemperature) PFN_nvmlDeviceGetTemperature;
         typedef decltype(&nvmlDeviceGetUtilizationRates) PFN_nvmlDeviceGetUtilizationRates;
         typedef decltype(&nvmlDeviceGetVbiosVersion) PFN_nvmlDeviceGetVbiosVersion;
+        typedef decltype(&nvmlDeviceGetClockInfo) PFN_nvmlDeviceGetClockInfo;
 
         HMODULE m_nvmlModule{};
         PFN_nvmlInit_v2 m_nvmlInit_v2{};
@@ -33,6 +35,7 @@ namespace dxvk {
         PFN_nvmlDeviceGetTemperature m_nvmlDeviceGetTemperature{};
         PFN_nvmlDeviceGetUtilizationRates m_nvmlDeviceGetUtilizationRates{};
         PFN_nvmlDeviceGetVbiosVersion m_nvmlDeviceGetVbiosVersion{};
+        PFN_nvmlDeviceGetClockInfo m_nvmlDeviceGetClockInfo{};
 
         template<typename T> T GetProcAddress(const char* name);
     };

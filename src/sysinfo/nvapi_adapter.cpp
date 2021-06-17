@@ -213,4 +213,8 @@ namespace dxvk {
     nvmlReturn_t NvapiAdapter::NvmlDeviceGetVbiosVersion(char* version, unsigned int length) const {
         return m_nvml.DeviceGetVbiosVersion(m_nvmlDevice, version, length);
     }
+
+    nvmlReturn_t NvapiAdapter::NvmlDeviceGetClockInfo(nvmlClockType_t type, unsigned int* clock) const {
+        return m_nvml.DeviceGetClockInfo(m_nvmlDevice, type, clock);
+    }
 }

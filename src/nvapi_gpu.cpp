@@ -348,4 +348,101 @@ extern "C" {
                 return Error(str::format(n, ": ", adapter->NvmlErrorString(result)));
         }
     }
+
+    NvAPI_Status __cdecl NvAPI_GPU_GetAllClockFrequencies(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_CLOCK_FREQUENCIES *pClkFreqs) {
+        constexpr auto n = "NvAPI_GPU_GetAllClockFrequencies";
+        static bool alreadyLoggedNoNvml = false;
+        static bool alreadyLoggedHandleInvalidated = false;
+        static bool alreadyLoggedOk = false;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pClkFreqs == nullptr)
+            return InvalidArgument(n);
+
+        if (pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_1 && pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_2 && pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_3)
+            return IncompatibleStructVersion(n);
+
+        // Only check for CURRENT_FREQ, and not for the other types ie. BOOST or DEFAULT for now
+        if (pClkFreqs->ClockType != static_cast<unsigned int>(NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ))
+            return NotSupported(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        if (!adapter->HasNvml())
+            return NoImplementation(str::format(n, ": NVML not loaded"), alreadyLoggedNoNvml);
+
+        if (!adapter->HasNvmlDevice())
+            return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
+
+        // Reset all clock data for all domains
+        for (auto& domain : pClkFreqs->domain){
+            domain.bIsPresent = 0;
+            domain.frequency = 0;
+        }
+
+        unsigned int clock;
+        // Seemingly we need to do nvml call on a "per clock unit" to get the clock
+        // Set the availability of the clock to TRUE and the nvml read clock in the nvapi struct
+        auto resultGpu = adapter->NvmlDeviceGetClockInfo(NVML_CLOCK_GRAPHICS, &clock);
+            switch (resultGpu) {
+                case NVML_SUCCESS:
+                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent = 1;
+                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency = (clock * 1000);
+                    break;
+
+                case NVML_ERROR_NOT_SUPPORTED:
+                    break;
+
+                case NVML_ERROR_GPU_IS_LOST:
+                    return HandleInvalidated(n);
+
+                default:
+                    return Error(str::format(n, ": ", adapter->NvmlErrorString(resultGpu)));
+            }
+
+        auto resultMem = adapter->NvmlDeviceGetClockInfo(NVML_CLOCK_MEM, &clock);
+            switch (resultMem) {
+                case NVML_SUCCESS:
+                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent = 1;
+                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency = (clock * 1000);
+                    break;
+
+                case NVML_ERROR_NOT_SUPPORTED:
+                    break;
+
+                case NVML_ERROR_GPU_IS_LOST:
+                    return HandleInvalidated(n);
+
+                default:
+                    return Error(str::format(n, ": ", adapter->NvmlErrorString(resultMem)));
+            }
+
+        auto resultVid = adapter->NvmlDeviceGetClockInfo(NVML_CLOCK_VIDEO, &clock);
+            switch (resultVid) {
+                case NVML_SUCCESS:
+                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent = 1;
+                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency = (clock * 1000);
+                    break;
+
+                case NVML_ERROR_NOT_SUPPORTED:
+                    break;
+
+                case NVML_ERROR_GPU_IS_LOST:
+                    return HandleInvalidated(n);
+
+                default:
+                    return Error(str::format(n, ": ", adapter->NvmlErrorString(resultVid)));
+            }
+
+        if (resultGpu == NVML_ERROR_NOT_SUPPORTED
+            && resultMem == NVML_ERROR_NOT_SUPPORTED
+            && resultVid == NVML_ERROR_NOT_SUPPORTED)
+            return NotSupported(n);
+
+       return Ok(n, alreadyLoggedOk);
+    }
 }
