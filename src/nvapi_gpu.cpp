@@ -338,7 +338,6 @@ extern "C" {
                 return Ok(n);
 
             case NVML_ERROR_NOT_SUPPORTED:
-                szBiosRevision = nullptr;
                 return NotSupported(n);
 
             case NVML_ERROR_GPU_IS_LOST:
