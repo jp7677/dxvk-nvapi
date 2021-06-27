@@ -14,9 +14,9 @@ endif
 
 dxvk_cpu_family = target_machine.cpu_family()
 if (dxvk_cpu_family == 'x86_64')
-  dll_suffix = '64'
+  target_suffix = '64'
 else
-  dll_suffix = ''
+  target_suffix = ''
 endif
 
 vk_headers = include_directories('./external/Vulkan-Headers/include')

@@ -12,7 +12,7 @@ nvapi_src = files([
   'nvapi_interface.cpp',
 ])
 
-nvapi_dll = shared_library('nvapi'+dll_suffix, [ nvapi_src, dxvk_nvapi_version ],
+nvapi_dll = shared_library('nvapi'+target_suffix, [ nvapi_src, dxvk_nvapi_version ],
   name_prefix         : '',
   dependencies        : [ lib_dxgi ],
   include_directories : vk_headers,
