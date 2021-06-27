@@ -13,6 +13,7 @@ nvapi_src = files([
 
 nvapi_tests_src = files([
   'main.cpp',
+  'nvapi.cpp',
 ])
 
 nvapi_exe = executable('nvapi'+target_suffix+'-tests', [ nvapi_src, nvapi_tests_src, dxvk_nvapi_version ],
