@@ -67,10 +67,8 @@ namespace dxvk {
     }
 
     bool NvapiD3d11Device::IsSupportedExtension(IUnknown* device, const D3D11_VK_EXTENSION extension, bool& alreadyTested) {
-        if (alreadyTested)
+        if (std::exchange(alreadyTested, true))
             return true;
-
-        alreadyTested = true;
 
         Com<ID3D11VkExtDevice> dxvkDevice;
         if (FAILED(device->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
