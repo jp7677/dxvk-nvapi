@@ -75,7 +75,7 @@ function build_arch {
 
   if [ $opt_devbuild -eq 0 ]; then
     # get rid of some useless .a files
-    rm "$BUILD_DIR/x$1/"*.!(dll)
+    rm "$BUILD_DIR/x$1/"*.!(dll|exe)
     rm -R "$BUILD_DIR/build.$1"
   fi
 }

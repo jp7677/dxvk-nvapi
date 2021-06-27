@@ -13,7 +13,7 @@ if dxvk_compiler.has_link_argument('-Wl,--file-alignment=4096')
 endif
 
 dxvk_cpu_family = target_machine.cpu_family()
-if (dxvk_cpu_family == 'x86_64')
+if dxvk_cpu_family == 'x86_64'
   target_suffix = '64'
 else
   target_suffix = ''
@@ -29,3 +29,6 @@ dxvk_nvapi_version = vcs_tag(
   output: 'version.h')
 
 subdir('src')
+if dxvk_cpu_family == 'x86_64'
+  subdir('tests')
+endif
