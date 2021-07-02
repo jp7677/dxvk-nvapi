@@ -177,6 +177,10 @@ extern "C" {
 
 namespace dxvk {
     void SetResourceFactory(std::unique_ptr<ResourceFactory> factory) {
+        std::scoped_lock lock(initializationMutex);
+
         resourceFactory = std::move(factory);
+        nvapiAdapterRegistry.reset();
+        initializationCount = 0ULL;
     }
 }
