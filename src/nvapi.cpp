@@ -161,7 +161,10 @@ extern "C" {
 
         log::write(str::format("DXVK-NVAPI ", DXVK_NVAPI_VERSION, " (", env::getExecutableName(), ")"));
 
-        nvapiAdapterRegistry = std::make_unique<NvapiAdapterRegistry>();
+        if (resourceFactory == nullptr)
+            resourceFactory = std::make_unique<ResourceFactory>();
+
+        nvapiAdapterRegistry = std::make_unique<NvapiAdapterRegistry>(*resourceFactory);
         if (!nvapiAdapterRegistry->Initialize()) {
             nvapiAdapterRegistry.reset();
             --initializationCount;
