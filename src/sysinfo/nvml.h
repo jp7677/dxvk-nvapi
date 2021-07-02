@@ -3,19 +3,19 @@
 #include "../nvapi_private.h"
 
 namespace dxvk {
-    class Nvml final {
+    class Nvml {
 
     public:
         Nvml();
-        ~Nvml();
+        virtual ~Nvml();
 
-        [[nodiscard]] bool IsAvailable();
-        [[nodiscard]] const char* ErrorString(nvmlReturn_t result) const;
-        [[nodiscard]] nvmlReturn_t DeviceGetHandleByPciBusId_v2(const char *pciBusId, nvmlDevice_t *device) const;
-        [[nodiscard]] nvmlReturn_t DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int *temp) const;
-        [[nodiscard]] nvmlReturn_t DeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t *utilization) const;
-        [[nodiscard]] nvmlReturn_t DeviceGetVbiosVersion(nvmlDevice_t device, char *version, unsigned int length) const;
-        [[nodiscard]] nvmlReturn_t DeviceGetClockInfo(nvmlDevice_t device, nvmlClockType_t type, unsigned int *clock) const;
+        [[nodiscard]] virtual bool IsAvailable() const;
+        [[nodiscard]] virtual const char* ErrorString(nvmlReturn_t result) const;
+        [[nodiscard]] virtual nvmlReturn_t DeviceGetHandleByPciBusId_v2(const char *pciBusId, nvmlDevice_t *device) const;
+        [[nodiscard]] virtual nvmlReturn_t DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int *temp) const;
+        [[nodiscard]] virtual nvmlReturn_t DeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t *utilization) const;
+        [[nodiscard]] virtual nvmlReturn_t DeviceGetVbiosVersion(nvmlDevice_t device, char *version, unsigned int length) const;
+        [[nodiscard]] virtual nvmlReturn_t DeviceGetClockInfo(nvmlDevice_t device, nvmlClockType_t type, unsigned int *clock) const;
 
     private:
         typedef decltype(&nvmlInit_v2) PFN_nvmlInit_v2;

@@ -53,7 +53,7 @@ namespace dxvk {
         m_nvmlModule = nullptr;
     }
 
-    bool Nvml::IsAvailable() {
+    bool Nvml::IsAvailable() const {
         return m_nvmlModule != nullptr;
     }
 
