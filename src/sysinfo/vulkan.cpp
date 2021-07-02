@@ -22,11 +22,11 @@ namespace dxvk {
         m_vkModule = nullptr;
     }
 
-    bool Vulkan::IsAvailable() {
+    bool Vulkan::IsAvailable() const {
         return m_vkModule != nullptr;
     }
 
-    std::set<std::string> Vulkan::GetDeviceExtensions(VkInstance vkInstance, VkPhysicalDevice vkDevice) {
+    std::set<std::string> Vulkan::GetDeviceExtensions(VkInstance vkInstance, VkPhysicalDevice vkDevice) const {
         auto vkEnumerateDeviceExtensionProperties =
             GetInstanceProcAddress<PFN_vkEnumerateDeviceExtensionProperties>(
                 vkInstance, "vkEnumerateDeviceExtensionProperties");
@@ -48,7 +48,7 @@ namespace dxvk {
         return deviceExtensions;
     }
 
-    void Vulkan::GetPhysicalDeviceProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceProperties2* deviceProperties2) {
+    void Vulkan::GetPhysicalDeviceProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceProperties2* deviceProperties2) const {
         auto vkGetPhysicalDeviceProperties2 =
             GetInstanceProcAddress<PFN_vkGetPhysicalDeviceProperties2>(
                 vkInstance, "vkGetPhysicalDeviceProperties2");
@@ -56,7 +56,7 @@ namespace dxvk {
         vkGetPhysicalDeviceProperties2(vkDevice, deviceProperties2);
     }
 
-    void Vulkan::GetPhysicalDeviceMemoryProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceMemoryProperties2* memoryProperties2) {
+    void Vulkan::GetPhysicalDeviceMemoryProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceMemoryProperties2* memoryProperties2) const {
         auto vkGetPhysicalDeviceMemoryProperties2 =
             GetInstanceProcAddress<PFN_vkGetPhysicalDeviceMemoryProperties2>(
                 vkInstance, "vkGetPhysicalDeviceMemoryProperties2");
@@ -65,12 +65,12 @@ namespace dxvk {
     }
 
     template<typename T>
-    T Vulkan::GetProcAddress(const char* name) {
+    T Vulkan::GetProcAddress(const char* name) const {
         return reinterpret_cast<T>(reinterpret_cast<void*>(::GetProcAddress(m_vkModule, name)));
     }
 
     template<typename T>
-    T Vulkan::GetInstanceProcAddress(VkInstance vkInstance, const char* name) {
+    T Vulkan::GetInstanceProcAddress(VkInstance vkInstance, const char* name) const {
         return reinterpret_cast<T>(m_vkGetInstanceProcAddr(vkInstance, name));
     }
 }
