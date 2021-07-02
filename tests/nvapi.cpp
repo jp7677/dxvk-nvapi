@@ -103,7 +103,7 @@ class MockFactory : public ResourceFactory {
     std::unique_ptr<Nvml> m_nvmlMock;
 };
 
-TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters") {
+TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "[sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
@@ -127,7 +127,7 @@ TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters") {
     REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
 }
 
-TEST_CASE("Initialize and unloads returns OK") {
+TEST_CASE("Initialize and unloads returns OK", "[sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
     DXGIDxvkAdapterMock adapter;
     DXGIOutputMock output;

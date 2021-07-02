@@ -181,7 +181,7 @@ class D3D11DxvkDeviceContextMock : public mock_interface<ID3D11DxvkDeviceContext
     IMPLEMENT_MOCK1(SetBarrierControl);
 };
 
-TEST_CASE("SetDepthBoundsTests succeeds") {
+TEST_CASE("SetDepthBoundsTests succeeds", "[d3d11]") {
     D3D11DxvkDeviceMock device;
     D3D11DxvkDeviceContextMock context;
 
