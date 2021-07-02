@@ -1,10 +1,10 @@
 #include "nvapi_adapter_registry.h"
-#include "vulkan.h"
 #include "../util/util_log.h"
 
 namespace dxvk {
 
-    NvapiAdapterRegistry::NvapiAdapterRegistry() = default;
+    NvapiAdapterRegistry::NvapiAdapterRegistry(ResourceFactory& resourceFactory)
+        : m_resourceFactory(resourceFactory) {}
 
     NvapiAdapterRegistry::~NvapiAdapterRegistry() {
         for (const auto output : m_nvapiOutputs)
@@ -18,17 +18,17 @@ namespace dxvk {
     }
 
     bool NvapiAdapterRegistry::Initialize() {
-        m_vulkan = std::make_unique<Vulkan>();
+        Com<IDXGIFactory> dxgiFactory = m_resourceFactory.CreateDXGIFactory();
+        if(dxgiFactory == nullptr)
+            return false;
+
+        m_vulkan = m_resourceFactory.CreateVulkan();
         if (!m_vulkan->IsAvailable())
             return false;
 
-        m_nvml = std::make_unique<Nvml>();
+        m_nvml = m_resourceFactory.CreateNvml();
         if (m_nvml->IsAvailable())
             log::write("NVML loaded and initialized successfully");
-
-        Com<IDXGIFactory> dxgiFactory;
-        if(FAILED(::CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory)))
-            return false;
 
         // Query all D3D11 adapter from DXVK to honor any DXVK device filtering
         Com<IDXGIAdapter> dxgiAdapter;
