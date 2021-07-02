@@ -18,7 +18,7 @@ namespace dxvk {
 
         MONITORINFO info;
         info.cbSize = sizeof(MONITORINFO);
-        GetMonitorInfo(desc.Monitor, &info);
+        ::GetMonitorInfo(desc.Monitor, &info);
 
         m_isPrimary = (info.dwFlags & MONITORINFOF_PRIMARY);
     }
