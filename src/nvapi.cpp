@@ -174,3 +174,9 @@ extern "C" {
         return Ok(n);
     }
 }
+
+namespace dxvk {
+    void SetResourceFactory(std::unique_ptr<ResourceFactory> factory) {
+        resourceFactory = std::move(factory);
+    }
+}
