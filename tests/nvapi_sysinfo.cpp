@@ -28,10 +28,12 @@ TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "
     ALLOW_CALL(*nvml, IsAvailable())
         .RETURN(false);
 
-    auto factory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
-    SetResourceFactory(std::move(factory));
-    REQUIRE(NvAPI_Initialize() == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
-    REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
+    SECTION("Initialize and unloads") {
+        NvAPI_InitializeResourceFactory(
+                std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml)));
+        REQUIRE(NvAPI_Initialize() == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
+        REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
+    }
 }
 
 TEST_CASE("Initialize and unloads returns OK", "[sysinfo]") {
@@ -88,8 +90,10 @@ TEST_CASE("Initialize and unloads returns OK", "[sysinfo]") {
     ALLOW_CALL(*nvml, IsAvailable())
         .RETURN(false);
 
-    auto factory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
-    SetResourceFactory(std::move(factory));
-    REQUIRE(NvAPI_Initialize() == NVAPI_OK);
-    REQUIRE(NvAPI_Unload() == NVAPI_OK);
+    SECTION("Initialize and unloads") {
+        NvAPI_InitializeResourceFactory(
+            std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml)));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+        REQUIRE(NvAPI_Unload() == NVAPI_OK);
+    }
 }
