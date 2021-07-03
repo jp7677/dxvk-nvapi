@@ -5,11 +5,9 @@
 #include "../util/com_pointer.h"
 
 namespace dxvk {
-
     class NvapiD3d11Device {
 
     public:
-
         static bool SetDepthBoundsTest(IUnknown* deviceOrContext, bool enable, float minDepth, float maxDepth);
         static bool BeginUAVOverlap(IUnknown* deviceOrContext);
         static bool EndUAVOverlap(IUnknown* deviceOrContext);
@@ -17,10 +15,8 @@ namespace dxvk {
         static bool MultiDrawIndexedInstancedIndirect(ID3D11DeviceContext* deviceContext, NvU32 drawCount, ID3D11Buffer* buffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs);
 
     private:
-
         [[nodiscard]] static bool IsSupportedExtension(ID3D11Device* device, D3D11_VK_EXTENSION extension, bool& alreadyTested);
         [[nodiscard]] static bool IsSupportedExtension(ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension, bool& alreadyTested);
         [[nodiscard]] static Com<ID3D11VkExtContext> GetDxvkDeviceContext(ID3D11DeviceContext* deviceContext);
-
     };
 }

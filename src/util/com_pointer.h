@@ -94,13 +94,13 @@ namespace dxvk {
                 m_ptr->Release();
         }
 
-      };
+    };
 
-      template<typename T>
-      T* ref(T* object) {
-          if (object != nullptr)
-              object->AddRef();
+    template<typename T>
+    T* ref(T* object) {
+        if (object != nullptr)
+            object->AddRef();
 
-          return object;
-      }
+        return object;
+    }
 }
