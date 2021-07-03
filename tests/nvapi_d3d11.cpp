@@ -37,7 +37,7 @@ TEST_CASE("D3D11 methods return OK", "[d3d11]") {
     ALLOW_CALL(context, GetDevice(_))
         .LR_SIDE_EFFECT(*_1 = &device);
 
-    SECTION("SetDepthBoundsTests with device return OK") {
+    SECTION("SetDepthBoundsTests with device returns OK") {
         auto enable = true;
         auto min = 0.4f;
         auto max = 0.7f;
@@ -45,7 +45,7 @@ TEST_CASE("D3D11 methods return OK", "[d3d11]") {
         REQUIRE(NvAPI_D3D11_SetDepthBoundsTest(static_cast<ID3D11Device*>(&device), enable, min, max) == NVAPI_OK);
     }
 
-    SECTION("SetDepthBoundsTests with context return OK") {
+    SECTION("SetDepthBoundsTests with context returns OK") {
         auto enable = true;
         auto min = 0.5f;
         auto max = 0.8f;
