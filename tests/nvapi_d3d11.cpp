@@ -45,6 +45,16 @@ TEST_CASE("D3D11 methods return OK", "[d3d11]") {
         REQUIRE(NvAPI_D3D11_SetDepthBoundsTest(static_cast<ID3D11Device*>(&device), enable, min, max) == NVAPI_OK);
     }
 
+    SECTION("BeginUAVOverlap with device returns OK") {
+        REQUIRE_CALL(context, SetBarrierControl(D3D11_VK_BARRIER_CONTROL_IGNORE_WRITE_AFTER_WRITE));
+        REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_OK);
+    }
+
+    SECTION("EndUAVOverlap with device returns OK") {
+        REQUIRE_CALL(context, SetBarrierControl(0U));
+        REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_OK);
+    }
+
     SECTION("SetDepthBoundsTests with context returns OK") {
         auto enable = true;
         auto min = 0.5f;
@@ -53,19 +63,9 @@ TEST_CASE("D3D11 methods return OK", "[d3d11]") {
         REQUIRE(NvAPI_D3D11_SetDepthBoundsTest(static_cast<ID3D11DeviceContext*>(&context), enable, min, max) == NVAPI_OK);
     }
 
-    SECTION("BeginUAVOverlap with device returns OK") {
-        REQUIRE_CALL(context, SetBarrierControl(D3D11_VK_BARRIER_CONTROL_IGNORE_WRITE_AFTER_WRITE));
-        REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_OK);
-    }
-
     SECTION("BeginUAVOverlap with context returns OK") {
         REQUIRE_CALL(context, SetBarrierControl(D3D11_VK_BARRIER_CONTROL_IGNORE_WRITE_AFTER_WRITE));
         REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11DeviceContext*>(&context)) == NVAPI_OK);
-    }
-
-    SECTION("EndUAVOverlap with device returns OK") {
-        REQUIRE_CALL(context, SetBarrierControl(0U));
-        REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_OK);
     }
 
     SECTION("EndUAVOverlap with context returns OK") {

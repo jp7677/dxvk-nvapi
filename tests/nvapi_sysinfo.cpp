@@ -68,10 +68,7 @@ TEST_CASE("Initialize and unloads returns OK", "[sysinfo]") {
     ALLOW_CALL(output, Release())
         .RETURN(0);
     ALLOW_CALL(output, GetDesc(_))
-        .SIDE_EFFECT({
-            DXGI_OUTPUT_DESC desc = {L"Output1", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr};
-            *_1 = desc;
-        })
+        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
         .RETURN(S_OK);
 
     ALLOW_CALL(*vulkan, IsAvailable())
@@ -79,13 +76,8 @@ TEST_CASE("Initialize and unloads returns OK", "[sysinfo]") {
     ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
         .RETURN(std::set<std::string>{"ext"});
     ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
-        .SIDE_EFFECT({
-            VkPhysicalDeviceProperties2 props2 {};
-            strcpy(props2.properties.deviceName, "Device1");
-            *_3 = props2;
-        });
-    ALLOW_CALL(*vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _))
-        .SIDE_EFFECT(*_3 = VkPhysicalDeviceMemoryProperties2{});
+        .SIDE_EFFECT(strcpy(_3->properties.deviceName, "Device1"));
+    ALLOW_CALL(*vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _));
 
     ALLOW_CALL(*nvml, IsAvailable())
         .RETURN(false);
