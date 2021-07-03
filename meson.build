@@ -29,6 +29,6 @@ dxvk_nvapi_version = vcs_tag(
   output: 'version.h')
 
 subdir('src')
-if dxvk_cpu_family == 'x86_64'
+if dxvk_cpu_family == 'x86_64' # compiling tests for x86 fails, dunno why... 
   subdir('tests')
 endif
