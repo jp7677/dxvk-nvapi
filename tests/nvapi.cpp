@@ -144,6 +144,9 @@ TEST_CASE("Initialize and unloads returns OK", "[sysinfo]") {
     ALLOW_CALL(*dxgiFactory, EnumAdapters(1U, _))
         .RETURN(DXGI_ERROR_NOT_FOUND);
 
+    ALLOW_CALL(adapter, QueryInterface(IDXGIVkInteropAdapter::guid, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter))
+        .RETURN(S_OK);
     ALLOW_CALL(adapter, Release())
         .RETURN(0);
     ALLOW_CALL(adapter, EnumOutputs(0U, _))
@@ -151,12 +154,6 @@ TEST_CASE("Initialize and unloads returns OK", "[sysinfo]") {
         .RETURN(S_OK);
     ALLOW_CALL(adapter, EnumOutputs(1U, _))
         .RETURN(DXGI_ERROR_NOT_FOUND);
-    ALLOW_CALL(adapter, QueryInterface(_, _))
-        .LR_SIDE_EFFECT({
-            if (_1 == IDXGIVkInteropAdapter::guid)
-                *_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter);
-        })
-        .RETURN(S_OK);
     ALLOW_CALL(adapter, GetVulkanHandles(_, _));
 
     ALLOW_CALL(output, Release())
