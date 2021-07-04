@@ -10,6 +10,12 @@
 
 using namespace trompeloeil;
 
+void SetupResourceFactory(std::unique_ptr<DXGIFactoryMock> dxgiFactory, std::unique_ptr<Vulkan> vulkan, std::unique_ptr<Nvml> nvml) {
+    resourceFactory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+    nvapiAdapterRegistry.reset();
+    initializationCount = 0ULL;
+}
+
 TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "[sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
     auto vulkan = std::make_unique<VulkanMock>();
@@ -28,9 +34,9 @@ TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "
     ALLOW_CALL(*nvml, IsAvailable())
         .RETURN(false);
 
+    SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+
     SECTION("Initialize and unloads") {
-        NvAPI_InitializeResourceFactory(
-                std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml)));
         REQUIRE(NvAPI_Initialize() == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
         REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
     }
@@ -82,9 +88,9 @@ TEST_CASE("Initialize and unloads returns OK", "[sysinfo]") {
     ALLOW_CALL(*nvml, IsAvailable())
         .RETURN(false);
 
+    SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+
     SECTION("Initialize and unloads") {
-        NvAPI_InitializeResourceFactory(
-            std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml)));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
         REQUIRE(NvAPI_Unload() == NVAPI_OK);
     }

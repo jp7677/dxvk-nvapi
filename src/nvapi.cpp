@@ -174,13 +174,3 @@ extern "C" {
         return Ok(n);
     }
 }
-
-namespace dxvk {
-    void NvAPI_InitializeResourceFactory(std::unique_ptr<ResourceFactory> factory) {
-        std::scoped_lock lock(initializationMutex);
-
-        resourceFactory = std::move(factory);
-        nvapiAdapterRegistry.reset();
-        initializationCount = 0ULL;
-    }
-}
