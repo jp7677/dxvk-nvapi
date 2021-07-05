@@ -11,11 +11,11 @@ TEST_CASE("D3D11 methods succeed", "[d3d11]") {
     D3D11DxvkDeviceMock device;
     D3D11DxvkDeviceContextMock context;
 
-    ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice::guid, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtDevice*>(&device))
-        .RETURN(S_OK);
     ALLOW_CALL(device, QueryInterface(IID_ID3D11Device, _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11Device*>(&device))
+        .RETURN(S_OK);
+    ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice::guid, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtDevice*>(&device))
         .RETURN(S_OK);
     ALLOW_CALL(device, Release())
         .RETURN(0);
@@ -24,14 +24,14 @@ TEST_CASE("D3D11 methods succeed", "[d3d11]") {
     ALLOW_CALL(device, GetImmediateContext(_))
         .LR_SIDE_EFFECT(*_1 = &context);
 
-    ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext::guid, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtContext*>(&context))
-        .RETURN(S_OK);
+    ALLOW_CALL(context, QueryInterface(IID_ID3D11Device, _))
+        .RETURN(E_FAIL);
     ALLOW_CALL(context, QueryInterface(IID_ID3D11DeviceContext, _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11DeviceContext*>(&context))
         .RETURN(S_OK);
-    ALLOW_CALL(context, QueryInterface(IID_ID3D11Device, _))
-        .RETURN(E_FAIL);
+    ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext::guid, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtContext*>(&context))
+        .RETURN(S_OK);
     ALLOW_CALL(context, Release())
         .RETURN(0);
     ALLOW_CALL(context, GetDevice(_))
@@ -102,5 +102,204 @@ TEST_CASE("D3D11 methods succeed", "[d3d11]") {
         bool supported = true;
         REQUIRE(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(static_cast<ID3D11DeviceContext*>(&context), 1U, &supported) == NVAPI_OK);
         REQUIRE(supported == false);
+    }
+}
+
+// The following test needs to run isolated since NvapiD3d11Device only tests once if a specific extension is supported
+TEST_CASE("D3D11 methods with device without DXVK extension support fail", "[.d3d11-isolated-1]") {
+    D3D11DxvkDeviceMock device;
+    D3D11DxvkDeviceContextMock context;
+
+    ALLOW_CALL(device, QueryInterface(IID_ID3D11Device, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11Device*>(&device))
+        .RETURN(S_OK);
+    ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice::guid, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtDevice*>(&device))
+        .RETURN(S_OK);
+    ALLOW_CALL(device, Release())
+        .RETURN(0);
+    ALLOW_CALL(device, GetExtensionSupport(_))
+        .RETURN(true);
+    ALLOW_CALL(device, GetImmediateContext(_))
+        .LR_SIDE_EFFECT(*_1 = &context);
+
+    ALLOW_CALL(context, QueryInterface(IID_ID3D11Device, _))
+        .RETURN(E_FAIL);
+    ALLOW_CALL(context, QueryInterface(IID_ID3D11DeviceContext, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11DeviceContext*>(&context))
+        .RETURN(S_OK);
+    ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext::guid, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtContext*>(&context))
+        .RETURN(S_OK);
+    ALLOW_CALL(context, Release())
+        .RETURN(0);
+    ALLOW_CALL(context, GetDevice(_))
+        .LR_SIDE_EFFECT(*_1 = &device);
+
+    SECTION("SetDepthBoundsTests with device without DXVK extension support returns Error") {
+        ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
+            .RETURN(false);
+
+        FORBID_CALL(context, SetDepthBoundsTest(_, _, _));
+        REQUIRE(NvAPI_D3D11_SetDepthBoundsTest(static_cast<ID3D11Device*>(&device), true, 0.4f, 0.7f) == NVAPI_ERROR);
+    }
+
+    SECTION("BeginUAVOverlap with device without DXVK extension support returns Error") {
+        ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_EXT_BARRIER_CONTROL))
+            .RETURN(false);
+
+        FORBID_CALL(context, SetBarrierControl(_));
+        REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_ERROR);
+    }
+
+    SECTION("EndUAVOverlap with device without DXVK extension support returns Error") {
+        ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_EXT_BARRIER_CONTROL))
+            .RETURN(false);
+
+        FORBID_CALL(context, SetBarrierControl(_));
+        REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_ERROR);
+    }
+}
+
+// The following test needs to run isolated since NvapiD3d11Device only tests once if a specific extension is supported
+TEST_CASE("D3D11 methods with context without DXVK extension support fail", "[.d3d11-isolated-2]") {
+    D3D11DxvkDeviceMock device;
+    D3D11DxvkDeviceContextMock context;
+
+    ALLOW_CALL(device, QueryInterface(IID_ID3D11Device, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11Device*>(&device))
+        .RETURN(S_OK);
+    ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice::guid, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtDevice*>(&device))
+        .RETURN(S_OK);
+    ALLOW_CALL(device, Release())
+        .RETURN(0);
+    ALLOW_CALL(device, GetExtensionSupport(_))
+        .RETURN(true);
+    ALLOW_CALL(device, GetImmediateContext(_))
+        .LR_SIDE_EFFECT(*_1 = &context);
+
+    ALLOW_CALL(context, QueryInterface(IID_ID3D11Device, _))
+        .RETURN(E_FAIL);
+    ALLOW_CALL(context, QueryInterface(IID_ID3D11DeviceContext, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11DeviceContext*>(&context))
+        .RETURN(S_OK);
+    ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext::guid, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtContext*>(&context))
+        .RETURN(S_OK);
+    ALLOW_CALL(context, Release())
+        .RETURN(0);
+    ALLOW_CALL(context, GetDevice(_))
+        .LR_SIDE_EFFECT(*_1 = &device);
+
+    SECTION("SetDepthBoundsTests with context without DXVK extension support returns Error") {
+        ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
+            .RETURN(false);
+
+        FORBID_CALL(context, SetDepthBoundsTest(_, _, _));
+        REQUIRE(NvAPI_D3D11_SetDepthBoundsTest(static_cast<ID3D11DeviceContext*>(&context), true, 0.5f, 0.8f) == NVAPI_ERROR);
+    }
+
+    SECTION("BeginUAVOverlap with context without DXVK extension support returns Error") {
+        ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_EXT_BARRIER_CONTROL))
+            .RETURN(false);
+
+        FORBID_CALL(context, SetBarrierControl(_));
+        REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11DeviceContext*>(&context)) == NVAPI_ERROR);
+    }
+
+    SECTION("EndUAVOverlap with context without DXVK extension support returns Error") {
+        ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_EXT_BARRIER_CONTROL))
+            .RETURN(false);
+
+        FORBID_CALL(context, SetBarrierControl(_));
+        REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11DeviceContext*>(&context)) == NVAPI_ERROR);
+    }
+
+    SECTION("MultiDrawInstancedIndirect without DXVK extension support returns Error") {
+        ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_EXT_MULTI_DRAW_INDIRECT))
+            .RETURN(false);
+
+        D3D11BufferMock buffer;
+        FORBID_CALL(context, MultiDrawIndirect(_, _, _, _));
+        REQUIRE(NvAPI_D3D11_MultiDrawInstancedIndirect(static_cast<ID3D11DeviceContext*>(&context), 4U, &buffer, 8U, 16U) == NVAPI_ERROR);
+    }
+
+    SECTION("MultiDrawIndexedInstancedIndirect without DXVK extension support returns Error") {
+        ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_EXT_MULTI_DRAW_INDIRECT))
+            .RETURN(false);
+
+        D3D11BufferMock buffer;
+        FORBID_CALL(context, MultiDrawIndexedIndirect(_, _, _, _));
+        REQUIRE(NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(static_cast<ID3D11DeviceContext*>(&context), 6U, &buffer, 12U, 20U) == NVAPI_ERROR);
+    }
+}
+
+TEST_CASE("D3D11 methods without DXVK interfaces fail", "[d3d11]") {
+    D3D11DxvkDeviceMock device;
+    D3D11DxvkDeviceContextMock context;
+
+    ALLOW_CALL(device, QueryInterface(IID_ID3D11Device, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11Device*>(&device))
+        .RETURN(S_OK);
+    ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice::guid, _))
+        .RETURN(E_FAIL);
+    ALLOW_CALL(device, Release())
+        .RETURN(0);
+    ALLOW_CALL(device, GetImmediateContext(_))
+        .LR_SIDE_EFFECT(*_1 = &context);
+
+    ALLOW_CALL(context, QueryInterface(IID_ID3D11Device, _))
+        .RETURN(E_FAIL);
+    ALLOW_CALL(context, QueryInterface(IID_ID3D11DeviceContext, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11DeviceContext*>(&context))
+        .RETURN(S_OK);
+    ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext::guid, _))
+        .RETURN(E_FAIL);
+    ALLOW_CALL(context, Release())
+        .RETURN(0);
+    ALLOW_CALL(context, GetDevice(_))
+        .LR_SIDE_EFFECT(*_1 = &device);
+
+    SECTION("SetDepthBoundsTests with device without DXVK returns Error") {
+        FORBID_CALL(context, SetDepthBoundsTest(_, _, _));
+        REQUIRE(NvAPI_D3D11_SetDepthBoundsTest(static_cast<ID3D11Device*>(&device), true, 0.5f, 0.8f) == NVAPI_ERROR);
+    }
+
+    SECTION("BeginUAVOverlap with device without DXVK returns Error") {
+        FORBID_CALL(context, SetBarrierControl(_));
+        REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_ERROR);
+    }
+
+    SECTION("EndUAVOverlap with device without DXVK returns Error") {
+        FORBID_CALL(context, SetBarrierControl(_));
+        REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_ERROR);
+    }
+
+    SECTION("SetDepthBoundsTests with context without DXVK returns Error") {
+        FORBID_CALL(context, SetDepthBoundsTest(_, _, _));
+        REQUIRE(NvAPI_D3D11_SetDepthBoundsTest(static_cast<ID3D11DeviceContext*>(&context), true, 0.5f, 0.8f) == NVAPI_ERROR);
+    }
+
+    SECTION("BeginUAVOverlap with context without DXVK returns Error") {
+        FORBID_CALL(context, SetBarrierControl(_));
+        REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11DeviceContext*>(&context)) == NVAPI_ERROR);
+    }
+
+    SECTION("EndUAVOverlap with context without DXVK returns Error") {
+        FORBID_CALL(context, SetBarrierControl(_));
+        REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11DeviceContext*>(&context)) == NVAPI_ERROR);
+    }
+
+    SECTION("MultiDrawInstancedIndirect without DXVK returns Error") {
+        D3D11BufferMock buffer;
+        FORBID_CALL(context, MultiDrawIndirect(_, _, _, _));
+        REQUIRE(NvAPI_D3D11_MultiDrawInstancedIndirect(static_cast<ID3D11DeviceContext*>(&context), 4U, &buffer, 8U, 16U) == NVAPI_ERROR);
+    }
+
+    SECTION("MultiDrawIndexedInstancedIndirect without DXVK returns Error") {
+        D3D11BufferMock buffer;
+        FORBID_CALL(context, MultiDrawIndexedIndirect(_, _, _, _));
+        REQUIRE(NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(static_cast<ID3D11DeviceContext*>(&context), 6U, &buffer, 12U, 20U) == NVAPI_ERROR);
     }
 }
