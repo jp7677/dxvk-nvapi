@@ -7,7 +7,7 @@
 
 using namespace trompeloeil;
 
-TEST_CASE("D3D11 methods return OK", "[d3d11]") {
+TEST_CASE("D3D11 methods succeed", "[d3d11]") {
     D3D11DxvkDeviceMock device;
     D3D11DxvkDeviceContextMock context;
 
@@ -55,6 +55,13 @@ TEST_CASE("D3D11 methods return OK", "[d3d11]") {
         REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_OK);
     }
 
+    SECTION("IsNvShaderExtnOpCodeSupported with device returns OK") {
+        NvU32 code = 1U;
+        bool supported = true;
+        REQUIRE(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(static_cast<ID3D11Device*>(&device), code, &supported) == NVAPI_OK);
+        REQUIRE(supported == false);
+    }
+
     SECTION("SetDepthBoundsTests with context returns OK") {
         auto enable = true;
         auto min = 0.5f;
@@ -89,5 +96,11 @@ TEST_CASE("D3D11 methods return OK", "[d3d11]") {
         auto strideForArgs = 20U;
         REQUIRE_CALL(context, MultiDrawIndexedIndirect(drawCount, &buffer, offsetForArgs, strideForArgs));
         REQUIRE(NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(static_cast<ID3D11DeviceContext*>(&context), drawCount, &buffer, offsetForArgs, strideForArgs) == NVAPI_OK);
+    }
+
+    SECTION("IsNvShaderExtnOpCodeSupported with context returns OK") {
+        bool supported = true;
+        REQUIRE(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(static_cast<ID3D11DeviceContext*>(&context), 1U, &supported) == NVAPI_OK);
+        REQUIRE(supported == false);
     }
 }

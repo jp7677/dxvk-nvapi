@@ -1,0 +1,50 @@
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+
+using namespace trompeloeil;
+
+class D3D12DeviceMock : public mock_interface<ID3D12Device> {
+    MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
+    MAKE_MOCK0(AddRef, ULONG(), override);
+    MAKE_MOCK0(Release, ULONG(), override);
+    IMPLEMENT_MOCK3(GetPrivateData);
+    IMPLEMENT_MOCK3(SetPrivateData);
+    IMPLEMENT_MOCK2(SetPrivateDataInterface);
+    IMPLEMENT_MOCK1(SetName);
+    IMPLEMENT_MOCK0(GetNodeCount);
+    IMPLEMENT_MOCK3(CreateCommandQueue);
+    IMPLEMENT_MOCK3(CreateCommandAllocator);
+    IMPLEMENT_MOCK3(CreateGraphicsPipelineState);
+    IMPLEMENT_MOCK3(CreateComputePipelineState);
+    IMPLEMENT_MOCK6(CreateCommandList);
+    IMPLEMENT_MOCK3(CheckFeatureSupport);
+    IMPLEMENT_MOCK3(CreateDescriptorHeap);
+    IMPLEMENT_MOCK1(GetDescriptorHandleIncrementSize);
+    IMPLEMENT_MOCK5(CreateRootSignature);
+    IMPLEMENT_MOCK2(CreateConstantBufferView);
+    IMPLEMENT_MOCK3(CreateShaderResourceView);
+    IMPLEMENT_MOCK4(CreateUnorderedAccessView);
+    IMPLEMENT_MOCK3(CreateRenderTargetView);
+    IMPLEMENT_MOCK3(CreateDepthStencilView);
+    IMPLEMENT_MOCK2(CreateSampler);
+    IMPLEMENT_MOCK7(CopyDescriptors);
+    IMPLEMENT_MOCK4(CopyDescriptorsSimple);
+    MAKE_MOCK4(GetResourceAllocationInfo, D3D12_RESOURCE_ALLOCATION_INFO*(D3D12_RESOURCE_ALLOCATION_INFO*, UINT, UINT, const D3D12_RESOURCE_DESC*), override);
+    MAKE_MOCK3(GetCustomHeapProperties, D3D12_HEAP_PROPERTIES*(D3D12_HEAP_PROPERTIES*, UINT, D3D12_HEAP_TYPE), override);
+    IMPLEMENT_MOCK7(CreateCommittedResource);
+    IMPLEMENT_MOCK3(CreateHeap);
+    IMPLEMENT_MOCK7(CreatePlacedResource);
+    IMPLEMENT_MOCK5(CreateReservedResource);
+    IMPLEMENT_MOCK5(CreateSharedHandle);
+    IMPLEMENT_MOCK3(OpenSharedHandle);
+    IMPLEMENT_MOCK3(OpenSharedHandleByName);
+    IMPLEMENT_MOCK2(MakeResident);
+    IMPLEMENT_MOCK2(Evict);
+    IMPLEMENT_MOCK4(CreateFence);
+    IMPLEMENT_MOCK0(GetDeviceRemovedReason);
+    IMPLEMENT_MOCK8(GetCopyableFootprints);
+    IMPLEMENT_MOCK3(CreateQueryHeap);
+    IMPLEMENT_MOCK1(SetStablePowerState);
+    IMPLEMENT_MOCK4(CreateCommandSignature);
+    IMPLEMENT_MOCK7(GetResourceTiling);
+    MAKE_MOCK1(GetAdapterLuid, LUID*(LUID*), override);
+};

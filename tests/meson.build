@@ -14,7 +14,9 @@ nvapi_src = files([
 
 nvapi_tests_src = files([
   'main.cpp',
+  'nvapi_d3d.cpp',
   'nvapi_d3d11.cpp',
+  'nvapi_d3d12.cpp',
   'nvapi_sysinfo.cpp',
 ])
 
