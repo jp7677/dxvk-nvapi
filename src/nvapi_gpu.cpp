@@ -143,23 +143,23 @@ extern "C" {
         // to do a more fine-grained query at this time. Would need wine-nvml
         // usage.
         switch(pGpuArchInfo->architecture_id) {
-            case NV_GPU_ARCHITECTURE_GK100:
-                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GK104;
-                break;
-            case NV_GPU_ARCHITECTURE_GM200:
-                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GM204;
-                break;
-            case NV_GPU_ARCHITECTURE_GP100:
-                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GP102;
-                break;
-            case NV_GPU_ARCHITECTURE_GV100:
-                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GV100;
+            case NV_GPU_ARCHITECTURE_GA100:
+                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GA102;
                 break;
             case NV_GPU_ARCHITECTURE_TU100:
                 pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_TU102;
                 break;
-            case NV_GPU_ARCHITECTURE_GA100:
-                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GA102;
+            case NV_GPU_ARCHITECTURE_GV100:
+                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GV100;
+                break;
+            case NV_GPU_ARCHITECTURE_GP100:
+                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GP102;
+                break;
+            case NV_GPU_ARCHITECTURE_GM200:
+                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GM204;
+                break;
+            case NV_GPU_ARCHITECTURE_GK100:
+                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GK104;
                 break;
             default:
                 return Error(n);
