@@ -105,8 +105,7 @@ TEST_CASE("D3D11 methods succeed", "[d3d11]") {
     }
 }
 
-// The following test needs to run isolated since NvapiD3d11Device only tests once if a specific extension is supported
-TEST_CASE("D3D11 methods with device without DXVK extension support fail", "[.d3d11-isolated-1]") {
+TEST_CASE("D3D11 methods with device without DXVK extension support fail", "[d3d11]") {
     D3D11DxvkDeviceMock device;
     D3D11DxvkDeviceContextMock context;
 
@@ -159,38 +158,6 @@ TEST_CASE("D3D11 methods with device without DXVK extension support fail", "[.d3
         FORBID_CALL(context, SetBarrierControl(_));
         REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_ERROR);
     }
-}
-
-// The following test needs to run isolated since NvapiD3d11Device only tests once if a specific extension is supported
-TEST_CASE("D3D11 methods with context without DXVK extension support fail", "[.d3d11-isolated-2]") {
-    D3D11DxvkDeviceMock device;
-    D3D11DxvkDeviceContextMock context;
-
-    ALLOW_CALL(device, QueryInterface(IID_ID3D11Device, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11Device*>(&device))
-        .RETURN(S_OK);
-    ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice::guid, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtDevice*>(&device))
-        .RETURN(S_OK);
-    ALLOW_CALL(device, Release())
-        .RETURN(0);
-    ALLOW_CALL(device, GetExtensionSupport(_))
-        .RETURN(true);
-    ALLOW_CALL(device, GetImmediateContext(_))
-        .LR_SIDE_EFFECT(*_1 = &context);
-
-    ALLOW_CALL(context, QueryInterface(IID_ID3D11Device, _))
-        .RETURN(E_FAIL);
-    ALLOW_CALL(context, QueryInterface(IID_ID3D11DeviceContext, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11DeviceContext*>(&context))
-        .RETURN(S_OK);
-    ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext::guid, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtContext*>(&context))
-        .RETURN(S_OK);
-    ALLOW_CALL(context, Release())
-        .RETURN(0);
-    ALLOW_CALL(context, GetDevice(_))
-        .LR_SIDE_EFFECT(*_1 = &device);
 
     SECTION("SetDepthBoundsTests with context without DXVK extension support returns Error") {
         ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
