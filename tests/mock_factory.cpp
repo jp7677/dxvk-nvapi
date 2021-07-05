@@ -1,7 +1,3 @@
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-
-using namespace trompeloeil;
-
 class MockFactory : public ResourceFactory {
 
     public:

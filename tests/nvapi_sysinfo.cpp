@@ -5,15 +5,25 @@
 #include "../src/sysinfo/resource_factory.h"
 #include "../src/dxvk/dxvk_interfaces.h"
 #include "../src/nvapi.cpp"
+#include "../src/nvapi_sys.cpp"
+#include "../src/nvapi_gpu.cpp"
+#include "../src/nvapi_disp.cpp"
+#include "../src/nvapi_mosaic.cpp"
 #include "nvapi_sysinfo_mocks.cpp"
-#include "mock_factory.cpp"
+#include "nvapi_sysinfo_util.cpp"
 
 using namespace trompeloeil;
 
-void SetupResourceFactory(std::unique_ptr<DXGIFactoryMock> dxgiFactory, std::unique_ptr<Vulkan> vulkan, std::unique_ptr<Nvml> nvml) {
-    resourceFactory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
-    nvapiAdapterRegistry.reset();
-    initializationCount = 0ULL;
+TEST_CASE("GetInterfaceVersionString returns OK", "[sysinfo]") {
+    NvAPI_ShortString desc;
+    REQUIRE(NvAPI_GetInterfaceVersionString(desc) == NVAPI_OK);
+    REQUIRE(strcmp(desc, "R470") == 0);
+}
+
+TEST_CASE("GetErrorMessage returns OK", "[sysinfo]") {
+    NvAPI_ShortString desc;
+    REQUIRE(NvAPI_GetErrorMessage(NVAPI_NVIDIA_DEVICE_NOT_FOUND, desc) == NVAPI_OK);
+    REQUIRE(strcmp(desc, "NVAPI_NVIDIA_DEVICE_NOT_FOUND") == 0);
 }
 
 TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "[sysinfo]") {
@@ -35,14 +45,11 @@ TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "
         .RETURN(false);
 
     SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
-
-    SECTION("Initialize and unloads") {
-        REQUIRE(NvAPI_Initialize() == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
-        REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
-    }
+    REQUIRE(NvAPI_Initialize() == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
+    REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
 }
 
-TEST_CASE("Initialize and unloads returns OK", "[sysinfo]") {
+TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
     DXGIDxvkAdapterMock adapter;
     DXGIOutputMock output;
@@ -88,10 +95,111 @@ TEST_CASE("Initialize and unloads returns OK", "[sysinfo]") {
     ALLOW_CALL(*nvml, IsAvailable())
         .RETURN(false);
 
-    SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
-
-    SECTION("Initialize and unloads") {
+    SECTION("Initialize and unloads return OK") {
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
         REQUIRE(NvAPI_Unload() == NVAPI_OK);
     }
+
+    SECTION("GetAdapterIdFromPhysicalGpu returns OK") {
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+            .SIDE_EFFECT(
+                 ConfigureGetPhysicalDeviceProperties2(_3,
+                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                         idProps->deviceLUIDValid = VK_TRUE;
+                         for (auto i = 0U; i < VK_LUID_SIZE; i++)
+                             idProps->deviceLUID[i] = i + 1;
+                    })
+            );
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        LUID luid;
+        REQUIRE(NvAPI_GPU_GetAdapterIdFromPhysicalGpu(handle, static_cast<void*>(&luid)) == NVAPI_OK);
+        REQUIRE(luid.LowPart  == 0x04030201);
+        REQUIRE(luid.HighPart == 0x08070605);
+    }
+
+    SECTION("GetArchInfo returns OK") {
+        struct Data {std::string extensionName; NV_GPU_ARCHITECTURE_ID expectedArchId; NV_GPU_ARCH_IMPLEMENTATION_ID expectedImplId;};
+        auto args = GENERATE(
+                Data{VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, NV_GPU_ARCHITECTURE_GA100, NV_GPU_ARCH_IMPLEMENTATION_GA102},
+                Data{VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME, NV_GPU_ARCHITECTURE_TU100, NV_GPU_ARCH_IMPLEMENTATION_TU102},
+                Data{VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME, NV_GPU_ARCHITECTURE_GV100, NV_GPU_ARCH_IMPLEMENTATION_GV100},
+                Data{VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME, NV_GPU_ARCHITECTURE_GP100, NV_GPU_ARCH_IMPLEMENTATION_GP102},
+                Data{VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, NV_GPU_ARCHITECTURE_GM200, NV_GPU_ARCH_IMPLEMENTATION_GM204},
+                Data{"ext", NV_GPU_ARCHITECTURE_GK100, NV_GPU_ARCH_IMPLEMENTATION_GK104});
+
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+            .RETURN(std::set<std::string>{
+                VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,
+                args.extensionName});
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        if (args.extensionName == VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
+                            fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
+                    })
+            );
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NV_GPU_ARCH_INFO archInfo;
+        archInfo.version = NV_GPU_ARCH_INFO_VER_2;
+        REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_OK);
+        REQUIRE(archInfo.architecture_id == args.expectedArchId);
+        REQUIRE(archInfo.implementation_id == args.expectedImplId);
+        REQUIRE(archInfo.revision_id == NV_GPU_CHIP_REV_A01);
+    }
+
+    SECTION("GetArchInfo returns device-not-found when no NVIDIA device is present") {
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+            .RETURN(std::set<std::string>{
+                VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME});
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = VK_DRIVER_ID_MESA_RADV;
+                    })
+            );
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NV_GPU_ARCH_INFO archInfo;
+        archInfo.version = NV_GPU_ARCH_INFO_VER_2;
+        REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
+    }
+}
+
+TEST_CASE("GetHdrCapabilities returns OK", "[sysinfo]") {
+    NV_HDR_CAPABILITIES capabilities;
+    capabilities.version = NV_HDR_CAPABILITIES_VER2;
+    REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, &capabilities) == NVAPI_OK);
+    REQUIRE(capabilities.isST2084EotfSupported == false);
+    REQUIRE(capabilities.isTraditionalHdrGammaSupported == false);
+    REQUIRE(capabilities.isEdrSupported == false);
+    REQUIRE(capabilities.driverExpandDefaultHdrParameters == false);
+    REQUIRE(capabilities.isTraditionalSdrGammaSupported == false);
+    REQUIRE(capabilities.isDolbyVisionSupported == false);
+}
+
+TEST_CASE("GetDisplayViewportsByResolution returns mosaic-ot-active", "[sysinfo]") {
+    NvU8 corrected;
+    NV_RECT rect[NV_MOSAIC_MAX_DISPLAYS];
+    REQUIRE(NvAPI_Mosaic_GetDisplayViewportsByResolution(0, 0, 0, rect, &corrected) == NVAPI_MOSAIC_NOT_ACTIVE);
 }
