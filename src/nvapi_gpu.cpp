@@ -171,6 +171,40 @@ extern "C" {
         return Ok(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_GPU_GetVbiosVersionString(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szBiosRevision) {
+        constexpr auto n = "NvAPI_GPU_GetVbiosVersionString";
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (szBiosRevision == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        if (!adapter->HasNvml())
+            return NoImplementation(n);
+
+        if (!adapter->HasNvmlDevice())
+            return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"));
+
+        char version[NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE];
+        auto result = adapter->NvmlDeviceGetVbiosVersion(version, NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE);
+        switch (result) {
+            case NVML_SUCCESS:
+                strcpy(szBiosRevision, version);
+                return Ok(n);
+            case NVML_ERROR_NOT_SUPPORTED:
+                return NotSupported(n);
+            case NVML_ERROR_GPU_IS_LOST:
+                return HandleInvalidated(n);
+            default:
+                return Error(str::format(n, ": ", adapter->NvmlErrorString(result)));
+        }
+    }
+
     NvAPI_Status __cdecl NvAPI_GPU_GetDynamicPstatesInfoEx(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_DYNAMIC_PSTATES_INFO_EX *pDynamicPstatesInfoEx) {
         constexpr auto n = "NvAPI_GPU_GetDynamicPstatesInfoEx";
         static bool alreadyLoggedNoNvml = false;
@@ -191,7 +225,7 @@ extern "C" {
             return ExpectedPhysicalGpuHandle(n);
 
         if (!adapter->HasNvml())
-            return NoImplementation(str::format(n, ": NVML not available"), alreadyLoggedNoNvml);
+            return NoImplementation(n, alreadyLoggedNoNvml);
 
         if (!adapter->HasNvmlDevice())
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
@@ -201,35 +235,26 @@ extern "C" {
         switch (result) {
             case NVML_SUCCESS:
                 pDynamicPstatesInfoEx->flags = 0;
-
                 pDynamicPstatesInfoEx->utilization[0].bIsPresent = 1;
                 pDynamicPstatesInfoEx->utilization[0].percentage = utilization.gpu;
-
                 pDynamicPstatesInfoEx->utilization[1].bIsPresent = 1;
                 pDynamicPstatesInfoEx->utilization[1].percentage = utilization.memory;
-
                 pDynamicPstatesInfoEx->utilization[2].bIsPresent = 1;
                 pDynamicPstatesInfoEx->utilization[2].percentage = 0;
-
                 pDynamicPstatesInfoEx->utilization[3].bIsPresent = 1;
                 pDynamicPstatesInfoEx->utilization[3].percentage = 0;
-
                 for (auto i = 4U; i < NVAPI_MAX_GPU_UTILIZATIONS; i++)
                     pDynamicPstatesInfoEx->utilization[i].bIsPresent = 0;
 
                 return Ok(n, alreadyLoggedOk);
-
             case NVML_ERROR_NOT_SUPPORTED:
                 pDynamicPstatesInfoEx->flags = 0;
-
                 for (auto& util : pDynamicPstatesInfoEx->utilization)
                     util.bIsPresent = 0;
 
                 return NotSupported(n);
-            
             case NVML_ERROR_GPU_IS_LOST:
                 return HandleInvalidated(n);
-
             default:
                 return Error(str::format(n, ": ", adapter->NvmlErrorString(result)));
         }
@@ -260,7 +285,7 @@ extern "C" {
         }
 
         if (!adapter->HasNvml())
-            return NoImplementation(str::format(n, ": NVML not available"), alreadyLoggedNoNvml);
+            return NoImplementation(n, alreadyLoggedNoNvml);
 
         if (!adapter->HasNvmlDevice())
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
@@ -290,7 +315,6 @@ extern "C" {
                 }
 
                 return Ok(n, alreadyLoggedOk);
-
             case NVML_ERROR_NOT_SUPPORTED:
                 switch (pThermalSettings->version) {
                     case NV_GPU_THERMAL_SETTINGS_VER_2:
@@ -303,46 +327,8 @@ extern "C" {
                 }
 
                 return NotSupported(n);
-
             case NVML_ERROR_GPU_IS_LOST:
                 return HandleInvalidated(n);
-
-            default:
-                return Error(str::format(n, ": ", adapter->NvmlErrorString(result)));
-        }
-    }
-    NvAPI_Status __cdecl NvAPI_GPU_GetVbiosVersionString(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szBiosRevision) {
-        constexpr auto n = "NvAPI_GPU_GetVbiosVersionString";
-
-        if (nvapiAdapterRegistry == nullptr)
-            return ApiNotInitialized(n);
-
-        if (szBiosRevision == nullptr)
-            return InvalidArgument(n);
-
-        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
-        if (!nvapiAdapterRegistry->IsAdapter(adapter))
-            return ExpectedPhysicalGpuHandle(n);
-
-        if (!adapter->HasNvml())
-            return NoImplementation(str::format(n, ": NVML not loaded"));
-
-        if (!adapter->HasNvmlDevice())
-            return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"));
-
-        char version[NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE];
-        auto result = adapter->NvmlDeviceGetVbiosVersion(version, NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE);
-        switch (result) {
-            case NVML_SUCCESS:
-                strcpy(szBiosRevision, version);
-                return Ok(n);
-
-            case NVML_ERROR_NOT_SUPPORTED:
-                return NotSupported(n);
-
-            case NVML_ERROR_GPU_IS_LOST:
-                return HandleInvalidated(n);
-
             default:
                 return Error(str::format(n, ": ", adapter->NvmlErrorString(result)));
         }
@@ -372,7 +358,7 @@ extern "C" {
             return ExpectedPhysicalGpuHandle(n);
 
         if (!adapter->HasNvml())
-            return NoImplementation(str::format(n, ": NVML not loaded"), alreadyLoggedNoNvml);
+            return NoImplementation(n, alreadyLoggedNoNvml);
 
         if (!adapter->HasNvmlDevice())
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
@@ -392,13 +378,10 @@ extern "C" {
                     pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent = 1;
                     pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency = (clock * 1000);
                     break;
-
                 case NVML_ERROR_NOT_SUPPORTED:
                     break;
-
                 case NVML_ERROR_GPU_IS_LOST:
                     return HandleInvalidated(n);
-
                 default:
                     return Error(str::format(n, ": ", adapter->NvmlErrorString(resultGpu)));
             }
@@ -409,13 +392,10 @@ extern "C" {
                     pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent = 1;
                     pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency = (clock * 1000);
                     break;
-
                 case NVML_ERROR_NOT_SUPPORTED:
                     break;
-
                 case NVML_ERROR_GPU_IS_LOST:
                     return HandleInvalidated(n);
-
                 default:
                     return Error(str::format(n, ": ", adapter->NvmlErrorString(resultMem)));
             }
@@ -426,13 +406,10 @@ extern "C" {
                     pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent = 1;
                     pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency = (clock * 1000);
                     break;
-
                 case NVML_ERROR_NOT_SUPPORTED:
                     break;
-
                 case NVML_ERROR_GPU_IS_LOST:
                     return HandleInvalidated(n);
-
                 default:
                     return Error(str::format(n, ": ", adapter->NvmlErrorString(resultVid)));
             }
