@@ -101,6 +101,147 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
         REQUIRE(NvAPI_Unload() == NVAPI_OK);
     }
 
+    SECTION("GetDisplayDriverVersion returns OK", "[sysinfo]") {
+        struct Data {VkDriverId driverId; u_int major; u_int minor; u_int patch; u_int expectedVersion;};
+        auto args = GENERATE(
+            Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x1d6, 0x2d, 0x01, 47045},
+            Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x1d6, 0x66, 0x01, 47099},
+            Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, 0x15, 0x02, 0x03, 2102});
+
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+            .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME});
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = args.driverId;
+                        strcpy(props->properties.deviceName, "GPU0");
+                        if (args.driverId == VK_DRIVER_ID_NVIDIA_PROPRIETARY)
+                            props->properties.driverVersion = (args.major << 22) | (args.minor << 14) | (args.patch << 6);
+                        else
+                            props->properties.driverVersion = (args.major << 22) | (args.minor << 12) | args.patch;
+                    })
+            );
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvDisplayHandle handle;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0, &handle) == NVAPI_OK);
+
+        NV_DISPLAY_DRIVER_VERSION version;
+        version.version = NV_DISPLAY_DRIVER_VERSION_VER;
+        REQUIRE(NvAPI_GetDisplayDriverVersion(handle, &version) == NVAPI_OK);
+        REQUIRE(version.drvVersion == args.expectedVersion);
+        REQUIRE(strcmp(version.szAdapterString, "GPU0") == 0);
+        REQUIRE(std::string(version.szBuildBranchString).length() > 0);
+    }
+
+    SECTION("GetGPUType returns OK", "[sysinfo]") {
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        props->properties.deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+                    })
+                );
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NV_GPU_TYPE type;
+        REQUIRE(NvAPI_GPU_GetGPUType(handle, &type) == NVAPI_OK);
+        REQUIRE(type == NV_SYSTEM_TYPE_DGPU);
+    }
+
+    SECTION("GetPCIIdentifiers returns OK", "[sysinfo]") {
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        props->properties.vendorID = 0x10de;
+                        props->properties.deviceID = 0x1234;
+                    })
+                );
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NvU32 deviceId, subSystemId, revisionId, extDeviceId;
+        REQUIRE(NvAPI_GPU_GetPCIIdentifiers(handle, &deviceId, &subSystemId, &revisionId, &extDeviceId) == NVAPI_OK);
+        REQUIRE(deviceId == 0x123410de);
+        REQUIRE(subSystemId == 0);
+        REQUIRE(revisionId == 0);
+        REQUIRE(extDeviceId == 0);
+    }
+
+    SECTION("GetFullName returns OK", "[sysinfo]") {
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        strcpy(props->properties.deviceName, "High-End GPU01");
+                    })
+                );
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NvAPI_ShortString name;
+        REQUIRE(NvAPI_GPU_GetFullName(handle, name) == NVAPI_OK);
+        REQUIRE(strcmp(name, "High-End GPU01") == 0);
+    }
+
+    SECTION("GetBusId returns OK", "[sysinfo]") {
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+            .RETURN(std::set<std::string>{VK_EXT_PCI_BUS_INFO_EXTENSION_NAME});
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        pciBusInfoProps->pciBus = 2U;
+                    })
+                );
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NvU32 busId;
+        REQUIRE(NvAPI_GPU_GetBusId(handle, &busId) == NVAPI_OK);
+        REQUIRE(busId == 2);
+    }
+
+    SECTION("GetPhysicalFrameBufferSize returns OK", "[sysinfo]") {
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+            .SIDE_EFFECT({
+                _3->memoryProperties.memoryHeapCount = 1;
+                _3->memoryProperties.memoryHeaps[0].flags = VK_MEMORY_HEAP_DEVICE_LOCAL_BIT;
+                _3->memoryProperties.memoryHeaps[0].size = 8191 * 1024;
+            });
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NvU32 size;
+        REQUIRE(NvAPI_GPU_GetPhysicalFrameBufferSize(handle, &size) == NVAPI_OK);
+        REQUIRE(size == 8191);
+    }
+
     SECTION("GetAdapterIdFromPhysicalGpu returns OK") {
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(
