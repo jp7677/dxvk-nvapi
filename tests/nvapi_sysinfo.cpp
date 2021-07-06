@@ -325,6 +325,169 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
         archInfo.version = NV_GPU_ARCH_INFO_VER_2;
         REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
     }
+
+    SECTION("NVML depending methods succeed when NVML is available", "[sysinfo]") {
+        ALLOW_CALL(*nvml, IsAvailable()) // NOLINT(bugprone-use-after-move)
+            .RETURN(true);
+        ALLOW_CALL(*nvml, DeviceGetHandleByPciBusId_v2(_, _))
+            .RETURN(NVML_SUCCESS);
+
+        SECTION("GetDynamicPstatesInfoEx returns OK", "[sysinfo]") {
+            auto version = "12.34";
+            ALLOW_CALL(*nvml, DeviceGetVbiosVersion(_, _, _))
+                .LR_SIDE_EFFECT(strcpy(_2, version))
+                .RETURN(NVML_SUCCESS);
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+            NvAPI_ShortString revision;
+            REQUIRE(NvAPI_GPU_GetVbiosVersionString(handle, revision) == NVAPI_OK);
+            REQUIRE(strcmp(revision, version) == 0);
+        }
+
+        SECTION("GetDynamicPstatesInfoEx returns OK", "[sysinfo]") {
+            auto gpuUtilization = 32U;
+            auto memoryUtilization = 56U;
+            ALLOW_CALL(*nvml, DeviceGetUtilizationRates(_, _)) // NOLINT(bugprone-use-after-move)
+                .LR_SIDE_EFFECT({
+                    _2->gpu = gpuUtilization;
+                    _2->memory = memoryUtilization;
+                })
+                .RETURN(NVML_SUCCESS);
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+            NV_GPU_DYNAMIC_PSTATES_INFO_EX info;
+            info.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;
+            REQUIRE(NvAPI_GPU_GetDynamicPstatesInfoEx(handle, &info) == NVAPI_OK);
+            REQUIRE(info.flags == 0);
+            REQUIRE(info.utilization[0].bIsPresent == 1);
+            REQUIRE(info.utilization[0].percentage == gpuUtilization);
+            REQUIRE(info.utilization[1].bIsPresent == 1);
+            REQUIRE(info.utilization[1].percentage == memoryUtilization);
+            REQUIRE(info.utilization[2].bIsPresent == 1);
+            REQUIRE(info.utilization[2].percentage == 0);
+            REQUIRE(info.utilization[3].bIsPresent == 1);
+            REQUIRE(info.utilization[3].percentage == 0);
+            for (auto i = 4U; i < NVAPI_MAX_GPU_UTILIZATIONS; i++)
+                REQUIRE(info.utilization[i].bIsPresent == 0);
+        }
+
+        SECTION("GetThermalSettings returns OK", "[sysinfo]") {
+            auto temp = 65;
+            ALLOW_CALL(*nvml, DeviceGetTemperature(_, _, _)) // NOLINT(bugprone-use-after-move)
+                .LR_SIDE_EFFECT(*_3 = temp)
+                .RETURN(NVML_SUCCESS);
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+            NV_GPU_THERMAL_SETTINGS settings;
+            settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
+            REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_OK);
+            REQUIRE(settings.count == 1);
+            REQUIRE(settings.sensor[0].controller == NVAPI_THERMAL_CONTROLLER_UNKNOWN);
+            REQUIRE(settings.sensor[0].target == NVAPI_THERMAL_TARGET_GPU);
+            REQUIRE(settings.sensor[0].currentTemp == static_cast<int>(temp));
+            REQUIRE(settings.sensor[0].defaultMaxTemp == 127);
+            REQUIRE(settings.sensor[0].defaultMinTemp == -256);
+        }
+
+        SECTION("GetAllClockFrequencies returns OK", "[sysinfo]") {
+            auto graphicsClock = 500U;
+            auto memoryClock = 600U;
+            auto videoClock = 700U;
+            ALLOW_CALL(*nvml, DeviceGetClockInfo(_, NVML_CLOCK_GRAPHICS, _)) // NOLINT(bugprone-use-after-move)
+                .LR_SIDE_EFFECT(*_3 = graphicsClock)
+                .RETURN(NVML_SUCCESS);
+            ALLOW_CALL(*nvml, DeviceGetClockInfo(_, NVML_CLOCK_MEM, _))
+                .LR_SIDE_EFFECT(*_3 = memoryClock)
+                .RETURN(NVML_SUCCESS);
+            ALLOW_CALL(*nvml, DeviceGetClockInfo(_, NVML_CLOCK_VIDEO, _))
+                .LR_SIDE_EFFECT(*_3 = videoClock)
+                .RETURN(NVML_SUCCESS);
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+            NV_GPU_CLOCK_FREQUENCIES frequencies;
+            frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
+            frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
+            REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_OK);
+            REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent == 1);
+            REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency == graphicsClock * 1000);
+            REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent == 1);
+            REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency == memoryClock * 1000);
+            REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent == 1);
+            REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency == videoClock * 1000);
+        }
+    }
+
+    SECTION("NVML depending methods return no-implementation when NVML is not available", "[sysinfo]") {
+        ALLOW_CALL(*nvml, IsAvailable()) // NOLINT(bugprone-use-after-move)
+            .RETURN(false);
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NvAPI_ShortString revision;
+        REQUIRE(NvAPI_GPU_GetVbiosVersionString(handle, revision) == NVAPI_NO_IMPLEMENTATION);
+        NV_GPU_DYNAMIC_PSTATES_INFO_EX info;
+        info.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;
+        REQUIRE(NvAPI_GPU_GetDynamicPstatesInfoEx(handle, &info) == NVAPI_NO_IMPLEMENTATION);
+        NV_GPU_THERMAL_SETTINGS settings;
+        settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
+        REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_NO_IMPLEMENTATION);
+        NV_GPU_CLOCK_FREQUENCIES frequencies;
+        frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
+        frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
+        REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_NO_IMPLEMENTATION);
+    }
+
+    SECTION("NVML depending methods return handle-invalidated when NVML is available but without suitable adapter", "[sysinfo]") {
+        ALLOW_CALL(*nvml, IsAvailable()) // NOLINT(bugprone-use-after-move)
+            .RETURN(true);
+        ALLOW_CALL(*nvml, DeviceGetHandleByPciBusId_v2(_, _))
+            .RETURN(NVML_ERROR_NOT_FOUND);
+        ALLOW_CALL(*nvml, ErrorString(_))
+            .RETURN("error");
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NvAPI_ShortString revision;
+        REQUIRE(NvAPI_GPU_GetVbiosVersionString(handle, revision) == NVAPI_HANDLE_INVALIDATED);
+        NV_GPU_DYNAMIC_PSTATES_INFO_EX info;
+        info.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;
+        REQUIRE(NvAPI_GPU_GetDynamicPstatesInfoEx(handle, &info) == NVAPI_HANDLE_INVALIDATED);
+        NV_GPU_THERMAL_SETTINGS settings;
+        settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
+        REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_HANDLE_INVALIDATED);
+        NV_GPU_CLOCK_FREQUENCIES frequencies;
+        frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
+        frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
+        REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_HANDLE_INVALIDATED);
+    }
 }
 
 TEST_CASE("GetHdrCapabilities returns OK", "[sysinfo]") {
