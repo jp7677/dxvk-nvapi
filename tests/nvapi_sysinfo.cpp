@@ -102,7 +102,7 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
         REQUIRE(NvAPI_Unload() == NVAPI_OK);
     }
 
-    SECTION("GetDisplayDriverVersion returns OK", "[sysinfo]") {
+    SECTION("GetDisplayDriverVersion returns OK") {
         struct Data {VkDriverId driverId; u_int major; u_int minor; u_int patch; u_int expectedVersion;};
         auto args = GENERATE(
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x1d6, 0x2d, 0x01, 47045},
@@ -138,7 +138,7 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
         REQUIRE(std::string(version.szBuildBranchString).length() > 0);
     }
 
-    SECTION("GetGPUType returns OK", "[sysinfo]") {
+    SECTION("GetGPUType returns OK") {
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
@@ -158,7 +158,7 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
         REQUIRE(type == NV_SYSTEM_TYPE_DGPU);
     }
 
-    SECTION("GetPCIIdentifiers returns OK", "[sysinfo]") {
+    SECTION("GetPCIIdentifiers returns OK") {
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
@@ -182,12 +182,13 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
         REQUIRE(extDeviceId == 0);
     }
 
-    SECTION("GetFullName returns OK", "[sysinfo]") {
+    SECTION("GetFullName returns OK") {
+        auto name = "High-End GPU01";
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
-            .SIDE_EFFECT(
+            .LR_SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        strcpy(props->properties.deviceName, "High-End GPU01");
+                    [&name](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        strcpy(props->properties.deviceName, name);
                     })
                 );
 
@@ -197,19 +198,20 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
         NvPhysicalGpuHandle handle;
         REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
 
-        NvAPI_ShortString name;
-        REQUIRE(NvAPI_GPU_GetFullName(handle, name) == NVAPI_OK);
-        REQUIRE(strcmp(name, "High-End GPU01") == 0);
+        NvAPI_ShortString fullName;
+        REQUIRE(NvAPI_GPU_GetFullName(handle, fullName) == NVAPI_OK);
+        REQUIRE(strcmp(fullName, name) == 0);
     }
 
-    SECTION("GetBusId returns OK", "[sysinfo]") {
+    SECTION("GetBusId returns OK") {
+        auto id = 2U;
         ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
             .RETURN(std::set<std::string>{VK_EXT_PCI_BUS_INFO_EXTENSION_NAME});
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
-            .SIDE_EFFECT(
+            .LR_SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        pciBusInfoProps->pciBus = 2U;
+                    [&id](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        pciBusInfoProps->pciBus = id;
                     })
                 );
 
@@ -221,10 +223,10 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
 
         NvU32 busId;
         REQUIRE(NvAPI_GPU_GetBusId(handle, &busId) == NVAPI_OK);
-        REQUIRE(busId == 2);
+        REQUIRE(busId == id);
     }
 
-    SECTION("GetPhysicalFrameBufferSize returns OK", "[sysinfo]") {
+    SECTION("GetPhysicalFrameBufferSize returns OK") {
         ALLOW_CALL(*vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT({
                 _3->memoryProperties.memoryHeapCount = 1;
@@ -269,12 +271,12 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
     SECTION("GetArchInfo returns OK") {
         struct Data {std::string extensionName; NV_GPU_ARCHITECTURE_ID expectedArchId; NV_GPU_ARCH_IMPLEMENTATION_ID expectedImplId;};
         auto args = GENERATE(
-                Data{VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, NV_GPU_ARCHITECTURE_GA100, NV_GPU_ARCH_IMPLEMENTATION_GA102},
-                Data{VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME, NV_GPU_ARCHITECTURE_TU100, NV_GPU_ARCH_IMPLEMENTATION_TU102},
-                Data{VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME, NV_GPU_ARCHITECTURE_GV100, NV_GPU_ARCH_IMPLEMENTATION_GV100},
-                Data{VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME, NV_GPU_ARCHITECTURE_GP100, NV_GPU_ARCH_IMPLEMENTATION_GP102},
-                Data{VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, NV_GPU_ARCHITECTURE_GM200, NV_GPU_ARCH_IMPLEMENTATION_GM204},
-                Data{"ext", NV_GPU_ARCHITECTURE_GK100, NV_GPU_ARCH_IMPLEMENTATION_GK104});
+            Data{VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, NV_GPU_ARCHITECTURE_GA100, NV_GPU_ARCH_IMPLEMENTATION_GA102},
+            Data{VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME, NV_GPU_ARCHITECTURE_TU100, NV_GPU_ARCH_IMPLEMENTATION_TU102},
+            Data{VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME, NV_GPU_ARCHITECTURE_GV100, NV_GPU_ARCH_IMPLEMENTATION_GV100},
+            Data{VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME, NV_GPU_ARCHITECTURE_GP100, NV_GPU_ARCH_IMPLEMENTATION_GP102},
+            Data{VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, NV_GPU_ARCHITECTURE_GM200, NV_GPU_ARCH_IMPLEMENTATION_GM204},
+            Data{"ext", NV_GPU_ARCHITECTURE_GK100, NV_GPU_ARCH_IMPLEMENTATION_GK104});
 
         ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
             .RETURN(std::set<std::string>{
@@ -327,13 +329,13 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
         REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
     }
 
-    SECTION("NVML depending methods succeed when NVML is available", "[sysinfo]") {
+    SECTION("NVML depending methods succeed when NVML is available") {
         ALLOW_CALL(*nvml, IsAvailable()) // NOLINT(bugprone-use-after-move)
             .RETURN(true);
         ALLOW_CALL(*nvml, DeviceGetHandleByPciBusId_v2(_, _))
             .RETURN(NVML_SUCCESS);
 
-        SECTION("GetDynamicPstatesInfoEx returns OK", "[sysinfo]") {
+        SECTION("GetDynamicPstatesInfoEx returns OK") {
             auto version = "12.34";
             ALLOW_CALL(*nvml, DeviceGetVbiosVersion(_, _, _))
                 .LR_SIDE_EFFECT(strcpy(_2, version))
@@ -350,7 +352,7 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
             REQUIRE(strcmp(revision, version) == 0);
         }
 
-        SECTION("GetDynamicPstatesInfoEx returns OK", "[sysinfo]") {
+        SECTION("GetDynamicPstatesInfoEx returns OK") {
             auto gpuUtilization = 32U;
             auto memoryUtilization = 56U;
             ALLOW_CALL(*nvml, DeviceGetUtilizationRates(_, _)) // NOLINT(bugprone-use-after-move)
@@ -382,7 +384,7 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
                 REQUIRE(info.utilization[i].bIsPresent == 0);
         }
 
-        SECTION("GetThermalSettings returns OK", "[sysinfo]") {
+        SECTION("GetThermalSettings returns OK") {
             auto temp = 65;
             ALLOW_CALL(*nvml, DeviceGetTemperature(_, _, _)) // NOLINT(bugprone-use-after-move)
                 .LR_SIDE_EFFECT(*_3 = temp)
@@ -405,7 +407,7 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
             REQUIRE(settings.sensor[0].defaultMinTemp == -256);
         }
 
-        SECTION("GetAllClockFrequencies returns OK", "[sysinfo]") {
+        SECTION("GetAllClockFrequencies returns OK") {
             auto graphicsClock = 500U;
             auto memoryClock = 600U;
             auto videoClock = 700U;
@@ -438,7 +440,7 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
         }
     }
 
-    SECTION("NVML depending methods return no-implementation when NVML is not available", "[sysinfo]") {
+    SECTION("NVML depending methods return no-implementation when NVML is not available") {
         ALLOW_CALL(*nvml, IsAvailable()) // NOLINT(bugprone-use-after-move)
             .RETURN(false);
 
@@ -462,7 +464,7 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
         REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_NO_IMPLEMENTATION);
     }
 
-    SECTION("NVML depending methods return handle-invalidated when NVML is available but without suitable adapter", "[sysinfo]") {
+    SECTION("NVML depending methods return handle-invalidated when NVML is available but without suitable adapter") {
         ALLOW_CALL(*nvml, IsAvailable()) // NOLINT(bugprone-use-after-move)
             .RETURN(true);
         ALLOW_CALL(*nvml, DeviceGetHandleByPciBusId_v2(_, _))
@@ -491,7 +493,7 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
     }
 }
 
-TEST_CASE("Topology methods return OK", "[sysinfo]") {
+TEST_CASE("Topology methods succeed", "[sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
     DXGIDxvkAdapterMock adapter1;
     DXGIDxvkAdapterMock adapter2;

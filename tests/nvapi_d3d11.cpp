@@ -87,7 +87,7 @@ TEST_CASE("D3D11 methods succeed", "[d3d11]") {
         REQUIRE(NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(static_cast<ID3D11DeviceContext*>(&context), drawCount, &buffer, offsetForArgs, strideForArgs) == NVAPI_OK);
     }
 
-    SECTION("SetDepthBoundsTests without DXVK extension support returns Error") {
+    SECTION("SetDepthBoundsTests without DXVK extension support returns error") {
         ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS))
             .RETURN(false);
         FORBID_CALL(context, SetDepthBoundsTest(_, _, _));
@@ -96,7 +96,7 @@ TEST_CASE("D3D11 methods succeed", "[d3d11]") {
         REQUIRE(NvAPI_D3D11_SetDepthBoundsTest(static_cast<ID3D11DeviceContext*>(&context), true, 0.5f, 0.8f) == NVAPI_ERROR);
     }
 
-    SECTION("BeginUAVOverlap/EndUAVOverlap without DXVK extension support returns Error") {
+    SECTION("BeginUAVOverlap/EndUAVOverlap without DXVK extension support returns error") {
         ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_EXT_BARRIER_CONTROL))
             .RETURN(false);
         FORBID_CALL(context, SetBarrierControl(_));
@@ -107,7 +107,7 @@ TEST_CASE("D3D11 methods succeed", "[d3d11]") {
         REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11DeviceContext *>(&context)) == NVAPI_ERROR);
     }
 
-    SECTION("MultiDrawInstancedIndirect/MultiDrawIndexedInstancedIndirect without DXVK extension support returns Error") {
+    SECTION("MultiDrawInstancedIndirect/MultiDrawIndexedInstancedIndirect without DXVK extension support returns error") {
         ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_EXT_MULTI_DRAW_INDIRECT))
             .RETURN(false);
         FORBID_CALL(context, MultiDrawIndirect(_, _, _, _));
@@ -118,7 +118,7 @@ TEST_CASE("D3D11 methods succeed", "[d3d11]") {
         REQUIRE(NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(static_cast<ID3D11DeviceContext*>(&context), 6U, &buffer, 12U, 20U) == NVAPI_ERROR);
     }
 
-    SECTION("D3D11 methods without DXVK interfaces fail", "[d3d11]") {
+    SECTION("D3D11 methods without DXVK return error") {
         ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice::guid, _))
             .RETURN(E_FAIL);
         ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext::guid, _))
