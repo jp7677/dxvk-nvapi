@@ -50,6 +50,245 @@ TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "
     REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
 }
 
+TEST_CASE("Topology methods succeed", "[sysinfo]") {
+    auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
+    DXGIDxvkAdapterMock adapter1;
+    VkPhysicalDevice vkDevice1;
+    DXGIDxvkAdapterMock adapter2;
+    VkPhysicalDevice vkDevice2;
+    DXGIOutputMock output1;
+    DXGIOutputMock output2;
+    DXGIOutputMock output3;
+    auto vulkan = std::make_unique<VulkanMock>();
+    auto nvml = std::make_unique<NvmlMock>();
+
+    ALLOW_CALL(*dxgiFactory, AddRef())
+        .RETURN(1);
+    ALLOW_CALL(*dxgiFactory, Release())
+        .RETURN(0);
+    ALLOW_CALL(*dxgiFactory, EnumAdapters(0U, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter*>(&adapter1))
+        .RETURN(S_OK);
+    ALLOW_CALL(*dxgiFactory, EnumAdapters(1U, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter*>(&adapter2))
+        .RETURN(S_OK);
+    ALLOW_CALL(*dxgiFactory, EnumAdapters(2U, _))
+        .RETURN(DXGI_ERROR_NOT_FOUND);
+
+    ALLOW_CALL(adapter1, QueryInterface(IDXGIVkInteropAdapter::guid, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter1))
+        .RETURN(S_OK);
+    ALLOW_CALL(adapter1, Release())
+        .RETURN(0);
+    ALLOW_CALL(adapter1, EnumOutputs(0U, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
+        .RETURN(S_OK);
+    ALLOW_CALL(adapter1, EnumOutputs(1U, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output2))
+        .RETURN(S_OK);
+    ALLOW_CALL(adapter1, EnumOutputs(2U, _))
+        .RETURN(DXGI_ERROR_NOT_FOUND);
+    ALLOW_CALL(adapter1, GetVulkanHandles(_, _))
+        .LR_SIDE_EFFECT(*_2 = vkDevice1);
+
+    ALLOW_CALL(adapter2, QueryInterface(IDXGIVkInteropAdapter::guid, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter2))
+        .RETURN(S_OK);
+    ALLOW_CALL(adapter2, Release())
+        .RETURN(0);
+    ALLOW_CALL(adapter2, EnumOutputs(0U, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output3))
+        .RETURN(S_OK);
+    ALLOW_CALL(adapter2, EnumOutputs(1U, _))
+        .RETURN(DXGI_ERROR_NOT_FOUND);
+    ALLOW_CALL(adapter2, GetVulkanHandles(_, _))
+        .LR_SIDE_EFFECT(*_2 = vkDevice2);
+
+    ALLOW_CALL(output1, Release())
+        .RETURN(0);
+    ALLOW_CALL(output1, GetDesc(_))
+        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
+        .RETURN(S_OK);
+
+    ALLOW_CALL(output2, Release())
+        .RETURN(0);
+    ALLOW_CALL(output2, GetDesc(_))
+        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output2", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
+        .RETURN(S_OK);
+
+    ALLOW_CALL(output3, Release())
+        .RETURN(0);
+    ALLOW_CALL(output3, GetDesc(_))
+        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output3", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
+        .RETURN(S_OK);
+
+    ALLOW_CALL(*vulkan, IsAvailable())
+        .RETURN(true);
+    ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
+        .RETURN(std::set<std::string>{"ext"});
+    ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, vkDevice1, _))
+        .SIDE_EFFECT(
+            ConfigureGetPhysicalDeviceProperties2(_3,
+                [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                    strcpy(props->deviceName, "Device1");
+                })
+            );
+    ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, vkDevice2, _))
+        .SIDE_EFFECT(
+            ConfigureGetPhysicalDeviceProperties2(_3,
+                [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                    strcpy(props->deviceName, "Device2");
+                })
+            );
+    ALLOW_CALL(*vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _));
+
+    ALLOW_CALL(*nvml, IsAvailable())
+        .RETURN(false);
+
+    SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+    SECTION("EnumLogicalGPUs succeeds") {
+        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
+        NvU32 count = 0U;
+        for (auto handle : handles)
+            handle = nullptr;
+
+        REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
+        REQUIRE(handles[0] != nullptr);
+        REQUIRE(handles[1] != nullptr);
+        REQUIRE(count == 2);
+
+        NvAPI_ShortString name1;
+        REQUIRE(NvAPI_GPU_GetFullName(reinterpret_cast<NvPhysicalGpuHandle>(handles[0]), name1) == NVAPI_OK);
+        REQUIRE(strcmp(name1, "Device1") == 0);
+
+        NvAPI_ShortString name2;
+        REQUIRE(NvAPI_GPU_GetFullName(reinterpret_cast<NvPhysicalGpuHandle>(handles[1]), name2) == NVAPI_OK);
+        REQUIRE(strcmp(name2, "Device2") == 0);
+    }
+
+    SECTION("EnumPhysicalGPUs succeeds") {
+        NvPhysicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
+        NvU32 count = 0U;
+        for (auto handle : handles)
+            handle = nullptr;
+
+        REQUIRE(NvAPI_EnumPhysicalGPUs(handles, &count) == NVAPI_OK);
+        REQUIRE(handles[0] != nullptr);
+        REQUIRE(handles[1] != nullptr);
+        REQUIRE(count == 2);
+
+        NvAPI_ShortString name1;
+        REQUIRE(NvAPI_GPU_GetFullName(handles[0], name1) == NVAPI_OK);
+        REQUIRE(strcmp(name1, "Device1") == 0);
+
+        NvAPI_ShortString name2;
+        REQUIRE(NvAPI_GPU_GetFullName(handles[1], name2) == NVAPI_OK);
+        REQUIRE(strcmp(name2, "Device2") == 0);
+    }
+
+    SECTION("EnumNvidiaDisplayHandle succeeds") {
+        NvDisplayHandle handle1 = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0U, &handle1) == NVAPI_OK);
+        REQUIRE(handle1 != nullptr);
+
+        NvDisplayHandle handle2 = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(1U, &handle2) == NVAPI_OK);
+        REQUIRE(handle2 != nullptr);
+        REQUIRE(handle2 != handle1);
+
+        NvDisplayHandle handle3 = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(2U, &handle3) == NVAPI_OK);
+        REQUIRE(handle3 != nullptr);
+        REQUIRE(handle3 != handle1);
+        REQUIRE(handle3 != handle2);
+
+        NvDisplayHandle handle4 = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(3U, &handle4) == NVAPI_END_ENUMERATION);
+        REQUIRE(handle4 == nullptr);
+    }
+
+    SECTION("EnumNvidiaUnAttachedDisplayHandle succeeds") {
+        NvUnAttachedDisplayHandle handle = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaUnAttachedDisplayHandle(0U, &handle) == NVAPI_END_ENUMERATION);
+        REQUIRE(handle == nullptr);
+    }
+
+    SECTION("GetPhysicalGPUsFromDisplay succeeds") {
+        NvDisplayHandle displayHandle1 = nullptr;
+        NvDisplayHandle displayHandle2 = nullptr;
+        NvDisplayHandle displayHandle3 = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0U, &displayHandle1) == NVAPI_OK);
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(1U, &displayHandle2) == NVAPI_OK);
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(2U, &displayHandle3) == NVAPI_OK);
+
+        NvPhysicalGpuHandle handles1[NVAPI_MAX_PHYSICAL_GPUS];
+        NvU32 count1 = 0U;
+        for (auto handle : handles1)
+            handle = nullptr;
+
+        REQUIRE(NvAPI_GetPhysicalGPUsFromDisplay(displayHandle1, handles1, &count1) == NVAPI_OK);
+        REQUIRE(handles1[0] != nullptr);
+        REQUIRE(count1 == 1);
+
+        NvAPI_ShortString name1;
+        REQUIRE(NvAPI_GPU_GetFullName(handles1[0], name1) == NVAPI_OK);
+        REQUIRE(strcmp(name1, "Device1") == 0);
+
+        NvPhysicalGpuHandle handles2[NVAPI_MAX_PHYSICAL_GPUS];
+        NvU32 count2 = 0;
+        for (auto handle : handles2)
+            handle = nullptr;
+
+        REQUIRE(NvAPI_GetPhysicalGPUsFromDisplay(displayHandle2, handles2, &count2) == NVAPI_OK);
+        REQUIRE(handles2[0] != nullptr);
+        REQUIRE(count2 == 1);
+        REQUIRE(handles2[0] == handles1[0]);
+
+        NvPhysicalGpuHandle handles3[NVAPI_MAX_PHYSICAL_GPUS];
+        NvU32 count3 = 0U;
+        for (auto handle : handles3)
+            handle = nullptr;
+
+        REQUIRE(NvAPI_GetPhysicalGPUsFromDisplay(displayHandle3, handles3, &count3) == NVAPI_OK);
+        REQUIRE(handles3[0] != nullptr);
+        REQUIRE(count3 == 1);
+        REQUIRE(handles3[0] != handles1[0]);
+
+        NvAPI_ShortString name3;
+        REQUIRE(NvAPI_GPU_GetFullName(handles3[0], name3) == NVAPI_OK);
+        REQUIRE(strcmp(name3, "Device2") == 0);
+    }
+
+    SECTION("GetPhysicalGpuFromDisplayId succeeds") {
+        NvPhysicalGpuHandle handle1 = nullptr;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0U, &handle1) == NVAPI_OK);
+        REQUIRE(handle1 != nullptr);
+
+        NvAPI_ShortString name1;
+        REQUIRE(NvAPI_GPU_GetFullName(handle1, name1) == NVAPI_OK);
+        REQUIRE(strcmp(name1, "Device1") == 0);
+
+        NvPhysicalGpuHandle handle2 = nullptr;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(1U, &handle2) == NVAPI_OK);
+        REQUIRE(handle2 != nullptr);
+        REQUIRE(handle2 == handle1);
+
+        NvPhysicalGpuHandle handle3 = nullptr;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(2U, &handle3) == NVAPI_OK);
+        REQUIRE(handle3 != nullptr);
+
+        NvAPI_ShortString name3;
+        REQUIRE(NvAPI_GPU_GetFullName(handle3, name3) == NVAPI_OK);
+        REQUIRE(strcmp(name3, "Device2") == 0);
+
+        NvPhysicalGpuHandle handle4 = nullptr;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(3U, &handle4) == NVAPI_INVALID_ARGUMENT);
+        REQUIRE(handle4 == nullptr);
+    }
+}
+
 TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
     DXGIDxvkAdapterMock adapter;
@@ -102,6 +341,27 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
         REQUIRE(NvAPI_Unload() == NVAPI_OK);
     }
 
+    SECTION("GetDriverAndBranchVersion returns OK") {
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+            .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME});
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        props->driverVersion = (470 << 22) | (35 << 12) | 1;
+                    })
+            );
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvU32 version;
+        NvAPI_ShortString branch;
+        REQUIRE(NvAPI_SYS_GetDriverAndBranchVersion(&version, branch) == NVAPI_OK);
+        REQUIRE(version == 47035);
+        REQUIRE(std::string(branch).length() > 0);
+    }
+
     SECTION("GetDisplayDriverVersion returns OK") {
         struct Data {VkDriverId driverId; u_int major; u_int minor; u_int patch; u_int expectedVersion;};
         auto args = GENERATE(
@@ -116,11 +376,11 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         driverProps->driverID = args.driverId;
-                        strcpy(props->properties.deviceName, "GPU0");
+                        strcpy(props->deviceName, "GPU0");
                         if (args.driverId == VK_DRIVER_ID_NVIDIA_PROPRIETARY)
-                            props->properties.driverVersion = (args.major << 22) | (args.minor << 14) | (args.patch << 6);
+                            props->driverVersion = (args.major << 22) | (args.minor << 14) | (args.patch << 6);
                         else
-                            props->properties.driverVersion = (args.major << 22) | (args.minor << 12) | args.patch;
+                            props->driverVersion = (args.major << 22) | (args.minor << 12) | args.patch;
                     })
             );
 
@@ -143,9 +403,9 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        props->properties.deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+                        props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
                     })
-                );
+            );
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -163,10 +423,10 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        props->properties.vendorID = 0x10de;
-                        props->properties.deviceID = 0x1234;
+                        props->vendorID = 0x10de;
+                        props->deviceID = 0x1234;
                     })
-                );
+            );
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -188,9 +448,9 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
             .LR_SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [&name](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        strcpy(props->properties.deviceName, name);
+                        strcpy(props->deviceName, name);
                     })
-                );
+            );
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -213,7 +473,7 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
                     [&id](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         pciBusInfoProps->pciBus = id;
                     })
-                );
+            );
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -253,7 +513,7 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
                          idProps->deviceLUIDValid = VK_TRUE;
                          for (auto i = 0U; i < VK_LUID_SIZE; i++)
                              idProps->deviceLUID[i] = i + 1;
-                    })
+                     })
             );
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
@@ -490,193 +750,6 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
         frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
         frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
         REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_HANDLE_INVALIDATED);
-    }
-}
-
-TEST_CASE("Topology methods succeed", "[sysinfo]") {
-    auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
-    DXGIDxvkAdapterMock adapter1;
-    DXGIDxvkAdapterMock adapter2;
-    DXGIOutputMock output1;
-    DXGIOutputMock output2;
-    DXGIOutputMock output3;
-    auto vulkan = std::make_unique<VulkanMock>();
-    auto nvml = std::make_unique<NvmlMock>();
-
-    ALLOW_CALL(*dxgiFactory, AddRef())
-        .RETURN(1);
-    ALLOW_CALL(*dxgiFactory, Release())
-        .RETURN(0);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters(0U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter*>(&adapter1))
-        .RETURN(S_OK);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters(1U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter*>(&adapter2))
-        .RETURN(S_OK);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters(2U, _))
-        .RETURN(DXGI_ERROR_NOT_FOUND);
-
-    ALLOW_CALL(adapter1, QueryInterface(IDXGIVkInteropAdapter::guid, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter1))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter1, Release())
-        .RETURN(0);
-    ALLOW_CALL(adapter1, EnumOutputs(0U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter1, EnumOutputs(1U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output2))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter1, EnumOutputs(2U, _))
-        .RETURN(DXGI_ERROR_NOT_FOUND);
-    ALLOW_CALL(adapter1, GetVulkanHandles(_, _));
-
-    ALLOW_CALL(adapter2, QueryInterface(IDXGIVkInteropAdapter::guid, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter2))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter2, Release())
-        .RETURN(0);
-    ALLOW_CALL(adapter2, EnumOutputs(0U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output3))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter2, EnumOutputs(1U, _))
-        .RETURN(DXGI_ERROR_NOT_FOUND);
-    ALLOW_CALL(adapter2, GetVulkanHandles(_, _));
-
-    ALLOW_CALL(output1, Release())
-        .RETURN(0);
-    ALLOW_CALL(output1, GetDesc(_))
-        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
-        .RETURN(S_OK);
-
-    ALLOW_CALL(output2, Release())
-        .RETURN(0);
-    ALLOW_CALL(output2, GetDesc(_))
-        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output2", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
-        .RETURN(S_OK);
-
-    ALLOW_CALL(output3, Release())
-        .RETURN(0);
-    ALLOW_CALL(output3, GetDesc(_))
-        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output3", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
-        .RETURN(S_OK);
-
-    ALLOW_CALL(*vulkan, IsAvailable())
-        .RETURN(true);
-    ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
-        .RETURN(std::set<std::string>{"ext"});
-    ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _));
-    ALLOW_CALL(*vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _));
-
-    ALLOW_CALL(*nvml, IsAvailable())
-        .RETURN(false);
-
-    SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
-        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
-
-    SECTION("EnumLogicalGPUs succeeds") {
-        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
-        NvU32 count = 0U;
-        for (auto handle : handles)
-            handle = nullptr;
-
-        REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
-        REQUIRE(handles[0] != nullptr);
-        REQUIRE(handles[1] != nullptr);
-        REQUIRE(count == 2);
-    }
-
-    SECTION("EnumPhysicalGPUs succeeds") {
-        NvPhysicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
-        NvU32 count = 0U;
-        for (auto handle : handles)
-            handle = nullptr;
-
-        REQUIRE(NvAPI_EnumPhysicalGPUs(handles, &count) == NVAPI_OK);
-        REQUIRE(handles[0] != nullptr);
-        REQUIRE(handles[1] != nullptr);
-        REQUIRE(count == 2);
-    }
-
-    SECTION("EnumNvidiaDisplayHandle succeeds") {
-        NvDisplayHandle handle1 = nullptr;
-        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0U, &handle1) == NVAPI_OK);
-        REQUIRE(handle1 != nullptr);
-
-        NvDisplayHandle handle2 = nullptr;
-        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(1U, &handle2) == NVAPI_OK);
-        REQUIRE(handle2 != nullptr);
-
-        NvDisplayHandle handle3 = nullptr;
-        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(2U, &handle3) == NVAPI_OK);
-        REQUIRE(handle3 != nullptr);
-
-        NvDisplayHandle handle4 = nullptr;
-        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(3U, &handle4) == NVAPI_END_ENUMERATION);
-        REQUIRE(handle4 == nullptr);
-    }
-
-    SECTION("EnumNvidiaUnAttachedDisplayHandle succeeds") {
-        NvUnAttachedDisplayHandle handle = nullptr;
-        REQUIRE(NvAPI_EnumNvidiaUnAttachedDisplayHandle(0U, &handle) == NVAPI_END_ENUMERATION);
-        REQUIRE(handle == nullptr);
-    }
-
-    SECTION("GetPhysicalGPUsFromDisplay succeeds") {
-        NvDisplayHandle displayHandle1 = nullptr;
-        NvDisplayHandle displayHandle2 = nullptr;
-        NvDisplayHandle displayHandle3 = nullptr;
-        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0U, &displayHandle1) == NVAPI_OK);
-        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(1U, &displayHandle2) == NVAPI_OK);
-        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(2U, &displayHandle3) == NVAPI_OK);
-
-        NvPhysicalGpuHandle handles1[NVAPI_MAX_PHYSICAL_GPUS];
-        NvU32 count1 = 0U;
-        for (auto handle : handles1)
-            handle = nullptr;
-
-        REQUIRE(NvAPI_GetPhysicalGPUsFromDisplay(displayHandle1, handles1, &count1) == NVAPI_OK);
-        REQUIRE(handles1[0] != nullptr);
-        REQUIRE(count1 == 1);
-
-        NvPhysicalGpuHandle handles2[NVAPI_MAX_PHYSICAL_GPUS];
-        NvU32 count2 = 0;
-        for (auto handle : handles2)
-            handle = nullptr;
-
-        REQUIRE(NvAPI_GetPhysicalGPUsFromDisplay(displayHandle2, handles2, &count2) == NVAPI_OK);
-        REQUIRE(handles2[0] != nullptr);
-        REQUIRE(count2 == 1);
-        REQUIRE(handles2[0] == handles1[0]);
-
-        NvPhysicalGpuHandle handles3[NVAPI_MAX_PHYSICAL_GPUS];
-        NvU32 count3 = 0U;
-        for (auto handle : handles3)
-            handle = nullptr;
-
-        REQUIRE(NvAPI_GetPhysicalGPUsFromDisplay(displayHandle3, handles3, &count3) == NVAPI_OK);
-        REQUIRE(handles3[0] != nullptr);
-        REQUIRE(count3 == 1);
-        REQUIRE(handles3[0] != handles1[0]);
-    }
-
-    SECTION("EnumNvidiaDisplayHandle succeeds") {
-        NvPhysicalGpuHandle handle1 = nullptr;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0U, &handle1) == NVAPI_OK);
-        REQUIRE(handle1 != nullptr);
-
-        NvPhysicalGpuHandle handle2 = nullptr;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(1U, &handle2) == NVAPI_OK);
-        REQUIRE(handle2 != nullptr);
-        REQUIRE(handle2 == handle1);
-
-        NvPhysicalGpuHandle handle3 = nullptr;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(2U, &handle3) == NVAPI_OK);
-        REQUIRE(handle3 != nullptr);
-
-        NvPhysicalGpuHandle handle4 = nullptr;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(3U, &handle4) == NVAPI_INVALID_ARGUMENT);
-        REQUIRE(handle4 == nullptr);
     }
 }
 

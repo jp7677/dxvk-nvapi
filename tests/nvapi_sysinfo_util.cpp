@@ -9,7 +9,7 @@ void SetupResourceFactory(std::unique_ptr<DXGIFactoryMock> dxgiFactory, std::uni
 void ConfigureGetPhysicalDeviceProperties2(
         VkPhysicalDeviceProperties2* props,
         std::function<void(
-                VkPhysicalDeviceProperties2*,
+                VkPhysicalDeviceProperties*,
                 VkPhysicalDeviceIDProperties*,
                 VkPhysicalDevicePCIBusInfoPropertiesEXT*,
                 VkPhysicalDeviceDriverPropertiesKHR*,
@@ -46,5 +46,5 @@ void ConfigureGetPhysicalDeviceProperties2(
         next = reinterpret_cast<VkStructure*>(next->pNext);
     }
 
-    configure(props, idProps, pciBusInfoProps, driverProps, fragmentShadingRateProps);
+    configure(&props->properties, idProps, pciBusInfoProps, driverProps, fragmentShadingRateProps);
 }
