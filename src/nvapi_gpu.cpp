@@ -336,6 +336,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetAllClockFrequencies(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_CLOCK_FREQUENCIES *pClkFreqs) {
         constexpr auto n = "NvAPI_GPU_GetAllClockFrequencies";
+        static bool alreadyLoggedNotSupported = false;
         static bool alreadyLoggedNoNvml = false;
         static bool alreadyLoggedHandleInvalidated = false;
         static bool alreadyLoggedOk = false;
@@ -351,7 +352,7 @@ extern "C" {
 
         // Only check for CURRENT_FREQ, and not for the other types ie. BOOST or DEFAULT for now
         if (pClkFreqs->ClockType != static_cast<unsigned int>(NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ))
-            return NotSupported(n);
+            return NotSupported(n, alreadyLoggedNotSupported);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
         if (!nvapiAdapterRegistry->IsAdapter(adapter))

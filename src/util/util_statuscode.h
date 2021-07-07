@@ -103,6 +103,14 @@ namespace dxvk {
         return NVAPI_NOT_SUPPORTED;
     }
 
+    inline NvAPI_Status NotSupported(const std::string& logMessage, bool& alreadyLogged) {
+        if (std::exchange(alreadyLogged, true))
+            return NVAPI_NOT_SUPPORTED;
+
+        log::write(str::format(logMessage, ": Not supported"));
+        return NVAPI_NOT_SUPPORTED;
+    }
+
     inline NvAPI_Status InvalidDisplayId(const std::string& logMessage) {
         log::write(str::format(logMessage, ": Invalid display ID"));
         return NVAPI_INVALID_DISPLAY_ID;
