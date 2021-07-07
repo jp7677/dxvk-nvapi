@@ -1,5 +1,11 @@
 #include "mock_factory.cpp"
 
+void ResetResourceFactory() {
+    resourceFactory.reset();
+    nvapiAdapterRegistry.reset();
+    initializationCount = 0ULL;
+}
+
 void SetupResourceFactory(std::unique_ptr<DXGIFactoryMock> dxgiFactory, std::unique_ptr<Vulkan> vulkan, std::unique_ptr<Nvml> nvml) {
     resourceFactory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
     nvapiAdapterRegistry.reset();
