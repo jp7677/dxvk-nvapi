@@ -1,4 +1,5 @@
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 
 #include "../inc/catch.hpp"
 #include "../inc/catch2/trompeloeil.hpp"
@@ -487,6 +488,193 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
         frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
         frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
         REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_HANDLE_INVALIDATED);
+    }
+}
+
+TEST_CASE("Topology methods return OK", "[sysinfo]") {
+    auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
+    DXGIDxvkAdapterMock adapter1;
+    DXGIDxvkAdapterMock adapter2;
+    DXGIOutputMock output1;
+    DXGIOutputMock output2;
+    DXGIOutputMock output3;
+    auto vulkan = std::make_unique<VulkanMock>();
+    auto nvml = std::make_unique<NvmlMock>();
+
+    ALLOW_CALL(*dxgiFactory, AddRef())
+        .RETURN(1);
+    ALLOW_CALL(*dxgiFactory, Release())
+        .RETURN(0);
+    ALLOW_CALL(*dxgiFactory, EnumAdapters(0U, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter*>(&adapter1))
+        .RETURN(S_OK);
+    ALLOW_CALL(*dxgiFactory, EnumAdapters(1U, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter*>(&adapter2))
+        .RETURN(S_OK);
+    ALLOW_CALL(*dxgiFactory, EnumAdapters(2U, _))
+        .RETURN(DXGI_ERROR_NOT_FOUND);
+
+    ALLOW_CALL(adapter1, QueryInterface(IDXGIVkInteropAdapter::guid, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter1))
+        .RETURN(S_OK);
+    ALLOW_CALL(adapter1, Release())
+        .RETURN(0);
+    ALLOW_CALL(adapter1, EnumOutputs(0U, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
+        .RETURN(S_OK);
+    ALLOW_CALL(adapter1, EnumOutputs(1U, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output2))
+        .RETURN(S_OK);
+    ALLOW_CALL(adapter1, EnumOutputs(2U, _))
+        .RETURN(DXGI_ERROR_NOT_FOUND);
+    ALLOW_CALL(adapter1, GetVulkanHandles(_, _));
+
+    ALLOW_CALL(adapter2, QueryInterface(IDXGIVkInteropAdapter::guid, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter2))
+        .RETURN(S_OK);
+    ALLOW_CALL(adapter2, Release())
+        .RETURN(0);
+    ALLOW_CALL(adapter2, EnumOutputs(0U, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output3))
+        .RETURN(S_OK);
+    ALLOW_CALL(adapter2, EnumOutputs(1U, _))
+        .RETURN(DXGI_ERROR_NOT_FOUND);
+    ALLOW_CALL(adapter2, GetVulkanHandles(_, _));
+
+    ALLOW_CALL(output1, Release())
+        .RETURN(0);
+    ALLOW_CALL(output1, GetDesc(_))
+        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
+        .RETURN(S_OK);
+
+    ALLOW_CALL(output2, Release())
+        .RETURN(0);
+    ALLOW_CALL(output2, GetDesc(_))
+        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output2", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
+        .RETURN(S_OK);
+
+    ALLOW_CALL(output3, Release())
+        .RETURN(0);
+    ALLOW_CALL(output3, GetDesc(_))
+        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output3", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
+        .RETURN(S_OK);
+
+    ALLOW_CALL(*vulkan, IsAvailable())
+        .RETURN(true);
+    ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
+        .RETURN(std::set<std::string>{"ext"});
+    ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _));
+    ALLOW_CALL(*vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _));
+
+    ALLOW_CALL(*nvml, IsAvailable())
+        .RETURN(false);
+
+    SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+    SECTION("EnumLogicalGPUs succeeds") {
+        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
+        NvU32 count = 0U;
+        for (auto handle : handles)
+            handle = nullptr;
+
+        REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
+        REQUIRE(handles[0] != nullptr);
+        REQUIRE(handles[1] != nullptr);
+        REQUIRE(count == 2);
+    }
+
+    SECTION("EnumPhysicalGPUs succeeds") {
+        NvPhysicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
+        NvU32 count = 0U;
+        for (auto handle : handles)
+            handle = nullptr;
+
+        REQUIRE(NvAPI_EnumPhysicalGPUs(handles, &count) == NVAPI_OK);
+        REQUIRE(handles[0] != nullptr);
+        REQUIRE(handles[1] != nullptr);
+        REQUIRE(count == 2);
+    }
+
+    SECTION("EnumNvidiaDisplayHandle succeeds") {
+        NvDisplayHandle handle1 = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0U, &handle1) == NVAPI_OK);
+        REQUIRE(handle1 != nullptr);
+
+        NvDisplayHandle handle2 = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(1U, &handle2) == NVAPI_OK);
+        REQUIRE(handle2 != nullptr);
+
+        NvDisplayHandle handle3 = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(2U, &handle3) == NVAPI_OK);
+        REQUIRE(handle3 != nullptr);
+
+        NvDisplayHandle handle4 = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(3U, &handle4) == NVAPI_END_ENUMERATION);
+        REQUIRE(handle4 == nullptr);
+    }
+
+    SECTION("EnumNvidiaUnAttachedDisplayHandle succeeds") {
+        NvUnAttachedDisplayHandle handle = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaUnAttachedDisplayHandle(0U, &handle) == NVAPI_END_ENUMERATION);
+        REQUIRE(handle == nullptr);
+    }
+
+    SECTION("GetPhysicalGPUsFromDisplay succeeds") {
+        NvDisplayHandle displayHandle1 = nullptr;
+        NvDisplayHandle displayHandle2 = nullptr;
+        NvDisplayHandle displayHandle3 = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0U, &displayHandle1) == NVAPI_OK);
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(1U, &displayHandle2) == NVAPI_OK);
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(2U, &displayHandle3) == NVAPI_OK);
+
+        NvPhysicalGpuHandle handles1[NVAPI_MAX_PHYSICAL_GPUS];
+        NvU32 count1 = 0U;
+        for (auto handle : handles1)
+            handle = nullptr;
+
+        REQUIRE(NvAPI_GetPhysicalGPUsFromDisplay(displayHandle1, handles1, &count1) == NVAPI_OK);
+        REQUIRE(handles1[0] != nullptr);
+        REQUIRE(count1 == 1);
+
+        NvPhysicalGpuHandle handles2[NVAPI_MAX_PHYSICAL_GPUS];
+        NvU32 count2 = 0;
+        for (auto handle : handles2)
+            handle = nullptr;
+
+        REQUIRE(NvAPI_GetPhysicalGPUsFromDisplay(displayHandle2, handles2, &count2) == NVAPI_OK);
+        REQUIRE(handles2[0] != nullptr);
+        REQUIRE(count2 == 1);
+        REQUIRE(handles2[0] == handles1[0]);
+
+        NvPhysicalGpuHandle handles3[NVAPI_MAX_PHYSICAL_GPUS];
+        NvU32 count3 = 0U;
+        for (auto handle : handles3)
+            handle = nullptr;
+
+        REQUIRE(NvAPI_GetPhysicalGPUsFromDisplay(displayHandle3, handles3, &count3) == NVAPI_OK);
+        REQUIRE(handles3[0] != nullptr);
+        REQUIRE(count3 == 1);
+        REQUIRE(handles3[0] != handles1[0]);
+    }
+
+    SECTION("EnumNvidiaDisplayHandle succeeds") {
+        NvPhysicalGpuHandle handle1 = nullptr;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0U, &handle1) == NVAPI_OK);
+        REQUIRE(handle1 != nullptr);
+
+        NvPhysicalGpuHandle handle2 = nullptr;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(1U, &handle2) == NVAPI_OK);
+        REQUIRE(handle2 != nullptr);
+        REQUIRE(handle2 == handle1);
+
+        NvPhysicalGpuHandle handle3 = nullptr;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(2U, &handle3) == NVAPI_OK);
+        REQUIRE(handle3 != nullptr);
+
+        NvPhysicalGpuHandle handle4 = nullptr;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(3U, &handle4) == NVAPI_INVALID_ARGUMENT);
+        REQUIRE(handle4 == nullptr);
     }
 }
 
