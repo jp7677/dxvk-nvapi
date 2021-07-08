@@ -53,9 +53,9 @@ TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "
 TEST_CASE("Topology methods succeed", "[sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
     DXGIDxvkAdapterMock adapter1;
-    VkPhysicalDevice vkDevice1;
+    auto vkDevice1 = reinterpret_cast<VkPhysicalDevice>(0x01); // Very evil, but works for testing since we use this only as identifier
     DXGIDxvkAdapterMock adapter2;
-    VkPhysicalDevice vkDevice2;
+    auto vkDevice2 = reinterpret_cast<VkPhysicalDevice>(0x02); // See above comment
     DXGIOutputMock output1;
     DXGIOutputMock output2;
     DXGIOutputMock output3;
@@ -155,6 +155,7 @@ TEST_CASE("Topology methods succeed", "[sysinfo]") {
             handle = nullptr;
 
         REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
+        REQUIRE(handles[0] != handles[1]);
         REQUIRE(handles[0] != nullptr);
         REQUIRE(handles[1] != nullptr);
         REQUIRE(count == 2);
@@ -175,6 +176,7 @@ TEST_CASE("Topology methods succeed", "[sysinfo]") {
             handle = nullptr;
 
         REQUIRE(NvAPI_EnumPhysicalGPUs(handles, &count) == NVAPI_OK);
+        REQUIRE(handles[0] != handles[1]);
         REQUIRE(handles[0] != nullptr);
         REQUIRE(handles[1] != nullptr);
         REQUIRE(count == 2);
@@ -787,7 +789,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[.sysinfo-system]") {
     std::cout << "Driver version:                " << version << std::endl;
     std::cout << "Driver branch:                 " << branch << std::endl;
 
-    NvDisplayHandle displayHandle = nullptr;
+    NvDisplayHandle displayHandle;
     REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0U, &displayHandle) == NVAPI_OK);
 
     NV_DISPLAY_DRIVER_VERSION driverVersion;
@@ -807,7 +809,8 @@ TEST_CASE("Sysinfo methods succeed against local system", "[.sysinfo-system]") {
 
         NV_GPU_TYPE type;
         REQUIRE(NvAPI_GPU_GetGPUType(handle, &type) == NVAPI_OK);
-        std::cout << "    GPU type:                  " << (type == 2 ? "Discrete" : (type == 1 ? "Integrated" : "Unknown"))<< std::endl;
+        std::cout << "    GPU type:                  "
+             << (type == NV_SYSTEM_TYPE_DGPU ? "Discrete" : (type == NV_SYSTEM_TYPE_IGPU ? "Integrated" : "Unknown"))<< std::endl;
 
         NvU32 deviceId, subSystemId, revisionId, extDeviceId;
         REQUIRE(NvAPI_GPU_GetPCIIdentifiers(handle, &deviceId, &subSystemId, &revisionId, &extDeviceId) == NVAPI_OK);
@@ -842,11 +845,11 @@ TEST_CASE("Sysinfo methods succeed against local system", "[.sysinfo-system]") {
         result = NvAPI_GPU_GetArchInfo(handle, &archInfo);
         std::cout << "    Architecture ID:           ";
         result == NVAPI_OK
-            ? std::cout << "0x" << std::hex << archInfo.architecture_id << std::endl
+            ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << archInfo.architecture_id << std::endl
             : std::cout << "N/A" << std::endl;
         std::cout << "    Implementation ID:         ";
         result == NVAPI_OK
-            ? std::cout << "0x" << std::hex << archInfo.implementation_id << std::endl
+            ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << archInfo.implementation_id << std::endl
             : std::cout << "N/A" << std::endl;
 
         NvAPI_ShortString revision;
