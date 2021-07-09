@@ -22,7 +22,7 @@ jobs:
     - name: Setup problem matcher
       uses: Joshua-Ashton/gcc-problem-matcher@v1
 
-    - name: Build release
+    - name: Build release and run unit tests
       id: build-release
       uses: Joshua-Ashton/arch-mingw-github-action@v5
       with:
