@@ -22,5 +22,5 @@ nvapi_tests_src = files([
 
 nvapi_exe = executable('nvapi'+target_suffix+'-tests', [ nvapi_src, nvapi_tests_src, dxvk_nvapi_version ],
   dependencies        : [ lib_dxgi ],
-  include_directories : vk_headers,
+  include_directories : [ vk_headers ],
   install             : true)
