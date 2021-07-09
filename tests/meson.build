@@ -18,6 +18,7 @@ nvapi_tests_src = files([
   'nvapi_d3d11.cpp',
   'nvapi_d3d12.cpp',
   'nvapi_sysinfo.cpp',
+  'nvapi_system.cpp',
 ])
 
 nvapi_exe = executable('nvapi'+target_suffix+'-tests', [ nvapi_src, nvapi_tests_src, dxvk_nvapi_version ],
