@@ -139,15 +139,16 @@ namespace dxvk {
     }
 
     uint32_t NvapiAdapter::GetVRamSize() const {
-        // Not sure if it is completely correct to just look at the first DEVICE_LOCAL heap,
-        // but it seems to give the correct result.
+        // The total size of all device-local heaps sometimes do not match what other tools are reporting,
+        // though this is best we have.
+        auto size = 0U;
         for (auto i = 0U; i < m_memoryProperties.memoryHeapCount; i++) {
             auto heap = m_memoryProperties.memoryHeaps[i];
             if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
-                return heap.size / 1024;
+                size += heap.size / 1024;
         }
 
-        return 0;
+        return size;
     }
 
     bool NvapiAdapter::GetLUID(LUID* luid) const {
