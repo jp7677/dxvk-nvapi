@@ -20,6 +20,7 @@ fi
 
 shift 2
 
+opt_enabletests=false
 opt_devbuild=0
 
 crossfile="build-win"
@@ -28,6 +29,9 @@ while [ $# -gt 0 ]; do
   case "$1" in
   "--no-package")
     echo "Ignoring option: --no-package"
+    ;;
+  "--enable-tests")
+    opt_enabletests=true
     ;;
   "--dev-build")
     opt_devbuild=1
@@ -66,6 +70,7 @@ function build_arch {
         --strip                                  \
         --bindir "x$1"                           \
         --libdir "x$1"                           \
+        -Denable_tests=$opt_enabletests          \
         "$BUILD_DIR/build.$1"
 
   cd "$BUILD_DIR/build.$1"
