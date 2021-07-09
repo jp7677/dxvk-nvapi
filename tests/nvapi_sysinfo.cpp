@@ -15,19 +15,19 @@
 
 using namespace trompeloeil;
 
-TEST_CASE("GetInterfaceVersionString returns OK", "[sysinfo]") {
+TEST_CASE("GetInterfaceVersionString returns OK", "[.][sysinfo]") {
     NvAPI_ShortString desc;
     REQUIRE(NvAPI_GetInterfaceVersionString(desc) == NVAPI_OK);
     REQUIRE(strcmp(desc, "R470") == 0);
 }
 
-TEST_CASE("GetErrorMessage returns OK", "[sysinfo]") {
+TEST_CASE("GetErrorMessage returns OK", "[.][sysinfo]") {
     NvAPI_ShortString desc;
     REQUIRE(NvAPI_GetErrorMessage(NVAPI_NVIDIA_DEVICE_NOT_FOUND, desc) == NVAPI_OK);
     REQUIRE(strcmp(desc, "NVAPI_NVIDIA_DEVICE_NOT_FOUND") == 0);
 }
 
-TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "[sysinfo]") {
+TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "[.][sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
@@ -50,7 +50,7 @@ TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "
     REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
 }
 
-TEST_CASE("Topology methods succeed", "[sysinfo]") {
+TEST_CASE("Topology methods succeed", "[.][sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
     DXGIDxvkAdapterMock adapter1;
     auto vkDevice1 = reinterpret_cast<VkPhysicalDevice>(0x01); // Very evil, but works for testing since we use this only as identifier
@@ -291,7 +291,7 @@ TEST_CASE("Topology methods succeed", "[sysinfo]") {
     }
 }
 
-TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
+TEST_CASE("Sysinfo methods succeed", "[.][sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
     DXGIDxvkAdapterMock adapter;
     DXGIOutputMock output;
@@ -755,7 +755,7 @@ TEST_CASE("Sysinfo methods succeed", "[sysinfo]") {
     }
 }
 
-TEST_CASE("GetHdrCapabilities returns OK", "[sysinfo]") {
+TEST_CASE("GetHdrCapabilities returns OK", "[.][sysinfo]") {
     NV_HDR_CAPABILITIES capabilities;
     capabilities.version = NV_HDR_CAPABILITIES_VER2;
     REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, &capabilities) == NVAPI_OK);
@@ -767,7 +767,7 @@ TEST_CASE("GetHdrCapabilities returns OK", "[sysinfo]") {
     REQUIRE(capabilities.isDolbyVisionSupported == false);
 }
 
-TEST_CASE("GetDisplayViewportsByResolution returns mosaic-ot-active", "[sysinfo]") {
+TEST_CASE("GetDisplayViewportsByResolution returns mosaic-ot-active", "[.][sysinfo]") {
     NvU8 corrected;
     NV_RECT rect[NV_MOSAIC_MAX_DISPLAYS];
     REQUIRE(NvAPI_Mosaic_GetDisplayViewportsByResolution(0, 0, 0, rect, &corrected) == NVAPI_MOSAIC_NOT_ACTIVE);

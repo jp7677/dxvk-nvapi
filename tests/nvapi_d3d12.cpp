@@ -7,7 +7,7 @@
 
 using namespace trompeloeil;
 
-TEST_CASE("D3D12 methods succeed", "[d3d12]") {
+TEST_CASE("D3D12 methods succeed", "[.][d3d12]") {
     D3D12DeviceMock device;
 
     SECTION("IsNvShaderExtnOpCodeSupported with device returns OK") {

@@ -13,7 +13,7 @@ class UnknownMock : public mock_interface<IUnknown> {
     MAKE_MOCK0 (Release, ULONG(), override);
 };
 
-TEST_CASE("D3D methods succeed", "[d3d]") {
+TEST_CASE("D3D methods succeed", "[.][d3d]") {
     UnknownMock unknown;
 
     SECTION("GetObjectHandleForResource returns no-implementation") {

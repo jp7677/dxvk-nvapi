@@ -36,7 +36,7 @@ T GetNvAPIProcAddress(PFN_NvAPI_QueryInterface nvAPI_QueryInterface, const char*
     return reinterpret_cast<T>(nvAPI_QueryInterface(it->id));
 }
 
-TEST_CASE("Sysinfo methods succeed against local system", "[.sysinfo-system]") {
+TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     const auto nvapiModuleName = "nvapi64.dll";
     auto nvapiModule = ::LoadLibraryA(nvapiModuleName);
     REQUIRE(nvapiModule != nullptr);

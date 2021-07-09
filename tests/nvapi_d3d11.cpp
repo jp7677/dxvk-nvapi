@@ -7,7 +7,7 @@
 
 using namespace trompeloeil;
 
-TEST_CASE("D3D11 methods succeed", "[d3d11]") {
+TEST_CASE("D3D11 methods succeed", "[.][d3d11]") {
     D3D11DxvkDeviceMock device;
     D3D11DxvkDeviceContextMock context;
 
