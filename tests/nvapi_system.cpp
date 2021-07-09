@@ -1,6 +1,3 @@
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-
 #include <iostream>
 #include <iomanip>
 #include <libloaderapi.h>
