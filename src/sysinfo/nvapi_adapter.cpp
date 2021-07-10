@@ -1,6 +1,7 @@
 #include "nvapi_adapter.h"
 #include "../dxvk/dxvk_interfaces.h"
 #include "../util/util_string.h"
+#include "../util/util_env.h"
 #include "../util/util_log.h"
 
 namespace dxvk {
@@ -10,6 +11,8 @@ namespace dxvk {
     NvapiAdapter::~NvapiAdapter() = default;
 
     bool NvapiAdapter::Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
+        constexpr auto driverVersionEnvName = "DXVK_NVAPI_DRIVER_VERSION";
+
         // Query all outputs from DXVK
         // Mosaic setup is not supported, thus one display output refers to one GPU
         Com<IDXGIOutput> dxgiOutput;
@@ -104,6 +107,20 @@ namespace dxvk {
                 log::write(str::format("NVML failed to find device with PCI BusId [", pciId, "]: ", m_nvml.ErrorString(result)));
         }
 
+        auto driverVersion = env::getEnvVariable(driverVersionEnvName);
+        if (!driverVersion.empty()) {
+            char* end;
+            auto driverVersionOverride = std::strtol(driverVersion.c_str(), &end, 10);
+            if (std::string(end).empty() && driverVersionOverride >= 100 && driverVersionOverride <= 99999) {
+                std::stringstream stream;
+                stream << (driverVersionOverride / 100) << "." << std::setfill('0') << std::setw(2) << (driverVersionOverride % 100);
+                log::write(str::format(driverVersionEnvName, " is set to '", driverVersion, "', reporting driver version ", stream.str()));
+                m_driverVersionOverride = driverVersionOverride;
+            }
+            else
+                log::write(str::format(driverVersionEnvName, " is set to '", driverVersion, "', but this value is invalid. Please set a number between 100 and 99999."));
+        }
+
         return true;
     }
 
@@ -114,8 +131,10 @@ namespace dxvk {
     uint32_t NvapiAdapter::GetDriverVersion() const {
         // Windows releases can only ever have a two digit minor version
         // and does not have a patch number
-        return VK_VERSION_MAJOR(m_vkDriverVersion) * 100 +
-            std::min(VK_VERSION_MINOR(m_vkDriverVersion), 99U);
+        return m_driverVersionOverride > 0
+            ? m_driverVersionOverride
+            : VK_VERSION_MAJOR(m_vkDriverVersion) * 100 +
+                std::min(VK_VERSION_MINOR(m_vkDriverVersion), 99U);
     }
 
     VkDriverIdKHR NvapiAdapter::GetDriverId() const {
