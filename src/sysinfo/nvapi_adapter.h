@@ -47,6 +47,8 @@ namespace dxvk {
 
         nvmlDevice_t m_nvmlDevice{};
 
+        uint32_t m_driverVersionOverride{};
+
         [[nodiscard]] bool isVkDeviceExtensionSupported(std::string name) const;
     };
 }
