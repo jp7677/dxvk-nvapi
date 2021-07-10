@@ -33,6 +33,43 @@ T GetNvAPIProcAddress(PFN_NvAPI_QueryInterface nvAPI_QueryInterface, const char*
     return reinterpret_cast<T>(nvAPI_QueryInterface(it->id));
 }
 
+std::string ToGpuType(NV_GPU_TYPE type) {
+    switch (type) {
+        case NV_SYSTEM_TYPE_DGPU:
+            return "Discrete";
+        case NV_SYSTEM_TYPE_IGPU:
+            return "Integrated";
+        default:
+            return "Unknown";
+    }
+}
+
+std::string ToGpuArchitecture(NV_GPU_ARCHITECTURE_ID id) {
+    switch (id) {
+        case NV_GPU_ARCHITECTURE_GA100:
+            return "Ampere";
+        case NV_GPU_ARCHITECTURE_TU100:
+            return "Turing";
+        case NV_GPU_ARCHITECTURE_GV100:
+        case NV_GPU_ARCHITECTURE_GV110:
+            return "Volta";
+        case NV_GPU_ARCHITECTURE_GP100:
+            return "Pascal";
+        case NV_GPU_ARCHITECTURE_GM000:
+        case NV_GPU_ARCHITECTURE_GM200:
+            return "Maxwell";
+        case NV_GPU_ARCHITECTURE_GK100:
+        case NV_GPU_ARCHITECTURE_GK110:
+        case NV_GPU_ARCHITECTURE_GK200:
+            return "Kepler";
+        case NV_GPU_ARCHITECTURE_GF100:
+        case NV_GPU_ARCHITECTURE_GF110:
+            return "Fermi";
+        default:
+            return "Pre-Fermi";
+    }
+}
+
 TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     const auto nvapiModuleName = "nvapi64.dll";
     auto nvapiModule = ::LoadLibraryA(nvapiModuleName);
@@ -83,8 +120,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
 
         NV_GPU_TYPE type;
         REQUIRE(nvAPI_GPU_GetGPUType(handle, &type) == NVAPI_OK);
-        std::cout << "    GPU type:                   "
-             << (type == NV_SYSTEM_TYPE_DGPU ? "Discrete" : (type == NV_SYSTEM_TYPE_IGPU ? "Integrated" : "Unknown"))<< std::endl;
+        std::cout << "    GPU type:                   " << type << " (" << ToGpuType(type) << ")" << std::endl;
 
         NvU32 deviceId, subSystemId, revisionId, extDeviceId;
         REQUIRE(nvAPI_GPU_GetPCIIdentifiers(handle, &deviceId, &subSystemId, &revisionId, &extDeviceId) == NVAPI_OK);
@@ -119,7 +155,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         result = nvAPI_GPU_GetArchInfo(handle, &archInfo);
         std::cout << "    Architecture ID:            ";
         result == NVAPI_OK
-            ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << archInfo.architecture_id << std::endl
+            ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << archInfo.architecture_id << " (" << ToGpuArchitecture(archInfo.architecture_id) << ")" <<  std::endl
             : std::cout << "N/A" << std::endl;
         std::cout << "    Implementation ID:          ";
         result == NVAPI_OK
@@ -141,7 +177,6 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         result == NVAPI_OK
             ? std::cout << std::dec << info.utilization[1].percentage << "%" << std::endl
             : std::cout << "N/A" << std::endl;
-
 
         NV_GPU_THERMAL_SETTINGS settings;
         settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
