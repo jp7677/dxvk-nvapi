@@ -337,6 +337,8 @@ TEST_CASE("Sysinfo methods succeed", "[.][sysinfo]") {
     ALLOW_CALL(*nvml, IsAvailable())
         .RETURN(false);
 
+    ::SetEnvironmentVariableA("DXVK_NVAPI_DRIVER_VERSION", "");
+
     SECTION("Initialize and unloads return OK") {
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -398,6 +400,43 @@ TEST_CASE("Sysinfo methods succeed", "[.][sysinfo]") {
         REQUIRE(version.drvVersion == args.expectedVersion);
         REQUIRE(strcmp(version.szAdapterString, "GPU0") == 0);
         REQUIRE(std::string(version.szBuildBranchString).length() > 0);
+    }
+
+    SECTION("GetDisplayDriverVersion with version override returns OK") {
+        struct Data {std::string override; u_int expectedVersion;};
+        auto args = GENERATE(
+            Data{"", 47045},
+            Data{"0", 47045},
+            Data{"99", 47045},
+            Data{"100000", 47045},
+            Data{"AB39976", 47045},
+            Data{"39976AB", 47045},
+            Data{"39976", 39976});
+
+        ::SetEnvironmentVariableA("DXVK_NVAPI_DRIVER_VERSION", args.override.c_str());
+
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+            .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME});
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        props->driverVersion = (470 << 22) | (45 << 12) | 0;
+                    })
+            );
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvDisplayHandle handle;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0, &handle) == NVAPI_OK);
+
+        NV_DISPLAY_DRIVER_VERSION version;
+        version.version = NV_DISPLAY_DRIVER_VERSION_VER;
+        REQUIRE(NvAPI_GetDisplayDriverVersion(handle, &version) == NVAPI_OK);
+        REQUIRE(version.drvVersion == args.expectedVersion);
+
+        ::SetEnvironmentVariableA("DXVK_NVAPI_DRIVER_VERSION", "");
     }
 
     SECTION("GetGPUType returns OK") {
