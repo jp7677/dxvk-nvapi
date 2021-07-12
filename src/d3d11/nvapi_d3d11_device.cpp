@@ -10,14 +10,12 @@ namespace dxvk {
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device)))) {
             d3d11Device->Release();
             d3d11Device->GetImmediateContext(&d3d11DeviceContext);
-
             if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_DEPTH_BOUNDS))
                 return false;
 
             m_alreadySetDepthBoundsTestTestedDevices.emplace(d3d11Device);
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext)))) {
             d3d11DeviceContext->Release();
-
             if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_DEPTH_BOUNDS))
                 return false;
         } else
@@ -40,14 +38,12 @@ namespace dxvk {
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device)))) {
             d3d11Device->Release();
             d3d11Device->GetImmediateContext(&d3d11DeviceContext);
-
             if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_BARRIER_CONTROL))
                 return false;
 
             m_alreadyBarrierControlTestedDevices.emplace(d3d11Device);
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext)))) {
             d3d11DeviceContext->Release();
-
             if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_BARRIER_CONTROL))
                 return false;
         } else
@@ -70,14 +66,12 @@ namespace dxvk {
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device)))) {
             d3d11Device->Release();
             d3d11Device->GetImmediateContext(&d3d11DeviceContext);
-
             if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_BARRIER_CONTROL))
                 return false;
 
             m_alreadyBarrierControlTestedDevices.emplace(d3d11Device);
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext)))) {
             d3d11DeviceContext->Release();
-
             if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_BARRIER_CONTROL))
                 return false;
         } else
