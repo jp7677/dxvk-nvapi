@@ -14,16 +14,12 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
     auto contextRefCount = 0;
 
     ALLOW_CALL(device, QueryInterface(IID_ID3D11Device, _))
-        .LR_SIDE_EFFECT({
-            *_2 = static_cast<ID3D11Device*>(&device);
-            deviceRefCount++;
-        })
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11Device*>(&device))
+        .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
     ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice::guid, _))
-        .LR_SIDE_EFFECT({
-            *_2 = static_cast<ID3D11VkExtDevice*>(&device);
-            deviceRefCount++;
-        })
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtDevice*>(&device))
+        .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
     ALLOW_CALL(device, AddRef())
         .LR_SIDE_EFFECT(deviceRefCount++)
@@ -37,18 +33,14 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         .LR_SIDE_EFFECT(*_1 = &context);
 
     ALLOW_CALL(context, QueryInterface(IID_ID3D11Device, _))
-        .RETURN(E_FAIL);
+        .RETURN(E_NOINTERFACE);
     ALLOW_CALL(context, QueryInterface(IID_ID3D11DeviceContext, _))
-        .LR_SIDE_EFFECT({
-            *_2 = static_cast<ID3D11DeviceContext*>(&context);
-            contextRefCount++;
-        })
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11DeviceContext*>(&context))
+        .LR_SIDE_EFFECT(contextRefCount++)
         .RETURN(S_OK);
     ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext::guid, _))
-        .LR_SIDE_EFFECT({
-            *_2 = static_cast<ID3D11VkExtContext*>(&context);
-            contextRefCount++;
-        })
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtContext*>(&context))
+        .LR_SIDE_EFFECT(contextRefCount++)
         .RETURN(S_OK);
     ALLOW_CALL(context, AddRef())
         .LR_SIDE_EFFECT(contextRefCount++)
@@ -63,9 +55,9 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
 
     SECTION("D3D11 methods without DXVK return error") {
         ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice::guid, _))
-            .RETURN(E_FAIL);
+            .RETURN(E_NOINTERFACE);
         ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext::guid, _))
-            .RETURN(E_FAIL);
+            .RETURN(E_NOINTERFACE);
         FORBID_CALL(context, SetDepthBoundsTest(_, _, _));
         FORBID_CALL(context, SetBarrierControl(_));
         FORBID_CALL(context, MultiDrawIndirect(_, _, _, _));

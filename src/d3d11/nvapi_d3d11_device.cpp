@@ -13,7 +13,7 @@ namespace dxvk {
             if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_DEPTH_BOUNDS))
                 return false;
 
-            m_alreadySetDepthBoundsTestTestedDevices.emplace(d3d11Device);
+            m_alreadySetDepthBoundsTestTestedDevices.emplace(deviceOrContext);
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext)))) {
             d3d11DeviceContext->Release();
             if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_DEPTH_BOUNDS))
@@ -41,7 +41,7 @@ namespace dxvk {
             if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_BARRIER_CONTROL))
                 return false;
 
-            m_alreadyBarrierControlTestedDevices.emplace(d3d11Device);
+            m_alreadyBarrierControlTestedDevices.emplace(deviceOrContext);
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext)))) {
             d3d11DeviceContext->Release();
             if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_BARRIER_CONTROL))
@@ -69,7 +69,7 @@ namespace dxvk {
             if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_BARRIER_CONTROL))
                 return false;
 
-            m_alreadyBarrierControlTestedDevices.emplace(d3d11Device);
+            m_alreadyBarrierControlTestedDevices.emplace(deviceOrContext);
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext)))) {
             d3d11DeviceContext->Release();
             if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_BARRIER_CONTROL))

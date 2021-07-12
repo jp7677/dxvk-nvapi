@@ -132,14 +132,14 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
                 [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                     strcpy(props->deviceName, "Device1");
                 })
-            );
+        );
     ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, vkDevice2, _))
         .SIDE_EFFECT(
             ConfigureGetPhysicalDeviceProperties2(_3,
                 [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                     strcpy(props->deviceName, "Device2");
                 })
-            );
+        );
     ALLOW_CALL(*vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _));
 
     ALLOW_CALL(*nvml, IsAvailable())
