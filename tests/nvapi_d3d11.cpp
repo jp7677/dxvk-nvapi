@@ -30,7 +30,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
     ALLOW_CALL(device, GetExtensionSupport(_))
         .RETURN(true);
     ALLOW_CALL(device, GetImmediateContext(_))
-        .LR_SIDE_EFFECT(*_1 = &context);
+        .LR_SIDE_EFFECT(*_1 = &context)
+        .LR_SIDE_EFFECT(contextRefCount++);
 
     ALLOW_CALL(context, QueryInterface(IID_ID3D11Device, _))
         .RETURN(E_NOINTERFACE);
@@ -49,7 +50,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         .LR_SIDE_EFFECT(contextRefCount--)
         .RETURN(contextRefCount);
     ALLOW_CALL(context, GetDevice(_))
-        .LR_SIDE_EFFECT(*_1 = &device);
+        .LR_SIDE_EFFECT(*_1 = &device)
+        .LR_SIDE_EFFECT(deviceRefCount++);
 
     // Test failing scenarios first to avoid any interference from caching of extension support
 

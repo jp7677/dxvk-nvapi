@@ -2,26 +2,24 @@
 
 namespace dxvk {
     bool NvapiD3d11Device::SetDepthBoundsTest(IUnknown* deviceOrContext, const bool enable, const float minDepth, const float maxDepth) {
-        ID3D11Device* d3d11Device;
-        ID3D11DeviceContext* d3d11DeviceContext;
+        Com<ID3D11Device> d3d11Device;
+        Com<ID3D11DeviceContext> d3d11DeviceContext;
         if (m_alreadySetDepthBoundsTestTestedDevices.find(deviceOrContext) != m_alreadySetDepthBoundsTestTestedDevices.end()) {
             d3d11Device = dynamic_cast<ID3D11Device*>(deviceOrContext);
             d3d11Device->GetImmediateContext(&d3d11DeviceContext);
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device)))) {
-            d3d11Device->Release();
             d3d11Device->GetImmediateContext(&d3d11DeviceContext);
-            if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_DEPTH_BOUNDS))
+            if (!IsSupportedExtension(d3d11DeviceContext.ptr(), D3D11_VK_EXT_DEPTH_BOUNDS))
                 return false;
 
             m_alreadySetDepthBoundsTestTestedDevices.emplace(deviceOrContext);
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext)))) {
-            d3d11DeviceContext->Release();
-            if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_DEPTH_BOUNDS))
+            if (!IsSupportedExtension(d3d11DeviceContext.ptr(), D3D11_VK_EXT_DEPTH_BOUNDS))
                 return false;
         } else
             return false;
 
-        auto dxvkDeviceContext = GetDxvkDeviceContext(d3d11DeviceContext);
+        auto dxvkDeviceContext = GetDxvkDeviceContext(d3d11DeviceContext.ptr());
         if (dxvkDeviceContext == nullptr)
             return false;
 
@@ -30,26 +28,24 @@ namespace dxvk {
     }
 
     bool NvapiD3d11Device::BeginUAVOverlap(IUnknown* deviceOrContext) {
-        ID3D11Device* d3d11Device;
-        ID3D11DeviceContext* d3d11DeviceContext;
+        Com<ID3D11Device> d3d11Device;
+        Com<ID3D11DeviceContext> d3d11DeviceContext;
         if (m_alreadyBarrierControlTestedDevices.find(deviceOrContext) != m_alreadyBarrierControlTestedDevices.end()) {
             d3d11Device = dynamic_cast<ID3D11Device*>(deviceOrContext);
             d3d11Device->GetImmediateContext(&d3d11DeviceContext);
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device)))) {
-            d3d11Device->Release();
             d3d11Device->GetImmediateContext(&d3d11DeviceContext);
-            if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_BARRIER_CONTROL))
+            if (!IsSupportedExtension(d3d11DeviceContext.ptr(), D3D11_VK_EXT_BARRIER_CONTROL))
                 return false;
 
             m_alreadyBarrierControlTestedDevices.emplace(deviceOrContext);
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext)))) {
-            d3d11DeviceContext->Release();
-            if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_BARRIER_CONTROL))
+            if (!IsSupportedExtension(d3d11DeviceContext.ptr(), D3D11_VK_EXT_BARRIER_CONTROL))
                 return false;
         } else
             return false;
 
-        auto dxvkDeviceContext = GetDxvkDeviceContext(d3d11DeviceContext);
+        auto dxvkDeviceContext = GetDxvkDeviceContext(d3d11DeviceContext.ptr());
         if (dxvkDeviceContext == nullptr)
             return false;
 
@@ -58,26 +54,24 @@ namespace dxvk {
     }
 
     bool NvapiD3d11Device::EndUAVOverlap(IUnknown* deviceOrContext) {
-        ID3D11Device* d3d11Device;
-        ID3D11DeviceContext* d3d11DeviceContext;
+        Com<ID3D11Device> d3d11Device;
+        Com<ID3D11DeviceContext> d3d11DeviceContext;
         if (m_alreadyBarrierControlTestedDevices.find(deviceOrContext) != m_alreadyBarrierControlTestedDevices.end()) {
             d3d11Device = dynamic_cast<ID3D11Device*>(deviceOrContext);
             d3d11Device->GetImmediateContext(&d3d11DeviceContext);
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device)))) {
-            d3d11Device->Release();
             d3d11Device->GetImmediateContext(&d3d11DeviceContext);
-            if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_BARRIER_CONTROL))
+            if (!IsSupportedExtension(d3d11DeviceContext.ptr(), D3D11_VK_EXT_BARRIER_CONTROL))
                 return false;
 
             m_alreadyBarrierControlTestedDevices.emplace(deviceOrContext);
         } else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext)))) {
-            d3d11DeviceContext->Release();
-            if (!IsSupportedExtension(d3d11DeviceContext, D3D11_VK_EXT_BARRIER_CONTROL))
+            if (!IsSupportedExtension(d3d11DeviceContext.ptr(), D3D11_VK_EXT_BARRIER_CONTROL))
                 return false;
         } else
             return false;
 
-        auto dxvkDeviceContext = GetDxvkDeviceContext(d3d11DeviceContext);
+        auto dxvkDeviceContext = GetDxvkDeviceContext(d3d11DeviceContext.ptr());
         if (dxvkDeviceContext == nullptr)
             return false;
 
@@ -110,7 +104,7 @@ namespace dxvk {
     }
 
     bool NvapiD3d11Device::IsSupportedExtension(ID3D11DeviceContext* deviceContext, const D3D11_VK_EXTENSION extension) {
-        ID3D11Device* device;
+        Com<ID3D11Device> device;
         deviceContext->GetDevice(&device);
 
         Com<ID3D11VkExtDevice> dxvkDevice;
