@@ -10,15 +10,27 @@ using namespace trompeloeil;
 TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
     D3D11DxvkDeviceMock device;
     D3D11DxvkDeviceContextMock context;
+    auto deviceRefCount = 0;
+    auto contextRefCount = 0;
 
     ALLOW_CALL(device, QueryInterface(IID_ID3D11Device, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11Device*>(&device))
+        .LR_SIDE_EFFECT({
+            *_2 = static_cast<ID3D11Device*>(&device);
+            deviceRefCount++;
+        })
         .RETURN(S_OK);
     ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice::guid, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtDevice*>(&device))
+        .LR_SIDE_EFFECT({
+            *_2 = static_cast<ID3D11VkExtDevice*>(&device);
+            deviceRefCount++;
+        })
         .RETURN(S_OK);
+    ALLOW_CALL(device, AddRef())
+        .LR_SIDE_EFFECT(deviceRefCount++)
+        .RETURN(deviceRefCount);
     ALLOW_CALL(device, Release())
-        .RETURN(0);
+        .LR_SIDE_EFFECT(deviceRefCount--)
+        .RETURN(deviceRefCount);
     ALLOW_CALL(device, GetExtensionSupport(_))
         .RETURN(true);
     ALLOW_CALL(device, GetImmediateContext(_))
@@ -27,13 +39,23 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
     ALLOW_CALL(context, QueryInterface(IID_ID3D11Device, _))
         .RETURN(E_FAIL);
     ALLOW_CALL(context, QueryInterface(IID_ID3D11DeviceContext, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11DeviceContext*>(&context))
+        .LR_SIDE_EFFECT({
+            *_2 = static_cast<ID3D11DeviceContext*>(&context);
+            contextRefCount++;
+        })
         .RETURN(S_OK);
     ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext::guid, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtContext*>(&context))
+        .LR_SIDE_EFFECT({
+            *_2 = static_cast<ID3D11VkExtContext*>(&context);
+            contextRefCount++;
+        })
         .RETURN(S_OK);
+    ALLOW_CALL(context, AddRef())
+        .LR_SIDE_EFFECT(contextRefCount++)
+        .RETURN(contextRefCount);
     ALLOW_CALL(context, Release())
-        .RETURN(0);
+        .LR_SIDE_EFFECT(contextRefCount--)
+        .RETURN(contextRefCount);
     ALLOW_CALL(context, GetDevice(_))
         .LR_SIDE_EFFECT(*_1 = &device);
 
@@ -55,6 +77,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
 
         REQUIRE(NvAPI_D3D11_SetDepthBoundsTest(static_cast<ID3D11Device*>(&device), enable, min, max) == NVAPI_OK);
         REQUIRE(NvAPI_D3D11_SetDepthBoundsTest(static_cast<ID3D11DeviceContext*>(&context), enable, min, max) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
     }
 
     SECTION("BeginUAVOverlap returns OK") {
@@ -63,6 +87,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
 
         REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_OK);
         REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11DeviceContext*>(&context)) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
     }
 
     SECTION("EndUAVOverlap returns OK") {
@@ -71,6 +97,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
 
         REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_OK);
         REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11DeviceContext*>(&context)) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
     }
 
     SECTION("MultiDrawInstancedIndirect/MultiDrawIndexedInstancedIndirect returns OK") {
@@ -85,6 +113,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
 
         REQUIRE(NvAPI_D3D11_MultiDrawInstancedIndirect(static_cast<ID3D11DeviceContext*>(&context), drawCount, &buffer, offsetForArgs, strideForArgs) == NVAPI_OK);
         REQUIRE(NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(static_cast<ID3D11DeviceContext*>(&context), drawCount, &buffer, offsetForArgs, strideForArgs) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
     }
 
     SECTION("SetDepthBoundsTests without DXVK extension support returns error") {
@@ -94,6 +124,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
 
         REQUIRE(NvAPI_D3D11_SetDepthBoundsTest(static_cast<ID3D11Device*>(&device), true, 0.4f, 0.7f) == NVAPI_ERROR);
         REQUIRE(NvAPI_D3D11_SetDepthBoundsTest(static_cast<ID3D11DeviceContext*>(&context), true, 0.5f, 0.8f) == NVAPI_ERROR);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
     }
 
     SECTION("BeginUAVOverlap/EndUAVOverlap without DXVK extension support returns error") {
@@ -105,6 +137,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11Device *>(&device)) == NVAPI_ERROR);
         REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11DeviceContext *>(&context)) == NVAPI_ERROR);
         REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11DeviceContext *>(&context)) == NVAPI_ERROR);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
     }
 
     SECTION("MultiDrawInstancedIndirect/MultiDrawIndexedInstancedIndirect without DXVK extension support returns error") {
@@ -116,6 +150,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         D3D11BufferMock buffer;
         REQUIRE(NvAPI_D3D11_MultiDrawInstancedIndirect(static_cast<ID3D11DeviceContext*>(&context), 4U, &buffer, 8U, 16U) == NVAPI_ERROR);
         REQUIRE(NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(static_cast<ID3D11DeviceContext*>(&context), 6U, &buffer, 12U, 20U) == NVAPI_ERROR);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
     }
 
     SECTION("D3D11 methods without DXVK return error") {
@@ -137,5 +173,7 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         D3D11BufferMock buffer;
         REQUIRE(NvAPI_D3D11_MultiDrawInstancedIndirect(static_cast<ID3D11DeviceContext*>(&context), 4U, &buffer, 8U, 16U) == NVAPI_ERROR);
         REQUIRE(NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(static_cast<ID3D11DeviceContext*>(&context), 6U, &buffer, 12U, 20U) == NVAPI_ERROR);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
     }
 }

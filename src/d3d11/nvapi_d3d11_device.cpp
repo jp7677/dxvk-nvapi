@@ -4,15 +4,18 @@ namespace dxvk {
     bool NvapiD3d11Device::SetDepthBoundsTest(IUnknown* deviceOrContext, const bool enable, const float minDepth, const float maxDepth) {
         Com<ID3D11Device> d3d11Device;
         Com<ID3D11DeviceContext> d3d11DeviceContext;
+        ID3D11DeviceContext* context;
         if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device))))
-            d3d11Device->GetImmediateContext(&d3d11DeviceContext);
-        else if (FAILED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext))))
+            d3d11Device->GetImmediateContext(&context);
+        else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext))))
+            context = d3d11DeviceContext.ptr();
+        else
             return false;
 
-        if (!IsSupportedExtension(d3d11DeviceContext.ptr(), D3D11_VK_EXT_DEPTH_BOUNDS))
+        if (!IsSupportedExtension(context, D3D11_VK_EXT_DEPTH_BOUNDS))
             return false;
 
-        auto dxvkDeviceContext = GetDxvkDeviceContext(d3d11DeviceContext.ptr());
+        auto dxvkDeviceContext = GetDxvkDeviceContext(context);
         if (dxvkDeviceContext == nullptr)
             return false;
 
@@ -23,15 +26,18 @@ namespace dxvk {
     bool NvapiD3d11Device::BeginUAVOverlap(IUnknown* deviceOrContext) {
         Com<ID3D11Device> d3d11Device;
         Com<ID3D11DeviceContext> d3d11DeviceContext;
+        ID3D11DeviceContext* context;
         if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device))))
-            d3d11Device->GetImmediateContext(&d3d11DeviceContext);
-        else if (FAILED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext))))
+            d3d11Device->GetImmediateContext(&context);
+        else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext))))
+            context = d3d11DeviceContext.ptr();
+        else
             return false;
 
-        if (!IsSupportedExtension(d3d11DeviceContext.ptr(), D3D11_VK_EXT_BARRIER_CONTROL))
+        if (!IsSupportedExtension(context, D3D11_VK_EXT_BARRIER_CONTROL))
             return false;
 
-        auto dxvkDeviceContext = GetDxvkDeviceContext(d3d11DeviceContext.ptr());
+        auto dxvkDeviceContext = GetDxvkDeviceContext(context);
         if (dxvkDeviceContext == nullptr)
             return false;
 
@@ -42,15 +48,18 @@ namespace dxvk {
     bool NvapiD3d11Device::EndUAVOverlap(IUnknown* deviceOrContext) {
         Com<ID3D11Device> d3d11Device;
         Com<ID3D11DeviceContext> d3d11DeviceContext;
+        ID3D11DeviceContext* context;
         if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11Device))))
-            d3d11Device->GetImmediateContext(&d3d11DeviceContext);
-        else if (FAILED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext))))
+            d3d11Device->GetImmediateContext(&context);
+        else if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&d3d11DeviceContext))))
+            context = d3d11DeviceContext.ptr();
+        else
             return false;
 
-        if (!IsSupportedExtension(d3d11DeviceContext.ptr(), D3D11_VK_EXT_BARRIER_CONTROL))
+        if (!IsSupportedExtension(context, D3D11_VK_EXT_BARRIER_CONTROL))
             return false;
 
-        auto dxvkDeviceContext = GetDxvkDeviceContext(d3d11DeviceContext.ptr());
+        auto dxvkDeviceContext = GetDxvkDeviceContext(context);
         if (dxvkDeviceContext == nullptr)
             return false;
 
@@ -83,7 +92,7 @@ namespace dxvk {
     }
 
     bool NvapiD3d11Device::IsSupportedExtension(ID3D11DeviceContext* deviceContext, const D3D11_VK_EXTENSION extension) {
-        Com<ID3D11Device> device;
+        ID3D11Device* device;
         deviceContext->GetDevice(&device);
 
         Com<ID3D11VkExtDevice> dxvkDevice;
