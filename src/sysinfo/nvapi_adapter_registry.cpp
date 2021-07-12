@@ -18,7 +18,7 @@ namespace dxvk {
     }
 
     bool NvapiAdapterRegistry::Initialize() {
-        Com<IDXGIFactory> dxgiFactory = m_resourceFactory.CreateDXGIFactory();
+        auto dxgiFactory = m_resourceFactory.CreateDXGIFactory();
         if(dxgiFactory == nullptr)
             return false;
 
