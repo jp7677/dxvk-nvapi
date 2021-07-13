@@ -15,8 +15,9 @@ namespace dxvk {
         static bool MultiDrawIndexedInstancedIndirect(ID3D11DeviceContext* deviceContext, NvU32 drawCount, ID3D11Buffer* buffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs);
 
     private:
-        inline static std::set<IUnknown*> m_alreadySetDepthBoundsTestTestedDevices;
-        inline static std::set<IUnknown*> m_alreadyBarrierControlTestedDevices;
+        inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_depthBoundsDeviceOrContextMap;
+        inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_barrierControlDeviceOrContextMap;
+        inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_MultiDrawIndirectContextMap;
 
         [[nodiscard]] static bool IsSupportedExtension(ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension);
         [[nodiscard]] static Com<ID3D11VkExtContext> GetDxvkDeviceContext(ID3D11DeviceContext* deviceContext);
