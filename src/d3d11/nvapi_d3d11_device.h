@@ -17,9 +17,10 @@ namespace dxvk {
     private:
         inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_depthBoundsDeviceOrContextMap;
         inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_barrierControlDeviceOrContextMap;
-        inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_MultiDrawIndirectContextMap;
+        inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_multiDrawIndirectContextMap;
 
-        [[nodiscard]] static bool IsSupportedExtension(ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension);
-        [[nodiscard]] static Com<ID3D11VkExtContext> GetDxvkDeviceContext(ID3D11DeviceContext* deviceContext);
+        [[nodiscard]] static Com<ID3D11VkExtContext> GetDxvkDeviceContext(IUnknown* deviceOrContext, D3D11_VK_EXTENSION extension);
+        [[nodiscard]] static Com<ID3D11VkExtContext> GetDxvkDeviceContext(ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension);
+        [[nodiscard]] static Com<ID3D11VkExtContext> GetDxvkDeviceContext(ID3D11Device* device, ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension);
     };
 }
