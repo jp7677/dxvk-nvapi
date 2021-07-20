@@ -2,7 +2,7 @@
 
 ## Experimental non-complete NVAPI implementation on top of [DXVK](https://github.com/doitsujin/dxvk)
 
-This [repository](https://github.com/jp7677/dxvk-nvapi) provides a basic alternative implementation of the NVAPI extensions for DXVK. It is mostly a direct copy of DXVK-AGS, but adjusted for NVAPI.
+This [repository](https://github.com/jp7677/dxvk-nvapi) provides a basic alternative implementation of the NVAPI extensions for DXVK. Its way of working is very similar to [DXVK-AGS](https://github.com/doitsujin/dxvk-ags), but adjusted for NVAPI.
 
 This implementation currently forwards the following NVAPI D3D11 features to DXVK:
 
@@ -10,17 +10,17 @@ This implementation currently forwards the following NVAPI D3D11 features to DXV
 - `BeginUAVOverlap`/`EndUAVOverlap`
 - `MultiDrawInstancedIndirect`/`MultiDrawIndexedInstancedIndirect`
 
-It also implements some methods for adapter/display topology and system information.
+It also implements several methods for adapter/display topology and system information. Some of those are a requirement for enabling other NVIDIA related technologies.
 
-This implementation has been tested with Unreal Engine 4, mostly the game `Assetto Corsa Competizione` and several UE4 technology demos. Unreal Engine 4 utilizes `SetDepthBoundsTest`, it may yield like 1% extra performance which seems to be the norm when `Depth bounds test` is used.
+This implementation has been mostly tested with Unreal Engine 4, with the game `Assetto Corsa Competizione` and several UE4 technology demos. Unreal Engine 4 utilizes `SetDepthBoundsTest`, newer engine versions also utilize `BeginUAVOverlap`/`EndUAVOverlap`. Forwarding those methods may yield up to 4% extra performance, although this heavily depends on setup and scenery.
 
-The 32bits version of this implementation has been briefly tested with the `Monster Hunter Official Benchmark` where it also yields a similar small gain in performance.
-
-Basic topology and system information (vendor ID, driver version etc) has been tested with `GPU Caps Viewer` and `GPU-Shark`. The game `Get Even`, which seem to verify the driver version during launch, starts fine with this implementation.
+Basic topology and system information (vendor ID, driver version and others) has been mostly tested with `GPU Caps Viewer`. The game `Get Even`, which verifies the driver version during launch, starts fine with this implementation.
 
 ## Requirements
 
-This implementation is supposed to be used on Linux using Wine or derivates like Proton. It uses several DXVK extension points, having DXVK (D3D11 and DXGI) is a requirements. Using Wine's D3D11 or DXGI will fail. Usage of NVAPI-DXVK is not restricted to NVIDIA-GPU's since no specific NVIDIA hardware features are needed. 
+This implementation is supposed to be used on Linux using Wine or derivatives like Proton. It uses several DXVK extension points, thus using DXVK (D3D11 and DXGI) is a requirements. Using Wine's D3D11 or DXGI will fail. Usage of NVAPI-DXVK is not restricted to NVIDIA-GPU's, no specific NVIDIA hardware features are needed.
+
+When available, NVAPI-DXVK uses NVIDIA's NVML management library to query temperature, utilization and others for NVIDIA GPU's. See [wine-nvml](https://github.com/Saancreed/wine-nvml) how to add NVML support to Wine/Proton.
 
 ## How to build
 
@@ -29,23 +29,37 @@ Like DXVK, this library is being built as a Windows DLL using MinGW, and has ess
 Run:
 
 ```bash
-./package-release.sh master /your/path
+./package-release.sh master /your/path [--enable-tests]
 ```
 
 Alternatively [DXVK-Docker](https://github.com/jp7677/dxvk-docker) provides a way for a build setup using docker/podman.
-Pre-built binaries are available at [https://github.com/jp7677/dxvk-nvapi/releases](https://github.com/jp7677/dxvk-nvapi/releases).
+Pre-built binaries of release versions are available at [https://github.com/jp7677/dxvk-nvapi/releases](https://github.com/jp7677/dxvk-nvapi/releases).
 
 ## How to use
 
 - Copy `nvapi64.dll`/`nvapi.dll` into the `system32`/`syswow64` folder of your x64/x86 Wine prefix.
-- Make sure that your prefix uses the native version of nvapi64, e.g. with `WINEDLLOVERRIDES=nvapi,nvapi64=n`.
-- Disable the `nvapiHack` in DXVK, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L34). Spoof an NVIDIA GPU when running a non-NVIDIA GPU, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L22). This needs DXVK's `dxgi.dll`, use it e.g. with `WINEDLLOVERRIDES=dxgi=n`.
+- Ensure that Wine uses the native version of `nvapi64`/`nvapi`, e.g. with `WINEDLLOVERRIDES=nvapi64,nvapi=n`.
+- Ensure that Wine uses DXVK's `dxgi.dll`, use it e.g. with `WINEDLLOVERRIDES=dxgi=n`.
+- Disable the `nvapiHack` in DXVK with `dxgi.nvapiHack = False`, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
+- Spoof an NVIDIA GPU when running a non-NVIDIA GPU with `dxgi.customVendorId = 10de`, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L31).
 
 ## Debugging
 
-DXVK-NVAPI prints some logging statements to the console. Optionally those statements can be written to a log file using the following environment variable:
+The following environment variables tweak DXVK-NVAPI's runtime behavior:
 
-- `DXVK_NVAPI_LOG_PATH` Enables file logging and sets the path where the log file `dxvk-nvapi.log` should be written to. Log statements are appended to an existing file. Please remove this file once in a while to prevent excessive grow.
+- `DXVK_NVAPI_DRIVER_VERSION` lets you override the reported driver version. Valid values are numbers between 100 and 99999. Use e.g. `DXVK_NVAPI_DRIVER_VERSION=47141` to report driver version `471.41`.
+- `DXVK_NVAPI_LOG_PATH` enables file logging additionally to console output and sets the path where the log file `dxvk-nvapi.log` should be written to. Log statements are appended to an existing file. Please remove this file once in a while to prevent excessive grow.
+- `DXVK_NVAPI_LOG_LEVEL` set to `none` avoids log statements. Please fill an issue if this is needed to avoid certain log spam.
+
+This project provides a test suite. Run the package script with `--enable-tests` (see above) to build `nvapi64-tests.exe`. Running the tests executable without arguments queries the local system and provides system information about visible GPU's:
+
+```bash
+DXVK_LOG_LEVEL=none DXVK_NVAPI_LOG_LEVEL=none WINEDEBUG=-all WINEDLLOVERRIDES=dxgi,nvapi64=n wine nvapi64-tests.exe
+```
+
+The test executable also runs on Windows against NVIDIA's `nvapi64.dll`. Ensure that DXVK-NVAPI's `nvapi64.dll`is not present in the current `PATH` for this scenario.
+
+The actual unit tests can be run with `nvapi64-tests.exe [@unit-tests]` to validate DXVK-NVAPI's internal implementation.
 
 ## References and inspirations
 
