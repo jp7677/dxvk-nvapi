@@ -18,9 +18,9 @@ Basic topology and system information (vendor ID, driver version and others) has
 
 ## Requirements
 
-This implementation is supposed to be used on Linux using Wine or derivatives like Proton. It uses several DXVK extension points, thus using DXVK (D3D11 and DXGI) is a requirements. Using Wine's D3D11 or DXGI will fail. Usage of NVAPI-DXVK is not restricted to NVIDIA-GPU's, no specific NVIDIA hardware features are needed.
+This implementation is supposed to be used on Linux using Wine or derivatives like Proton. It uses several DXVK extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, no specific NVIDIA hardware features are needed.
 
-When available, NVAPI-DXVK uses NVIDIA's NVML management library to query temperature, utilization and others for NVIDIA GPU's. See [wine-nvml](https://github.com/Saancreed/wine-nvml) how to add NVML support to Wine/Proton.
+When available, DXVK-NVAPI uses NVIDIA's NVML management library to query temperature, utilization and others for NVIDIA GPUs. See [wine-nvml](https://github.com/Saancreed/wine-nvml) how to add NVML support to Wine/Proton.
 
 ## How to build
 
