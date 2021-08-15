@@ -191,7 +191,7 @@ extern "C" {
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"));
 
         char version[NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE];
-        auto result = adapter->NvmlDeviceGetVbiosVersion(version, NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE);
+        auto result = adapter->GetNvmlDeviceVbiosVersion(version, NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE);
         switch (result) {
             case NVML_SUCCESS:
                 strcpy(szBiosRevision, version);
@@ -201,7 +201,7 @@ extern "C" {
             case NVML_ERROR_GPU_IS_LOST:
                 return HandleInvalidated(n);
             default:
-                return Error(str::format(n, ": ", adapter->NvmlErrorString(result)));
+                return Error(str::format(n, ": ", adapter->GetNvmlErrorString(result)));
         }
     }
 
@@ -231,7 +231,7 @@ extern "C" {
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
         nvmlUtilization_t utilization;
-        auto result = adapter->NvmlDeviceGetUtilizationRates(&utilization);
+        auto result = adapter->GetNvmlDeviceUtilizationRates(&utilization);
         switch (result) {
             case NVML_SUCCESS:
                 pDynamicPstatesInfoEx->flags = 0;
@@ -256,7 +256,7 @@ extern "C" {
             case NVML_ERROR_GPU_IS_LOST:
                 return HandleInvalidated(n);
             default:
-                return Error(str::format(n, ": ", adapter->NvmlErrorString(result)));
+                return Error(str::format(n, ": ", adapter->GetNvmlErrorString(result)));
         }
     }
 
@@ -291,7 +291,7 @@ extern "C" {
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
         unsigned int temp;
-        auto result = adapter->NvmlDeviceGetTemperature(NVML_TEMPERATURE_GPU, &temp);
+        auto result = adapter->GetNvmlDeviceTemperature(NVML_TEMPERATURE_GPU, &temp);
         switch (result) {
             case NVML_SUCCESS:
                 switch (pThermalSettings->version) {
@@ -330,7 +330,7 @@ extern "C" {
             case NVML_ERROR_GPU_IS_LOST:
                 return HandleInvalidated(n);
             default:
-                return Error(str::format(n, ": ", adapter->NvmlErrorString(result)));
+                return Error(str::format(n, ": ", adapter->GetNvmlErrorString(result)));
         }
     }
 
@@ -373,7 +373,7 @@ extern "C" {
         unsigned int clock;
         // Seemingly we need to do nvml call on a "per clock unit" to get the clock
         // Set the availability of the clock to TRUE and the nvml read clock in the nvapi struct
-        auto resultGpu = adapter->NvmlDeviceGetClockInfo(NVML_CLOCK_GRAPHICS, &clock);
+        auto resultGpu = adapter->GetNvmlDeviceClockInfo(NVML_CLOCK_GRAPHICS, &clock);
             switch (resultGpu) {
                 case NVML_SUCCESS:
                     pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent = 1;
@@ -384,10 +384,10 @@ extern "C" {
                 case NVML_ERROR_GPU_IS_LOST:
                     return HandleInvalidated(n);
                 default:
-                    return Error(str::format(n, ": ", adapter->NvmlErrorString(resultGpu)));
+                    return Error(str::format(n, ": ", adapter->GetNvmlErrorString(resultGpu)));
             }
 
-        auto resultMem = adapter->NvmlDeviceGetClockInfo(NVML_CLOCK_MEM, &clock);
+        auto resultMem = adapter->GetNvmlDeviceClockInfo(NVML_CLOCK_MEM, &clock);
             switch (resultMem) {
                 case NVML_SUCCESS:
                     pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent = 1;
@@ -398,10 +398,10 @@ extern "C" {
                 case NVML_ERROR_GPU_IS_LOST:
                     return HandleInvalidated(n);
                 default:
-                    return Error(str::format(n, ": ", adapter->NvmlErrorString(resultMem)));
+                    return Error(str::format(n, ": ", adapter->GetNvmlErrorString(resultMem)));
             }
 
-        auto resultVid = adapter->NvmlDeviceGetClockInfo(NVML_CLOCK_VIDEO, &clock);
+        auto resultVid = adapter->GetNvmlDeviceClockInfo(NVML_CLOCK_VIDEO, &clock);
             switch (resultVid) {
                 case NVML_SUCCESS:
                     pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent = 1;
@@ -412,7 +412,7 @@ extern "C" {
                 case NVML_ERROR_GPU_IS_LOST:
                     return HandleInvalidated(n);
                 default:
-                    return Error(str::format(n, ": ", adapter->NvmlErrorString(resultVid)));
+                    return Error(str::format(n, ": ", adapter->GetNvmlErrorString(resultVid)));
             }
 
         if (resultGpu == NVML_ERROR_NOT_SUPPORTED

@@ -26,11 +26,11 @@ namespace dxvk {
 
         [[nodiscard]] bool HasNvml() const;
         [[nodiscard]] bool HasNvmlDevice() const;
-        [[nodiscard]] std::string NvmlErrorString(nvmlReturn_t result) const;
-        [[nodiscard]] nvmlReturn_t NvmlDeviceGetTemperature(nvmlTemperatureSensors_t sensorType, unsigned int* temp) const;
-        [[nodiscard]] nvmlReturn_t NvmlDeviceGetUtilizationRates(nvmlUtilization_t* utilization) const;
-        [[nodiscard]] nvmlReturn_t NvmlDeviceGetVbiosVersion(char* version, unsigned int length) const;
-        [[nodiscard]] nvmlReturn_t NvmlDeviceGetClockInfo(nvmlClockType_t type, unsigned int* clock) const;
+        [[nodiscard]] std::string GetNvmlErrorString(nvmlReturn_t result) const;
+        [[nodiscard]] nvmlReturn_t GetNvmlDeviceTemperature(nvmlTemperatureSensors_t sensorType, unsigned int* temp) const;
+        [[nodiscard]] nvmlReturn_t GetNvmlDeviceUtilizationRates(nvmlUtilization_t* utilization) const;
+        [[nodiscard]] nvmlReturn_t GetNvmlDeviceVbiosVersion(char* version, unsigned int length) const;
+        [[nodiscard]] nvmlReturn_t GetNvmlDeviceClockInfo(nvmlClockType_t type, unsigned int* clock) const;
 
     private:
         Vulkan& m_vulkan;

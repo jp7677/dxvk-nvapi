@@ -218,23 +218,23 @@ namespace dxvk {
         return m_nvml.IsAvailable() && m_nvmlDevice != nullptr;
     }
 
-    std::string NvapiAdapter::NvmlErrorString(nvmlReturn_t result) const {
+    std::string NvapiAdapter::GetNvmlErrorString(nvmlReturn_t result) const {
         return std::string(m_nvml.ErrorString(result));
     }
 
-    nvmlReturn_t NvapiAdapter::NvmlDeviceGetTemperature(nvmlTemperatureSensors_t sensorType, unsigned int *temp) const {
+    nvmlReturn_t NvapiAdapter::GetNvmlDeviceTemperature(nvmlTemperatureSensors_t sensorType, unsigned int *temp) const {
         return m_nvml.DeviceGetTemperature(m_nvmlDevice, sensorType, temp);
     }
 
-    nvmlReturn_t NvapiAdapter::NvmlDeviceGetUtilizationRates(nvmlUtilization_t *utilization) const {
+    nvmlReturn_t NvapiAdapter::GetNvmlDeviceUtilizationRates(nvmlUtilization_t *utilization) const {
         return m_nvml.DeviceGetUtilizationRates(m_nvmlDevice, utilization);
     }
 
-    nvmlReturn_t NvapiAdapter::NvmlDeviceGetVbiosVersion(char* version, unsigned int length) const {
+    nvmlReturn_t NvapiAdapter::GetNvmlDeviceVbiosVersion(char* version, unsigned int length) const {
         return m_nvml.DeviceGetVbiosVersion(m_nvmlDevice, version, length);
     }
 
-    nvmlReturn_t NvapiAdapter::NvmlDeviceGetClockInfo(nvmlClockType_t type, unsigned int* clock) const {
+    nvmlReturn_t NvapiAdapter::GetNvmlDeviceClockInfo(nvmlClockType_t type, unsigned int* clock) const {
         return m_nvml.DeviceGetClockInfo(m_nvmlDevice, type, clock);
     }
 }
