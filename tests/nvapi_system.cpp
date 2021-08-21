@@ -30,6 +30,7 @@ T GetNvAPIProcAddress(PFN_NvAPI_QueryInterface nvAPI_QueryInterface, const char*
             return strcmp(item.func, name) == 0;
         });
 
+    REQUIRE(it != std::end(nvapi_interface_table));
     return reinterpret_cast<T>(nvAPI_QueryInterface(it->id));
 }
 
