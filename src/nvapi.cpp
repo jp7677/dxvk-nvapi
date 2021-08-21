@@ -136,7 +136,19 @@ extern "C" {
         if (szDesc == nullptr)
             return InvalidArgument(n);
 
-        strcpy(szDesc, "R470");
+        strcpy(szDesc, "DXVK-NVAPI");
+
+        return Ok(n);
+    }
+
+    NvAPI_Status __cdecl NvAPI_GetInterfaceVersionStringEx(NvAPI_ShortString szDesc) {
+        constexpr auto n = __func__;
+
+        if (szDesc == nullptr)
+            return InvalidArgument(n);
+
+        const std::string headerVersion = "R470";
+        strcpy(szDesc, str::format("DXVK-NVAPI", " ", DXVK_NVAPI_VERSION, " (", headerVersion , ")").c_str());
 
         return Ok(n);
     }

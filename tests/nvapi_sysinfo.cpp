@@ -18,7 +18,13 @@ using namespace trompeloeil;
 TEST_CASE("GetInterfaceVersionString returns OK", "[.sysinfo]") {
     NvAPI_ShortString desc;
     REQUIRE(NvAPI_GetInterfaceVersionString(desc) == NVAPI_OK);
-    REQUIRE(strcmp(desc, "R470") == 0);
+    REQUIRE(strcmp(desc, "DXVK-NVAPI") == 0);
+}
+
+TEST_CASE("GetInterfaceVersionStringEx returns OK", "[.sysinfo]") {
+    NvAPI_ShortString desc;
+    REQUIRE(NvAPI_GetInterfaceVersionStringEx(desc) == NVAPI_OK);
+    REQUIRE(std::string(desc).rfind("DXVK-NVAPI", 0) == 0);
 }
 
 TEST_CASE("GetErrorMessage returns OK", "[.sysinfo]") {
