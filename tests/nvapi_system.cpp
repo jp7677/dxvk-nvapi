@@ -9,6 +9,7 @@ typedef void* (*PFN_NvAPI_QueryInterface)(unsigned int id);
 typedef decltype(&NvAPI_Initialize) PFN_NvAPI_Initialize;
 typedef decltype(&NvAPI_Unload) PFN_NvAPI_Unload;
 typedef decltype(&NvAPI_GetInterfaceVersionString) PFN_NvAPI_GetInterfaceVersionString;
+typedef decltype(&NvAPI_GetInterfaceVersionStringEx) PFN_NvAPI_GetInterfaceVersionStringEx;
 typedef decltype(&NvAPI_SYS_GetDriverAndBranchVersion) PFN_NvAPI_SYS_GetDriverAndBranchVersion;
 typedef decltype(&NvAPI_EnumPhysicalGPUs) PFN_NvAPI_EnumPhysicalGPUs;
 typedef decltype(&NvAPI_GPU_GetGPUType) PFN_NvAPI_GPU_GetGPUType;
@@ -83,6 +84,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     auto nvAPI_Initialize = GetNvAPIProcAddress<PFN_NvAPI_Initialize>(nvAPI_QueryInterface, "NvAPI_Initialize");
     auto nvAPI_Unload = GetNvAPIProcAddress<PFN_NvAPI_Unload>(nvAPI_QueryInterface, "NvAPI_Unload");
     auto nvAPI_GetInterfaceVersionString = GetNvAPIProcAddress<PFN_NvAPI_GetInterfaceVersionString>(nvAPI_QueryInterface, "NvAPI_GetInterfaceVersionString");
+    auto nvAPI_GetInterfaceVersionStringEx = GetNvAPIProcAddress<PFN_NvAPI_GetInterfaceVersionStringEx>(nvAPI_QueryInterface, "NvAPI_GetInterfaceVersionStringEx");
     auto nvAPI_SYS_GetDriverAndBranchVersion = GetNvAPIProcAddress<PFN_NvAPI_SYS_GetDriverAndBranchVersion>(nvAPI_QueryInterface, "NvAPI_SYS_GetDriverAndBranchVersion");
     auto nvAPI_EnumPhysicalGPUs = GetNvAPIProcAddress<PFN_NvAPI_EnumPhysicalGPUs>(nvAPI_QueryInterface, "NvAPI_EnumPhysicalGPUs");
     auto nvAPI_GPU_GetGPUType = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetGPUType>(nvAPI_QueryInterface, "NvAPI_GPU_GetGPUType");
@@ -100,10 +102,12 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     NvAPI_Status result;
     REQUIRE(nvAPI_Initialize() == NVAPI_OK);
 
+    std::cout << "--------------------------------" << std::endl;
     NvAPI_ShortString desc;
     REQUIRE(nvAPI_GetInterfaceVersionString(desc) == NVAPI_OK);
-    std::cout << "--------------------------------" << std::endl;
-    std::cout << "Interface version:              " << desc << std::endl;
+    NvAPI_ShortString descEx;
+    REQUIRE(nvAPI_GetInterfaceVersionStringEx(descEx) == NVAPI_OK);
+    std::cout << "Interface version:              " << desc << " / " << descEx << std::endl;
 
     NvU32 version;
     NvAPI_ShortString branch;

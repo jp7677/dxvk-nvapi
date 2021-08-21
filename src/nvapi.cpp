@@ -122,6 +122,17 @@ extern "C" {
         return Ok(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_GetInterfaceVersionStringEx(NvAPI_ShortString szDesc) {
+        constexpr auto n = "NvAPI_GetInterfaceVersionStringEx";
+
+        if (szDesc == nullptr)
+            return InvalidArgument(n);
+
+        strcpy(szDesc, str::format("DXVK-NVAPI", "", DXVK_NVAPI_VERSION).c_str());
+
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_GetErrorMessage(NvAPI_Status nr, NvAPI_ShortString szDesc) {
         constexpr auto n = "NvAPI_GetErrorMessage";
 
