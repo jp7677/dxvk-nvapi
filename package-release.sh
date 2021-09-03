@@ -53,7 +53,8 @@ function prepare {
     src/nvapi_d3d.cpp \
     src/nvapi_d3d11.cpp \
     src/nvapi_d3d12.cpp \
-    src/nvapi_interface.cpp
+    src/nvapi_interface.cpp \
+    inc/nvapi_interface.h
 
   # remove existing version.h, because otherwise the existing one gets into the build instead of the generated one
   if [ -e version.h ]; then
