@@ -125,7 +125,7 @@ namespace dxvk {
     }
 
     std::string NvapiAdapter::GetDeviceName() const {
-        return std::string(m_deviceProperties.deviceName);
+        return {m_deviceProperties.deviceName};
     }
 
     uint32_t NvapiAdapter::GetDriverVersion() const {
@@ -219,7 +219,7 @@ namespace dxvk {
     }
 
     std::string NvapiAdapter::GetNvmlErrorString(nvmlReturn_t result) const {
-        return std::string(m_nvml.ErrorString(result));
+        return {m_nvml.ErrorString(result)};
     }
 
     nvmlReturn_t NvapiAdapter::GetNvmlDeviceTemperature(nvmlTemperatureSensors_t sensorType, unsigned int *temp) const {
