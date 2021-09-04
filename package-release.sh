@@ -44,7 +44,7 @@ while [ $# -gt 0 ]; do
 done
 
 function prepare {
-  python validate-methods.py \
+  python3 validate-methods.py \
     src/nvapi.cpp \
     src/nvapi_sys.cpp \
     src/nvapi_disp.cpp \
