@@ -334,6 +334,43 @@ extern "C" {
         }
     }
 
+    NvAPI_Status __cdecl NvAPI_GPU_GetCurrentPstate(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_PERF_PSTATE_ID *pCurrentPstate) {
+        constexpr auto n = "NvAPI_GPU_GetCurrentPstate";
+        static bool alreadyLoggedNoNvml = false;
+        static bool alreadyLoggedHandleInvalidated = false;
+        static bool alreadyLoggedOk = false;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pCurrentPstate == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        if (!adapter->HasNvml())
+            return NoImplementation(n, alreadyLoggedNoNvml);
+
+        if (!adapter->HasNvmlDevice())
+            return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
+
+        nvmlPstates_t pState;
+        auto result = adapter->GetNvmlPerformanceState(&pState);
+        switch (result) {
+            case NVML_SUCCESS:
+                *pCurrentPstate = static_cast<NV_GPU_PERF_PSTATE_ID>(pState);
+                return Ok(n, alreadyLoggedOk);
+            case NVML_ERROR_NOT_SUPPORTED:
+                return NotSupported(n);
+            case NVML_ERROR_GPU_IS_LOST:
+                return HandleInvalidated(n);
+            default:
+                return Error(str::format(n, ": ", adapter->GetNvmlErrorString(result)));
+       }
+    }
+
     NvAPI_Status __cdecl NvAPI_GPU_GetAllClockFrequencies(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_CLOCK_FREQUENCIES *pClkFreqs) {
         constexpr auto n = "NvAPI_GPU_GetAllClockFrequencies";
         static bool alreadyLoggedNotSupported = false;

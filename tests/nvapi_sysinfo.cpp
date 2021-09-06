@@ -708,6 +708,22 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(settings.sensor[0].defaultMinTemp == -256);
         }
 
+        SECTION("GetCurrentPstate returns OK") {
+            ALLOW_CALL(*nvml, DeviceGetPerformanceState(_, _)) // NOLINT(bugprone-use-after-move)
+                .LR_SIDE_EFFECT(*_2 = NVML_PSTATE_2)
+                .RETURN(NVML_SUCCESS);
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+            NV_GPU_PERF_PSTATE_ID pstate;
+            REQUIRE(NvAPI_GPU_GetCurrentPstate(handle, &pstate) == NVAPI_OK);
+            REQUIRE(pstate == NVAPI_GPU_PERF_PSTATE_P2);
+        }
+
         SECTION("GetAllClockFrequencies returns OK") {
             auto graphicsClock = 500U;
             auto memoryClock = 600U;
@@ -759,6 +775,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         NV_GPU_THERMAL_SETTINGS settings;
         settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
         REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_NO_IMPLEMENTATION);
+        NV_GPU_PERF_PSTATE_ID pstate;
+        REQUIRE(NvAPI_GPU_GetCurrentPstate(handle, &pstate) == NVAPI_NO_IMPLEMENTATION);
         NV_GPU_CLOCK_FREQUENCIES frequencies;
         frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
         frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
@@ -787,6 +805,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         NV_GPU_THERMAL_SETTINGS settings;
         settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
         REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_HANDLE_INVALIDATED);
+        NV_GPU_PERF_PSTATE_ID pstate;
+        REQUIRE(NvAPI_GPU_GetCurrentPstate(handle, &pstate) == NVAPI_HANDLE_INVALIDATED);
         NV_GPU_CLOCK_FREQUENCIES frequencies;
         frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
         frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;

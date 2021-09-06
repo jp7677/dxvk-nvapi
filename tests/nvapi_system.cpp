@@ -21,6 +21,7 @@ typedef decltype(&NvAPI_GPU_GetArchInfo) PFN_NvAPI_GPU_GetArchInfo;
 typedef decltype(&NvAPI_GPU_GetVbiosVersionString) PFN_NvAPI_GPU_GetVbiosVersionString;
 typedef decltype(&NvAPI_GPU_GetDynamicPstatesInfoEx) PFN_NvAPI_GPU_GetDynamicPstatesInfoEx;
 typedef decltype(&NvAPI_GPU_GetThermalSettings) PFN_NvAPI_GPU_GetThermalSettings;
+typedef decltype(&NvAPI_GPU_GetCurrentPstate) PFN_NvAPI_GPU_GetCurrentPstate;
 typedef decltype(&NvAPI_GPU_GetAllClockFrequencies) PFN_NvAPI_GPU_GetAllClockFrequencies;
 
 template<typename T>
@@ -95,6 +96,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     auto nvAPI_GPU_GetVbiosVersionString = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetVbiosVersionString>(nvAPI_QueryInterface, "NvAPI_GPU_GetVbiosVersionString");
     auto nvAPI_GPU_GetDynamicPstatesInfoEx = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetDynamicPstatesInfoEx>(nvAPI_QueryInterface, "NvAPI_GPU_GetDynamicPstatesInfoEx");
     auto nvAPI_GPU_GetThermalSettings = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetThermalSettings>(nvAPI_QueryInterface, "NvAPI_GPU_GetThermalSettings");
+    auto nvAPI_GPU_GetCurrentPstate = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetCurrentPstate>(nvAPI_QueryInterface, "NvAPI_GPU_GetCurrentPstate");
     auto nvAPI_GPU_GetAllClockFrequencies = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetAllClockFrequencies>(nvAPI_QueryInterface, "NvAPI_GPU_GetAllClockFrequencies");
 
     NvAPI_Status result;
@@ -185,6 +187,13 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         std::cout << "    Current GPU temperature:    ";
         result == NVAPI_OK
             ? std::cout << std::dec << settings.sensor[0].currentTemp << "C" << std::endl
+            : std::cout << "N/A" << std::endl;
+
+        NV_GPU_PERF_PSTATE_ID currentPstate;
+        result = nvAPI_GPU_GetCurrentPstate(handle, &currentPstate);
+        std::cout << "    Current performance state:  ";
+        result == NVAPI_OK
+            ? std::cout << "P" << std::dec << currentPstate << std::endl
             : std::cout << "N/A" << std::endl;
 
         NV_GPU_CLOCK_FREQUENCIES frequencies;
