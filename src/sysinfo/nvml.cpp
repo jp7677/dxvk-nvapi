@@ -21,6 +21,7 @@ namespace dxvk {
         m_nvmlDeviceGetTemperature = GetProcAddress<PFN_nvmlDeviceGetTemperature>("nvmlDeviceGetTemperature");
         m_nvmlDeviceGetUtilizationRates = GetProcAddress<PFN_nvmlDeviceGetUtilizationRates>("nvmlDeviceGetUtilizationRates");
         m_nvmlDeviceGetVbiosVersion = GetProcAddress<PFN_nvmlDeviceGetVbiosVersion>("nvmlDeviceGetVbiosVersion");
+        m_nvmlDeviceGetPerformanceState = GetProcAddress<PFN_nvmlDeviceGetPerformanceState>("nvmlDeviceGetPerformanceState");
         m_nvmlDeviceGetClockInfo = GetProcAddress<PFN_nvmlDeviceGetClockInfo>("nvmlDeviceGetClockInfo");
 
         if (m_nvmlInit_v2 == nullptr
@@ -30,6 +31,7 @@ namespace dxvk {
             || m_nvmlDeviceGetTemperature == nullptr
             || m_nvmlDeviceGetUtilizationRates == nullptr
             || m_nvmlDeviceGetVbiosVersion == nullptr
+            || m_nvmlDeviceGetPerformanceState == nullptr
             || m_nvmlDeviceGetClockInfo == nullptr)
             log::write(str::format("NVML loaded but initialization failed"));
         else {
@@ -75,6 +77,10 @@ namespace dxvk {
 
     nvmlReturn_t Nvml::DeviceGetVbiosVersion(nvmlDevice_t device, char *version, unsigned int length) const {
         return m_nvmlDeviceGetVbiosVersion(device, version, length);
+    }
+
+    nvmlReturn_t Nvml::DeviceGetPerformanceState(nvmlDevice_t device, nvmlPstates_t *pState) const {
+        return m_nvmlDeviceGetPerformanceState(device, pState);
     }
 
     nvmlReturn_t Nvml::DeviceGetClockInfo(nvmlDevice_t device, nvmlClockType_t type, unsigned int *clock) const {
