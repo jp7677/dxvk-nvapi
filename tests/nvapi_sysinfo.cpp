@@ -636,7 +636,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*nvml, DeviceGetHandleByPciBusId_v2(_, _))
             .RETURN(NVML_SUCCESS);
 
-        SECTION("GetDynamicPstatesInfoEx returns OK") {
+        SECTION("GetVbiosVersionString returns OK") {
             auto version = "12.34";
             ALLOW_CALL(*nvml, DeviceGetVbiosVersion(_, _, _))
                 .LR_SIDE_EFFECT(strcpy(_2, version))
