@@ -2,7 +2,9 @@
 
 using namespace trompeloeil;
 
-class D3D12DeviceMock : public mock_interface<ID3D12Device> {
+class ID3D12Vkd3dDevice : public ID3D12Device, public ID3D12DeviceExt {};
+
+class D3D12Vkd3dDeviceMock : public mock_interface<ID3D12Vkd3dDevice> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void **), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -47,12 +49,6 @@ class D3D12DeviceMock : public mock_interface<ID3D12Device> {
     IMPLEMENT_MOCK4(CreateCommandSignature);
     IMPLEMENT_MOCK7(GetResourceTiling);
     MAKE_MOCK1(GetAdapterLuid, LUID*(LUID*), override);
-};
-
-class D3D12DeviceExtMock : public mock_interface<ID3D12DeviceExt> {
-    MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void **), override);
-    MAKE_MOCK0(AddRef, ULONG(), override);
-    MAKE_MOCK0(Release, ULONG(), override);
     IMPLEMENT_MOCK3(GetVulkanHandles);
     IMPLEMENT_MOCK1(GetExtensionSupport);
     IMPLEMENT_MOCK7(CreateCubinComputeShaderWithName);
@@ -62,7 +58,9 @@ class D3D12DeviceExtMock : public mock_interface<ID3D12DeviceExt> {
     IMPLEMENT_MOCK1(CaptureUAVInfo);
 };
 
-class D3D12GraphicsCommandListMock : public mock_interface<ID3D12GraphicsCommandList> {
+class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList, public ID3D12GraphicsCommandListExt {};
+
+class D3D12Vkd3dGraphicsCommandListMock : public mock_interface<ID3D12Vkd3dGraphicsCommandList> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void **), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -123,12 +121,6 @@ class D3D12GraphicsCommandListMock : public mock_interface<ID3D12GraphicsCommand
     IMPLEMENT_MOCK2(Reset);
     IMPLEMENT_MOCK0(Close);
     IMPLEMENT_MOCK3(SetPredication);
-};
-
-class D3D12GraphicsCommandListExtMock : public mock_interface<ID3D12GraphicsCommandListExt> {
-    MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void **), override);
-    MAKE_MOCK0(AddRef, ULONG(), override);
-    MAKE_MOCK0(Release, ULONG(), override);
     IMPLEMENT_MOCK1(GetVulkanHandle);
     IMPLEMENT_MOCK6(LaunchCubinShader);
 };
