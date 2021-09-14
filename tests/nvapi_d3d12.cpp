@@ -125,11 +125,11 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
         const D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = {0};
         D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle = {0};
-        ALLOW_CALL(deviceExt, GetCudaTextureObject(_, _, nullptr))
+        ALLOW_CALL(deviceExt, GetCudaTextureObject(_, _, nullptr)) // TODO: We should use `srvHandle, samplerHandle` here instead of `_, _`, investigate why this wont compile (no match for ‘operator==’ (operand types are ‘D3D12_CPU_DESCRIPTOR_HANDLE’ and ‘const D3D12_CPU_DESCRIPTOR_HANDLE’))
                 .RETURN(S_OK);
         REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, samplerHandle, nullptr)  == NVAPI_OK);
 
-        ALLOW_CALL(deviceExt, GetCudaSurfaceObject(_, nullptr))
+        ALLOW_CALL(deviceExt, GetCudaSurfaceObject(_, nullptr)) // TODO: We should use `srvHandle` here instead of `_`, investigate why this wont compile (no match for ‘operator==’ (operand types are ‘D3D12_CPU_DESCRIPTOR_HANDLE’ and ‘const D3D12_CPU_DESCRIPTOR_HANDLE’))
             .RETURN(S_OK);
         REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, nullptr)  == NVAPI_OK);
 
