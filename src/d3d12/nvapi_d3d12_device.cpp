@@ -60,15 +60,12 @@ namespace dxvk {
     // These are specific to NVIDIA and both of these extensions goes together.
     Com<ID3D12DeviceExt> NvapiD3d12Device::GetCubinDevice(ID3D12Device* device) {
         auto it = m_cubinDeviceMap.find(device);
-        Com<ID3D12DeviceExt> cubinDevice = nullptr;
-        if(it == m_cubinDeviceMap.end())
-        {
-            cubinDevice = GetDeviceExt(device, D3D12_VK_NVX_BINARY_IMPORT);
-            if(cubinDevice != nullptr)
-                 m_cubinDeviceMap.emplace(device, cubinDevice.ptr());
-        }
-        else
-            cubinDevice = it->second;
+        if(it != m_cubinDeviceMap.end())
+            return it->second;
+
+        auto cubinDevice = GetDeviceExt(device, D3D12_VK_NVX_BINARY_IMPORT);
+        if(cubinDevice != nullptr)
+             m_cubinDeviceMap.emplace(device, cubinDevice.ptr());
 
         return cubinDevice;
     }
