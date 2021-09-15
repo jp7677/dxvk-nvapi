@@ -63,7 +63,7 @@ namespace dxvk {
         Com<ID3D12DeviceExt> cubinDevice = nullptr;
         if(it == m_cubinDeviceMap.end())
         {
-            cubinDevice = GetCubinDevice(device, D3D12_VK_NVX_BINARY_IMPORT);
+            cubinDevice = GetDeviceExt(device, D3D12_VK_NVX_BINARY_IMPORT);
             if(cubinDevice != nullptr)
                  m_cubinDeviceMap.emplace(device, cubinDevice.ptr());
         }
@@ -73,14 +73,14 @@ namespace dxvk {
         return cubinDevice;
     }
 
-    Com<ID3D12DeviceExt> NvapiD3d12Device::GetCubinDevice(ID3D12Device* device, D3D12_VK_EXTENSION extension) {
-        Com<ID3D12DeviceExt> cubinDevice;
-        if (FAILED(device->QueryInterface(IID_PPV_ARGS(&cubinDevice))))
+    Com<ID3D12DeviceExt> NvapiD3d12Device::GetDeviceExt(ID3D12Device* device, D3D12_VK_EXTENSION extension) {
+        Com<ID3D12DeviceExt> deviceExt;
+        if (FAILED(device->QueryInterface(IID_PPV_ARGS(&deviceExt))))
             return nullptr;
 
-        if (!cubinDevice->GetExtensionSupport(extension))
+        if (!deviceExt->GetExtensionSupport(extension))
             return nullptr;
 
-        return cubinDevice;
+        return deviceExt;
     }
 }

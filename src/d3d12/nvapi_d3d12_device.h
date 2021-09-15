@@ -21,6 +21,6 @@ namespace dxvk {
         inline static std::unordered_map<ID3D12Device*, ID3D12DeviceExt*> m_cubinDeviceMap;
 
         [[nodiscard]] static Com<ID3D12DeviceExt> GetCubinDevice(ID3D12Device* device);
-        [[nodiscard]] static Com<ID3D12DeviceExt> GetCubinDevice(ID3D12Device* device, D3D12_VK_EXTENSION extension);
+        [[nodiscard]] static Com<ID3D12DeviceExt> GetDeviceExt(ID3D12Device* device, D3D12_VK_EXTENSION extension);
     };
 }
