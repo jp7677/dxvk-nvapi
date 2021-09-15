@@ -139,12 +139,14 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     }
 
     SECTION("GetCudaTextureObject/GetCudaSurfaceObject returns OK") {
-        D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = {0};
-        D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle = {0};
-        REQUIRE_CALL(device, GetCudaTextureObject(_, _, nullptr)) // TODO: We should use `srvHandle, samplerHandle` here instead of `_, _`, investigate why this wont compile (no match for ‘operator==’ (operand types are ‘D3D12_CPU_DESCRIPTOR_HANDLE’ and ‘const D3D12_CPU_DESCRIPTOR_HANDLE’))
+        D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = {0x123456};
+        D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle = {0x654321};
+        REQUIRE_CALL(device, GetCudaTextureObject(_, _, nullptr))
+            .LR_WITH(_1.ptr == srvHandle.ptr && _2.ptr == samplerHandle.ptr)
             .RETURN(S_OK)
             .TIMES(1);
-        REQUIRE_CALL(device, GetCudaSurfaceObject(_, nullptr)) // TODO: We should use `srvHandle` here instead of `_`, investigate why this wont compile (no match for ‘operator==’ (operand types are ‘D3D12_CPU_DESCRIPTOR_HANDLE’ and ‘const D3D12_CPU_DESCRIPTOR_HANDLE’))
+        REQUIRE_CALL(device, GetCudaSurfaceObject(_, nullptr))
+            .LR_WITH(_1.ptr == srvHandle.ptr)
             .RETURN(S_OK)
             .TIMES(1);
 
