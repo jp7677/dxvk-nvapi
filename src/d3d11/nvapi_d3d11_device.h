@@ -19,8 +19,11 @@ namespace dxvk {
         inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_barrierControlDeviceOrContextMap;
         inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_multiDrawIndirectContextMap;
 
-        [[nodiscard]] static Com<ID3D11VkExtContext> GetDxvkDeviceContext(IUnknown* deviceOrContext, D3D11_VK_EXTENSION extension);
-        [[nodiscard]] static Com<ID3D11VkExtContext> GetDxvkDeviceContext(ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension);
-        [[nodiscard]] static Com<ID3D11VkExtContext> GetDxvkDeviceContext(ID3D11Device* device, ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension);
+        [[nodiscard]] static Com<ID3D11VkExtContext> GetSdbtDeviceContext(IUnknown* deviceOrContext);
+        [[nodiscard]] static Com<ID3D11VkExtContext> GetBarrierControlDeviceContext(IUnknown* deviceOrContext);
+        [[nodiscard]] static Com<ID3D11VkExtContext> GetMultiDrawDeviceContext(ID3D11DeviceContext* deviceContext);
+        [[nodiscard]] static Com<ID3D11VkExtContext> GetDeviceContextExt(IUnknown* deviceOrContext, D3D11_VK_EXTENSION extension);
+        [[nodiscard]] static Com<ID3D11VkExtContext> GetDeviceContextExt(ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension);
+        [[nodiscard]] static Com<ID3D11VkExtContext> GetDeviceContextExt(ID3D11Device* device, ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension);
     };
 }

@@ -2,86 +2,90 @@
 
 namespace dxvk {
     bool NvapiD3d11Device::SetDepthBoundsTest(IUnknown* deviceOrContext, const bool enable, const float minDepth, const float maxDepth) {
-        auto it = m_depthBoundsDeviceOrContextMap.find(deviceOrContext);
-        if (it != m_depthBoundsDeviceOrContextMap.end()) {
-            it->second->SetDepthBoundsTest(enable, minDepth, maxDepth); // We completely ignore any reference counting here, not nice but works due to the nature of the context
-            return true;
-        }
-
-        auto dxvkDeviceContext = GetDxvkDeviceContext(deviceOrContext, D3D11_VK_EXT_DEPTH_BOUNDS);
-        if (dxvkDeviceContext == nullptr)
+        auto sdbtDeviceContext = GetSdbtDeviceContext(deviceOrContext);
+        if (sdbtDeviceContext == nullptr)
             return false;
 
-        m_depthBoundsDeviceOrContextMap.emplace(deviceOrContext, dxvkDeviceContext.ptr());
-        dxvkDeviceContext->SetDepthBoundsTest(enable, minDepth, maxDepth);
+        sdbtDeviceContext->SetDepthBoundsTest(enable, minDepth, maxDepth);
         return true;
     }
 
     bool NvapiD3d11Device::BeginUAVOverlap(IUnknown* deviceOrContext) {
-        auto it = m_barrierControlDeviceOrContextMap.find(deviceOrContext);
-        if (it != m_barrierControlDeviceOrContextMap.end()) {
-            it->second->SetBarrierControl(D3D11_VK_BARRIER_CONTROL_IGNORE_WRITE_AFTER_WRITE); // See note above about reference counting
-            return true;
-        }
-
-        auto dxvkDeviceContext = GetDxvkDeviceContext(deviceOrContext, D3D11_VK_EXT_BARRIER_CONTROL);
-        if (dxvkDeviceContext == nullptr)
+        auto barrierControlDeviceContext = GetBarrierControlDeviceContext(deviceOrContext);
+        if (barrierControlDeviceContext == nullptr)
             return false;
 
-        m_barrierControlDeviceOrContextMap.emplace(deviceOrContext, dxvkDeviceContext.ptr());
-        dxvkDeviceContext->SetBarrierControl(D3D11_VK_BARRIER_CONTROL_IGNORE_WRITE_AFTER_WRITE);
+        barrierControlDeviceContext->SetBarrierControl(D3D11_VK_BARRIER_CONTROL_IGNORE_WRITE_AFTER_WRITE);
         return true;
     }
 
     bool NvapiD3d11Device::EndUAVOverlap(IUnknown* deviceOrContext) {
-        auto it = m_barrierControlDeviceOrContextMap.find(deviceOrContext);
-        if (it != m_barrierControlDeviceOrContextMap.end()) {
-            it->second->SetBarrierControl(0U); // See note above about reference counting
-            return true;
-        }
-
-        auto dxvkDeviceContext = GetDxvkDeviceContext(deviceOrContext, D3D11_VK_EXT_BARRIER_CONTROL);
-        if (dxvkDeviceContext == nullptr)
+        auto barrierControlDeviceContext = GetBarrierControlDeviceContext(deviceOrContext);
+        if (barrierControlDeviceContext == nullptr)
             return false;
 
-        m_barrierControlDeviceOrContextMap.emplace(deviceOrContext, dxvkDeviceContext.ptr());
-        dxvkDeviceContext->SetBarrierControl(0U);
+        barrierControlDeviceContext->SetBarrierControl(0U);
         return true;
     }
 
     bool NvapiD3d11Device::MultiDrawInstancedIndirect(ID3D11DeviceContext* deviceContext, const NvU32 drawCount, ID3D11Buffer* buffer, const NvU32 alignedByteOffsetForArgs, const NvU32 alignedByteStrideForArgs) {
-        auto it = m_multiDrawIndirectContextMap.find(deviceContext);
-        if (it != m_multiDrawIndirectContextMap.end()) {
-            it->second->MultiDrawIndirect(drawCount, buffer, alignedByteOffsetForArgs, alignedByteStrideForArgs); // See note above about reference counting
-            return true;
-        }
-
-        auto dxvkDeviceContext = GetDxvkDeviceContext(deviceContext, D3D11_VK_EXT_MULTI_DRAW_INDIRECT);
-        if (dxvkDeviceContext == nullptr)
+        auto multiDrawDeviceContext = GetMultiDrawDeviceContext(deviceContext);
+        if (multiDrawDeviceContext == nullptr)
             return false;
 
-        m_multiDrawIndirectContextMap.emplace(deviceContext, dxvkDeviceContext.ptr());
-        dxvkDeviceContext->MultiDrawIndirect(drawCount, buffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
+        multiDrawDeviceContext->MultiDrawIndirect(drawCount, buffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
         return true;
     }
 
     bool NvapiD3d11Device::MultiDrawIndexedInstancedIndirect(ID3D11DeviceContext* deviceContext, const NvU32 drawCount, ID3D11Buffer* buffer, const NvU32 alignedByteOffsetForArgs, const NvU32 alignedByteStrideForArgs) {
-        auto it = m_multiDrawIndirectContextMap.find(deviceContext);
-        if (it != m_multiDrawIndirectContextMap.end()) {
-            it->second->MultiDrawIndexedIndirect(drawCount, buffer, alignedByteOffsetForArgs, alignedByteStrideForArgs); // See note above about reference counting
-            return true;
-        }
-
-        auto dxvkDeviceContext = GetDxvkDeviceContext(deviceContext, D3D11_VK_EXT_MULTI_DRAW_INDIRECT);
-        if (dxvkDeviceContext == nullptr)
+        auto multiDrawDeviceContext = GetMultiDrawDeviceContext(deviceContext);
+        if (multiDrawDeviceContext == nullptr)
             return false;
 
-        m_multiDrawIndirectContextMap.emplace(deviceContext, dxvkDeviceContext.ptr());
-        dxvkDeviceContext->MultiDrawIndexedIndirect(drawCount, buffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
+        multiDrawDeviceContext->MultiDrawIndexedIndirect(drawCount, buffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
         return true;
     }
 
-    Com<ID3D11VkExtContext> NvapiD3d11Device::GetDxvkDeviceContext(IUnknown* deviceOrContext, D3D11_VK_EXTENSION extension) {
+    Com<ID3D11VkExtContext> NvapiD3d11Device::GetSdbtDeviceContext(IUnknown* deviceOrContext) {
+        auto it = m_depthBoundsDeviceOrContextMap.find(deviceOrContext);
+        if (it != m_depthBoundsDeviceOrContextMap.end()) {
+            return it->second;
+        }
+
+        auto deviceContextExt = GetDeviceContextExt(deviceOrContext, D3D11_VK_EXT_DEPTH_BOUNDS);
+        if (deviceContextExt != nullptr)
+            m_depthBoundsDeviceOrContextMap.emplace(deviceOrContext, deviceContextExt.ptr());
+
+        return deviceContextExt;
+    }
+
+    Com<ID3D11VkExtContext> NvapiD3d11Device::GetBarrierControlDeviceContext(IUnknown* deviceOrContext) {
+        auto it = m_barrierControlDeviceOrContextMap.find(deviceOrContext);
+        if (it != m_barrierControlDeviceOrContextMap.end()) {
+            return it->second;
+        }
+
+        auto deviceContextExt = GetDeviceContextExt(deviceOrContext, D3D11_VK_EXT_BARRIER_CONTROL);
+        if (deviceContextExt != nullptr)
+            m_barrierControlDeviceOrContextMap.emplace(deviceOrContext, deviceContextExt.ptr());
+
+        return deviceContextExt;
+    }
+
+    Com<ID3D11VkExtContext> NvapiD3d11Device::GetMultiDrawDeviceContext(ID3D11DeviceContext* deviceContext) {
+        auto it = m_multiDrawIndirectContextMap.find(deviceContext);
+        if (it != m_multiDrawIndirectContextMap.end()) {
+            return it->second;
+        }
+
+        auto deviceContextExt = GetDeviceContextExt(deviceContext, D3D11_VK_EXT_MULTI_DRAW_INDIRECT);
+        if (deviceContextExt != nullptr)
+            m_multiDrawIndirectContextMap.emplace(deviceContext, deviceContextExt.ptr());
+
+        return deviceContextExt;
+    }
+
+    Com<ID3D11VkExtContext> NvapiD3d11Device::GetDeviceContextExt(IUnknown* deviceOrContext, D3D11_VK_EXTENSION extension) {
         Com<ID3D11Device> device;
         Com<ID3D11DeviceContext> deviceContext;
         if (SUCCEEDED(deviceOrContext->QueryInterface(IID_PPV_ARGS(&device))))
@@ -91,28 +95,28 @@ namespace dxvk {
         else
             return nullptr;
 
-        return GetDxvkDeviceContext(device.ptr(), deviceContext.ptr(), extension);
+        return GetDeviceContextExt(device.ptr(), deviceContext.ptr(), extension);
     }
 
-    Com<ID3D11VkExtContext> NvapiD3d11Device::GetDxvkDeviceContext(ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension) {
+    Com<ID3D11VkExtContext> NvapiD3d11Device::GetDeviceContextExt(ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension) {
         Com<ID3D11Device> device;
         deviceContext->GetDevice(&device);
 
-        return GetDxvkDeviceContext(device.ptr(), deviceContext, extension);
+        return GetDeviceContextExt(device.ptr(), deviceContext, extension);
     }
 
-    Com<ID3D11VkExtContext> NvapiD3d11Device::GetDxvkDeviceContext(ID3D11Device* device, ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension) {
-        Com<ID3D11VkExtDevice> dxvkDevice;
-        if (FAILED(device->QueryInterface(IID_PPV_ARGS(&dxvkDevice))))
+    Com<ID3D11VkExtContext> NvapiD3d11Device::GetDeviceContextExt(ID3D11Device* device, ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension) {
+        Com<ID3D11VkExtDevice> deviceExt;
+        if (FAILED(device->QueryInterface(IID_PPV_ARGS(&deviceExt))))
             return nullptr;
 
-        if (!dxvkDevice->GetExtensionSupport(extension))
+        if (!deviceExt->GetExtensionSupport(extension))
             return nullptr;
 
-        Com<ID3D11VkExtContext> dxvkDeviceContext;
-        if (FAILED(deviceContext->QueryInterface(IID_PPV_ARGS(&dxvkDeviceContext))))
+        Com<ID3D11VkExtContext> deviceContextExt;
+        if (FAILED(deviceContext->QueryInterface(IID_PPV_ARGS(&deviceContextExt))))
             return nullptr;
 
-        return dxvkDeviceContext;
+        return deviceContextExt;
     }
 }
