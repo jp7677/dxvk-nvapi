@@ -48,9 +48,8 @@ namespace dxvk {
 
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetSdbtDeviceContext(IUnknown* deviceOrContext) {
         auto it = m_depthBoundsDeviceOrContextMap.find(deviceOrContext);
-        if (it != m_depthBoundsDeviceOrContextMap.end()) {
+        if (it != m_depthBoundsDeviceOrContextMap.end())
             return it->second;
-        }
 
         auto deviceContextExt = GetDeviceContextExt(deviceOrContext, D3D11_VK_EXT_DEPTH_BOUNDS);
         if (deviceContextExt != nullptr)
@@ -61,9 +60,8 @@ namespace dxvk {
 
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetBarrierControlDeviceContext(IUnknown* deviceOrContext) {
         auto it = m_barrierControlDeviceOrContextMap.find(deviceOrContext);
-        if (it != m_barrierControlDeviceOrContextMap.end()) {
+        if (it != m_barrierControlDeviceOrContextMap.end())
             return it->second;
-        }
 
         auto deviceContextExt = GetDeviceContextExt(deviceOrContext, D3D11_VK_EXT_BARRIER_CONTROL);
         if (deviceContextExt != nullptr)
@@ -74,9 +72,8 @@ namespace dxvk {
 
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetMultiDrawDeviceContext(ID3D11DeviceContext* deviceContext) {
         auto it = m_multiDrawIndirectContextMap.find(deviceContext);
-        if (it != m_multiDrawIndirectContextMap.end()) {
+        if (it != m_multiDrawIndirectContextMap.end())
             return it->second;
-        }
 
         auto deviceContextExt = GetDeviceContextExt(deviceContext, D3D11_VK_EXT_MULTI_DRAW_INDIRECT);
         if (deviceContextExt != nullptr)
