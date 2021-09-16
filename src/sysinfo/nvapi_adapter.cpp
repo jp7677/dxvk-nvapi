@@ -45,19 +45,19 @@ namespace dxvk {
         deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
         deviceProperties2.pNext = nullptr;
 
-        if (isVkDeviceExtensionSupported(VK_EXT_PCI_BUS_INFO_EXTENSION_NAME)) {
+        if (IsVkDeviceExtensionSupported(VK_EXT_PCI_BUS_INFO_EXTENSION_NAME)) {
             m_devicePciBusProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT;
             m_devicePciBusProperties.pNext = deviceProperties2.pNext;
             deviceProperties2.pNext = &m_devicePciBusProperties;
         }
 
-        if (isVkDeviceExtensionSupported(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME)) {
+        if (IsVkDeviceExtensionSupported(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME)) {
             m_deviceDriverProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR;
             m_deviceDriverProperties.pNext = deviceProperties2.pNext;
             deviceProperties2.pNext = &m_deviceDriverProperties;
         }
 
-        if (isVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
+        if (IsVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
             m_deviceFragmentShadingRateProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
             m_deviceFragmentShadingRateProperties.pNext = deviceProperties2.pNext;
             deviceProperties2.pNext = &m_deviceFragmentShadingRateProperties;
@@ -182,31 +182,31 @@ namespace dxvk {
         // KHR_fragment_shading_rate's
         // primitiveFragmentShadingRateWithMultipleViewports is supported on
         // Ampere and newer
-        if (isVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
+        if (IsVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
             && m_deviceFragmentShadingRateProperties.primitiveFragmentShadingRateWithMultipleViewports)
             return NV_GPU_ARCHITECTURE_GA100;
 
         // Variable rate shading is supported on Turing and newer
-        if (isVkDeviceExtensionSupported(VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME))
+        if (IsVkDeviceExtensionSupported(VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME))
             return NV_GPU_ARCHITECTURE_TU100;
 
         // VK_NVX_image_view_handle is supported on Volta and newer
-        if (isVkDeviceExtensionSupported(VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME))
+        if (IsVkDeviceExtensionSupported(VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME))
             return NV_GPU_ARCHITECTURE_GV100;
 
         // VK_NV_clip_space_w_scaling is supported on Pascal and newer
-        if (isVkDeviceExtensionSupported(VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME))
+        if (IsVkDeviceExtensionSupported(VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME))
             return NV_GPU_ARCHITECTURE_GP100;
 
         // VK_NV_viewport_array2 is supported on Maxwell and newer
-        if (isVkDeviceExtensionSupported(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME))
+        if (IsVkDeviceExtensionSupported(VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME))
             return NV_GPU_ARCHITECTURE_GM200;
 
         // Fall back to Kepler
         return NV_GPU_ARCHITECTURE_GK100;
     }
 
-    bool NvapiAdapter::isVkDeviceExtensionSupported(const std::string name) const { // NOLINT(performance-unnecessary-value-param)
+    bool NvapiAdapter::IsVkDeviceExtensionSupported(std::string name) const { // NOLINT(performance-unnecessary-value-param)
         return m_deviceExtensions.find(name) != m_deviceExtensions.end();
     }
 

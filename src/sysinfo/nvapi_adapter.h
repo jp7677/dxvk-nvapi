@@ -50,6 +50,6 @@ namespace dxvk {
 
         uint32_t m_driverVersionOverride{};
 
-        [[nodiscard]] bool isVkDeviceExtensionSupported(std::string name) const;
+        [[nodiscard]] bool IsVkDeviceExtensionSupported(std::string name) const;
     };
 }
