@@ -36,8 +36,8 @@ namespace dxvk {
     }
 
     bool NvapiD3d12Device::LaunchCubinShader(ID3D12GraphicsCommandList* commandList, NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) {
-        Com<ID3D12GraphicsCommandListExt> commandListExt;
-        if (FAILED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt))))
+        auto commandListExt = GetCommandListExt(commandList);
+        if(commandListExt == nullptr)
             return false;
 
         return commandListExt->LaunchCubinShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, params, paramSize) >= 0;
@@ -79,5 +79,19 @@ namespace dxvk {
             return nullptr;
 
         return deviceExt;
+    }
+
+    Com<ID3D12GraphicsCommandListExt> NvapiD3d12Device::GetCommandListExt(ID3D12GraphicsCommandList* commandList) {
+        std::scoped_lock lock(m_CommandListMutex);
+        auto it = m_CommandListMap.find(commandList);
+        if (it!= m_CommandListMap.end())
+            return it->second;
+
+        Com<ID3D12GraphicsCommandListExt> commandListExt;
+        if (FAILED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt))))
+            return nullptr;
+
+        m_CommandListMap.emplace(commandList, commandListExt.ptr());
+        return commandListExt;
     }
 }
