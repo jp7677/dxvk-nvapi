@@ -47,6 +47,7 @@ namespace dxvk {
     }
 
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetSdbtDeviceContext(IUnknown* deviceOrContext) {
+        std::scoped_lock lock(m_depthBoundsDeviceOrContextMutex);
         auto it = m_depthBoundsDeviceOrContextMap.find(deviceOrContext);
         if (it != m_depthBoundsDeviceOrContextMap.end())
             return it->second;
@@ -59,6 +60,7 @@ namespace dxvk {
     }
 
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetBarrierControlDeviceContext(IUnknown* deviceOrContext) {
+        std::scoped_lock lock(m_barrierControlDeviceOrContextMutex);
         auto it = m_barrierControlDeviceOrContextMap.find(deviceOrContext);
         if (it != m_barrierControlDeviceOrContextMap.end())
             return it->second;
@@ -71,6 +73,7 @@ namespace dxvk {
     }
 
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetMultiDrawDeviceContext(ID3D11DeviceContext* deviceContext) {
+        std::scoped_lock lock(m_multiDrawIndirectContextMutex);
         auto it = m_multiDrawIndirectContextMap.find(deviceContext);
         if (it != m_multiDrawIndirectContextMap.end())
             return it->second;

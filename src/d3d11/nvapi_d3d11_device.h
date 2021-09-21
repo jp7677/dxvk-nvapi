@@ -19,6 +19,10 @@ namespace dxvk {
         inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_barrierControlDeviceOrContextMap;
         inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_multiDrawIndirectContextMap;
 
+        inline static std::mutex m_depthBoundsDeviceOrContextMutex;
+        inline static std::mutex m_barrierControlDeviceOrContextMutex;
+        inline static std::mutex m_multiDrawIndirectContextMutex;
+
         [[nodiscard]] static Com<ID3D11VkExtContext> GetSdbtDeviceContext(IUnknown* deviceOrContext);
         [[nodiscard]] static Com<ID3D11VkExtContext> GetBarrierControlDeviceContext(IUnknown* deviceOrContext);
         [[nodiscard]] static Com<ID3D11VkExtContext> GetMultiDrawDeviceContext(ID3D11DeviceContext* deviceContext);
