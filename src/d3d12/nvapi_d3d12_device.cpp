@@ -59,6 +59,7 @@ namespace dxvk {
     // We are going to have single map for storing devices with extensions D3D12_VK_NVX_BINARY_IMPORT & D3D12_VK_NVX_IMAGE_VIEW_HANDLE.
     // These are specific to NVIDIA and both of these extensions goes together.
     Com<ID3D12DeviceExt> NvapiD3d12Device::GetCubinDevice(ID3D12Device* device) {
+        std::scoped_lock lock(m_CubinDeviceMutex);
         auto it = m_cubinDeviceMap.find(device);
         if(it != m_cubinDeviceMap.end())
             return it->second;
