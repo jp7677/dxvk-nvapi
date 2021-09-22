@@ -53,8 +53,6 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         .LR_SIDE_EFFECT(*_1 = &device)
         .LR_SIDE_EFFECT(deviceRefCount++);
 
-    // Test failing scenarios first to avoid any interference from caching of extension support
-
     SECTION("D3D11 methods without DXVK return error") {
         ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice::guid, _))
             .RETURN(E_NOINTERFACE);
@@ -114,6 +112,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         REQUIRE(deviceRefCount == 0);
         REQUIRE(contextRefCount == 0);
     }
+
+    // Test failing scenarios first because caches won't be reset between tests (we don't cache negatives)
 
     SECTION("IsNvShaderExtnOpCodeSupported returns OK") {
         bool supportedForDevice = true;

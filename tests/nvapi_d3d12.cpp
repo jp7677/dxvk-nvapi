@@ -93,6 +93,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(commandListRefCount == 0);
     }
 
+    // Test failing scenarios first because caches won't be reset between tests (we don't cache negatives)
+
     SECTION("IsNvShaderExtnOpCodeSupported with device returns OK") {
         auto supported = true;
         REQUIRE(NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(&device, 1U, &supported) == NVAPI_OK);
