@@ -2,14 +2,13 @@
 #include "util_env.h"
 
 namespace dxvk::log {
-    void initialize(std::ofstream& filestream, bool& skipAllLogging, bool& alreadyInitialized) {
+    void initialize(std::ofstream& filestream, bool& skipAllLogging) {
         constexpr auto logLevelEnvName = "DXVK_NVAPI_LOG_LEVEL";
         constexpr auto logPathEnvName = "DXVK_NVAPI_LOG_PATH";
         constexpr auto logFileName = "dxvk-nvapi.log";
-        alreadyInitialized = true;
 
         auto logLevel = env::getEnvVariable(logLevelEnvName);
-        if (logLevel == "none") {
+        if (logLevel != "info") {
             skipAllLogging = true;
             return;
         }
@@ -31,8 +30,8 @@ namespace dxvk::log {
         static bool alreadyInitialized = false;
         static bool skipAllLogging = false;
         static std::ofstream filestream;
-        if (!alreadyInitialized)
-            initialize(filestream, skipAllLogging, alreadyInitialized);
+        if (!std::exchange(alreadyInitialized, true))
+            initialize(filestream, skipAllLogging);
 
         if (skipAllLogging)
             return;
