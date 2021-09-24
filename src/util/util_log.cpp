@@ -9,8 +9,8 @@ namespace dxvk::log {
         alreadyInitialized = true;
 
         auto logLevel = env::getEnvVariable(logLevelEnvName);
-        if (logLevel == "none") {
-            skipAllLogging = true;
+        if (logLevel == "full") {
+            skipAllLogging = false;
             return;
         }
 
@@ -29,7 +29,7 @@ namespace dxvk::log {
 
     void write(const std::string& message) {
         static bool alreadyInitialized = false;
-        static bool skipAllLogging = false;
+        static bool skipAllLogging = true;
         static std::ofstream filestream;
         if (!alreadyInitialized)
             initialize(filestream, skipAllLogging, alreadyInitialized);
