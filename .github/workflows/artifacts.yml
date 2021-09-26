@@ -30,7 +30,7 @@ jobs:
           export VERSION_NAME="${GITHUB_REF##*/}-${GITHUB_SHA##*/}"
           ./package-release.sh "${VERSION_NAME}" build --no-package --enable-tests
           mkdir "${HOME}/dxvk-nvapi-wine-prefix"
-          WINEPREFIX="${HOME}/dxvk-nvapi-wine-prefix" WINEDEBUG="-all" wine "./build/dxvk-nvapi-${VERSION_NAME}/x64/nvapi64-tests.exe" [@unit-tests]
+          DXVK_NVAPI_LOG_LEVEL=info WINEPREFIX="${HOME}/dxvk-nvapi-wine-prefix" WINEDEBUG="-all" wine "./build/dxvk-nvapi-${VERSION_NAME}/x64/nvapi64-tests.exe" [@unit-tests]
           echo "::set-output name=VERSION_NAME::${VERSION_NAME}"
 
     - name: Upload artifacts
