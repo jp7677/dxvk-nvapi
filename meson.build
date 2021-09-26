@@ -5,7 +5,7 @@ project('dxvk-nvapi',
     'warning_level=2'
   ],
   version : 'v0.0',
-  meson_version : '>= 0.46')
+  meson_version : '>= 0.49.0')
 
 dxvk_compiler = meson.get_compiler('cpp')
 if dxvk_compiler.has_link_argument('-Wl,--file-alignment=4096')
