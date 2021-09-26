@@ -8,7 +8,7 @@ extern "C" {
     using namespace dxvk;
 
     NvAPI_Status __cdecl NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown *pDeviceOrContext, NvU32 code, bool *supported) {
-        constexpr auto n = "NvAPI_D3D11_IsNvShaderExtnOpCodeSupported";
+        constexpr auto n = __func__;
 
         if (pDeviceOrContext == nullptr || supported == nullptr)
                 return InvalidArgument(n);
@@ -20,7 +20,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_SetDepthBoundsTest(IUnknown *pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth) {
-        constexpr auto n = "NvAPI_D3D11_SetDepthBoundsTest";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -34,7 +34,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_BeginUAVOverlap(IUnknown *pDeviceOrContext) {
-        constexpr auto n = "NvAPI_D3D11_BeginUAVOverlap";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -48,7 +48,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_EndUAVOverlap(IUnknown *pDeviceOrContext) {
-        constexpr auto n = "NvAPI_D3D11_EndUAVOverlap";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -62,7 +62,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_MultiDrawInstancedIndirect(ID3D11DeviceContext *pDevContext11, NvU32 drawCount, ID3D11Buffer *pBuffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs) {
-        constexpr auto n = "NvAPI_D3D11_MultiDrawInstancedIndirect";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -76,7 +76,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_MultiDrawIndexedInstancedIndirect(ID3D11DeviceContext *pDevContext11, NvU32 drawCount, ID3D11Buffer *pBuffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs) {
-        constexpr auto n = "NvAPI_D3D11_MultiDrawIndexedInstancedIndirect";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -90,7 +90,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_CreateCubinComputeShader(ID3D11Device* pDevice, const void* pCubin, NvU32 size, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NVDX_ObjectHandle* phShader) {
-        constexpr auto n = "NvAPI_D3D11_CreateCubinComputeShader";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -104,7 +104,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_CreateCubinComputeShaderWithName(ID3D11Device* pDevice, const void* pCubin, NvU32 size, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* pShaderName, NVDX_ObjectHandle* phShader) {
-        constexpr auto n = "NvAPI_D3D11_CreateCubinComputeShaderWithName";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -119,7 +119,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_LaunchCubinShader(ID3D11DeviceContext* pDeviceContext, NVDX_ObjectHandle hShader, NvU32 gridX, NvU32 gridY, NvU32 gridZ, const void* pParams, NvU32 paramSize, const NVDX_ObjectHandle* pReadResources, NvU32 numReadResources, const NVDX_ObjectHandle* pWriteResources, NvU32 numWriteResources) {
-        constexpr auto n = "NvAPI_D3D11_LaunchCubinShader";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -133,7 +133,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_DestroyCubinComputeShader(ID3D11Device* pDevice, NVDX_ObjectHandle hShader) {
-        constexpr auto n = "NvAPI_D3D11_DestroyCubinComputeShader";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -147,7 +147,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_IsFatbinPTXSupported(ID3D11Device* pDevice, bool* pSupported) {
-        constexpr auto n = "NvAPI_D3D11_IsFatbinPTXSupported";
+        constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
 
         if (pDevice == nullptr || pSupported == nullptr)
@@ -159,7 +159,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_CreateUnorderedAccessView(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC* pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle) {
-        constexpr auto n = "NvAPI_D3D11_CreateUnorderedAccessView";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -173,7 +173,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_CreateShaderResourceView(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc, ID3D11ShaderResourceView** ppSRV, NvU32* pDriverHandle) {
-        constexpr auto n = "NvAPI_D3D11_CreateShaderResourceView";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -187,7 +187,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_GetResourceHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, NVDX_ObjectHandle* phObject) {
-        constexpr auto n = "NvAPI_D3D11_GetResourceHandle";
+        constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
         static bool alreadyLoggedError = false;
 
@@ -201,7 +201,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_GetResourceGPUVirtualAddress(ID3D11Device* pDevice, const NVDX_ObjectHandle hResource, NvU64* pGpuVA) {
-        constexpr auto n = "NvAPI_D3D11_GetResourceGPUVirtualAddress";
+        constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
         static bool alreadyLoggedError = false;
 
@@ -216,7 +216,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_GetResourceGPUVirtualAddressEx(ID3D11Device* pDevice, NV_GET_GPU_VIRTUAL_ADDRESS* pParams) {
-        constexpr auto n = "NvAPI_D3D11_GetResourceGPUVirtualAddressEx";
+        constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
         static bool alreadyLoggedError = false;
 
@@ -236,7 +236,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_CreateSamplerState(ID3D11Device* pDevice, const D3D11_SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState, NvU32* pDriverHandle) {
-        constexpr auto n = "NvAPI_D3D11_CreateSamplerState";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -250,7 +250,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_GetCudaTextureObject(ID3D11Device* pDevice, NvU32 srvDriverHandle, NvU32 samplerDriverHandle, NvU32* pCudaTextureHandle) {
-        constexpr auto n = "NvAPI_D3D11_GetCudaTextureObject";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 

@@ -9,27 +9,27 @@ extern "C" {
         // Fake-implement with a dumb passthrough, though no other NvAPI entry points
         // we're likely to implement should care about the actual handle value.
         *pHandle = (NVDX_ObjectHandle)pResource;
-        return Ok("NvAPI_D3D_GetObjectHandleForResource", alreadyLogged);
+        return Ok(__func__, alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_SetResourceHint(IUnknown *pDev, NVDX_ObjectHandle obj, NVAPI_D3D_SETRESOURCEHINT_CATEGORY dwHintCategory, NvU32 dwHintName, NvU32 *pdwHintValue) {
         static bool alreadyLogged = false;
-        return NoImplementation("NvAPI_D3D_SetResourceHint", alreadyLogged);
+        return NoImplementation(__func__, alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_BeginResourceRendering(IUnknown *pDeviceOrContext, NVDX_ObjectHandle obj, NvU32 Flags) {
         static bool alreadyLogged = false;
         // Synchronisation hints for SLI...
-        return Ok("NvAPI_D3D_BeginResourceRendering", alreadyLogged);
+        return Ok(__func__, alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_EndResourceRendering(IUnknown *pDeviceOrContext, NVDX_ObjectHandle obj, NvU32 Flags) {
         static bool alreadyLogged = false;
-        return Ok("NvAPI_D3D_EndResourceRendering", alreadyLogged);
+        return Ok(__func__, alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_GetCurrentSLIState(IUnknown *pDevice, NV_GET_CURRENT_SLI_STATE *pSliState) {
-        constexpr auto n = "NvAPI_D3D_GetCurrentSLIState";
+        constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
 
         if (pDevice == nullptr || pSliState == nullptr)
@@ -55,7 +55,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D1x_GetGraphicsCapabilities(IUnknown *pDevice,
                                                     NvU32 structVersion,
                                                     NV_D3D1x_GRAPHICS_CAPS *pGraphicsCaps) {
-        constexpr auto n = "NvAPI_D3D1x_GetGraphicsCapabilities";
+        constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
 
         switch(structVersion) {
