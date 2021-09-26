@@ -7,7 +7,7 @@ extern "C" {
     using namespace dxvk;
 
     NvAPI_Status __cdecl NvAPI_GPU_GetGPUType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_TYPE *pGpuType) {
-        constexpr auto n = "NvAPI_GPU_GetGPUType";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -25,7 +25,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetPCIIdentifiers(NvPhysicalGpuHandle hPhysicalGpu, NvU32 *pDeviceId, NvU32 *pSubSystemId, NvU32 *pRevisionId, NvU32 *pExtDeviceId) {
-        constexpr auto n = "NvAPI_GPU_GetPCIIdentifiers";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -46,7 +46,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetFullName(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szName) {
-        constexpr auto n = "NvAPI_GPU_GetFullName";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -64,7 +64,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetBusId(NvPhysicalGpuHandle hPhysicalGpu, NvU32 *pBusId) {
-        constexpr auto n = "NvAPI_GPU_GetBusId";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -82,7 +82,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetPhysicalFrameBufferSize(NvPhysicalGpuHandle hPhysicalGpu, NvU32 *pSize) {
-        constexpr auto n = "NvAPI_GPU_GetPhysicalFrameBufferSize";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -100,7 +100,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetAdapterIdFromPhysicalGpu(NvPhysicalGpuHandle hPhysicalGpu, void *pOSAdapterId) {
-        constexpr auto n = "NvAPI_GPU_GetAdapterIdFromPhysicalGpu";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -119,7 +119,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetArchInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_ARCH_INFO *pGpuArchInfo) {
-        constexpr auto n = "NvAPI_GPU_GetArchInfo";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -172,7 +172,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetVbiosVersionString(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szBiosRevision) {
-        constexpr auto n = "NvAPI_GPU_GetVbiosVersionString";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -206,7 +206,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetDynamicPstatesInfoEx(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_DYNAMIC_PSTATES_INFO_EX *pDynamicPstatesInfoEx) {
-        constexpr auto n = "NvAPI_GPU_GetDynamicPstatesInfoEx";
+        constexpr auto n = __func__;
         static bool alreadyLoggedNoNvml = false;
         static bool alreadyLoggedHandleInvalidated = false;
         static bool alreadyLoggedOk = false;
@@ -261,7 +261,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetThermalSettings(NvPhysicalGpuHandle hPhysicalGpu, NvU32 sensorIndex, NV_GPU_THERMAL_SETTINGS *pThermalSettings) {
-        constexpr auto n = "NvAPI_GPU_GetThermalSettings";
+        constexpr auto n = __func__;
         static bool alreadyLoggedNoNvml = false;
         static bool alreadyLoggedHandleInvalidated = false;
         static bool alreadyLoggedOk = false;
@@ -335,7 +335,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetCurrentPstate(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_PERF_PSTATE_ID *pCurrentPstate) {
-        constexpr auto n = "NvAPI_GPU_GetCurrentPstate";
+        constexpr auto n = __func__;
         static bool alreadyLoggedNoNvml = false;
         static bool alreadyLoggedHandleInvalidated = false;
         static bool alreadyLoggedOk = false;
@@ -372,7 +372,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetAllClockFrequencies(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_CLOCK_FREQUENCIES *pClkFreqs) {
-        constexpr auto n = "NvAPI_GPU_GetAllClockFrequencies";
+        constexpr auto n = __func__;
         static bool alreadyLoggedNotSupported = false;
         static bool alreadyLoggedNoNvml = false;
         static bool alreadyLoggedHandleInvalidated = false;

@@ -7,7 +7,7 @@ extern "C" {
     using namespace dxvk;
 
     NvAPI_Status __cdecl NvAPI_SYS_GetPhysicalGpuFromDisplayId(NvU32 displayId, NvPhysicalGpuHandle *hPhysicalGpu) {
-        constexpr auto n = "NvAPI_SYS_GetPhysicalGpuFromDisplayId";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -22,7 +22,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_SYS_GetDriverAndBranchVersion(NvU32* pDriverVersion, NvAPI_ShortString szBuildBranchString) {
-        constexpr auto n = "NvAPI_SYS_GetDriverAndBranchVersion";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);

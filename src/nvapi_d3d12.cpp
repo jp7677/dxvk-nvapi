@@ -8,7 +8,7 @@ extern "C" {
     using namespace dxvk;
 
     NvAPI_Status __cdecl NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device *pDevice, NvU32 opCode, bool *pSupported) {
-        constexpr auto n = "NvAPI_D3D12_IsNvShaderExtnOpCodeSupported";
+        constexpr auto n = __func__;
 
         if (pDevice == nullptr || pSupported == nullptr)
                 return InvalidArgument(n);
@@ -20,7 +20,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderWithName(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
-        constexpr auto n = "NvAPI_D3D12_CreateCubinComputeShaderWithName";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -38,7 +38,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_DestroyCubinComputeShader(ID3D12Device* pDevice, NVDX_ObjectHandle pShader) {
-        constexpr auto n = "NvAPI_D3D12_DestroyCubinComputeShader:";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -52,7 +52,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetCudaTextureObject(ID3D12Device* pDevice, D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle) {
-        constexpr auto n = "NvAPI_D3D12_GetCudaTextureObject";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -66,7 +66,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetCudaSurfaceObject(ID3D12Device* pDevice, D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle) {
-        constexpr auto n = "NvAPI_D3D12_GetCudaSurfaceObject";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -80,7 +80,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_LaunchCubinShader(ID3D12GraphicsCommandList* pCmdList, NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) {
-        constexpr auto n = "NvAPI_D3D12_LaunchCubinShader";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -94,7 +94,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_CaptureUAVInfo(ID3D12Device* pDevice, NVAPI_UAV_INFO* pUAVInfo) {
-        constexpr auto n = "NvAPI_D3D12_CaptureUAVInfo";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
@@ -108,7 +108,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetGraphicsCapabilities(IUnknown* pDevice, NvU32 structVersion, NV_D3D12_GRAPHICS_CAPS* pGraphicsCaps) {
-        constexpr auto n = "NvAPI_D3D12_GetGraphicsCapabilities";
+        constexpr auto n = __func__;
         static bool alreadyLogged = false;
 
         if(pDevice == nullptr || structVersion != NV_D3D12_GRAPHICS_CAPS_VER1)
@@ -127,7 +127,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_IsFatbinPTXSupported(ID3D12Device* pDevice, bool* isSupported) {
-        constexpr auto n = "NvAPI_D3D12_IsFatbinPTXSupported";
+        constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 

@@ -15,7 +15,7 @@ extern "C" {
     using namespace dxvk;
 
     NvAPI_Status __cdecl NvAPI_EnumLogicalGPUs(NvLogicalGpuHandle nvGPUHandle[NVAPI_MAX_LOGICAL_GPUS], NvU32 *pGpuCount) {
-        constexpr auto n = "NvAPI_EnumLogicalGPUs";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -32,7 +32,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_EnumPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount) {
-        constexpr auto n = "NvAPI_EnumPhysicalGPUs";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -49,7 +49,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GetDisplayDriverVersion(NvDisplayHandle hNvDisplay, NV_DISPLAY_DRIVER_VERSION *pVersion) {
-        constexpr auto n = "NvAPI_GetDisplayDriverVersion";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -70,7 +70,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GetPhysicalGPUsFromDisplay(NvDisplayHandle hNvDisp, NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount) {
-        constexpr auto n = "NvAPI_GetPhysicalGPUsFromDisplay";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -89,7 +89,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_EnumNvidiaDisplayHandle(NvU32 thisEnum, NvDisplayHandle *pNvDispHandle) {
-        constexpr auto n = "NvAPI_EnumNvidiaDisplayHandle";
+        constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -112,7 +112,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GetInterfaceVersionString(NvAPI_ShortString szDesc) {
-        constexpr auto n = "NvAPI_GetInterfaceVersionString";
+        constexpr auto n = __func__;
 
         if (szDesc == nullptr)
             return InvalidArgument(n);
@@ -123,7 +123,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_GetErrorMessage(NvAPI_Status nr, NvAPI_ShortString szDesc) {
-        constexpr auto n = "NvAPI_GetErrorMessage";
+        constexpr auto n = __func__;
 
         if (szDesc == nullptr)
             return InvalidArgument(n);
@@ -138,7 +138,7 @@ extern "C" {
     static auto initializationCount = 0ULL;
 
     NvAPI_Status __cdecl NvAPI_Unload() {
-        constexpr auto n = "NvAPI_Unload";
+        constexpr auto n = __func__;
 
         std::scoped_lock lock(initializationMutex);
 
@@ -152,7 +152,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_Initialize() {
-        constexpr auto n = "NvAPI_Initialize";
+        constexpr auto n = __func__;
 
         std::scoped_lock lock(initializationMutex);
 
