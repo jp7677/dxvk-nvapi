@@ -2,7 +2,7 @@
 
 using namespace trompeloeil;
 
-class ID3D11DxvkDevice : public ID3D11Device, public ID3D11VkExtDevice {};
+class ID3D11DxvkDevice : public ID3D11Device, public ID3D11VkExtDevice1 {};
 
 class D3D11DxvkDeviceMock : public mock_interface<ID3D11DxvkDevice> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -49,9 +49,15 @@ class D3D11DxvkDeviceMock : public mock_interface<ID3D11DxvkDevice> {
     IMPLEMENT_MOCK0(GetExceptionMode);
     IMPLEMENT_MOCK1(GetImmediateContext);
     IMPLEMENT_MOCK1(GetExtensionSupport);
+    IMPLEMENT_MOCK3(GetCudaTextureObjectNVX);
+    IMPLEMENT_MOCK7(CreateCubinComputeShaderWithNameNVX);
+    IMPLEMENT_MOCK4(CreateUnorderedAccessViewAndGetDriverHandleNVX);
+    IMPLEMENT_MOCK4(CreateShaderResourceViewAndGetDriverHandleNVX);
+    IMPLEMENT_MOCK3(CreateSamplerStateAndGetDriverHandleNVX);
+    IMPLEMENT_MOCK3(GetResourceHandleGPUVirtualAddressAndSizeNVX);
 };
 
-class ID3D11DxvkDeviceContext : public ID3D11DeviceContext, public ID3D11VkExtContext {};
+class ID3D11DxvkDeviceContext : public ID3D11DeviceContext, public ID3D11VkExtContext1 {};
 
 class D3D11DxvkDeviceContextMock : public mock_interface<ID3D11DxvkDeviceContext> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -175,6 +181,7 @@ class D3D11DxvkDeviceContextMock : public mock_interface<ID3D11DxvkDeviceContext
     IMPLEMENT_MOCK6(MultiDrawIndexedIndirectCount);
     IMPLEMENT_MOCK3(SetDepthBoundsTest);
     IMPLEMENT_MOCK1(SetBarrierControl);
+    IMPLEMENT_MOCK10(LaunchCubinShaderNVX);
 };
 
 class D3D11BufferMock : public mock_interface<ID3D11Buffer> {

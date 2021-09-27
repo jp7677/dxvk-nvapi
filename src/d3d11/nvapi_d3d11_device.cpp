@@ -46,43 +46,135 @@ namespace dxvk {
         return true;
     }
 
+    bool NvapiD3d11Device::CreateCubinComputeShaderWithName(ID3D11Device* pDevice, const void* pCubin, NvU32 size, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* pShaderName, NVDX_ObjectHandle* phShader) {
+        // note - creating a cuda kernel is a one-shot thing, no need to add complexity by caching availability of the underlying extensions, we'll just let DXVK tell us if it failed.
+        Com<ID3D11VkExtDevice1> d3d11ExtDevice1;
+        if (FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&d3d11ExtDevice1))))
+            return false;
+
+        return d3d11ExtDevice1->CreateCubinComputeShaderWithNameNVX(pCubin, size, blockX, blockY, blockZ, pShaderName, reinterpret_cast<IUnknown**>(phShader));
+    }
+
+    bool NvapiD3d11Device::LaunchCubinShader(ID3D11DeviceContext* pDeviceContext, NVDX_ObjectHandle hShader, NvU32 gridX, NvU32 gridY, NvU32 gridZ, const void* pParams, NvU32 paramSize, const NVDX_ObjectHandle* pReadResources, NvU32 numReadResources, const NVDX_ObjectHandle* pWriteResources, NvU32 numWriteResources) {
+        auto binaryImportDeviceContext = GetBinaryImportDeviceContext(pDeviceContext);
+        if (binaryImportDeviceContext == nullptr)
+            return false;
+
+        return binaryImportDeviceContext->LaunchCubinShaderNVX(reinterpret_cast<IUnknown*>(hShader), gridX, gridY, gridZ, pParams, paramSize, reinterpret_cast<void* const*>(pReadResources), numReadResources, reinterpret_cast<void* const*>(pWriteResources), numWriteResources);
+    }
+
+    bool NvapiD3d11Device::DestroyCubinShader(ID3D11Device* /*unused*/, NVDX_ObjectHandle hShader) {
+        IUnknown* cushader = reinterpret_cast<IUnknown*>(hShader);
+        if (cushader)
+            cushader->Release();
+
+        return cushader != nullptr;
+    }
+
+    bool NvapiD3d11Device::GetResourceDriverHandle(ID3D11Device* /*unused*/, ID3D11Resource* pResource, NVDX_ObjectHandle* phObject) {
+        // This trivial implementation is here instead of in DXVK for performance reasons; DXVK will assume that this is a straight cast though, so if either layer has to change that assumption then they will have to be upgraded in lockstep.
+        *phObject = reinterpret_cast<NVDX_ObjectHandle>(pResource);
+        return true;
+    }
+
+    bool NvapiD3d11Device::GetResourceHandleGPUVirtualAddressAndSize(ID3D11Device* pDevice, NVDX_ObjectHandle hObject, NvU64* gpuVAStart, NvU64* gpuVASize) {
+        Com<ID3D11VkExtDevice1> d3d11ExtDevice1;
+        if (FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&d3d11ExtDevice1))))
+            return false;
+
+        return d3d11ExtDevice1->GetResourceHandleGPUVirtualAddressAndSizeNVX(reinterpret_cast<void*>(hObject), reinterpret_cast<uint64_t*>(gpuVAStart), reinterpret_cast<uint64_t*>(gpuVASize));
+    }
+
+    bool NvapiD3d11Device::CreateUnorderedAccessViewAndGetDriverHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC*  pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle) {
+        Com<ID3D11VkExtDevice1> d3d11ExtDevice1;
+        if (FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&d3d11ExtDevice1))))
+            return false;
+
+        return d3d11ExtDevice1->CreateUnorderedAccessViewAndGetDriverHandleNVX(pResource, pDesc, ppUAV, reinterpret_cast<uint32_t*>(pDriverHandle));
+    }
+    
+    bool NvapiD3d11Device::CreateShaderResourceViewAndGetDriverHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC*  pDesc, ID3D11ShaderResourceView** ppSRV, NvU32* pDriverHandle) {
+        Com<ID3D11VkExtDevice1> d3d11ExtDevice1;
+        if (FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&d3d11ExtDevice1))))
+            return false;
+
+        return d3d11ExtDevice1->CreateShaderResourceViewAndGetDriverHandleNVX(pResource, pDesc, ppSRV, reinterpret_cast<uint32_t*>(pDriverHandle));
+    }
+
+    bool NvapiD3d11Device::GetCudaTextureObject(ID3D11Device* pDevice, uint32_t srvDriverHandle, uint32_t samplerDriverHandle, uint32_t* pCudaTextureHandle) {
+        // note - deriving a 'cuda texture object' is typically a one-shot thing, no need to add complexity by caching availability of the underlying extensions, we'll just let DXVK tell us if it failed.
+        Com<ID3D11VkExtDevice1> d3d11ExtDevice1;
+        if (FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&d3d11ExtDevice1))))
+            return false;
+
+        return d3d11ExtDevice1->GetCudaTextureObjectNVX(srvDriverHandle, samplerDriverHandle, reinterpret_cast<uint32_t*>(pCudaTextureHandle));
+    }
+
+     bool NvapiD3d11Device::CreateSamplerStateAndGetDriverHandle(ID3D11Device* pDevice, const D3D11_SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState, uint32_t* pDriverHandle) {
+        // note - getting the driver handle for a sampler state is typically a one-shot thing, no need to add complexity by caching availability of the underlying extensions, we'll just let DXVK tell us if it failed.
+        Com<ID3D11VkExtDevice1> d3d11ExtDevice1;
+        if (FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&d3d11ExtDevice1))))
+            return false;
+
+        return d3d11ExtDevice1->CreateSamplerStateAndGetDriverHandleNVX(pSamplerDesc, ppSamplerState, pDriverHandle);
+     }
+
+    bool NvapiD3d11Device::IsFatbinPTXSupported(ID3D11Device* pDevice) {
+        return (GetBinaryImportDeviceContext(pDevice) != nullptr);
+    }
+
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetSdbtDeviceContext(IUnknown* deviceOrContext) {
         std::scoped_lock lock(m_depthBoundsDeviceOrContextMutex);
-        auto it = m_depthBoundsDeviceOrContextMap.find(deviceOrContext);
-        if (it != m_depthBoundsDeviceOrContextMap.end())
-            return it->second;
-
-        auto deviceContextExt = GetDeviceContextExt(deviceOrContext, D3D11_VK_EXT_DEPTH_BOUNDS);
-        if (deviceContextExt != nullptr)
-            m_depthBoundsDeviceOrContextMap.emplace(deviceOrContext, deviceContextExt.ptr());
-
-        return deviceContextExt;
+        return CacheDxvkDeviceContext(deviceOrContext, m_depthBoundsDeviceOrContextMap, D3D11_VK_EXT_DEPTH_BOUNDS);
     }
 
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetBarrierControlDeviceContext(IUnknown* deviceOrContext) {
         std::scoped_lock lock(m_barrierControlDeviceOrContextMutex);
-        auto it = m_barrierControlDeviceOrContextMap.find(deviceOrContext);
-        if (it != m_barrierControlDeviceOrContextMap.end())
-            return it->second;
-
-        auto deviceContextExt = GetDeviceContextExt(deviceOrContext, D3D11_VK_EXT_BARRIER_CONTROL);
-        if (deviceContextExt != nullptr)
-            m_barrierControlDeviceOrContextMap.emplace(deviceOrContext, deviceContextExt.ptr());
-
-        return deviceContextExt;
+        return CacheDxvkDeviceContext(deviceOrContext, m_barrierControlDeviceOrContextMap, D3D11_VK_EXT_BARRIER_CONTROL);
     }
 
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetMultiDrawDeviceContext(ID3D11DeviceContext* deviceContext) {
         std::scoped_lock lock(m_multiDrawIndirectContextMutex);
-        auto it = m_multiDrawIndirectContextMap.find(deviceContext);
-        if (it != m_multiDrawIndirectContextMap.end())
+        return CacheDxvkDeviceContext(deviceContext, m_multiDrawIndirectContextMap, D3D11_VK_EXT_MULTI_DRAW_INDIRECT);
+    }
+
+    Com<ID3D11VkExtContext1> NvapiD3d11Device::GetBinaryImportDeviceContext(IUnknown* deviceOrContext) {
+        std::scoped_lock lock(m_binaryImportContextMutex);
+        auto context = CacheDxvkDeviceContext(deviceOrContext, m_binaryImportContextMap, D3D11_VK_NVX_BINARY_IMPORT);
+        if (context == nullptr)
+            return nullptr;
+
+        Com<ID3D11VkExtContext1> d3d11ExtContext1;
+        if (FAILED(context->QueryInterface(IID_PPV_ARGS(&d3d11ExtContext1))))
+            return nullptr;
+
+        return d3d11ExtContext1;
+    }
+
+    Com<ID3D11VkExtContext1> NvapiD3d11Device::GetImageViewHandleDeviceContext(ID3D11DeviceContext* deviceContext) {
+        std::scoped_lock lock(m_imageViewHandleContextMutex);
+        auto context = CacheDxvkDeviceContext(deviceContext, m_imageViewHandleContextMap, D3D11_VK_NVX_IMAGE_VIEW_HANDLE);
+        if (context == nullptr)
+            return nullptr;
+
+        Com<ID3D11VkExtContext1> d3d11ExtContext1;
+        if (FAILED(context->QueryInterface(IID_PPV_ARGS(&d3d11ExtContext1))))
+            return nullptr;
+
+        return d3d11ExtContext1;
+    }
+
+    Com<ID3D11VkExtContext> NvapiD3d11Device::CacheDxvkDeviceContext(IUnknown* deviceOrContext, std::unordered_map<IUnknown*, ID3D11VkExtContext*>& cacheMap, D3D11_VK_EXTENSION extension) {
+        auto it = cacheMap.find(deviceOrContext);
+        if (it != cacheMap.end())
             return it->second;
 
-        auto deviceContextExt = GetDeviceContextExt(deviceContext, D3D11_VK_EXT_MULTI_DRAW_INDIRECT);
-        if (deviceContextExt != nullptr)
-            m_multiDrawIndirectContextMap.emplace(deviceContext, deviceContextExt.ptr());
+        auto dxvkDeviceContext = GetDeviceContextExt(deviceOrContext, extension);
+        /* it could be beneficial to cache nullptrs, but it confuses the tests */
+        if (dxvkDeviceContext != nullptr)
+            cacheMap.emplace(deviceOrContext, dxvkDeviceContext.ptr());
 
-        return deviceContextExt;
+        return dxvkDeviceContext;
     }
 
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetDeviceContextExt(IUnknown* deviceOrContext, D3D11_VK_EXTENSION extension) {

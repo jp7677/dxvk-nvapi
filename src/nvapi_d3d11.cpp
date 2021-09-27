@@ -88,4 +88,163 @@ extern "C" {
 
         return Ok(str::format(n, " ", code, " (", fromCode(code), ")"));
     }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_CreateCubinComputeShader(ID3D11Device* pDevice, const void* pCubin, NvU32 size, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NVDX_ObjectHandle* phShader) {
+        constexpr auto n = "NvAPI_D3D11_CreateCubinComputeShader";
+
+        if (pDevice == nullptr || pCubin == nullptr || phShader == nullptr)
+            return InvalidArgument(n);
+
+        if (!NvapiD3d11Device::CreateCubinComputeShaderWithName(pDevice, pCubin, size, blockX, blockY, blockZ, nullptr, phShader))
+            return Error(n);
+
+        return Ok(n);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_CreateCubinComputeShaderWithName(ID3D11Device* pDevice, const void* pCubin, NvU32 size, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* pShaderName, NVDX_ObjectHandle* phShader) {
+        constexpr auto n = "NvAPI_D3D11_CreateCubinComputeShaderWithName";
+
+        if (pDevice == nullptr || pCubin == nullptr || phShader == nullptr)
+            return InvalidArgument(n);
+
+        if (!NvapiD3d11Device::CreateCubinComputeShaderWithName(pDevice, pCubin, size, blockX, blockY, blockZ, pShaderName, phShader))
+            return Error(n);
+
+        return Ok(n);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_LaunchCubinShader(ID3D11DeviceContext* pDeviceContext, NVDX_ObjectHandle hShader, NvU32 gridX, NvU32 gridY, NvU32 gridZ, const void* pParams, NvU32 paramSize, const NVDX_ObjectHandle* pReadResources, NvU32 numReadResources, const NVDX_ObjectHandle* pWriteResources, NvU32 numWriteResources) {
+        constexpr auto n = "NvAPI_D3D11_LaunchCubinShader";
+        static bool alreadyLoggedError = false;
+        static bool alreadyLoggedOk = false;
+
+        if (pDeviceContext == nullptr)
+            return InvalidArgument(n);
+
+        if (!NvapiD3d11Device::LaunchCubinShader(pDeviceContext, hShader, gridX, gridY, gridZ, pParams, paramSize, pReadResources, numReadResources, pWriteResources, numWriteResources))
+            return Error(n, alreadyLoggedError);
+
+        return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_DestroyCubinComputeShader(ID3D11Device* pDevice, NVDX_ObjectHandle hShader) {
+        constexpr auto n = "NvAPI_D3D11_DestroyCubinComputeShader";
+
+        if (pDevice == nullptr)
+            return InvalidArgument(n);
+
+        if (!NvapiD3d11Device::DestroyCubinShader(pDevice, hShader))
+            return Error(n);
+
+        return Ok(n);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_IsFatbinPTXSupported(ID3D11Device* pDevice, bool* pSupported) {
+        constexpr auto n = "NvAPI_D3D11_IsFatbinPTXSupported";
+        static bool alreadyLoggedOk = false;
+
+        if (pDevice == nullptr || pSupported == nullptr)
+            return InvalidArgument(n);
+
+        *pSupported = NvapiD3d11Device::IsFatbinPTXSupported(pDevice);
+
+        return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_CreateUnorderedAccessView(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC* pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle) {
+        constexpr auto n = "NvAPI_D3D11_CreateUnorderedAccessView";
+
+        if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr || ppUAV == nullptr || pDriverHandle == nullptr)
+            return InvalidArgument(n);
+
+        if (!NvapiD3d11Device::CreateUnorderedAccessViewAndGetDriverHandle(pDevice, pResource, pDesc, ppUAV, pDriverHandle))
+            return Error(n);
+
+        return Ok(n);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_CreateShaderResourceView(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc, ID3D11ShaderResourceView** ppSRV, NvU32* pDriverHandle) {
+        constexpr auto n = "NvAPI_D3D11_CreateShaderResourceView";
+
+        if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr || ppSRV == nullptr || pDriverHandle == nullptr)
+            return InvalidArgument(n);
+
+        if (!NvapiD3d11Device::CreateShaderResourceViewAndGetDriverHandle(pDevice, pResource, pDesc, ppSRV, pDriverHandle))
+            return Error(n);
+
+        return Ok(n);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_GetResourceHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, NVDX_ObjectHandle* phObject) {
+        constexpr auto n = "NvAPI_D3D11_GetResourceHandle";
+        static bool alreadyLoggedOk = false;
+        static bool alreadyLoggedError = false;
+
+        if (pDevice == nullptr || pResource == nullptr || phObject == nullptr)
+            return InvalidArgument(n);
+
+        if (!NvapiD3d11Device::GetResourceDriverHandle(pDevice, pResource, phObject))
+            return Error(n, alreadyLoggedError);
+
+        return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_GetResourceGPUVirtualAddress(ID3D11Device* pDevice, const NVDX_ObjectHandle hResource, NvU64* pGpuVA) {
+        constexpr auto n = "NvAPI_D3D11_GetResourceGPUVirtualAddress";
+        static bool alreadyLoggedOk = false;
+        static bool alreadyLoggedError = false;
+
+        if (pDevice == nullptr || hResource == NVDX_OBJECT_NONE || pGpuVA == nullptr)
+            return InvalidArgument(n);
+
+        NvU64 dummy;
+        if (!NvapiD3d11Device::GetResourceHandleGPUVirtualAddressAndSize(pDevice, hResource, pGpuVA, &dummy))
+            return Error(n, alreadyLoggedError);
+
+        return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_GetResourceGPUVirtualAddressEx(ID3D11Device* pDevice, NV_GET_GPU_VIRTUAL_ADDRESS* pParams) {
+        constexpr auto n = "NvAPI_D3D11_GetResourceGPUVirtualAddressEx";
+        static bool alreadyLoggedOk = false;
+        static bool alreadyLoggedError = false;
+
+        if (pDevice == nullptr || pParams == nullptr)
+            return InvalidArgument(n);
+
+        if (pParams->version != NV_GET_GPU_VIRTUAL_ADDRESS_VER1)
+            return IncompatibleStructVersion(n);
+
+        if (pParams->hResource == NVDX_OBJECT_NONE)
+            return InvalidArgument(n);
+
+        if (!NvapiD3d11Device::GetResourceHandleGPUVirtualAddressAndSize(pDevice, pParams->hResource, &pParams->gpuVAStart, &pParams->gpuVASize))
+            return Error(n, alreadyLoggedError);
+
+        return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_CreateSamplerState(ID3D11Device* pDevice, const D3D11_SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState, NvU32* pDriverHandle) {
+        constexpr auto n = "NvAPI_D3D11_CreateSamplerState";
+
+        if (pDevice == nullptr || pSamplerDesc == nullptr || ppSamplerState == nullptr || pDriverHandle == nullptr)
+            return InvalidArgument(n);
+
+        if (!NvapiD3d11Device::CreateSamplerStateAndGetDriverHandle(pDevice, pSamplerDesc, ppSamplerState, reinterpret_cast<uint32_t*>(pDriverHandle)))
+            return Error(n);
+
+        return Ok(n);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_GetCudaTextureObject(ID3D11Device* pDevice, NvU32 srvDriverHandle, NvU32 samplerDriverHandle, NvU32* pCudaTextureHandle) {
+        constexpr auto n = "NvAPI_D3D11_GetCudaTextureObject";
+
+        if (pDevice == nullptr)
+            return InvalidArgument(n);
+
+        if (!NvapiD3d11Device::GetCudaTextureObject(pDevice, srvDriverHandle, samplerDriverHandle, reinterpret_cast<uint32_t*>(pCudaTextureHandle)))
+            return Error(n);
+
+        return Ok(n);
+    }
 }
