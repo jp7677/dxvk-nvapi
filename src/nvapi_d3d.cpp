@@ -6,7 +6,10 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D_GetObjectHandleForResource(IUnknown *pDevice, IUnknown *pResource, NVDX_ObjectHandle *pHandle) {
         static bool alreadyLogged = false;
-        return NoImplementation("NvAPI_D3D_GetObjectHandleForResource", alreadyLogged);
+        // Fake-implement with a dumb passthrough, though no other NvAPI entry points
+        // we're likely to implement should care about the actual handle value.
+        *pHandle = (NVDX_ObjectHandle)pResource;
+        return Ok("NvAPI_D3D_GetObjectHandleForResource", alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_SetResourceHint(IUnknown *pDev, NVDX_ObjectHandle obj, NVAPI_D3D_SETRESOURCEHINT_CATEGORY dwHintCategory, NvU32 dwHintName, NvU32 *pdwHintValue) {
@@ -14,8 +17,20 @@ extern "C" {
         return NoImplementation("NvAPI_D3D_SetResourceHint", alreadyLogged);
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D_BeginResourceRendering(IUnknown *pDeviceOrContext, NVDX_ObjectHandle obj, NvU32 Flags) {
+        static bool alreadyLogged = false;
+        // Synchronisation hints for SLI...
+        return Ok("NvAPI_D3D_BeginResourceRendering", alreadyLogged);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D_EndResourceRendering(IUnknown *pDeviceOrContext, NVDX_ObjectHandle obj, NvU32 Flags) {
+        static bool alreadyLogged = false;
+        return Ok("NvAPI_D3D_EndResourceRendering", alreadyLogged);
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D_GetCurrentSLIState(IUnknown *pDevice, NV_GET_CURRENT_SLI_STATE *pSliState) {
         constexpr auto n = "NvAPI_D3D_GetCurrentSLIState";
+        static bool alreadyLoggedOk = false;
 
         if (pDevice == nullptr || pSliState == nullptr)
             return InvalidArgument(n);
@@ -34,6 +49,42 @@ extern "C" {
         if (pSliState->version == NV_GET_CURRENT_SLI_STATE_VER2)
             pSliState->numVRSLIGpus = 0;
 
-        return Ok(n);
+        return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D1x_GetGraphicsCapabilities(IUnknown *pDevice,
+                                                    NvU32 structVersion,
+                                                    NV_D3D1x_GRAPHICS_CAPS *pGraphicsCaps) {
+        constexpr auto n = "NvAPI_D3D1x_GetGraphicsCapabilities";
+        static bool alreadyLoggedOk = false;
+
+        switch(structVersion) {
+            case NV_D3D1x_GRAPHICS_CAPS_VER1:
+                memset(pGraphicsCaps, 0, sizeof(NV_D3D1x_GRAPHICS_CAPS_V1));
+                break;
+            case NV_D3D1x_GRAPHICS_CAPS_VER2:
+                memset(pGraphicsCaps, 0, sizeof(NV_D3D1x_GRAPHICS_CAPS_V2));
+                break;
+            default:
+                return IncompatibleStructVersion(n);
+        }
+
+        switch(structVersion) {
+            case NV_D3D1x_GRAPHICS_CAPS_VER2:
+                // bFastUAVClearSupported is reported mostly for the sake of DLSS.
+                // All NVIDIA Vulkan drivers support this.
+                (*reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V2*>(pGraphicsCaps)).bFastUAVClearSupported = 1;
+                // dummy SM version number (unused by DLSS):
+                (*reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V2*>(pGraphicsCaps)).majorSMVersion = 0;
+                (*reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V2*>(pGraphicsCaps)).minorSMVersion = 0;
+            
+                [[fallthrough]];
+            
+            case NV_D3D1x_GRAPHICS_CAPS_VER1:
+                (*reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V1*>(pGraphicsCaps)).bExclusiveScissorRectsSupported = 0;
+                (*reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V1*>(pGraphicsCaps)).bVariablePixelRateShadingSupported = 0;
+        }
+
+        return Ok(n, alreadyLoggedOk);
     }
 }
