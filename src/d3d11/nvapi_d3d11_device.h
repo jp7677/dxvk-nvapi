@@ -42,7 +42,7 @@ namespace dxvk {
         [[nodiscard]] static Com<ID3D11VkExtContext> GetMultiDrawDeviceContext(ID3D11DeviceContext* deviceContext);
         [[nodiscard]] static Com<ID3D11VkExtContext1> GetBinaryImportDeviceContext(IUnknown* deviceOrContext);
         [[nodiscard]] static Com<ID3D11VkExtContext1> GetImageViewHandleDeviceContext(ID3D11DeviceContext* deviceContext);
-        [[nodiscard]] static Com<ID3D11VkExtContext> CacheDxvkDeviceContext(IUnknown* deviceOrContext, std::unordered_map<IUnknown*, ID3D11VkExtContext*>& cacheMap, D3D11_VK_EXTENSION extension);
+        [[nodiscard]] static Com<ID3D11VkExtContext> GetCachedDeviceContextExt(IUnknown* deviceOrContext, std::unordered_map<IUnknown*, ID3D11VkExtContext*>& cacheMap, D3D11_VK_EXTENSION extension);
         [[nodiscard]] static Com<ID3D11VkExtContext> GetDeviceContextExt(IUnknown* deviceOrContext, D3D11_VK_EXTENSION extension);
         [[nodiscard]] static Com<ID3D11VkExtContext> GetDeviceContextExt(ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension);
         [[nodiscard]] static Com<ID3D11VkExtContext> GetDeviceContextExt(ID3D11Device* device, ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension);

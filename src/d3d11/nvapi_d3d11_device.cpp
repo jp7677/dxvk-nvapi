@@ -64,11 +64,11 @@ namespace dxvk {
     }
 
     bool NvapiD3d11Device::DestroyCubinShader(ID3D11Device* /*unused*/, NVDX_ObjectHandle hShader) {
-        IUnknown* cushader = reinterpret_cast<IUnknown*>(hShader);
-        if (cushader)
-            cushader->Release();
+        auto cubinShader = reinterpret_cast<IUnknown*>(hShader);
+        if (cubinShader != nullptr)
+            cubinShader->Release();
 
-        return cushader != nullptr;
+        return cubinShader != nullptr;
     }
 
     bool NvapiD3d11Device::GetResourceDriverHandle(ID3D11Device* /*unused*/, ID3D11Resource* pResource, NVDX_ObjectHandle* phObject) {
@@ -120,27 +120,27 @@ namespace dxvk {
      }
 
     bool NvapiD3d11Device::IsFatbinPTXSupported(ID3D11Device* pDevice) {
-        return (GetBinaryImportDeviceContext(pDevice) != nullptr);
+        return GetBinaryImportDeviceContext(pDevice) != nullptr;
     }
 
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetSdbtDeviceContext(IUnknown* deviceOrContext) {
         std::scoped_lock lock(m_depthBoundsDeviceOrContextMutex);
-        return CacheDxvkDeviceContext(deviceOrContext, m_depthBoundsDeviceOrContextMap, D3D11_VK_EXT_DEPTH_BOUNDS);
+        return GetCachedDeviceContextExt(deviceOrContext, m_depthBoundsDeviceOrContextMap, D3D11_VK_EXT_DEPTH_BOUNDS);
     }
 
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetBarrierControlDeviceContext(IUnknown* deviceOrContext) {
         std::scoped_lock lock(m_barrierControlDeviceOrContextMutex);
-        return CacheDxvkDeviceContext(deviceOrContext, m_barrierControlDeviceOrContextMap, D3D11_VK_EXT_BARRIER_CONTROL);
+        return GetCachedDeviceContextExt(deviceOrContext, m_barrierControlDeviceOrContextMap, D3D11_VK_EXT_BARRIER_CONTROL);
     }
 
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetMultiDrawDeviceContext(ID3D11DeviceContext* deviceContext) {
         std::scoped_lock lock(m_multiDrawIndirectContextMutex);
-        return CacheDxvkDeviceContext(deviceContext, m_multiDrawIndirectContextMap, D3D11_VK_EXT_MULTI_DRAW_INDIRECT);
+        return GetCachedDeviceContextExt(deviceContext, m_multiDrawIndirectContextMap, D3D11_VK_EXT_MULTI_DRAW_INDIRECT);
     }
 
     Com<ID3D11VkExtContext1> NvapiD3d11Device::GetBinaryImportDeviceContext(IUnknown* deviceOrContext) {
         std::scoped_lock lock(m_binaryImportContextMutex);
-        auto context = CacheDxvkDeviceContext(deviceOrContext, m_binaryImportContextMap, D3D11_VK_NVX_BINARY_IMPORT);
+        auto context = GetCachedDeviceContextExt(deviceOrContext, m_binaryImportContextMap, D3D11_VK_NVX_BINARY_IMPORT);
         if (context == nullptr)
             return nullptr;
 
@@ -151,30 +151,16 @@ namespace dxvk {
         return d3d11ExtContext1;
     }
 
-    Com<ID3D11VkExtContext1> NvapiD3d11Device::GetImageViewHandleDeviceContext(ID3D11DeviceContext* deviceContext) {
-        std::scoped_lock lock(m_imageViewHandleContextMutex);
-        auto context = CacheDxvkDeviceContext(deviceContext, m_imageViewHandleContextMap, D3D11_VK_NVX_IMAGE_VIEW_HANDLE);
-        if (context == nullptr)
-            return nullptr;
-
-        Com<ID3D11VkExtContext1> d3d11ExtContext1;
-        if (FAILED(context->QueryInterface(IID_PPV_ARGS(&d3d11ExtContext1))))
-            return nullptr;
-
-        return d3d11ExtContext1;
-    }
-
-    Com<ID3D11VkExtContext> NvapiD3d11Device::CacheDxvkDeviceContext(IUnknown* deviceOrContext, std::unordered_map<IUnknown*, ID3D11VkExtContext*>& cacheMap, D3D11_VK_EXTENSION extension) {
+    Com<ID3D11VkExtContext> NvapiD3d11Device::GetCachedDeviceContextExt(IUnknown* deviceOrContext, std::unordered_map<IUnknown*, ID3D11VkExtContext*>& cacheMap, D3D11_VK_EXTENSION extension) {
         auto it = cacheMap.find(deviceOrContext);
         if (it != cacheMap.end())
             return it->second;
 
-        auto dxvkDeviceContext = GetDeviceContextExt(deviceOrContext, extension);
-        /* it could be beneficial to cache nullptrs, but it confuses the tests */
-        if (dxvkDeviceContext != nullptr)
-            cacheMap.emplace(deviceOrContext, dxvkDeviceContext.ptr());
+        auto deviceContextExt = GetDeviceContextExt(deviceOrContext, extension);
+        if (deviceContextExt != nullptr)
+            cacheMap.emplace(deviceOrContext, deviceContextExt.ptr());
 
-        return dxvkDeviceContext;
+        return deviceContextExt;
     }
 
     Com<ID3D11VkExtContext> NvapiD3d11Device::GetDeviceContextExt(IUnknown* deviceOrContext, D3D11_VK_EXTENSION extension) {
