@@ -2,6 +2,12 @@
 
 using namespace trompeloeil;
 
+class UnknownMock : public mock_interface<IUnknown> {
+    MAKE_MOCK2 (QueryInterface, HRESULT(REFIID, void**), override);
+    MAKE_MOCK0 (AddRef, ULONG(), override);
+    MAKE_MOCK0 (Release, ULONG(), override);
+};
+
 class ID3D11DxvkDevice : public ID3D11Device, public ID3D11VkExtDevice1 {};
 
 class D3D11DxvkDeviceMock : public mock_interface<ID3D11DxvkDevice> {
