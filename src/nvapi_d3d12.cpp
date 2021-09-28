@@ -87,7 +87,7 @@ extern "C" {
         if (pCmdList == nullptr)
             return InvalidArgument(n);
 
-        if(!NvapiD3d12Device::LaunchCubinShader(pCmdList, pShader, blockX, blockY, blockZ, params, paramSize))
+        if (!NvapiD3d12Device::LaunchCubinShader(pCmdList, pShader, blockX, blockY, blockZ, params, paramSize))
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);
@@ -98,10 +98,10 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
-        if(pDevice == nullptr)
+        if (pDevice == nullptr)
             return InvalidArgument(n);
 
-        if(!NvapiD3d12Device::CaptureUAVInfo(pDevice, pUAVInfo))
+        if (!NvapiD3d12Device::CaptureUAVInfo(pDevice, pUAVInfo))
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);
@@ -111,7 +111,7 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLogged = false;
 
-        if(pDevice == nullptr || structVersion != NV_D3D12_GRAPHICS_CAPS_VER1)
+        if (pDevice == nullptr || structVersion != NV_D3D12_GRAPHICS_CAPS_VER1)
             return InvalidArgument(n);
 
         // Currently we do not require these fields, we can implement them later.
@@ -131,11 +131,11 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
-        if(pDevice == nullptr)
+        if (pDevice == nullptr)
             return InvalidArgument(n);
 
         *isSupported = NvapiD3d12Device::IsFatbinPTXSupported(pDevice);
-        if(!*isSupported)
+        if (!*isSupported)
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);
