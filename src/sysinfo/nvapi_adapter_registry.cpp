@@ -19,7 +19,7 @@ namespace dxvk {
 
     bool NvapiAdapterRegistry::Initialize() {
         auto dxgiFactory = m_resourceFactory.CreateDXGIFactory();
-        if(dxgiFactory == nullptr)
+        if (dxgiFactory == nullptr)
             return false;
 
         m_vulkan = m_resourceFactory.CreateVulkan();
