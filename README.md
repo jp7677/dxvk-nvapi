@@ -1,24 +1,22 @@
 # [DXVK-NVAPI](https://github.com/jp7677/dxvk-nvapi)
 
-## Experimental non-complete NVAPI implementation on top of [DXVK](https://github.com/doitsujin/dxvk)
+## Alternative NVAPI implementation on top of [DXVK](https://github.com/doitsujin/dxvk)
 
-This [repository](https://github.com/jp7677/dxvk-nvapi) provides a basic alternative implementation of the NVAPI extensions for DXVK. Its way of working is very similar to [DXVK-AGS](https://github.com/doitsujin/dxvk-ags), but adjusted for NVAPI.
+This [repository](https://github.com/jp7677/dxvk-nvapi) provides an alternative implementation of the NVAPI extensions for usage with DXVK and VKD3D-Proton. Its way of working is very similar to [DXVK-AGS](https://github.com/doitsujin/dxvk-ags), but adjusted and enhanced for NVAPI.
 
-This implementation currently forwards the following NVAPI D3D11 features to DXVK:
+This implementation currently offers entrypoints supporting the following functionalities:
 
-- `SetDepthBoundsTest`
-- `BeginUAVOverlap`/`EndUAVOverlap`
-- `MultiDrawInstancedIndirect`/`MultiDrawIndexedInstancedIndirect`
+- NVIDIA DLSS for Vulkan
+- NVIDIA DLSS for D3D12 by forwarding the relevant calls into VKD3D-Proton
+- NVIDIA DLSS for D3D11 by forwarding the relevant calls into DXVK
+- Several D3D11 extensions, among others `SetDepthBoundsTest` and `UAVOverlap`, by forwarding the relevant calls into DXVK
+- Several GPU topology related methods for adapter/display information
 
-It also implements several methods for adapter/display topology and system information. Some of those are a requirement for enabling other NVIDIA related technologies.
-
-This implementation has been mostly tested with Unreal Engine 4, with the game `Assetto Corsa Competizione` and several UE4 technology demos. Unreal Engine 4 utilizes `SetDepthBoundsTest`, newer engine versions also utilize `BeginUAVOverlap`/`EndUAVOverlap`. Forwarding those methods may yield up to 4% extra performance, although this heavily depends on setup and scenery.
-
-Basic topology and system information (vendor ID, driver version and others) has been mostly tested with `GPU Caps Viewer`. The game `Get Even`, which verifies the driver version during launch, starts fine with this implementation.
+TODO
 
 ## Requirements
 
-This implementation is supposed to be used on Linux using Wine or derivatives like Proton. It uses several DXVK extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, no specific NVIDIA hardware features are needed.
+This implementation is supposed to be used on Linux using Wine or derivatives like Proton. It uses several DXVK and VKD3D-Proton extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, but several entrypoints offer no functionality when a different GPU vendor is detected.
 
 When available, DXVK-NVAPI uses NVIDIA's NVML management library to query temperature, utilization and others for NVIDIA GPUs. See [wine-nvml](https://github.com/Saancreed/wine-nvml) how to add NVML support to Wine/Proton.
 
@@ -42,16 +40,22 @@ Using DXVK-NVAPI in Proton, Lutris or Wine requires DXVK to see the GPU as an NV
 - Disable the `nvapiHack` in DXVK with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
 - Spoof an NVIDIA GPU when running a non-NVIDIA GPU with `dxgi.customVendorId = 10de` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L31).
 
-### Proton (6.3-6 and higher)
+### Proton 6.3-6 and higher
 
-- Copy `nvapi64.dll`/`nvapi.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, eg in `.steam/steam/steamapps/common/Proton 6.3/`.
-- Use `PROTON_ENABLE_NVAPI=1` as launch argument.
+Proton 6.3-6 and higher includes DXVK-NVAPI but is is disabled by default.
+
+- Use `PROTON_ENABLE_NVAPI=1` as launch argument to enable DXVK-NVAPI.
+- Copy `nvapi64.dll`/`nvapi.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `.steam/steam/steamapps/common/Proton 6.3/` if you want to manually update the included version.
 
 ### Lutris
 
-- TODO
+DXVK-NVAPI is enabled by default in Lutris.
+
+- Copy `nvapi64.dll`/`nvapi.dll` into `.local/share/lutris/runtime/dxvk-nvapi/` and specify the name in the version field if you want to manually update the included version.
 
 ### Wine
+
+Wine does not includes DXVK-NVAPI.
 
 - Copy `nvapi64.dll`/`nvapi.dll` into the `system32`/`syswow64` folder of your x64/x86 Wine prefix.
 - Ensure that Wine uses the native version of `nvapi64`/`nvapi`, e.g. with `WINEDLLOVERRIDES=nvapi64,nvapi=n`.
