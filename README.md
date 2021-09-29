@@ -37,16 +37,16 @@ Using DXVK-NVAPI in Proton, Lutris or Wine requires DXVK to see the GPU as an NV
 - Disable the `nvapiHack` in DXVK with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
 - Spoof an NVIDIA GPU when running a non-NVIDIA GPU with `dxgi.customVendorId = 10de` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L31).
 
-### Proton 6.3-6 and higher
+### Proton
 
-Proton 6.3-6 and higher includes DXVK-NVAPI but it is disabled by default.
+Proton 6.3-6 and newer includes DXVK-NVAPI but it is disabled by default.
 
 - Use `PROTON_ENABLE_NVAPI=1` as game launch argument in Steam to enable DXVK-NVAPI.
 - Copy `nvapi64.dll`/`nvapi.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 6.3/` if you want to manually update the included version.
 
 ### Lutris
 
-DXVK-NVAPI is enabled by default in Lutris.
+DXVK-NVAPI is enabled by default in Lutris since 0.5.9-beta1 and newer.
 
 - Copy `nvapi64.dll`/`nvapi.dll` into `~/.local/share/lutris/runtime/dxvk-nvapi/` and specify the name in the version field if you want to manually update the included version.
 
