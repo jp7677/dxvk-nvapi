@@ -37,11 +37,25 @@ Pre-built binaries of release versions are available at [https://github.com/jp76
 
 ## How to use
 
+Using DXVK-NVAPI in Proton, Lutris or Wine requires DXVK to see the GPU as an NVIDIA GPU.
+
+- Disable the `nvapiHack` in DXVK with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
+- Spoof an NVIDIA GPU when running a non-NVIDIA GPU with `dxgi.customVendorId = 10de` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L31).
+
+### Proton (6.3-6 and higher)
+
+- Copy `nvapi64.dll`/`nvapi.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, eg in `.steam/steam/steamapps/common/Proton 6.3/`.
+- Use `PROTON_ENABLE_NVAPI=1` as launch argument.
+
+### Lutris
+
+- TODO
+
+### Wine
+
 - Copy `nvapi64.dll`/`nvapi.dll` into the `system32`/`syswow64` folder of your x64/x86 Wine prefix.
 - Ensure that Wine uses the native version of `nvapi64`/`nvapi`, e.g. with `WINEDLLOVERRIDES=nvapi64,nvapi=n`.
 - Ensure that Wine uses DXVK's `dxgi.dll`, use it e.g. with `WINEDLLOVERRIDES=dxgi=n`.
-- Disable the `nvapiHack` in DXVK with `dxgi.nvapiHack = False`, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
-- Spoof an NVIDIA GPU when running a non-NVIDIA GPU with `dxgi.customVendorId = 10de`, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L31).
 
 ## Debugging
 
