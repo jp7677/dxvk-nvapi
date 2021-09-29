@@ -9,7 +9,9 @@ This implementation currently offers entrypoints for supporting the following fu
 - NVIDIA DLSS for Vulkan
 - NVIDIA DLSS for D3D11 and D3D12 by forwarding the relevant calls into DXVK / VKD3D-Proton
 - Several NVAPI D3D11 extensions, among others `SetDepthBoundsTest` and `UAVOverlap`, by forwarding the relevant calls into DXVK
-- Several GPU topology related methods for adapter/display information
+- Several GPU topology related methods for adapter and display information
+
+While originally being developed for usage with Unreal Engine 4, most notably for `Assetto Corsa Competizione`, more entrypoint have been added for enabling other NVIDIA related technologies. DXVK-NVAPI does not and will never cover the complete surface of NVIDIA's NVAPI. It is not meant as a full replacement, but rather as an addition to DXVK and VKD3D-Proton to enable several GPU features.
 
 ## Requirements
 
