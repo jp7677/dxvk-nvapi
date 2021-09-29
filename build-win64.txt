@@ -1,6 +1,7 @@
 [binaries]
 cpp = 'x86_64-w64-mingw32-g++'
 strip = 'x86_64-w64-mingw32-strip'
+ar = 'x86_64-w64-mingw32-ar'
 
 [built-in options]
 cpp_link_args = ['-static', '-static-libgcc', '-static-libstdc++']
