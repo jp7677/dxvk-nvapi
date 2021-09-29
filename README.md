@@ -15,7 +15,7 @@ While originally being developed for usage with Unreal Engine 4, most notably fo
 
 ## Requirements
 
-This implementation is supposed to be used on Linux using Wine or derivatives like Proton. Usage on Windows is discoraged. Please do not replace `nvapi64.dll`/`nvapi.dll` on Windows from NVIDIA's driver package with this version. DXVK-NVAPI uses several DXVK and VKD3D-Proton extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, but some entry points offer no functionality when a different GPU vendor is detected.
+This implementation is supposed to be used on Linux using Wine or derivatives like Proton. Usage on Windows is discouraged. Please do not replace `nvapi64.dll`/`nvapi.dll` on Windows from NVIDIA's driver package with this version. DXVK-NVAPI uses several DXVK and VKD3D-Proton extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, but some entry points offer no functionality when a different GPU vendor is detected.
 
 When available, DXVK-NVAPI uses NVIDIA's NVML management library to query temperature, utilization and others for NVIDIA GPUs. See [wine-nvml](https://github.com/Saancreed/wine-nvml) how to add NVML support to Wine/Proton.
 
