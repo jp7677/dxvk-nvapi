@@ -2,21 +2,18 @@
 
 ## Alternative NVAPI implementation on top of [DXVK](https://github.com/doitsujin/dxvk)
 
-This [repository](https://github.com/jp7677/dxvk-nvapi) provides an alternative implementation of the NVAPI extensions for usage with DXVK and VKD3D-Proton. Its way of working is very similar to [DXVK-AGS](https://github.com/doitsujin/dxvk-ags), but adjusted and enhanced for NVAPI.
+This [repository](https://github.com/jp7677/dxvk-nvapi) provides an alternative implementation of NVIDIA's NVAPI library for usage with DXVK and [VKD3D-Proton](https://github.com/HansKristian-Work/vkd3d-proton). Its way of working is very similar to [DXVK-AGS](https://github.com/doitsujin/dxvk-ags), but adjusted and enhanced for NVAPI.
 
-This implementation currently offers entrypoints supporting the following functionalities:
+This implementation currently offers entrypoints for supporting the following functionalities in applications:
 
 - NVIDIA DLSS for Vulkan
-- NVIDIA DLSS for D3D12 by forwarding the relevant calls into VKD3D-Proton
-- NVIDIA DLSS for D3D11 by forwarding the relevant calls into DXVK
-- Several D3D11 extensions, among others `SetDepthBoundsTest` and `UAVOverlap`, by forwarding the relevant calls into DXVK
+- NVIDIA DLSS for D3D11 and D3D12 by forwarding the relevant calls into DXVK / VKD3D-Proton
+- Several NVAPI D3D11 extensions, among others `SetDepthBoundsTest` and `UAVOverlap`, by forwarding the relevant calls into DXVK
 - Several GPU topology related methods for adapter/display information
-
-TODO
 
 ## Requirements
 
-This implementation is supposed to be used on Linux using Wine or derivatives like Proton. It uses several DXVK and VKD3D-Proton extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, but several entrypoints offer no functionality when a different GPU vendor is detected.
+This implementation is supposed to be used on Linux using Wine or derivatives like Proton. Usage on Windows is discoraged. Please do not replace `nvapi64.dll`/`nvapi.dll` on Windows from NVIDIA's driver package with this version. DXVK-NVAPI uses several DXVK and VKD3D-Proton extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, but some entrypoints offer no functionality when a different GPU vendor is detected.
 
 When available, DXVK-NVAPI uses NVIDIA's NVML management library to query temperature, utilization and others for NVIDIA GPUs. See [wine-nvml](https://github.com/Saancreed/wine-nvml) how to add NVML support to Wine/Proton.
 
@@ -45,13 +42,13 @@ Using DXVK-NVAPI in Proton, Lutris or Wine requires DXVK to see the GPU as an NV
 Proton 6.3-6 and higher includes DXVK-NVAPI but it is disabled by default.
 
 - Use `PROTON_ENABLE_NVAPI=1` as game launch argument in Steam to enable DXVK-NVAPI.
-- Copy `nvapi64.dll`/`nvapi.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `.steam/steam/steamapps/common/Proton 6.3/` if you want to manually update the included version.
+- Copy `nvapi64.dll`/`nvapi.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 6.3/` if you want to manually update the included version.
 
 ### Lutris
 
 DXVK-NVAPI is enabled by default in Lutris.
 
-- Copy `nvapi64.dll`/`nvapi.dll` into `.local/share/lutris/runtime/dxvk-nvapi/` and specify the name in the version field if you want to manually update the included version.
+- Copy `nvapi64.dll`/`nvapi.dll` into `~/.local/share/lutris/runtime/dxvk-nvapi/` and specify the name in the version field if you want to manually update the included version.
 
 ### Wine
 
@@ -83,6 +80,7 @@ The actual unit tests can be run with `nvapi64-tests.exe [@unit-tests]` to valid
 
 - [DXVK](https://github.com/doitsujin/dxvk)
 - [DXVK-AGS](https://github.com/doitsujin/dxvk-ags)
+- [VKD3D-Proton](https://github.com/HansKristian-Work/vkd3d-proton)
 - [NVAPI](https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__dx.html)
 - [NVAPI Open Source SDK](https://download.nvidia.com/XFree86/nvapi-open-source-sdk/)
 - [https://github.com/SveSop/nvapi_standalone](https://github.com/SveSop/nvapi_standalone)
