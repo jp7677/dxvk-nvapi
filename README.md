@@ -15,7 +15,7 @@ While originally being developed for usage with Unreal Engine 4, most notably fo
 
 ## Requirements
 
-This implementation is supposed to be used on Linux using Wine or derivatives like Proton. Usage on Windows is discouraged. Please do not replace `nvapi64.dll`/`nvapi.dll` on Windows from NVIDIA's driver package with this version. DXVK-NVAPI uses several DXVK and VKD3D-Proton extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, but some entry points offer no functionality when a different GPU vendor is detected.
+This implementation is supposed to be used on Linux using Wine or derivatives like Proton. Usage on Windows is discouraged. Please do not replace `nvapi.dll`/`nvapi64.dll` on Windows from NVIDIA's driver package with this version. DXVK-NVAPI uses several DXVK and VKD3D-Proton extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, but some entry points offer no functionality when a different GPU vendor is detected.
 
 When available, DXVK-NVAPI uses NVIDIA's NVML management library to query temperature, utilization and others for NVIDIA GPUs. See [wine-nvml](https://github.com/Saancreed/wine-nvml) how to add NVML support to Wine/Proton.
 
@@ -44,20 +44,20 @@ Using DXVK-NVAPI in Proton, Lutris or Wine requires DXVK to see the GPU as an NV
 Proton 6.3-6 and newer includes DXVK-NVAPI but it is disabled by default.
 
 - Use `PROTON_ENABLE_NVAPI=1` as game launch argument in Steam to enable DXVK-NVAPI.
-- Copy `nvapi64.dll`/`nvapi.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 6.3/` if you want to manually update the included version.
+- Copy `nvapi.dll`/`nvapi64.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 6.3/` if you want to manually update the included version.
 
 ### Lutris
 
 DXVK-NVAPI is enabled by default in Lutris since 0.5.9-beta1 and newer.
 
-- For updating the included version, create a folder indicating a new version with subfolders `x32`/`x64` in `~/.local/share/lutris/runtime/dxvk-nvapi/` and copy `nvapi64.dll`/`nvapi.dll` into it. Specify the new version in the DXVK-NVAPI "version" field in the Lutris settings.
+- For updating the included version, create a folder indicating a new version with subfolders `x32`/`x64` in `~/.local/share/lutris/runtime/dxvk-nvapi/` and copy `nvapi.dll`/`nvapi64.dll` into it. Specify the new version in the DXVK-NVAPI "version" field in the Lutris settings.
 
 ### Wine
 
 Wine does not includes DXVK-NVAPI.
 
-- Copy `nvapi64.dll`/`nvapi.dll` into the `system32`/`syswow64` folder of your x64/x86 Wine prefix.
-- Ensure that Wine uses the native version of `nvapi64`/`nvapi`, e.g. with `WINEDLLOVERRIDES=nvapi64,nvapi=n`.
+- Copy `nvapi.dll`/`nvapi64.dll` into the `syswow64`/`system32` folder of your x86/x64 Wine prefix.
+- Ensure that Wine uses the native version of `nvapi`/`nvapi64`, e.g. with `WINEDLLOVERRIDES=nvapi64,nvapi=n`.
 - Ensure that Wine uses DXVK's `dxgi.dll`, use it e.g. with `WINEDLLOVERRIDES=dxgi=n`.
 
 ## Debugging
