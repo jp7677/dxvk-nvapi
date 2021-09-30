@@ -50,7 +50,7 @@ Proton 6.3-6 and newer includes DXVK-NVAPI but it is disabled by default.
 
 DXVK-NVAPI is enabled by default in Lutris since 0.5.9-beta1 and newer.
 
-- Copy `nvapi64.dll`/`nvapi.dll` into `~/.local/share/lutris/runtime/dxvk-nvapi/` and specify the name in the version field if you want to manually update the included version.
+- For updating the included version, create a folder indicating a new version with subfolders `x32`/`x64` in `~/.local/share/lutris/runtime/dxvk-nvapi/` and copy `nvapi64.dll`/`nvapi.dll` into it. Specify the new version in the DXVK-NVAPI "version" field in the Lutris settings.
 
 ### Wine
 
