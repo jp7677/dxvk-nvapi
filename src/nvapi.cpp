@@ -108,7 +108,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_EnumNvidiaUnAttachedDisplayHandle(NvU32 thisEnum, NvUnAttachedDisplayHandle *pNvUnAttachedDispHandle) {
         // DXVK does not know about unattached displays
-        return EndEnumeration(str::format("NvAPI_EnumNvidiaUnAttachedDisplayHandle ", thisEnum));
+        return EndEnumeration(str::format(__func__, " ", thisEnum));
     }
 
     NvAPI_Status __cdecl NvAPI_GetInterfaceVersionString(NvAPI_ShortString szDesc) {
