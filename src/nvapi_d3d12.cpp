@@ -140,4 +140,21 @@ extern "C" {
 
         return Ok(n, alreadyLoggedOk);
     }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_CreateGraphicsPipelineState(ID3D12Device *pDevice, const D3D12_GRAPHICS_PIPELINE_STATE_DESC *pPSODesc, NvU32 numExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** ppExtensions, ID3D12PipelineState **ppPSO) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedOk = false;
+
+        if (pDevice == nullptr)
+            return InvalidArgument(n);
+
+        if ((*ppExtensions)->baseVersion != NV_PSO_EXTENSION_DESC_VER_1)
+            return IncompatibleStructVersion(n);
+
+        if ((*ppExtensions)->psoExtension != NV_PSO_ENABLE_DEPTH_BOUND_TEST_EXTENSION)
+            return NotSupported(str::format(n, " ", (*ppExtensions)->psoExtension, " (", fromPsoExtension((*ppExtensions)->psoExtension), ")"));
+
+        pDevice->CreateGraphicsPipelineState(pPSODesc, __uuidof(ID3D12PipelineState), reinterpret_cast<void**>(ppPSO));
+        return Ok(str::format(n, " ", (*ppExtensions)->psoExtension, " (", fromPsoExtension((*ppExtensions)->psoExtension), ")"), alreadyLoggedOk);
+    }
 }
