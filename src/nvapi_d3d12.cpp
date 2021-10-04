@@ -160,15 +160,16 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_SetDepthBoundsTestValues(ID3D12GraphicsCommandList *pCommandList, const float minDepth, const float maxDepth) {
-        static bool alreadyLoggedOk = false;
         constexpr auto n = __func__;
+        static bool alreadyLoggedError = false;
+        static bool alreadyLoggedOk = false;
 
         if (pCommandList == nullptr)
             return InvalidArgument(n);
 
         Com<ID3D12GraphicsCommandList1> commandList1;
         if (FAILED(pCommandList->QueryInterface(IID_PPV_ARGS(&commandList1))))
-            return Error(n);
+            return Error(n, alreadyLoggedError);
 
         commandList1->OMSetDepthBounds(minDepth, maxDepth);
 
