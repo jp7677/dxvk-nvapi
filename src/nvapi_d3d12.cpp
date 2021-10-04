@@ -166,4 +166,18 @@ extern "C" {
 
         return Ok(str::format(n, " ", numExtensions, " (", extensionNames, ")"), alreadyLoggedOk);
     }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_SetDepthBoundsTestValues(ID3D12GraphicsCommandList *pCommandList, const float minDepth, const float maxDepth) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedError = false;
+        static bool alreadyLoggedOk = false;
+
+        if (pCommandList == nullptr)
+            return InvalidArgument(n);
+
+        if(!NvapiD3d12Device::SetDepthBoundsTestValues(pCommandList, minDepth, maxDepth))
+            return Error(n, alreadyLoggedError);
+
+        return Ok(n, alreadyLoggedOk);
+    }
 }

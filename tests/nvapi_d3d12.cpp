@@ -27,6 +27,10 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     ALLOW_CALL(device, GetExtensionSupport(_))
             .RETURN(true);
 
+    ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandList1), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandList1*>(&commandList))
+        .LR_SIDE_EFFECT(commandListRefCount++)
+        .RETURN(S_OK);
     ALLOW_CALL(commandList, QueryInterface(ID3D12GraphicsCommandListExt::guid, _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt*>(&commandList))
         .LR_SIDE_EFFECT(commandListRefCount++)
@@ -127,6 +131,18 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             .RETURN(S_OK);
 
         REQUIRE(NvAPI_D3D12_CreateGraphicsPipelineState(&device, &desc, 1, extensions, &pipelineState) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
+    }
+
+    SECTION("SetDepthBoundsTestValues returns OK") {
+        auto min = 0.4f;
+        auto max = 0.7f;
+        REQUIRE_CALL(commandList, OMSetDepthBounds(min, max));
+
+        REQUIRE(NvAPI_D3D12_SetDepthBoundsTestValues(&commandList, min, max) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("NvAPI_D3D12_GetGraphicsCapabilities returns OK") {

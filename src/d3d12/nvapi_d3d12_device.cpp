@@ -9,6 +9,15 @@ namespace dxvk {
         return device->CreateGraphicsPipelineState(pipelineStateDescription, __uuidof(ID3D12PipelineState), reinterpret_cast<void**>(pipelineState)) == S_OK;
     }
 
+    bool NvapiD3d12Device::SetDepthBoundsTestValues(ID3D12GraphicsCommandList* commandList, const float minDepth, const float maxDepth) {
+        Com<ID3D12GraphicsCommandList1> commandList1;
+        if (FAILED(commandList->QueryInterface(IID_PPV_ARGS(&commandList1)))) // There is no VKD3D-Proton version out there that does not implement ID3D12GraphicsCommandList1, this should always succeed
+            return false;
+
+        commandList1->OMSetDepthBounds(minDepth, maxDepth);
+        return true;
+    }
+
     bool NvapiD3d12Device::CreateCubinComputeShaderWithName(ID3D12Device* device, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader){
         auto cubinDevice = GetCubinDevice(device);
         if (cubinDevice == nullptr)
