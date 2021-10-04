@@ -2,6 +2,7 @@
 #include "d3d12/nvapi_d3d12_device.h"
 #include "util/util_statuscode.h"
 #include "util/util_op_code.h"
+#include "util/util_pso_extension.h"
 #include "util/util_string.h"
 
 extern "C" {
@@ -139,5 +140,30 @@ extern "C" {
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_CreateGraphicsPipelineState(ID3D12Device *pDevice, const D3D12_GRAPHICS_PIPELINE_STATE_DESC *pPSODesc, NvU32 numExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** ppExtensions, ID3D12PipelineState **ppPSO) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedOk = false;
+
+        if (pDevice == nullptr)
+            return InvalidArgument(n);
+
+        if (numExtensions == 0)
+            return InvalidArgument(n);
+
+        if (ppExtensions[0]->baseVersion != NV_PSO_EXTENSION_DESC_VER_1)
+            return IncompatibleStructVersion(n);
+
+        std::string extensionNames;
+        for(auto i = 0U; i < numExtensions;i++)
+            extensionNames += str::format(fromPsoExtension(ppExtensions[i]->psoExtension), ",");
+
+        extensionNames.pop_back();
+
+        if (!NvapiD3d12Device::CreateGraphicsPipelineState(pDevice, pPSODesc, numExtensions, ppExtensions, ppPSO))
+            return NotSupported(str::format(n, " ", numExtensions, " (", extensionNames, ")"));
+
+        return Ok(str::format(n, " ", numExtensions, " (", extensionNames, ")"), alreadyLoggedOk);
     }
 }
