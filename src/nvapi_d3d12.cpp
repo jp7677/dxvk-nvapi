@@ -155,6 +155,7 @@ extern "C" {
             return NotSupported(str::format(n, " ", (*ppExtensions)->psoExtension, " (", fromPsoExtension((*ppExtensions)->psoExtension), ")"));
 
         pDevice->CreateGraphicsPipelineState(pPSODesc, __uuidof(ID3D12PipelineState), reinterpret_cast<void**>(ppPSO));
+
         return Ok(str::format(n, " ", (*ppExtensions)->psoExtension, " (", fromPsoExtension((*ppExtensions)->psoExtension), ")"), alreadyLoggedOk);
     }
 
@@ -165,7 +166,11 @@ extern "C" {
         if (pCommandList == nullptr)
             return InvalidArgument(n);
 
-        // TODO: Add an actual implementation once VKD3D-Proton supports it.
+        Com<ID3D12GraphicsCommandList1> commandList1;
+        if (FAILED(pCommandList->QueryInterface(IID_PPV_ARGS(&commandList1))))
+            return Error(n);
+
+        commandList1->OMSetDepthBounds(minDepth, maxDepth);
 
         return Ok(n, alreadyLoggedOk);
     }
