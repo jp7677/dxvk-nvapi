@@ -8,7 +8,10 @@ namespace dxvk {
 
     class NvapiD3d12Device {
 
-    public:                                          
+    public:
+        static bool CreateGraphicsPipelineState(ID3D12Device* device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pipelineStateDescription, NvU32 numberOfExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** extensions, ID3D12PipelineState** pipelineState);
+        static bool SetDepthBoundsTestValues(ID3D12GraphicsCommandList* commandList, float minDepth, float maxDepth);
+
         static bool CreateCubinComputeShaderWithName(ID3D12Device* device, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader);
         static bool DestroyCubinComputeShader(ID3D12Device* device, NVDX_ObjectHandle shader);
         static bool GetCudaTextureObject(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle);

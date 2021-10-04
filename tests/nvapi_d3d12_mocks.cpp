@@ -58,7 +58,7 @@ class D3D12Vkd3dDeviceMock : public mock_interface<ID3D12Vkd3dDevice> {
     IMPLEMENT_MOCK1(CaptureUAVInfo);
 };
 
-class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList, public ID3D12GraphicsCommandListExt {};
+class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList1, public ID3D12GraphicsCommandListExt {};
 
 class D3D12Vkd3dGraphicsCommandListMock : public mock_interface<ID3D12Vkd3dGraphicsCommandList> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void **), override);
@@ -121,6 +121,12 @@ class D3D12Vkd3dGraphicsCommandListMock : public mock_interface<ID3D12Vkd3dGraph
     IMPLEMENT_MOCK2(Reset);
     IMPLEMENT_MOCK0(Close);
     IMPLEMENT_MOCK3(SetPredication);
+    IMPLEMENT_MOCK7(AtomicCopyBufferUINT);
+    IMPLEMENT_MOCK7(AtomicCopyBufferUINT64);
+    IMPLEMENT_MOCK2(OMSetDepthBounds);
+    IMPLEMENT_MOCK9(ResolveSubresourceRegion);
+    IMPLEMENT_MOCK3(SetSamplePositions);
+    IMPLEMENT_MOCK1(SetViewInstanceMask);
     IMPLEMENT_MOCK1(GetVulkanHandle);
     IMPLEMENT_MOCK6(LaunchCubinShader);
 };

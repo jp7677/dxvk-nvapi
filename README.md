@@ -21,7 +21,7 @@ When available, DXVK-NVAPI uses NVIDIA's NVML management library to query temper
 
 ## How to build
 
-Like DXVK, this library is being built as a Windows DLL using MinGW, and has essentially the same build requirements. Using MinGW versions older than MinGW 7 might fail. Python 3 is needed for a prebuild validation script. This project uses git submodules, ensure to fetch them while or after cloning the repository.
+Like DXVK, this library is being built as a Windows DLL using MinGW, DXVK-NVAPI requires MinGW 9, MinGW 8 unfortunately has an outdated D3D12 header. Python 3 is needed for a prebuild validation script. This project uses git submodules, ensure to fetch them while or after cloning the repository.
 
 Run:
 

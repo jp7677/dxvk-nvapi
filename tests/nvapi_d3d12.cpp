@@ -27,6 +27,10 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     ALLOW_CALL(device, GetExtensionSupport(_))
             .RETURN(true);
 
+    ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandList1), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandList1*>(&commandList))
+        .LR_SIDE_EFFECT(commandListRefCount++)
+        .RETURN(S_OK);
     ALLOW_CALL(commandList, QueryInterface(ID3D12GraphicsCommandListExt::guid, _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt*>(&commandList))
         .LR_SIDE_EFFECT(commandListRefCount++)
@@ -37,6 +41,19 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     ALLOW_CALL(commandList, Release())
         .LR_SIDE_EFFECT(commandListRefCount--)
         .RETURN(commandListRefCount);
+
+    SECTION("CreateGraphicsPipelineState for other than SetDepthBounds returns not-supported") {
+        FORBID_CALL(device, CreateGraphicsPipelineState(_, _, _));
+
+        auto desc = D3D12_GRAPHICS_PIPELINE_STATE_DESC{};
+        NVAPI_D3D12_PSO_SET_SHADER_EXTENSION_SLOT_DESC extensionDesc;
+        extensionDesc.baseVersion = NV_PSO_EXTENSION_DESC_VER;
+        extensionDesc.psoExtension = NV_PSO_SET_SHADER_EXTNENSION_SLOT_AND_SPACE;
+        extensionDesc.version = NV_SET_SHADER_EXTENSION_SLOT_DESC_VER;
+        const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = { &extensionDesc };
+        ID3D12PipelineState* pipelineState = nullptr;
+        REQUIRE(NvAPI_D3D12_CreateGraphicsPipelineState(&device, &desc, 1, extensions, &pipelineState) == NVAPI_NOT_SUPPORTED);
+    }
 
     SECTION("D3D12 methods without vkd3d-proton return error") {
         ALLOW_CALL(device, QueryInterface(ID3D12DeviceExt::guid, _))
@@ -99,6 +116,33 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto supported = true;
         REQUIRE(NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(&device, 1U, &supported) == NVAPI_OK);
         REQUIRE(supported == false);
+    }
+
+    SECTION("CreateGraphicsPipelineState for SetDepthBounds returns OK") {
+        auto desc = D3D12_GRAPHICS_PIPELINE_STATE_DESC{};
+        NVAPI_D3D12_PSO_ENABLE_DEPTH_BOUND_TEST_DESC extensionDesc;
+        extensionDesc.baseVersion = NV_PSO_EXTENSION_DESC_VER;
+        extensionDesc.psoExtension = NV_PSO_ENABLE_DEPTH_BOUND_TEST_EXTENSION;
+        extensionDesc.version = NV_ENABLE_DEPTH_BOUND_TEST_PSO_EXTENSION_DESC_VER;
+        extensionDesc.EnableDBT = true;
+        const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = { &extensionDesc };
+        ID3D12PipelineState* pipelineState = nullptr;
+        REQUIRE_CALL(device, CreateGraphicsPipelineState(&desc, __uuidof(ID3D12PipelineState), reinterpret_cast<void**>(&pipelineState)))
+            .RETURN(S_OK);
+
+        REQUIRE(NvAPI_D3D12_CreateGraphicsPipelineState(&device, &desc, 1, extensions, &pipelineState) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
+    }
+
+    SECTION("SetDepthBoundsTestValues returns OK") {
+        auto min = 0.4f;
+        auto max = 0.7f;
+        REQUIRE_CALL(commandList, OMSetDepthBounds(min, max));
+
+        REQUIRE(NvAPI_D3D12_SetDepthBoundsTestValues(&commandList, min, max) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("NvAPI_D3D12_GetGraphicsCapabilities returns OK") {
