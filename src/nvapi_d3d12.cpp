@@ -35,7 +35,17 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShader(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NVDX_ObjectHandle* pShader) {
-        return NvAPI_D3D12_CreateCubinComputeShaderWithName(pDevice, cubinData, cubinSize, blockX, blockY, blockZ, "", pShader);
+        constexpr auto n = __func__;
+        static bool alreadyLoggedError = false;
+        static bool alreadyLoggedOk = false;
+
+        if (pDevice == nullptr)
+            return InvalidArgument(n);
+
+        if (!NvapiD3d12Device::CreateCubinComputeShaderWithName(pDevice, cubinData, cubinSize, blockX, blockY, blockZ, "", pShader))
+            return Error(n, alreadyLoggedError);
+
+        return Ok(n, alreadyLoggedOk);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_DestroyCubinComputeShader(ID3D12Device* pDevice, NVDX_ObjectHandle pShader) {
