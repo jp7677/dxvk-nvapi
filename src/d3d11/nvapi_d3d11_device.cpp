@@ -63,7 +63,7 @@ namespace dxvk {
         return binaryImportDeviceContext->LaunchCubinShaderNVX(reinterpret_cast<IUnknown*>(hShader), gridX, gridY, gridZ, pParams, paramSize, reinterpret_cast<void* const*>(pReadResources), numReadResources, reinterpret_cast<void* const*>(pWriteResources), numWriteResources);
     }
 
-    bool NvapiD3d11Device::DestroyCubinShader(ID3D11Device* /*unused*/, NVDX_ObjectHandle hShader) {
+    bool NvapiD3d11Device::DestroyCubinShader(NVDX_ObjectHandle hShader) {
         auto cubinShader = reinterpret_cast<IUnknown*>(hShader);
         if (cubinShader != nullptr)
             cubinShader->Release();
@@ -71,7 +71,7 @@ namespace dxvk {
         return cubinShader != nullptr;
     }
 
-    bool NvapiD3d11Device::GetResourceDriverHandle(ID3D11Device* /*unused*/, ID3D11Resource* pResource, NVDX_ObjectHandle* phObject) {
+    bool NvapiD3d11Device::GetResourceDriverHandle(ID3D11Resource* pResource, NVDX_ObjectHandle* phObject) {
         // This trivial implementation is here instead of in DXVK for performance reasons; DXVK will assume that this is a straight cast though, so if either layer has to change that assumption then they will have to be upgraded in lockstep.
         *phObject = reinterpret_cast<NVDX_ObjectHandle>(pResource);
         return true;
@@ -138,6 +138,8 @@ namespace dxvk {
         return GetCachedDeviceContextExt(deviceContext, m_multiDrawIndirectContextMap, D3D11_VK_EXT_MULTI_DRAW_INDIRECT);
     }
 
+    // We are going to have single map for storing devices with extensions D3D11_VK_NVX_BINARY_IMPORT & D3D11_VK_NVX_IMAGE_VIEW_HANDLE.
+    // These are specific to NVIDIA and both of these extensions goes together.
     Com<ID3D11VkExtContext1> NvapiD3d11Device::GetBinaryImportDeviceContext(IUnknown* deviceOrContext) {
         std::scoped_lock lock(m_binaryImportContextMutex);
         auto context = GetCachedDeviceContextExt(deviceOrContext, m_binaryImportContextMap, D3D11_VK_NVX_BINARY_IMPORT);

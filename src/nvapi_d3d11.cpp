@@ -140,7 +140,7 @@ extern "C" {
         if (pDevice == nullptr)
             return InvalidArgument(n);
 
-        if (!NvapiD3d11Device::DestroyCubinShader(pDevice, hShader))
+        if (!NvapiD3d11Device::DestroyCubinShader(hShader))
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);
@@ -194,7 +194,7 @@ extern "C" {
         if (pDevice == nullptr || pResource == nullptr || phObject == nullptr)
             return InvalidArgument(n);
 
-        if (!NvapiD3d11Device::GetResourceDriverHandle(pDevice, pResource, phObject))
+        if (!NvapiD3d11Device::GetResourceDriverHandle(pResource, phObject))
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);

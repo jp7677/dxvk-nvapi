@@ -15,8 +15,8 @@ namespace dxvk {
         static bool MultiDrawIndexedInstancedIndirect(ID3D11DeviceContext* deviceContext, NvU32 drawCount, ID3D11Buffer* buffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs);
         static bool CreateCubinComputeShaderWithName(ID3D11Device* pDevice, const void* pCubin, NvU32 size, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* pShaderName, NVDX_ObjectHandle* phShader);
         static bool LaunchCubinShader(ID3D11DeviceContext* pDeviceContext, NVDX_ObjectHandle hShader, NvU32 gridX, NvU32 gridY, NvU32 gridZ, const void* pParams, NvU32 paramSize, const NVDX_ObjectHandle* pReadResources, NvU32 numReadResources, const NVDX_ObjectHandle* pWriteResources, NvU32 numWriteResources);
-        static bool DestroyCubinShader(ID3D11Device* pDevice, NVDX_ObjectHandle hShader);
-        static bool GetResourceDriverHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, NVDX_ObjectHandle* phObject);
+        static bool DestroyCubinShader(NVDX_ObjectHandle hShader);
+        static bool GetResourceDriverHandle(ID3D11Resource* pResource, NVDX_ObjectHandle* phObject);
         static bool GetResourceHandleGPUVirtualAddressAndSize(ID3D11Device* pDevice, NVDX_ObjectHandle hObject, NvU64* gpuVAStart, NvU64* gpuVASize);
         static bool CreateUnorderedAccessViewAndGetDriverHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC*  pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle);
         static bool CreateShaderResourceViewAndGetDriverHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc, ID3D11ShaderResourceView** ppSRV, NvU32* pDriverHandle);
