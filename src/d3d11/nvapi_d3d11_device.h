@@ -29,19 +29,16 @@ namespace dxvk {
         inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_barrierControlDeviceOrContextMap;
         inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_multiDrawIndirectContextMap;
         inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_binaryImportContextMap;
-        inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_imageViewHandleContextMap;
 
         inline static std::mutex m_depthBoundsDeviceOrContextMutex;
         inline static std::mutex m_barrierControlDeviceOrContextMutex;
         inline static std::mutex m_multiDrawIndirectContextMutex;
         inline static std::mutex m_binaryImportContextMutex;
-        inline static std::mutex m_imageViewHandleContextMutex;
 
         [[nodiscard]] static Com<ID3D11VkExtContext> GetSdbtDeviceContext(IUnknown* deviceOrContext);
         [[nodiscard]] static Com<ID3D11VkExtContext> GetBarrierControlDeviceContext(IUnknown* deviceOrContext);
         [[nodiscard]] static Com<ID3D11VkExtContext> GetMultiDrawDeviceContext(ID3D11DeviceContext* deviceContext);
         [[nodiscard]] static Com<ID3D11VkExtContext1> GetBinaryImportDeviceContext(IUnknown* deviceOrContext);
-        [[nodiscard]] static Com<ID3D11VkExtContext1> GetImageViewHandleDeviceContext(ID3D11DeviceContext* deviceContext);
         [[nodiscard]] static Com<ID3D11VkExtContext> GetCachedDeviceContextExt(IUnknown* deviceOrContext, std::unordered_map<IUnknown*, ID3D11VkExtContext*>& cacheMap, D3D11_VK_EXTENSION extension);
         [[nodiscard]] static Com<ID3D11VkExtContext> GetDeviceContextExt(IUnknown* deviceOrContext, D3D11_VK_EXTENSION extension);
         [[nodiscard]] static Com<ID3D11VkExtContext> GetDeviceContextExt(ID3D11DeviceContext* deviceContext, D3D11_VK_EXTENSION extension);
