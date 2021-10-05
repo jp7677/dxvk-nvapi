@@ -45,6 +45,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     SECTION("CreateGraphicsPipelineState for other than SetDepthBounds returns not-supported") {
         FORBID_CALL(device, CreateGraphicsPipelineState(_, _, _));
 
+        // See https://developer.nvidia.com/unlocking-gpu-intrinsics-hlsl how to use NvAPI_D3D12_CreateGraphicsPipelineState
         auto desc = D3D12_GRAPHICS_PIPELINE_STATE_DESC{};
         NVAPI_D3D12_PSO_SET_SHADER_EXTENSION_SLOT_DESC extensionDesc;
         extensionDesc.baseVersion = NV_PSO_EXTENSION_DESC_VER;
@@ -119,6 +120,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     }
 
     SECTION("CreateGraphicsPipelineState for SetDepthBounds returns OK") {
+        // See https://developer.nvidia.com/unlocking-gpu-intrinsics-hlsl how to use NvAPI_D3D12_CreateGraphicsPipelineState
         auto desc = D3D12_GRAPHICS_PIPELINE_STATE_DESC{};
         NVAPI_D3D12_PSO_ENABLE_DEPTH_BOUND_TEST_DESC extensionDesc;
         extensionDesc.baseVersion = NV_PSO_EXTENSION_DESC_VER;
