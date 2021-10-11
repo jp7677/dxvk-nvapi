@@ -30,13 +30,12 @@ Run:
 ```
 
 Alternatively [DXVK-Docker](https://github.com/jp7677/dxvk-docker) provides a way for a build setup using docker/podman.
-Prebuilt binaries of release versions are available at [https://github.com/jp7677/dxvk-nvapi/releases](https://github.com/jp7677/dxvk-nvapi/releases).
+Prebuilt binaries of release versions are available at <https://github.com/jp7677/dxvk-nvapi/releases>.
 
 ## How to use
 
 Using DXVK-NVAPI in Proton, Lutris or Wine requires DXVK to see the GPU as an NVIDIA GPU.
 
-- Disable the `nvapiHack` in DXVK with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
 - Spoof an NVIDIA GPU when running a non-NVIDIA GPU with `dxgi.customVendorId = 10de` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L31).
 
 ### Proton
@@ -44,7 +43,8 @@ Using DXVK-NVAPI in Proton, Lutris or Wine requires DXVK to see the GPU as an NV
 Proton 6.3-6 and newer includes DXVK-NVAPI but it is disabled by default.
 
 - Use `PROTON_ENABLE_NVAPI=1` as game launch argument in Steam to enable DXVK-NVAPI.
-- Copy `nvapi.dll`/`nvapi64.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 6.3/` if you want to manually update the included version.
+- Disable the `nvapiHack` in DXVK with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
+- Copy and replace  `nvapi.dll`/`nvapi64.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 6.3/` if you want to manually update the included version.
 
 ### Lutris
 
@@ -58,9 +58,13 @@ Wine does not includes DXVK-NVAPI.
 
 - Copy `nvapi.dll`/`nvapi64.dll` into the `syswow64`/`system32` folder of your x86/x64 Wine prefix.
 - Ensure that Wine uses the native version of `nvapi`/`nvapi64`, e.g. with `WINEDLLOVERRIDES=nvapi64,nvapi=n`.
-- Ensure that Wine uses DXVK's `dxgi.dll`, use it e.g. with `WINEDLLOVERRIDES=dxgi=n`.
+- Ensure that DXVK is installed in your x86/x64 Wine prefix.
+- Ensure that Wine uses DXVK's `dxgi.dll`, e.g. with `WINEDLLOVERRIDES=dxgi=n`.
+- Disable the `nvapiHack` in DXVK with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
 
-## Debugging
+## Debugging and troubleshooting
+
+See [Quirks-for-usage-with-DXVK-NVAPI](https://github.com/jp7677/dxvk-nvapi/wiki/Quirks-for-usage-with-DXVK-NVAPI) for any known quirks or work arounds.
 
 The following environment variables tweak DXVK-NVAPI's runtime behavior:
 
