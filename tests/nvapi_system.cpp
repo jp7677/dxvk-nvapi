@@ -128,6 +128,10 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         NvU32 deviceId, subSystemId, revisionId, extDeviceId;
         REQUIRE(nvAPI_GPU_GetPCIIdentifiers(handle, &deviceId, &subSystemId, &revisionId, &extDeviceId) == NVAPI_OK);
         std::cout << "    Device ID:                  0x" << std::setfill('0') << std::setw(8) << std::hex << deviceId << std::endl;
+        std::cout << "    Subsystem ID:               ";
+        subSystemId != 0
+            ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << subSystemId << std::endl
+            : std::cout << "N/A" << std::endl;
 
         NvAPI_ShortString fullName;
         REQUIRE(nvAPI_GPU_GetFullName(handle, fullName) == NVAPI_OK);
@@ -145,8 +149,8 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         result = nvAPI_GPU_GetAdapterIdFromPhysicalGpu(handle, static_cast<void*>(&luid));
         std::cout << "    LUID high part:             ";
         result == NVAPI_OK
-            ?   std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.HighPart << std::endl
-            :   std::cout << "N/A" << std::endl;
+            ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.HighPart << std::endl
+            : std::cout << "N/A" << std::endl;
 
         std::cout << "    LUID low part:              ";
         result == NVAPI_OK

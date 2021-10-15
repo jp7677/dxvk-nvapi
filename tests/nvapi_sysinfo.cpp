@@ -636,9 +636,26 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*nvml, DeviceGetHandleByPciBusId_v2(_, _))
             .RETURN(NVML_SUCCESS);
 
+        SECTION("GetPCIIdentifiers returns OK and has sub-system ID when NVML is available") {
+            auto id = 0x88161043;
+            ALLOW_CALL(*nvml, DeviceGetPciInfo_v3(_, _)) // NOLINT(bugprone-use-after-move)
+                .LR_SIDE_EFFECT(_2->pciSubSystemId = id)
+                .RETURN(NVML_SUCCESS);
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+            NvU32 deviceId, subSystemId, revisionId, extDeviceId;
+            REQUIRE(NvAPI_GPU_GetPCIIdentifiers(handle, &deviceId, &subSystemId, &revisionId, &extDeviceId) == NVAPI_OK);
+            REQUIRE(subSystemId == id);
+        }
+
         SECTION("GetVbiosVersionString returns OK") {
             auto version = "12.34";
-            ALLOW_CALL(*nvml, DeviceGetVbiosVersion(_, _, _))
+            ALLOW_CALL(*nvml, DeviceGetVbiosVersion(_, _, _)) // NOLINT(bugprone-use-after-move)
                 .LR_SIDE_EFFECT(strcpy(_2, version))
                 .RETURN(NVML_SUCCESS);
 
@@ -826,7 +843,7 @@ TEST_CASE("GetHdrCapabilities returns OK", "[.sysinfo]") {
     REQUIRE(capabilities.isDolbyVisionSupported == false);
 }
 
-TEST_CASE("GetDisplayViewportsByResolution returns mosaic-ot-active", "[.sysinfo]") {
+TEST_CASE("GetDisplayViewportsByResolution returns mosaic-not-active", "[.sysinfo]") {
     NvU8 corrected;
     NV_RECT rect[NV_MOSAIC_MAX_DISPLAYS];
     REQUIRE(NvAPI_Mosaic_GetDisplayViewportsByResolution(0, 0, 0, rect, &corrected) == NVAPI_MOSAIC_NOT_ACTIVE);
