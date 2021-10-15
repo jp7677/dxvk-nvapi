@@ -145,6 +145,15 @@ namespace dxvk {
         return (m_deviceProperties.deviceID << 16) | m_deviceProperties.vendorID;
     }
 
+    uint32_t NvapiAdapter::GetSubSystemId() const {
+        if (!this->HasNvmlDevice())
+            return 0;
+
+        nvmlPciInfo_t pciInfo;
+        auto result = this->m_nvml.DeviceGetPciInfo_v3(this->m_nvmlDevice, &pciInfo);
+        return result == NVML_SUCCESS ? pciInfo.pciSubSystemId : 0;
+    }
+
     uint32_t NvapiAdapter::GetGpuType() const {
         // The enum values for discrete, integrated and unknown GPU are the same for Vulkan and NvAPI
         auto vkDeviceType = m_deviceProperties.deviceType;
