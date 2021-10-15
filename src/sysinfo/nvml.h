@@ -12,6 +12,7 @@ namespace dxvk {
         [[nodiscard]] virtual bool IsAvailable() const;
         [[nodiscard]] virtual const char* ErrorString(nvmlReturn_t result) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetHandleByPciBusId_v2(const char *pciBusId, nvmlDevice_t *device) const;
+        [[nodiscard]] virtual nvmlReturn_t DeviceGetPciInfo_v3(nvmlDevice_t device, nvmlPciInfo_t *pci) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int *temp) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t *utilization) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetVbiosVersion(nvmlDevice_t device, char *version, unsigned int length) const;
@@ -23,6 +24,7 @@ namespace dxvk {
         typedef decltype(&nvmlShutdown) PFN_nvmlShutdown;
         typedef decltype(&nvmlErrorString) PFN_nvmlErrorString;
         typedef decltype(&nvmlDeviceGetHandleByPciBusId_v2) PFN_nvmlDeviceGetHandleByPciBusId_v2;
+        typedef decltype(&nvmlDeviceGetPciInfo_v3) PFN_nvmlDeviceGetPciInfo_v3;
         typedef decltype(&nvmlDeviceGetTemperature) PFN_nvmlDeviceGetTemperature;
         typedef decltype(&nvmlDeviceGetUtilizationRates) PFN_nvmlDeviceGetUtilizationRates;
         typedef decltype(&nvmlDeviceGetVbiosVersion) PFN_nvmlDeviceGetVbiosVersion;
@@ -34,6 +36,7 @@ namespace dxvk {
         PFN_nvmlShutdown m_nvmlShutdown{};
         PFN_nvmlErrorString m_nvmlErrorString{};
         PFN_nvmlDeviceGetHandleByPciBusId_v2 m_nvmlDeviceGetHandleByPciBusId_v2{};
+        PFN_nvmlDeviceGetPciInfo_v3 m_nvmlDeviceGetPciInfo_v3{};
         PFN_nvmlDeviceGetTemperature m_nvmlDeviceGetTemperature{};
         PFN_nvmlDeviceGetUtilizationRates m_nvmlDeviceGetUtilizationRates{};
         PFN_nvmlDeviceGetVbiosVersion m_nvmlDeviceGetVbiosVersion{};

@@ -18,6 +18,7 @@ namespace dxvk {
         m_nvmlShutdown = GetProcAddress<PFN_nvmlShutdown>("nvmlShutdown");
         m_nvmlErrorString = GetProcAddress<PFN_nvmlErrorString>("nvmlErrorString");
         m_nvmlDeviceGetHandleByPciBusId_v2 = GetProcAddress<PFN_nvmlDeviceGetHandleByPciBusId_v2>("nvmlDeviceGetHandleByPciBusId_v2");
+        m_nvmlDeviceGetPciInfo_v3 = GetProcAddress<PFN_nvmlDeviceGetPciInfo_v3>("m_nvmlDeviceGetPciInfo_v3");
         m_nvmlDeviceGetTemperature = GetProcAddress<PFN_nvmlDeviceGetTemperature>("nvmlDeviceGetTemperature");
         m_nvmlDeviceGetUtilizationRates = GetProcAddress<PFN_nvmlDeviceGetUtilizationRates>("nvmlDeviceGetUtilizationRates");
         m_nvmlDeviceGetVbiosVersion = GetProcAddress<PFN_nvmlDeviceGetVbiosVersion>("nvmlDeviceGetVbiosVersion");
@@ -28,6 +29,7 @@ namespace dxvk {
             || m_nvmlShutdown == nullptr
             || m_nvmlErrorString == nullptr
             || m_nvmlDeviceGetHandleByPciBusId_v2 == nullptr
+            || m_nvmlDeviceGetPciInfo_v3 == nullptr
             || m_nvmlDeviceGetTemperature == nullptr
             || m_nvmlDeviceGetUtilizationRates == nullptr
             || m_nvmlDeviceGetVbiosVersion == nullptr
@@ -65,6 +67,10 @@ namespace dxvk {
 
     nvmlReturn_t Nvml::DeviceGetHandleByPciBusId_v2(const char *pciBusId, nvmlDevice_t *device) const {
         return m_nvmlDeviceGetHandleByPciBusId_v2(pciBusId, device);
+    }
+
+    nvmlReturn_t Nvml::DeviceGetPciInfo_v3(nvmlDevice_t device, nvmlPciInfo_t *pci) const {
+        return m_nvmlDeviceGetPciInfo_v3(device, pci);
     }
 
     nvmlReturn_t Nvml::DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int *temp) const {
