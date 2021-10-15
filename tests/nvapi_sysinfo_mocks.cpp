@@ -66,6 +66,7 @@ class NvmlMock : public mock_interface<Nvml> {
     IMPLEMENT_CONST_MOCK0(IsAvailable);
     IMPLEMENT_CONST_MOCK1(ErrorString);
     IMPLEMENT_CONST_MOCK2(DeviceGetHandleByPciBusId_v2);
+    IMPLEMENT_CONST_MOCK2(DeviceGetPciInfo_v3);
     IMPLEMENT_CONST_MOCK3(DeviceGetTemperature);
     IMPLEMENT_CONST_MOCK2(DeviceGetUtilizationRates);
     IMPLEMENT_CONST_MOCK3(DeviceGetVbiosVersion);
