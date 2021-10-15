@@ -18,7 +18,7 @@ namespace dxvk {
         m_nvmlShutdown = GetProcAddress<PFN_nvmlShutdown>("nvmlShutdown");
         m_nvmlErrorString = GetProcAddress<PFN_nvmlErrorString>("nvmlErrorString");
         m_nvmlDeviceGetHandleByPciBusId_v2 = GetProcAddress<PFN_nvmlDeviceGetHandleByPciBusId_v2>("nvmlDeviceGetHandleByPciBusId_v2");
-        m_nvmlDeviceGetPciInfo_v3 = GetProcAddress<PFN_nvmlDeviceGetPciInfo_v3>("m_nvmlDeviceGetPciInfo_v3");
+        m_nvmlDeviceGetPciInfo_v3 = GetProcAddress<PFN_nvmlDeviceGetPciInfo_v3>("nvmlDeviceGetPciInfo_v3");
         m_nvmlDeviceGetTemperature = GetProcAddress<PFN_nvmlDeviceGetTemperature>("nvmlDeviceGetTemperature");
         m_nvmlDeviceGetUtilizationRates = GetProcAddress<PFN_nvmlDeviceGetUtilizationRates>("nvmlDeviceGetUtilizationRates");
         m_nvmlDeviceGetVbiosVersion = GetProcAddress<PFN_nvmlDeviceGetVbiosVersion>("nvmlDeviceGetVbiosVersion");

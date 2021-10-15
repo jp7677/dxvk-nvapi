@@ -636,7 +636,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*nvml, DeviceGetHandleByPciBusId_v2(_, _))
             .RETURN(NVML_SUCCESS);
 
-        SECTION("GetPCIIdentifiers returns OK and has sub-system ID when NVML is available") {
+        SECTION("GetPCIIdentifiers returns OK and has subsystem ID when NVML is available") {
             auto id = 0x88161043;
             ALLOW_CALL(*nvml, DeviceGetPciInfo_v3(_, _)) // NOLINT(bugprone-use-after-move)
                 .LR_SIDE_EFFECT(_2->pciSubSystemId = id)
