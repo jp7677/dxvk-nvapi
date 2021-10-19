@@ -217,6 +217,21 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
         REQUIRE(handle == nullptr);
     }
 
+    SECTION("GetPhysicalGPUsFromLogicalGPU succeeds") {
+        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
+        NvU32 count;
+        REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
+
+        NvPhysicalGpuHandle physicalHandles[NVAPI_MAX_PHYSICAL_GPUS];
+        REQUIRE(NvAPI_GetPhysicalGPUsFromLogicalGPU(handles[0], physicalHandles, &count) == NVAPI_OK);
+        REQUIRE(count == 1);
+        REQUIRE(physicalHandles[0] == reinterpret_cast<NvPhysicalGpuHandle>(handles[0]));
+
+        REQUIRE(NvAPI_GetPhysicalGPUsFromLogicalGPU(handles[1], physicalHandles, &count) == NVAPI_OK);
+        REQUIRE(count == 1);
+        REQUIRE(physicalHandles[0] == reinterpret_cast<NvPhysicalGpuHandle>(handles[1]));
+    }
+
     SECTION("GetPhysicalGPUsFromDisplay succeeds") {
         NvDisplayHandle displayHandle1 = nullptr;
         NvDisplayHandle displayHandle2 = nullptr;

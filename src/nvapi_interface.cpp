@@ -94,6 +94,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_EnumPhysicalGPUs)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GetDisplayDriverVersion)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GetPhysicalGPUsFromDisplay)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GetPhysicalGPUsFromLogicalGPU)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_EnumNvidiaDisplayHandle)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_EnumNvidiaUnAttachedDisplayHandle)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GetInterfaceVersionString)
