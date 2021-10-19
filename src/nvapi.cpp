@@ -80,7 +80,7 @@ extern "C" {
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hLogicalGPU);
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
-            return ExpectedPhysicalGpuHandle(n);
+            return ExpectedLogicalGpuHandle(n);
 
         hPhysicalGPU[0] = reinterpret_cast<NvPhysicalGpuHandle>(adapter);
         *pGpuCount = 1;

@@ -75,6 +75,11 @@ namespace dxvk {
         return NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE;
     }
 
+    inline NvAPI_Status ExpectedLogicalGpuHandle(const std::string& logMessage) {
+        log::write(str::format(logMessage, ": Expected logical GPU handle"));
+        return NVAPI_EXPECTED_LOGICAL_GPU_HANDLE;
+    }
+
     inline NvAPI_Status IncompatibleStructVersion(const std::string& logMessage) {
         log::write(str::format(logMessage, ": Incompatible struct version"));
         return NVAPI_INCOMPATIBLE_STRUCT_VERSION;
