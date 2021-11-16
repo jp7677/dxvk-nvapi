@@ -1,8 +1,9 @@
 #include "../inc/nvapi_interface.h"
 #include "nvapi.cpp"
 #include "nvapi_sys.cpp"
-#include "nvapi_disp.cpp"
 #include "nvapi_mosaic.cpp"
+#include "nvapi_disp.cpp"
+#include "nvapi_drs.cpp"
 #include "nvapi_gpu.cpp"
 #include "nvapi_d3d.cpp"
 #include "nvapi_d3d11.cpp"
@@ -91,6 +92,13 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetVbiosVersionString)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetCurrentPstate)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetAllClockFrequencies)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DRS_FindApplicationByName)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DRS_FindProfileByName)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DRS_GetSetting)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DRS_GetBaseProfile)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DRS_LoadSettings)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DRS_DestroySession)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DRS_CreateSession)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Disp_GetHdrCapabilities)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DISP_GetDisplayIdByDisplayName)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DISP_GetGDIPrimaryDisplayId)

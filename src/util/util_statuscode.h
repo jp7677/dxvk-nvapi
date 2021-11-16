@@ -130,4 +130,9 @@ namespace dxvk {
         log::write(str::format(logMessage, ": NVIDIA or other suitable device not found or initialization failed"));
         return NVAPI_NVIDIA_DEVICE_NOT_FOUND;
     }
+
+    inline NvAPI_Status ExecutableNotFound(const std::string& logMessage) {
+        log::write(str::format(logMessage, ": Executable not found"));
+        return NVAPI_EXECUTABLE_NOT_FOUND;
+    }
 }
