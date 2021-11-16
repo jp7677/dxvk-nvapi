@@ -32,4 +32,9 @@ namespace dxvk::str {
         ::MultiByteToWideChar(CP_UTF8, 0, mbs, -1, &result[0], len);
         return result;
     }
+
+    std::string fromnvs(NvAPI_UnicodeString nvs) {
+        auto w = std::wstring(reinterpret_cast<wchar_t*>(nvs));
+        return {w.begin(), w.end()};
+    }
 }
