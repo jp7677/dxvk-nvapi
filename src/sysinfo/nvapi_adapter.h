@@ -18,6 +18,7 @@ namespace dxvk {
         [[nodiscard]] VkDriverIdKHR GetDriverId() const;
         [[nodiscard]] uint32_t GetDriverVersion() const;
         [[nodiscard]] uint32_t GetDeviceId() const;
+        [[nodiscard]] uint32_t GetExternalDeviceId() const;
         [[nodiscard]] uint32_t GetSubSystemId() const;
         [[nodiscard]] uint32_t GetGpuType() const;
         [[nodiscard]] uint32_t GetBusId() const;

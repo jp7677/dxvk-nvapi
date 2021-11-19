@@ -145,6 +145,10 @@ namespace dxvk {
         return (m_deviceProperties.deviceID << 16) | m_deviceProperties.vendorID;
     }
 
+    uint32_t NvapiAdapter::GetExternalDeviceId() const {
+        return m_deviceProperties.deviceID;
+    }
+
     uint32_t NvapiAdapter::GetSubSystemId() const {
         if (!this->HasNvmlDevice())
             return 0;

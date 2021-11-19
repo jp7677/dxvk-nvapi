@@ -493,9 +493,9 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         NvU32 deviceId, subSystemId, revisionId, extDeviceId;
         REQUIRE(NvAPI_GPU_GetPCIIdentifiers(handle, &deviceId, &subSystemId, &revisionId, &extDeviceId) == NVAPI_OK);
         REQUIRE(deviceId == 0x123410de);
-        REQUIRE(subSystemId == 0);
-        REQUIRE(revisionId == 0);
-        REQUIRE(extDeviceId == 0);
+        REQUIRE(subSystemId == 0x0);
+        REQUIRE(revisionId == 0x0);
+        REQUIRE(extDeviceId == 0x00001234);
     }
 
     SECTION("GetFullName returns OK") {
