@@ -2,7 +2,7 @@
 
 using namespace trompeloeil;
 
-class DXGIFactoryMock : public mock_interface<IDXGIFactory> {
+class DXGIFactory1Mock : public mock_interface<IDXGIFactory1> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -15,9 +15,11 @@ class DXGIFactoryMock : public mock_interface<IDXGIFactory> {
     IMPLEMENT_MOCK1(GetWindowAssociation);
     IMPLEMENT_MOCK3(CreateSwapChain);
     IMPLEMENT_MOCK2(CreateSoftwareAdapter);
+    IMPLEMENT_MOCK2(EnumAdapters1);
+    IMPLEMENT_MOCK0(IsCurrent);
 };
 
-class IDXGIDxvkAdapter : public IDXGIAdapter, public IDXGIVkInteropAdapter {};
+class IDXGIDxvkAdapter : public IDXGIAdapter1, public IDXGIVkInteropAdapter {};
 
 class DXGIDxvkAdapterMock : public mock_interface<IDXGIDxvkAdapter> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -31,6 +33,7 @@ class DXGIDxvkAdapterMock : public mock_interface<IDXGIDxvkAdapter> {
     IMPLEMENT_MOCK1(GetDesc);
     IMPLEMENT_MOCK2(CheckInterfaceSupport);
     IMPLEMENT_MOCK2(GetVulkanHandles);
+    IMPLEMENT_MOCK1(GetDesc1);
 };
 
 class DXGIOutputMock : public mock_interface<IDXGIOutput> {

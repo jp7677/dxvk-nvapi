@@ -5,9 +5,9 @@ namespace dxvk {
 
     ResourceFactory::~ResourceFactory()  = default;
 
-    Com<IDXGIFactory> ResourceFactory::CreateDXGIFactory() {
-        Com<IDXGIFactory> dxgiFactory;
-        if(FAILED(::CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&dxgiFactory)))
+    Com<IDXGIFactory1> ResourceFactory::CreateDXGIFactory1() {
+        Com<IDXGIFactory1> dxgiFactory;
+        if(FAILED(::CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgiFactory)))
             return nullptr;
 
         return dxgiFactory;

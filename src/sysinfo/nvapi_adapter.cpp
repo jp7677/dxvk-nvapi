@@ -10,7 +10,7 @@ namespace dxvk {
 
     NvapiAdapter::~NvapiAdapter() = default;
 
-    bool NvapiAdapter::Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
+    bool NvapiAdapter::Initialize(Com<IDXGIAdapter1>& dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
         constexpr auto driverVersionEnvName = "DXVK_NVAPI_DRIVER_VERSION";
 
         // Query all outputs from DXVK

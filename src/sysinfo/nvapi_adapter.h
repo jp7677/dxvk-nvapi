@@ -13,7 +13,7 @@ namespace dxvk {
         NvapiAdapter(Vulkan& vulkan, Nvml& nvml);
         ~NvapiAdapter();
 
-        bool Initialize(Com<IDXGIAdapter>& dxgiAdapter, std::vector<NvapiOutput*>& outputs);
+        bool Initialize(Com<IDXGIAdapter1>& dxgiAdapter, std::vector<NvapiOutput*>& outputs);
         [[nodiscard]] std::string GetDeviceName() const;
         [[nodiscard]] VkDriverIdKHR GetDriverId() const;
         [[nodiscard]] uint32_t GetDriverVersion() const;

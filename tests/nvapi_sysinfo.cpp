@@ -28,7 +28,7 @@ TEST_CASE("GetErrorMessage returns OK", "[.sysinfo]") {
 }
 
 TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "[.sysinfo]") {
-    auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
+    auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
 
@@ -36,7 +36,7 @@ TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "
         .RETURN(1);
     ALLOW_CALL(*dxgiFactory, Release())
         .RETURN(0);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters(_, _))
+    ALLOW_CALL(*dxgiFactory, EnumAdapters1(_, _))
         .RETURN(DXGI_ERROR_NOT_FOUND);
 
     ALLOW_CALL(*vulkan, IsAvailable())
@@ -51,7 +51,7 @@ TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "
 }
 
 TEST_CASE("Topology methods succeed", "[.sysinfo]") {
-    auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
+    auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
     DXGIDxvkAdapterMock adapter1;
     auto vkDevice1 = reinterpret_cast<VkPhysicalDevice>(0x01); // Very evil, but works for testing since we use this only as identifier
     DXGIDxvkAdapterMock adapter2;
@@ -66,13 +66,13 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
         .RETURN(1);
     ALLOW_CALL(*dxgiFactory, Release())
         .RETURN(0);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters(0U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter*>(&adapter1))
+    ALLOW_CALL(*dxgiFactory, EnumAdapters1(0U, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter1*>(&adapter1))
         .RETURN(S_OK);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters(1U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter*>(&adapter2))
+    ALLOW_CALL(*dxgiFactory, EnumAdapters1(1U, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter1*>(&adapter2))
         .RETURN(S_OK);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters(2U, _))
+    ALLOW_CALL(*dxgiFactory, EnumAdapters1(2U, _))
         .RETURN(DXGI_ERROR_NOT_FOUND);
 
     ALLOW_CALL(adapter1, QueryInterface(IDXGIVkInteropAdapter::guid, _))
@@ -307,7 +307,7 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
 }
 
 TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
-    auto dxgiFactory = std::make_unique<DXGIFactoryMock>();
+    auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
     DXGIDxvkAdapterMock adapter;
     DXGIOutputMock output;
     auto vulkan = std::make_unique<VulkanMock>();
@@ -317,10 +317,10 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         .RETURN(1);
     ALLOW_CALL(*dxgiFactory, Release())
         .RETURN(0);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters(0U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter*>(&adapter))
+    ALLOW_CALL(*dxgiFactory, EnumAdapters1(0U, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter1*>(&adapter))
         .RETURN(S_OK);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters(1U, _))
+    ALLOW_CALL(*dxgiFactory, EnumAdapters1(1U, _))
         .RETURN(DXGI_ERROR_NOT_FOUND);
 
     ALLOW_CALL(adapter, QueryInterface(IDXGIVkInteropAdapter::guid, _))

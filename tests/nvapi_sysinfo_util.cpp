@@ -6,7 +6,7 @@ void ResetResourceFactory() {
     initializationCount = 0ULL;
 }
 
-void SetupResourceFactory(std::unique_ptr<DXGIFactoryMock> dxgiFactory, std::unique_ptr<Vulkan> vulkan, std::unique_ptr<Nvml> nvml) {
+void SetupResourceFactory(std::unique_ptr<DXGIFactory1Mock> dxgiFactory, std::unique_ptr<Vulkan> vulkan, std::unique_ptr<Nvml> nvml) {
     resourceFactory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
     nvapiAdapterRegistry.reset();
     initializationCount = 0ULL;
