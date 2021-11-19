@@ -12,7 +12,7 @@ namespace dxvk {
         ResourceFactory();
         virtual ~ResourceFactory();
 
-        virtual Com<IDXGIFactory> CreateDXGIFactory();
+        virtual Com<IDXGIFactory1> CreateDXGIFactory1();
         virtual std::unique_ptr<Vulkan> CreateVulkan();
         virtual std::unique_ptr<Nvml> CreateNvml();
     };
