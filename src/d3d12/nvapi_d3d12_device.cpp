@@ -2,6 +2,14 @@
 
 namespace dxvk {
 
+    std::optional<LUID> NvapiD3d12Device::GetLuid(IUnknown* unknown) {
+        Com<ID3D12Device> device;
+        if (FAILED(unknown->QueryInterface(IID_PPV_ARGS(&device))))
+            return {};
+
+        return device->GetAdapterLuid();
+    }
+
     bool NvapiD3d12Device::CreateGraphicsPipelineState(ID3D12Device* device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pipelineStateDescription, NvU32 numberOfExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** extensions, ID3D12PipelineState** pipelineState) {
         if (numberOfExtensions != 1 || extensions[0]->psoExtension != NV_PSO_ENABLE_DEPTH_BOUND_TEST_EXTENSION)
             return false;

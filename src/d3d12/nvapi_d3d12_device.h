@@ -9,6 +9,8 @@ namespace dxvk {
     class NvapiD3d12Device {
 
     public:
+        static std::optional<LUID> GetLuid(IUnknown* unknown);
+
         static bool CreateGraphicsPipelineState(ID3D12Device* device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pipelineStateDescription, NvU32 numberOfExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** extensions, ID3D12PipelineState** pipelineState);
         static bool SetDepthBoundsTestValues(ID3D12GraphicsCommandList* commandList, float minDepth, float maxDepth);
 
