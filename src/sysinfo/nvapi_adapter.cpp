@@ -183,12 +183,13 @@ namespace dxvk {
         return size;
     }
 
-    bool NvapiAdapter::GetLUID(LUID* luid) const {
+    std::optional<LUID> NvapiAdapter::GetLuid() const {
         if (!m_deviceIdProperties.deviceLUIDValid)
-            return false;
+            return {};
 
-        memcpy(luid, &m_deviceIdProperties.deviceLUID, sizeof(*luid));
-        return true;
+        LUID luid{};
+        memcpy(&luid, &m_deviceIdProperties.deviceLUID, sizeof(LUID));
+        return std::make_optional(luid);
     }
 
     NV_GPU_ARCHITECTURE_ID NvapiAdapter::GetArchitectureId() const {

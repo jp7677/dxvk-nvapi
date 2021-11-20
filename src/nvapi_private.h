@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 #include <set>
+#include <optional>
 #include <sstream>
 #include <fstream>
 #include <ctime>

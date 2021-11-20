@@ -23,7 +23,7 @@ namespace dxvk {
         [[nodiscard]] uint32_t GetGpuType() const;
         [[nodiscard]] uint32_t GetBusId() const;
         [[nodiscard]] uint32_t GetVRamSize() const;
-        [[nodiscard]] bool GetLUID(LUID* luid) const;
+        [[nodiscard]] std::optional<LUID> GetLuid() const;
         [[nodiscard]] NV_GPU_ARCHITECTURE_ID GetArchitectureId() const;
 
         [[nodiscard]] bool HasNvml() const;
