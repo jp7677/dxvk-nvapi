@@ -565,8 +565,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
         LUID luid;
         REQUIRE(NvAPI_GPU_GetAdapterIdFromPhysicalGpu(handle, static_cast<void*>(&luid)) == NVAPI_OK);
-        REQUIRE(luid.LowPart  == 0x04030201);
         REQUIRE(luid.HighPart == 0x08070605);
+        REQUIRE(luid.LowPart  == 0x04030201);
     }
 
     SECTION("GetArchInfo returns OK") {
