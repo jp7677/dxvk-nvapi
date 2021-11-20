@@ -153,9 +153,6 @@ extern "C" {
         return Ok(str::format(n, " ", nr, " (", error, ")"));
     }
 
-    static auto initializationMutex = std::mutex{};
-    static auto initializationCount = 0ULL;
-
     NvAPI_Status __cdecl NvAPI_Unload() {
         constexpr auto n = __func__;
 

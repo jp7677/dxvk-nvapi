@@ -5,3 +5,6 @@
 
 static std::unique_ptr<dxvk::ResourceFactory> resourceFactory;
 static std::unique_ptr<dxvk::NvapiAdapterRegistry> nvapiAdapterRegistry;
+
+static auto initializationMutex = std::mutex{};
+static auto initializationCount = 0ULL;
