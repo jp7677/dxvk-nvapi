@@ -1,18 +1,3 @@
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-
-#include "../inc/catch.hpp"
-#include "../inc/catch2/trompeloeil.hpp"
-#include "../src/sysinfo/resource_factory.h"
-#include "../src/dxvk/dxvk_interfaces.h"
-#include "../src/nvapi.cpp"
-#include "../src/nvapi_sys.cpp"
-#include "../src/nvapi_gpu.cpp"
-#include "../src/nvapi_disp.cpp"
-#include "../src/nvapi_mosaic.cpp"
-#include "nvapi_sysinfo_mocks.cpp"
-#include "nvapi_sysinfo_util.cpp"
-
 using namespace trompeloeil;
 
 TEST_CASE("GetInterfaceVersionString returns OK", "[.sysinfo]") {

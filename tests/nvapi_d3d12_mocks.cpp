@@ -1,5 +1,3 @@
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-
 using namespace trompeloeil;
 
 class ID3D12Vkd3dDevice : public ID3D12Device, public ID3D12DeviceExt {};

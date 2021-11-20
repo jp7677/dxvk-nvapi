@@ -1,10 +1,3 @@
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-
-#include "../inc/catch.hpp"
-#include "../inc/catch2/trompeloeil.hpp"
-#include "../src/nvapi_d3d11.cpp"
-#include "nvapi_d3d11_mocks.cpp"
-
 using namespace trompeloeil;
 
 TEST_CASE("D3D11 methods succeed", "[.d3d11]") {

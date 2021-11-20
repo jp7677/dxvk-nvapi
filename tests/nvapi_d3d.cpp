@@ -1,17 +1,4 @@
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-
-#include "../inc/catch.hpp"
-#include "../inc/catch2/trompeloeil.hpp"
-#include "../src/nvapi_d3d.cpp"
-
 using namespace trompeloeil;
-
-class UnknownMock : public mock_interface<IUnknown> {
-    MAKE_MOCK2 (QueryInterface, HRESULT(REFIID, void * *), override);
-    MAKE_MOCK0 (AddRef, ULONG(), override);
-    MAKE_MOCK0 (Release, ULONG(), override);
-};
 
 TEST_CASE("D3D methods succeed", "[.d3d]") {
     UnknownMock unknown;
