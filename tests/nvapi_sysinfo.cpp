@@ -146,7 +146,7 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
         .RETURN(false);
 
     SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
-        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+    REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
     SECTION("EnumLogicalGPUs succeeds") {
         NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
