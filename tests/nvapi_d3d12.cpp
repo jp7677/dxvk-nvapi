@@ -140,15 +140,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(commandListRefCount == 0);
     }
 
-    SECTION("NvAPI_D3D12_GetGraphicsCapabilities returns OK") {
-        NV_D3D12_GRAPHICS_CAPS graphicsCaps;
-        graphicsCaps.bFastUAVClearSupported = false;
-        REQUIRE(NvAPI_D3D12_GetGraphicsCapabilities(static_cast<ID3D12Device*>(&device), NV_D3D12_GRAPHICS_CAPS_VER1, &graphicsCaps) == NVAPI_OK);
-        REQUIRE(graphicsCaps.bFastUAVClearSupported == true);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
-    }
-
     SECTION("CreateCubinComputeShader returns OK") {
         const void* cubinData = nullptr;
         auto cubinSize = 2U;

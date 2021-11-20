@@ -22,4 +22,5 @@
 #include "nvapi_d3d.cpp"
 #include "nvapi_d3d11.cpp"
 #include "nvapi_d3d12.cpp"
+#include "nvapi_d3d12_capabilities.cpp"
 #include "nvapi_sysinfo.cpp"

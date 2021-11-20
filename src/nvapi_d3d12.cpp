@@ -1,4 +1,5 @@
 #include "nvapi_private.h"
+#include "nvapi_static.h"
 #include "d3d12/nvapi_d3d12_device.h"
 #include "util/util_statuscode.h"
 #include "util/util_op_code.h"
@@ -120,21 +121,59 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetGraphicsCapabilities(IUnknown* pDevice, NvU32 structVersion, NV_D3D12_GRAPHICS_CAPS* pGraphicsCaps) {
         constexpr auto n = __func__;
-        static bool alreadyLogged = false;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
 
         if (pDevice == nullptr || structVersion != NV_D3D12_GRAPHICS_CAPS_VER1)
             return InvalidArgument(n);
 
-        // Currently we do not require these fields, we can implement them later.
-        // pGraphicsCaps->bExclusiveScissorRectsSupported      = ;
-        // pGraphicsCaps->bVariablePixelRateShadingSupported   = ;
-        // pGraphicsCaps->majorSMVersion                       = ;
-        // pGraphicsCaps->minorSMVersion                       = ;
-
+        pGraphicsCaps->majorSMVersion = 0;
+        pGraphicsCaps->minorSMVersion = 0;
         // all Vulkan drivers are expected to support ZBC clear without padding
-        pGraphicsCaps->bFastUAVClearSupported               = true;
+        pGraphicsCaps->bFastUAVClearSupported = true;
 
-        return Ok(n, alreadyLogged);
+        NvapiAdapter* adapter = nullptr;
+        auto luid = NvapiD3d12Device::GetLuid(pDevice);
+        if (luid.has_value())
+            adapter = nvapiAdapterRegistry->GetAdapter(luid.value());
+
+        if (adapter == nullptr || adapter->GetDriverId() != VK_DRIVER_ID_NVIDIA_PROPRIETARY)
+            return Ok(str::format(n, " (sm_0)"));
+
+        // From https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+        // Note: One might think that SM here is D3D12 Shader Model, in fact it is the "Streaming Multiprocessor" architecture name
+        switch (adapter->GetArchitectureId()) {
+            case NV_GPU_ARCHITECTURE_GA100:
+                pGraphicsCaps->majorSMVersion = 8;
+                pGraphicsCaps->minorSMVersion = 6; // Take the risk that no one uses an NVIDIA A100 with this implementation
+                break;
+            case NV_GPU_ARCHITECTURE_TU100:
+                pGraphicsCaps->majorSMVersion = 7;
+                pGraphicsCaps->minorSMVersion = 5;
+                break;
+            case NV_GPU_ARCHITECTURE_GV100:
+                pGraphicsCaps->majorSMVersion = 7;
+                pGraphicsCaps->minorSMVersion = 0;
+                break;
+            case NV_GPU_ARCHITECTURE_GP100:
+                pGraphicsCaps->majorSMVersion = 6;
+                pGraphicsCaps->minorSMVersion = 0;
+                break;
+            case NV_GPU_ARCHITECTURE_GM200:
+                pGraphicsCaps->majorSMVersion = 5;
+                pGraphicsCaps->minorSMVersion = 0;
+                break;
+            default:
+                break;
+        }
+
+        // These fields should be derivable from architecture, but not sure yet what the consequences are
+        // Currently we do not require these fields, we can implement them later.
+        // pGraphicsCaps->bExclusiveScissorRectsSupported = ;
+        // pGraphicsCaps->bVariablePixelRateShadingSupported = ; // Should be supported on Turing and newer
+
+        return Ok(str::format(n, " (sm_", pGraphicsCaps->majorSMVersion, pGraphicsCaps->minorSMVersion, ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_IsFatbinPTXSupported(ID3D12Device* pDevice, bool* isSupported) {
