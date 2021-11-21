@@ -45,8 +45,7 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
     DXGIOutputMock output2;
     DXGIOutputMock output3;
 
-    auto expectations = ConfigureExtendedTestEnvironment(
-        *dxgiFactory, *vulkan, *nvml, adapter1, adapter2, output1, output2, output3);
+    auto e = ConfigureExtendedTestEnvironment(*dxgiFactory, *vulkan, *nvml, adapter1, adapter2, output1, output2, output3);
 
     SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
     REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -216,7 +215,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     DXGIDxvkAdapterMock adapter;
     DXGIOutputMock output;
 
-    auto expectations = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, adapter, output);
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, adapter, output);
 
     ::SetEnvironmentVariableA("DXVK_NVAPI_DRIVER_VERSION", "");
 

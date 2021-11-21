@@ -15,7 +15,7 @@ void SetupResourceFactory(
     initializationCount = 0ULL;
 }
 
-std::array<std::unique_ptr<expectation>, 16> ConfigureDefaultTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 16> ConfigureDefaultTestEnvironment(
         DXGIFactory1Mock& dxgiFactory,
         VulkanMock& vulkan,
         NvmlMock& nvml,
@@ -63,7 +63,7 @@ std::array<std::unique_ptr<expectation>, 16> ConfigureDefaultTestEnvironment(
     };
 }
 
-std::array<std::unique_ptr<expectation>, 28> ConfigureExtendedTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 28> ConfigureExtendedTestEnvironment(
         DXGIFactory1Mock& dxgiFactory,
         VulkanMock& vulkan,
         NvmlMock& nvml,

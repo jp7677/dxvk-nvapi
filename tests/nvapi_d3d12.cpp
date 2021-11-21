@@ -120,7 +120,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         DXGIOutputMock output;
         LUID* luid = new LUID{};
 
-        auto expectations = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, adapter, output);
+        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, adapter, output);
 
         ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12Device), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12Device*>(&device))
