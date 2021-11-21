@@ -15,74 +15,55 @@ void SetupResourceFactory(
     initializationCount = 0ULL;
 }
 
-std::vector<std::unique_ptr<expectation>> ConfigureDefaultTestEnvironment(
+std::array<std::unique_ptr<expectation>, 16> ConfigureDefaultTestEnvironment(
         DXGIFactory1Mock& dxgiFactory,
         VulkanMock& vulkan,
         NvmlMock& nvml,
         DXGIDxvkAdapterMock& adapter,
         DXGIOutputMock& output) {
-    // See https://github.com/rollbear/trompeloeil/issues/127 about usage of named expectations
-    auto exps = std::vector<std::unique_ptr<expectation>>();
-
-    exps.emplace_back(
+    return {
         NAMED_ALLOW_CALL(dxgiFactory, AddRef())
-            .RETURN(1));
-    exps.emplace_back(
+            .RETURN(1),
         NAMED_ALLOW_CALL(dxgiFactory, Release())
-            .RETURN(0));
-    exps.emplace_back(
+            .RETURN(0),
         NAMED_ALLOW_CALL(dxgiFactory, EnumAdapters1(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter1*>(&adapter))
-            .RETURN(S_OK));
-    exps.emplace_back(
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(dxgiFactory, EnumAdapters1(1U, _))
-            .RETURN(DXGI_ERROR_NOT_FOUND));
+            .RETURN(DXGI_ERROR_NOT_FOUND),
 
-    exps.emplace_back(
         NAMED_ALLOW_CALL(adapter, QueryInterface(IDXGIVkInteropAdapter::guid, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter))
-            .RETURN(S_OK));
-    exps.emplace_back(
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter, Release())
-            .RETURN(0));
-    exps.emplace_back(
+            .RETURN(0),
         NAMED_ALLOW_CALL(adapter, EnumOutputs(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output))
-            .RETURN(S_OK));
-    exps.emplace_back(
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter, EnumOutputs(1U, _))
-            .RETURN(DXGI_ERROR_NOT_FOUND));
-    exps.emplace_back(
-        NAMED_ALLOW_CALL(adapter, GetVulkanHandles(_, _)));
+            .RETURN(DXGI_ERROR_NOT_FOUND),
+        NAMED_ALLOW_CALL(adapter, GetVulkanHandles(_, _)),
 
-    exps.emplace_back(
         NAMED_ALLOW_CALL(output, Release())
-            .RETURN(0));
-    exps.emplace_back(
+            .RETURN(0),
         NAMED_ALLOW_CALL(output, GetDesc(_))
             .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
-            .RETURN(S_OK));
+            .RETURN(S_OK),
 
-    exps.emplace_back(
         NAMED_ALLOW_CALL(vulkan, IsAvailable())
-            .RETURN(true));
-    exps.emplace_back(
+            .RETURN(true),
         NAMED_ALLOW_CALL(vulkan, GetDeviceExtensions(_, _))
-            .RETURN(std::set<std::string>{"ext"}));
-    exps.emplace_back(
+            .RETURN(std::set<std::string>{"ext"}),
         NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceProperties2(_, _, _))
-            .SIDE_EFFECT(strcpy(_3->properties.deviceName, "Device1")));
-    exps.emplace_back(
-        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)));
+            .SIDE_EFFECT(strcpy(_3->properties.deviceName, "Device1")),
+        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)),
 
-    exps.emplace_back(
         NAMED_ALLOW_CALL(nvml, IsAvailable())
-            .RETURN(false));
-
-    return exps;
+            .RETURN(false)
+    };
 }
 
-std::vector<std::unique_ptr<expectation>> ConfigureExtendedTestEnvironment(
+std::array<std::unique_ptr<expectation>, 28> ConfigureExtendedTestEnvironment(
         DXGIFactory1Mock& dxgiFactory,
         VulkanMock& vulkan,
         NvmlMock& nvml,
@@ -91,121 +72,90 @@ std::vector<std::unique_ptr<expectation>> ConfigureExtendedTestEnvironment(
         DXGIOutputMock& output1,
         DXGIOutputMock& output2,
         DXGIOutputMock& output3) {
-    // See https://github.com/rollbear/trompeloeil/issues/127 about usage of named expectations
-    auto exps = std::vector<std::unique_ptr<expectation>>();
-
-    exps.emplace_back(
+    return {
         NAMED_ALLOW_CALL(dxgiFactory, AddRef())
-            .RETURN(1));
-    exps.emplace_back(
+            .RETURN(1),
         NAMED_ALLOW_CALL(dxgiFactory, Release())
-            .RETURN(0));
-    exps.emplace_back(
+            .RETURN(0),
         NAMED_ALLOW_CALL(dxgiFactory, EnumAdapters1(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter1*>(&adapter1))
-            .RETURN(S_OK));
-    exps.emplace_back(
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(dxgiFactory, EnumAdapters1(1U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter1*>(&adapter2))
-            .RETURN(S_OK));
-    exps.emplace_back(
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(dxgiFactory, EnumAdapters1(2U, _))
-            .RETURN(DXGI_ERROR_NOT_FOUND));
+            .RETURN(DXGI_ERROR_NOT_FOUND),
 
-    exps.emplace_back(
         NAMED_ALLOW_CALL(adapter1, QueryInterface(IDXGIVkInteropAdapter::guid, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter1))
-            .RETURN(S_OK));
-    exps.emplace_back(
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter1, Release())
-            .RETURN(0));
-    exps.emplace_back(
+            .RETURN(0),
         NAMED_ALLOW_CALL(adapter1, EnumOutputs(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
-            .RETURN(S_OK));
-    exps.emplace_back(
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter1, EnumOutputs(1U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output2))
-            .RETURN(S_OK));
-    exps.emplace_back(
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter1, EnumOutputs(2U, _))
-            .RETURN(DXGI_ERROR_NOT_FOUND));
-    exps.emplace_back(
+            .RETURN(DXGI_ERROR_NOT_FOUND),
         NAMED_ALLOW_CALL(adapter1, GetVulkanHandles(_, _))
-            .LR_SIDE_EFFECT(*_2 = reinterpret_cast<VkPhysicalDevice>(0x01)));
+            .LR_SIDE_EFFECT(*_2 = reinterpret_cast<VkPhysicalDevice>(0x01)),
 
-    exps.emplace_back(
         NAMED_ALLOW_CALL(adapter2, QueryInterface(IDXGIVkInteropAdapter::guid, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter2))
-            .RETURN(S_OK));
-    exps.emplace_back(
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter2, Release())
-            .RETURN(0));
-    exps.emplace_back(
+            .RETURN(0),
         NAMED_ALLOW_CALL(adapter2, EnumOutputs(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output3))
-            .RETURN(S_OK));
-    exps.emplace_back(
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter2, EnumOutputs(1U, _))
-            .RETURN(DXGI_ERROR_NOT_FOUND));
-    exps.emplace_back(
+            .RETURN(DXGI_ERROR_NOT_FOUND),
         NAMED_ALLOW_CALL(adapter2, GetVulkanHandles(_, _))
-            .LR_SIDE_EFFECT(*_2 = reinterpret_cast<VkPhysicalDevice>(0x02)));
+            .LR_SIDE_EFFECT(*_2 = reinterpret_cast<VkPhysicalDevice>(0x02)),
 
-    exps.emplace_back(
         NAMED_ALLOW_CALL(output1, Release())
-            .RETURN(0));
-    exps.emplace_back(
+            .RETURN(0),
         NAMED_ALLOW_CALL(output1, GetDesc(_))
             .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
-            .RETURN(S_OK));
+            .RETURN(S_OK),
 
-    exps.emplace_back(
         NAMED_ALLOW_CALL(output2, Release())
-            .RETURN(0));
-    exps.emplace_back(
+            .RETURN(0),
         NAMED_ALLOW_CALL(output2, GetDesc(_))
             .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output2", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
-            .RETURN(S_OK));
+            .RETURN(S_OK),
 
-    exps.emplace_back(
         NAMED_ALLOW_CALL(output3, Release())
-            .RETURN(0));
-    exps.emplace_back(
+            .RETURN(0),
         NAMED_ALLOW_CALL(output3, GetDesc(_))
             .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output3", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
-            .RETURN(S_OK));
+            .RETURN(S_OK),
 
-    exps.emplace_back(
         NAMED_ALLOW_CALL(vulkan, IsAvailable())
-            .RETURN(true));
-    exps.emplace_back(
+            .RETURN(true),
         NAMED_ALLOW_CALL(vulkan, GetDeviceExtensions(_, _))
-            .RETURN(std::set<std::string>{"ext"}));
-    exps.emplace_back(
+            .RETURN(std::set<std::string>{"ext"}),
         NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceProperties2(_, reinterpret_cast<VkPhysicalDevice>(0x01), _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         strcpy(props->deviceName, "Device1");
                     })
-            ));
-    exps.emplace_back(
+            ),
         NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceProperties2(_, reinterpret_cast<VkPhysicalDevice>(0x02), _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         strcpy(props->deviceName, "Device2");
                     })
-            ));
-    exps.emplace_back(
-        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)));
+            ),
+        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)),
 
-    exps.emplace_back(
         NAMED_ALLOW_CALL(nvml, IsAvailable())
-            .RETURN(false));
-
-    return exps;
+            .RETURN(false)
+    };
 }
 
 void ConfigureGetPhysicalDeviceProperties2(
