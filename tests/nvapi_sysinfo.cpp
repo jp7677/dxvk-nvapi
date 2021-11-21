@@ -37,98 +37,16 @@ TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "
 
 TEST_CASE("Topology methods succeed", "[.sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
+    auto vulkan = std::make_unique<VulkanMock>();
+    auto nvml = std::make_unique<NvmlMock>();
     DXGIDxvkAdapterMock adapter1;
-    auto vkDevice1 = reinterpret_cast<VkPhysicalDevice>(0x01); // Very evil, but works for testing since we use this only as identifier
     DXGIDxvkAdapterMock adapter2;
-    auto vkDevice2 = reinterpret_cast<VkPhysicalDevice>(0x02); // See above comment
     DXGIOutputMock output1;
     DXGIOutputMock output2;
     DXGIOutputMock output3;
-    auto vulkan = std::make_unique<VulkanMock>();
-    auto nvml = std::make_unique<NvmlMock>();
 
-    ALLOW_CALL(*dxgiFactory, AddRef())
-        .RETURN(1);
-    ALLOW_CALL(*dxgiFactory, Release())
-        .RETURN(0);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters1(0U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter1*>(&adapter1))
-        .RETURN(S_OK);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters1(1U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter1*>(&adapter2))
-        .RETURN(S_OK);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters1(2U, _))
-        .RETURN(DXGI_ERROR_NOT_FOUND);
-
-    ALLOW_CALL(adapter1, QueryInterface(IDXGIVkInteropAdapter::guid, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter1))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter1, Release())
-        .RETURN(0);
-    ALLOW_CALL(adapter1, EnumOutputs(0U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter1, EnumOutputs(1U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output2))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter1, EnumOutputs(2U, _))
-        .RETURN(DXGI_ERROR_NOT_FOUND);
-    ALLOW_CALL(adapter1, GetVulkanHandles(_, _))
-        .LR_SIDE_EFFECT(*_2 = vkDevice1);
-
-    ALLOW_CALL(adapter2, QueryInterface(IDXGIVkInteropAdapter::guid, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter2))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter2, Release())
-        .RETURN(0);
-    ALLOW_CALL(adapter2, EnumOutputs(0U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output3))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter2, EnumOutputs(1U, _))
-        .RETURN(DXGI_ERROR_NOT_FOUND);
-    ALLOW_CALL(adapter2, GetVulkanHandles(_, _))
-        .LR_SIDE_EFFECT(*_2 = vkDevice2);
-
-    ALLOW_CALL(output1, Release())
-        .RETURN(0);
-    ALLOW_CALL(output1, GetDesc(_))
-        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
-        .RETURN(S_OK);
-
-    ALLOW_CALL(output2, Release())
-        .RETURN(0);
-    ALLOW_CALL(output2, GetDesc(_))
-        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output2", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
-        .RETURN(S_OK);
-
-    ALLOW_CALL(output3, Release())
-        .RETURN(0);
-    ALLOW_CALL(output3, GetDesc(_))
-        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output3", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
-        .RETURN(S_OK);
-
-    ALLOW_CALL(*vulkan, IsAvailable())
-        .RETURN(true);
-    ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
-        .RETURN(std::set<std::string>{"ext"});
-    ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, vkDevice1, _))
-        .SIDE_EFFECT(
-            ConfigureGetPhysicalDeviceProperties2(_3,
-                [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                    strcpy(props->deviceName, "Device1");
-                })
-        );
-    ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, vkDevice2, _))
-        .SIDE_EFFECT(
-            ConfigureGetPhysicalDeviceProperties2(_3,
-                [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                    strcpy(props->deviceName, "Device2");
-                })
-        );
-    ALLOW_CALL(*vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _));
-
-    ALLOW_CALL(*nvml, IsAvailable())
-        .RETURN(false);
+    auto expectations = ConfigureExtendedTestEnvironment(
+        *dxgiFactory, *vulkan, *nvml, adapter1, adapter2, output1, output2, output3);
 
     SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
     REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -293,49 +211,12 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
 
 TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
-    DXGIDxvkAdapterMock adapter;
-    DXGIOutputMock output;
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
+    DXGIDxvkAdapterMock adapter;
+    DXGIOutputMock output;
 
-    ALLOW_CALL(*dxgiFactory, AddRef())
-        .RETURN(1);
-    ALLOW_CALL(*dxgiFactory, Release())
-        .RETURN(0);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters1(0U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter1*>(&adapter))
-        .RETURN(S_OK);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters1(1U, _))
-        .RETURN(DXGI_ERROR_NOT_FOUND);
-
-    ALLOW_CALL(adapter, QueryInterface(IDXGIVkInteropAdapter::guid, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter, Release())
-        .RETURN(0);
-    ALLOW_CALL(adapter, EnumOutputs(0U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter, EnumOutputs(1U, _))
-        .RETURN(DXGI_ERROR_NOT_FOUND);
-    ALLOW_CALL(adapter, GetVulkanHandles(_, _));
-
-    ALLOW_CALL(output, Release())
-        .RETURN(0);
-    ALLOW_CALL(output, GetDesc(_))
-        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
-        .RETURN(S_OK);
-
-    ALLOW_CALL(*vulkan, IsAvailable())
-        .RETURN(true);
-    ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
-        .RETURN(std::set<std::string>{"ext"});
-    ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
-        .SIDE_EFFECT(strcpy(_3->properties.deviceName, "Device1"));
-    ALLOW_CALL(*vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _));
-
-    ALLOW_CALL(*nvml, IsAvailable())
-        .RETURN(false);
+    auto expectations = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, adapter, output);
 
     ::SetEnvironmentVariableA("DXVK_NVAPI_DRIVER_VERSION", "");
 

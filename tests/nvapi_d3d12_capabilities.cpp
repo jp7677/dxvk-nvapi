@@ -2,51 +2,12 @@ using namespace trompeloeil;
 
 TEST_CASE("D3D12 capability methods succeed", "[.d3d12]") {
     auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
-    DXGIDxvkAdapterMock adapter1;
-    auto vkDevice1 = reinterpret_cast<VkPhysicalDevice>(0x01); // Very evil, but works for testing since we use this only as identifier
-    DXGIOutputMock output1;
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
+    DXGIDxvkAdapterMock adapter;
+    DXGIOutputMock output;
 
-    ALLOW_CALL(*dxgiFactory, AddRef())
-        .RETURN(1);
-    ALLOW_CALL(*dxgiFactory, Release())
-        .RETURN(0);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters1(0U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter1*>(&adapter1))
-        .RETURN(S_OK);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters1(1U, _))
-        .RETURN(DXGI_ERROR_NOT_FOUND);
-
-    ALLOW_CALL(adapter1, QueryInterface(IDXGIVkInteropAdapter::guid, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter1))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter1, Release())
-        .RETURN(0);
-    ALLOW_CALL(adapter1, EnumOutputs(0U, _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
-        .RETURN(S_OK);
-    ALLOW_CALL(adapter1, EnumOutputs(1U, _))
-        .RETURN(DXGI_ERROR_NOT_FOUND);
-    ALLOW_CALL(adapter1, GetVulkanHandles(_, _))
-        .LR_SIDE_EFFECT(*_2 = vkDevice1);
-
-    ALLOW_CALL(output1, Release())
-        .RETURN(0);
-    ALLOW_CALL(output1, GetDesc(_))
-        .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
-        .RETURN(S_OK);
-
-    ALLOW_CALL(*vulkan, IsAvailable())
-        .RETURN(true);
-    ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
-        .RETURN(std::set<std::string>{"ext"});
-    ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
-        .SIDE_EFFECT(strcpy(_3->properties.deviceName, "Device1"));
-    ALLOW_CALL(*vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _));
-
-    ALLOW_CALL(*nvml, IsAvailable())
-        .RETURN(false);
+    auto expectations = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, adapter, output);
 
     SECTION("NvAPI_D3D12_GetGraphicsCapabilities returns OK") {
         D3D12Vkd3dDeviceMock device;
