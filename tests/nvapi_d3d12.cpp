@@ -177,8 +177,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                             driverProps->driverID = args.driverId;
                             if (args.extensionName == VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
                                 fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
-                        })
-                );
+                        }));
 
             SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);

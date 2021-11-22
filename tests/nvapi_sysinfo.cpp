@@ -233,8 +233,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         props->driverVersion = (470 << 22) | (35 << 12) | 1;
-                    })
-            );
+                    }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -265,8 +264,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                             props->driverVersion = (args.major << 22) | (args.minor << 14) | (args.patch << 6);
                         else
                             props->driverVersion = (args.major << 22) | (args.minor << 12) | args.patch;
-                    })
-            );
+                    }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -302,8 +300,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         props->driverVersion = (470 << 22) | (45 << 12) | 0;
-                    })
-            );
+                    }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -325,8 +322,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
-                    })
-            );
+                    }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -346,8 +342,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         props->vendorID = 0x10de;
                         props->deviceID = 0x1234;
-                    })
-            );
+                    }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -370,8 +365,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [&name](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         strcpy(props->deviceName, name);
-                    })
-            );
+                    }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -393,8 +387,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [&id](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         pciBusInfoProps->pciBus = id;
-                    })
-            );
+                    }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -434,8 +427,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                          idProps->deviceLUIDValid = VK_TRUE;
                          for (auto i = 0U; i < VK_LUID_SIZE; i++)
                              idProps->deviceLUID[i] = i + 1;
-                     })
-            );
+                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -470,8 +462,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                         if (args.extensionName == VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
                             fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
-                    })
-            );
+                    }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -496,8 +487,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         driverProps->driverID = VK_DRIVER_ID_MESA_RADV;
-                    })
-            );
+                    }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
