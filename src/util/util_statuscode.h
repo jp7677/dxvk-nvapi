@@ -131,8 +131,18 @@ namespace dxvk {
         return NVAPI_NVIDIA_DEVICE_NOT_FOUND;
     }
 
+    inline NvAPI_Status ProfileNotFound(const std::string& logMessage) {
+        log::write(str::format(logMessage, ": Profile not found"));
+        return NVAPI_PROFILE_NOT_FOUND;
+    }
+
     inline NvAPI_Status ExecutableNotFound(const std::string& logMessage) {
         log::write(str::format(logMessage, ": Executable not found"));
         return NVAPI_EXECUTABLE_NOT_FOUND;
+    }
+
+    inline NvAPI_Status SettingNotFound(const std::string& logMessage) {
+        log::write(str::format(logMessage, ": Setting not found"));
+        return NVAPI_SETTING_NOT_FOUND;
     }
 }
