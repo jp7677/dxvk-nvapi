@@ -12,6 +12,7 @@ namespace dxvk {
 
     bool NvapiAdapter::Initialize(Com<IDXGIAdapter1>& dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
         constexpr auto driverVersionEnvName = "DXVK_NVAPI_DRIVER_VERSION";
+        constexpr auto allowOtherDriversEnvName = "DXVK_NVAPI_ALLOW_OTHER_DRIVERS";
 
         // Get the Vulkan handle from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
@@ -68,6 +69,13 @@ namespace dxvk {
         m_vulkan.GetPhysicalDeviceMemoryProperties2(vkInstance, vkDevice, &memoryProperties2);
         m_memoryProperties = memoryProperties2.memoryProperties;
 
+        auto allowOtherDrivers = env::getEnvVariable(allowOtherDriversEnvName);
+        if (!allowOtherDrivers.empty())
+            log::write(str::format(allowOtherDrivers, " is set, reporting also GPUs with non-NVIDIA proprietary driver."));
+
+        if (GetDriverId() != VK_DRIVER_ID_NVIDIA_PROPRIETARY && allowOtherDrivers.empty())
+            return false;
+
         if (GetDriverId() == VK_DRIVER_ID_NVIDIA_PROPRIETARY)
             // Handle NVIDIA version notation
             m_vkDriverVersion = VK_MAKE_VERSION(
@@ -114,7 +122,7 @@ namespace dxvk {
             if (std::string(end).empty() && driverVersionOverride >= 100 && driverVersionOverride <= 99999) {
                 std::stringstream stream;
                 stream << (driverVersionOverride / 100) << "." << std::setfill('0') << std::setw(2) << (driverVersionOverride % 100);
-                log::write(str::format(driverVersionEnvName, " is set to '", driverVersion, "', reporting driver version ", stream.str()));
+                log::write(str::format(driverVersionEnvName, " is set to '", driverVersion, "', reporting driver version ", stream.str(), "."));
                 m_driverVersionOverride = driverVersionOverride;
             }
             else

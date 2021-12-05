@@ -159,6 +159,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 0, 0},
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, "ext", 0, 0});
 
+            ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
+
             luid->HighPart = 0x00000002;
             luid->LowPart = 0x00000001;
 
@@ -185,6 +187,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             REQUIRE(graphicsCaps.majorSMVersion == args.expectedMajorSMVersion);
             REQUIRE(graphicsCaps.minorSMVersion == args.expectedMinorSMVersion);
             REQUIRE(deviceRefCount == 0);
+
+            ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "");
         }
     }
 
