@@ -226,13 +226,12 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetDriverAndBranchVersion returns OK") {
-        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
-            .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME});
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        props->driverVersion = (470 << 22) | (35 << 12) | 1;
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        props->driverVersion = (470 << 22) | (35 << 14) | 1 << 6;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
@@ -248,13 +247,11 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     SECTION("GetDisplayDriverVersion returns OK") {
         struct Data {VkDriverId driverId; unsigned int major; unsigned int minor; unsigned int patch; unsigned int expectedVersion;};
         auto args = GENERATE(
-            Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x1d6, 0x2d, 0x01, 47045},
-            Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x1d6, 0x66, 0x01, 47099},
-            Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, 0x15, 0x02, 0x03, 2102});
+            Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 470, 45, 1, 47045},
+            Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 470, 101, 1, 47099},
+            Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, 21, 2, 3, 2102});
 
-        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
-            .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME});
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -293,13 +290,12 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
         ::SetEnvironmentVariableA("DXVK_NVAPI_DRIVER_VERSION", args.override.c_str());
 
-        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
-            .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME});
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        props->driverVersion = (470 << 22) | (45 << 12) | 0;
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        props->driverVersion = (470 << 22) | (45 << 14) | (0 << 6);
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
@@ -321,6 +317,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                         props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
                     }));
 
@@ -340,6 +337,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                         props->vendorID = 0x10de;
                         props->deviceID = 0x1234;
                     }));
@@ -364,6 +362,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             .LR_SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [&name](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                         strcpy(props->deviceName, name);
                     }));
 
@@ -381,11 +380,12 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     SECTION("GetBusId returns OK") {
         auto id = 2U;
         ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
-            .RETURN(std::set<std::string>{VK_EXT_PCI_BUS_INFO_EXTENSION_NAME});
+            .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, VK_EXT_PCI_BUS_INFO_EXTENSION_NAME});
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .LR_SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [&id](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                         pciBusInfoProps->pciBus = id;
                     }));
 
@@ -424,6 +424,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             .SIDE_EFFECT(
                  ConfigureGetPhysicalDeviceProperties2(_3,
                      [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                          idProps->deviceLUIDValid = VK_TRUE;
                          for (auto i = 0U; i < VK_LUID_SIZE; i++)
                              idProps->deviceLUID[i] = i + 1;
@@ -479,10 +480,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetArchInfo returns device-not-found when no NVIDIA device is present") {
-        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
-            .RETURN(std::set<std::string>{
-                VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME});
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {

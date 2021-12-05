@@ -163,10 +163,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             luid->LowPart = 0x00000001;
 
             ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
-                .RETURN(std::set<std::string>{
-                    VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,
-                    args.extensionName});
-
+                .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, args.extensionName});
             ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
                 .SIDE_EFFECT(
                     ConfigureGetPhysicalDeviceProperties2(_3,
