@@ -13,15 +13,6 @@ namespace dxvk {
     bool NvapiAdapter::Initialize(Com<IDXGIAdapter1>& dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
         constexpr auto driverVersionEnvName = "DXVK_NVAPI_DRIVER_VERSION";
 
-        // Query all outputs from DXVK
-        // Mosaic setup is not supported, thus one display output refers to one GPU
-        Com<IDXGIOutput> dxgiOutput;
-        for (auto i = 0U; dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
-            auto nvapiOutput = new NvapiOutput((uintptr_t) this);
-            nvapiOutput->Initialize(dxgiOutput);
-            outputs.push_back(nvapiOutput);
-        }
-
         // Get the Vulkan handle from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
         if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter)))) {
@@ -90,6 +81,15 @@ namespace dxvk {
             VK_VERSION_MAJOR(m_vkDriverVersion), ".",
             VK_VERSION_MINOR(m_vkDriverVersion), ".",
             VK_VERSION_PATCH(m_vkDriverVersion), ")"));
+
+        // Query all outputs from DXVK
+        // Mosaic setup is not supported, thus one display output refers to one GPU
+        Com<IDXGIOutput> dxgiOutput;
+        for (auto i = 0U; dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
+            auto nvapiOutput = new NvapiOutput((uintptr_t) this);
+            nvapiOutput->Initialize(dxgiOutput);
+            outputs.push_back(nvapiOutput);
+        }
 
         if (m_nvml.IsAvailable()) {
             char pciId[NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE];
