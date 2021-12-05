@@ -12,27 +12,42 @@ TEST_CASE("GetErrorMessage returns OK", "[.sysinfo]") {
     REQUIRE(strcmp(desc, "NVAPI_NVIDIA_DEVICE_NOT_FOUND") == 0);
 }
 
-TEST_CASE("Initialize returns device-not-found when DXVK reports no adapters", "[.sysinfo]") {
+TEST_CASE("Initialize succeed", "[.sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
+    DXGIDxvkAdapterMock adapter;
+    DXGIOutputMock output;
 
-    ALLOW_CALL(*dxgiFactory, AddRef())
-        .RETURN(1);
-    ALLOW_CALL(*dxgiFactory, Release())
-        .RETURN(0);
-    ALLOW_CALL(*dxgiFactory, EnumAdapters1(_, _))
-        .RETURN(DXGI_ERROR_NOT_FOUND);
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, adapter, output);
 
-    ALLOW_CALL(*vulkan, IsAvailable())
-        .RETURN(true);
+    SECTION("Initialize returns OK") {
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+        REQUIRE(NvAPI_Unload() == NVAPI_OK);
+    }
 
-    ALLOW_CALL(*nvml, IsAvailable())
-        .RETURN(false);
+    SECTION("Initialize returns device-not-found when DXVK reports no adapters") {
+        ALLOW_CALL(*dxgiFactory, EnumAdapters1(_, _)) // NOLINT(bugprone-use-after-move)
+            .RETURN(DXGI_ERROR_NOT_FOUND);
 
-    SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
-    REQUIRE(NvAPI_Initialize() == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
-    REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
+        REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
+    }
+
+    SECTION("Initialize returns device-not-found when adapter with non NVIDIA driver ID has been found") {
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = VK_DRIVER_ID_MESA_RADV;
+                    }));
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
+        REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
+    }
 }
 
 TEST_CASE("Topology methods succeed", "[.sysinfo]") {
@@ -251,6 +266,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 470, 101, 1, 47099},
             Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, 21, 2, 3, 2102});
 
+        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
+
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
@@ -275,6 +292,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(version.drvVersion == args.expectedVersion);
         REQUIRE(strcmp(version.szAdapterString, "GPU0") == 0);
         REQUIRE(std::string(version.szBuildBranchString).length() > 0);
+
+        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
     }
 
     SECTION("GetDisplayDriverVersion with version override returns OK") {
@@ -480,6 +499,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetArchInfo returns device-not-found when no NVIDIA device is present") {
+        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
+
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
@@ -496,6 +517,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         NV_GPU_ARCH_INFO archInfo;
         archInfo.version = NV_GPU_ARCH_INFO_VER_2;
         REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
+
+        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
     }
 
     SECTION("NVML depending methods succeed when NVML is available") {
