@@ -53,9 +53,14 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(vulkan, IsAvailable())
             .RETURN(true),
         NAMED_ALLOW_CALL(vulkan, GetDeviceExtensions(_, _))
-            .RETURN(std::set<std::string>{"ext"}),
+            .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME}),
         NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceProperties2(_, _, _))
-            .SIDE_EFFECT(strcpy(_3->properties.deviceName, "Device1")),
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        strcpy(props->deviceName, "Device1");
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                    })),
         NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)),
 
         NAMED_ALLOW_CALL(nvml, IsAvailable())
@@ -136,18 +141,20 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(vulkan, IsAvailable())
             .RETURN(true),
         NAMED_ALLOW_CALL(vulkan, GetDeviceExtensions(_, _))
-            .RETURN(std::set<std::string>{"ext"}),
+            .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME}),
         NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceProperties2(_, reinterpret_cast<VkPhysicalDevice>(0x01), _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         strcpy(props->deviceName, "Device1");
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
         NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceProperties2(_, reinterpret_cast<VkPhysicalDevice>(0x02), _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         strcpy(props->deviceName, "Device2");
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
         NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)),
 
