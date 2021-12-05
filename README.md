@@ -15,7 +15,7 @@ While originally being developed for usage with Unreal Engine 4, most notably fo
 
 ## Requirements
 
-This implementation is supposed to be used on Linux using Wine or derivatives like Proton. Usage on Windows is discouraged. Please do not replace `nvapi.dll`/`nvapi64.dll` on Windows from NVIDIA's driver package with this version. DXVK-NVAPI uses several DXVK and VKD3D-Proton extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, though the default behavior is to report only NVIDIA GPUs. Some entry points offer no functionality when a different GPU vendor is detected.
+This implementation is supposed to be used on Linux using Wine or derivatives like Proton. Usage on Windows is discouraged. Please do not replace `nvapi.dll`/`nvapi64.dll` on Windows from NVIDIA's driver package with this version. DXVK-NVAPI uses several DXVK and VKD3D-Proton extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, though the default behavior is to skip GPUs not running the NVIDIA proprietary driver. Some entry points offer no functionality or make no sense when a different GPU vendor is detected.
 
 When available, DXVK-NVAPI uses NVIDIA's NVML management library to query temperature, utilization and others for NVIDIA GPUs. See [wine-nvml](https://github.com/Saancreed/wine-nvml) how to add NVML support to Wine/Proton.
 
@@ -69,7 +69,7 @@ See [Quirks-for-usage-with-DXVK-NVAPI](https://github.com/jp7677/dxvk-nvapi/wiki
 The following environment variables tweak DXVK-NVAPI's runtime behavior:
 
 - `DXVK_NVAPI_DRIVER_VERSION` lets you override the reported driver version. Valid values are numbers between 100 and 99999. Use e.g. `DXVK_NVAPI_DRIVER_VERSION=47141` to report driver version `471.41`.
-- `DXVK_NVAPI_ALLOW_OTHER_DRIVERS` - lets you use DXVK-NVAPI without running an NVIDIA card on NVIDIAs proprietary driver when set, e.g. `DXVK_NVAPI_ALLOW_OTHER_DRIVERS=1`. Useful for using e.g. D3D11 extension on a non-NVIDIA GPU.
+- `DXVK_NVAPI_ALLOW_OTHER_DRIVERS` - when set, lets you use DXVK-NVAPI without running an NVIDIA card on NVIDIA's proprietary driver. Useful for using D3D11 extensions on a non-NVIDIA GPU.
 - `DXVK_NVAPI_LOG_LEVEL` set to `info` prints log statements. The default behavior omits any logging. Please fill an issue if using log servery `info` creates log spam. There are no other log levels.
 - `DXVK_NVAPI_LOG_PATH` enables file logging additionally to console output and sets the path where the log file `dxvk-nvapi.log` should be written to. Log statements are appended to an existing file. Please remove this file once in a while to prevent excessive grow. This requires `DXVK_NVAPI_LOG_LEVEL` set to `info`.
 
