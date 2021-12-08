@@ -13,7 +13,7 @@ TEST_CASE("D3D methods succeed", "[.d3d]") {
         REQUIRE(NvAPI_D3D_SetResourceHint(&unknown, NVDX_ObjectHandle(), NVAPI_D3D_SRH_CATEGORY_SLI, 1, &value) == NVAPI_NO_IMPLEMENTATION);
     }
 
-    SECTION("SetResourceHint returns NoImplementation") {
+    SECTION("SetResourceHint returns no-implementation") {
         REQUIRE(NvAPI_D3D_SetResourceHint(&unknown, NVDX_ObjectHandle(), NVAPI_D3D_SRH_CATEGORY_SLI, 0, nullptr) == NVAPI_NO_IMPLEMENTATION);
     }
 
@@ -36,6 +36,14 @@ TEST_CASE("D3D methods succeed", "[.d3d]") {
         REQUIRE(state.previousFrameAFRIndex == 0);
         REQUIRE(state.bIsCurAFRGroupNew == false);
         REQUIRE(state.numVRSLIGpus == 0);
+    }
+
+    SECTION("ImplicitSLIControl returns OK") {
+        REQUIRE(NvAPI_D3D_ImplicitSLIControl(DISABLE_IMPLICIT_SLI) == NVAPI_OK);
+    }
+
+    SECTION("ImplicitSLIControl returns error when enabling SLI") {
+        REQUIRE(NvAPI_D3D_ImplicitSLIControl(ENABLE_IMPLICIT_SLI) == NVAPI_ERROR);
     }
 
     SECTION("GetGraphicsCapabilities (V1) returns OK") {
