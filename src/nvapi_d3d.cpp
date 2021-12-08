@@ -52,6 +52,15 @@ extern "C" {
         return Ok(n, alreadyLoggedOk);
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D_ImplicitSLIControl(IMPLICIT_SLI_CONTROL implicitSLIControl) {
+        constexpr auto n = __func__;
+
+        if (implicitSLIControl == ENABLE_IMPLICIT_SLI)
+            return Error(n); // No SLI with this implementation
+
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D1x_GetGraphicsCapabilities(IUnknown *pDevice,
                                                     NvU32 structVersion,
                                                     NV_D3D1x_GRAPHICS_CAPS *pGraphicsCaps) {
