@@ -93,3 +93,61 @@ TEST_CASE("D3D methods succeed", "[.d3d]") {
         }
     }
 }
+TEST_CASE("Reflex methods", "[.d3d]"){
+    UnknownMock unknown;
+    auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
+    auto vulkan = std::make_unique<VulkanMock>();
+    auto nvml = std::make_unique<NvmlMock>();
+    auto lfx = std::make_unique<LfxMock>();
+    DXGIDxvkAdapterMock adapter;
+    DXGIOutputMock output;
+
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
+
+    SECTION("Enabling Reflex does not return OK when LFX is unavailable") {
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NV_SET_SLEEP_MODE_PARAMS params {};
+        params.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+        params.bLowLatencyMode = true;
+        REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) != NVAPI_OK);
+    }
+    
+    SECTION("Reflex methods work when LFX is available") {
+        ALLOW_CALL(*lfx, IsAvailable()).RETURN(true); // NOLINT(bugprone-use-after-move)
+
+        SECTION("GetSleepStatus returns OK") {
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NV_GET_SLEEP_STATUS_PARAMS params{};
+            params.version = NV_GET_SLEEP_STATUS_PARAMS_VER;
+            REQUIRE(NvAPI_D3D_GetSleepStatus(&unknown, &params) == NVAPI_OK);
+        }
+
+        SECTION("SetSleepMode returns OK") {
+            REQUIRE_CALL(*lfx, SetTargetFrameTime(UINT64_C(0))); // NOLINT(bugprone-use-after-move)
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NV_SET_SLEEP_MODE_PARAMS params{};
+            params.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+            params.bLowLatencyMode = true;
+            REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_OK);
+        }
+
+        SECTION("Sleep calls LFX throttle callback and returns OK") {
+            REQUIRE_CALL(*lfx, SetTargetFrameTime(UINT64_C(0))); // NOLINT(bugprone-use-after-move)
+            REQUIRE_CALL(*lfx, WaitAndBeginFrame());
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NV_SET_SLEEP_MODE_PARAMS params{};
+            params.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+            params.bLowLatencyMode = true;
+            REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_OK);
+            REQUIRE(NvAPI_D3D_Sleep(&unknown) == NVAPI_OK);
+        }
+    }
+}

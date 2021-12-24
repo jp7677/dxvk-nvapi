@@ -264,6 +264,9 @@ extern "C" {
             return NvidiaDeviceNotFound(n);
         }
 
+        nvapiD3dInstance = std::make_unique<NvapiD3dInstance>(*resourceFactory);
+        nvapiD3dInstance->Initialize();
+
         return Ok(n);
     }
 }
