@@ -443,10 +443,10 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             .SIDE_EFFECT(
                  ConfigureGetPhysicalDeviceProperties2(_3,
                      [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                         auto luid = LUID{0x04030211, 0x08070655};
+                         memcpy(&idProps->deviceLUID, &luid, sizeof(luid));
                          idProps->deviceLUIDValid = VK_TRUE;
-                         for (auto i = 0U; i < VK_LUID_SIZE; i++)
-                             idProps->deviceLUID[i] = i + 1;
+                         driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                      }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
@@ -457,8 +457,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
         LUID luid;
         REQUIRE(NvAPI_GPU_GetAdapterIdFromPhysicalGpu(handle, static_cast<void*>(&luid)) == NVAPI_OK);
-        REQUIRE(luid.HighPart == 0x08070605);
-        REQUIRE(luid.LowPart  == 0x04030201);
+        REQUIRE(luid.HighPart == 0x08070655);
+        REQUIRE(luid.LowPart  == 0x04030211);
     }
 
     SECTION("GetArchInfo returns OK") {

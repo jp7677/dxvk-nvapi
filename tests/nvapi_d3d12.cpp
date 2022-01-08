@@ -118,7 +118,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto nvml = std::make_unique<NvmlMock>();
         DXGIDxvkAdapterMock adapter;
         DXGIOutputMock output;
-        LUID* luid = new LUID{};
+        auto luid = new LUID{};
 
         auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, adapter, output);
 
@@ -170,9 +170,9 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 .SIDE_EFFECT(
                     ConfigureGetPhysicalDeviceProperties2(_3,
                         [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                            auto luid = LUID{0x00000001,0x00000002};
+                            memcpy(&idProps->deviceLUID, &luid, sizeof(luid));
                             idProps->deviceLUIDValid = VK_TRUE;
-                            idProps->deviceLUID[0] = 1;
-                            idProps->deviceLUID[4] = 2;
                             driverProps->driverID = args.driverId;
                             if (args.extensionName == VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
                                 fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
@@ -190,6 +190,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
             ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "");
         }
+
+        delete luid;
     }
 
     SECTION("CreateGraphicsPipelineState for SetDepthBounds returns OK") {
