@@ -35,7 +35,7 @@ T GetNvAPIProcAddress(PFN_NvAPI_QueryInterface nvAPI_QueryInterface, const char*
     return reinterpret_cast<T>(nvAPI_QueryInterface(it->id));
 }
 
-std::string ToGpuType(NV_GPU_TYPE type) {
+static std::string ToGpuType(NV_GPU_TYPE type) {
     switch (type) {
         case NV_SYSTEM_TYPE_DGPU:
             return "Discrete";
@@ -46,7 +46,7 @@ std::string ToGpuType(NV_GPU_TYPE type) {
     }
 }
 
-std::string ToGpuArchitecture(NV_GPU_ARCHITECTURE_ID id) {
+static std::string ToGpuArchitecture(NV_GPU_ARCHITECTURE_ID id) {
     switch (id) {
         case NV_GPU_ARCHITECTURE_GA100:
             return "Ampere";
@@ -70,6 +70,18 @@ std::string ToGpuArchitecture(NV_GPU_ARCHITECTURE_ID id) {
         default:
             return "Pre-Fermi";
     }
+}
+
+static std::string ToFormattedLuid(LUID& luid) {
+    auto uid = static_cast<uint8_t*>(static_cast<void*>(&luid));
+
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+    for (auto i = 0U; i < sizeof(luid); i++) {
+        if (i == 4) ss << '-';
+        ss << std::setw(2) << static_cast<unsigned>(uid[i]);
+    }
+    return ss.str();
 }
 
 TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
@@ -147,14 +159,11 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
 
         LUID luid;
         result = nvAPI_GPU_GetAdapterIdFromPhysicalGpu(handle, static_cast<void*>(&luid));
-        std::cout << "    LUID high part:             ";
+        std::cout << "    Adapter ID/LUID:            ";
         result == NVAPI_OK
-            ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.HighPart << std::endl
-            : std::cout << "N/A" << std::endl;
-
-        std::cout << "    LUID low part:              ";
-        result == NVAPI_OK
-            ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.LowPart << std::endl
+            ? std::cout << ToFormattedLuid(luid) <<
+                " (" << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.HighPart <<
+                "/" << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.LowPart << ")" << std::endl
             : std::cout << "N/A" << std::endl;
 
         NV_GPU_ARCH_INFO archInfo;
