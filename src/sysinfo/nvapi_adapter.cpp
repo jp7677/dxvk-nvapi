@@ -196,7 +196,7 @@ namespace dxvk {
             return {};
 
         LUID luid{};
-        memcpy(&luid, &m_deviceIdProperties.deviceLUID, sizeof(LUID));
+        memcpy(&luid, &m_deviceIdProperties.deviceLUID, sizeof(luid));
         return std::make_optional(luid);
     }
 

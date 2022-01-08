@@ -116,7 +116,7 @@ extern "C" {
         if (!luid.has_value())
             return Error(n);
 
-        memcpy(pOSAdapterId, &luid.value(), sizeof(LUID));
+        memcpy(pOSAdapterId, &luid.value(), sizeof(luid));
 
         return Ok(n);
     }
