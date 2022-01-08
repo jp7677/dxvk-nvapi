@@ -149,7 +149,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         }
 
         SECTION("NvAPI_D3D12_GetGraphicsCapabilities returns OK with valid SM") {
-            struct Data {VkDriverId driverId; std::string extensionName; unsigned int expectedMajorSMVersion; unsigned int expectedMinorSMVersion;};
+            struct Data {VkDriverId driverId; std::string extensionName; uint16_t expectedMajorSMVersion; uint16_t expectedMinorSMVersion;};
             auto args = GENERATE(
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 6},
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME, 7, 5},

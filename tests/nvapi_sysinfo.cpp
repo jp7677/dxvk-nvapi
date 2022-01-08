@@ -260,7 +260,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetDisplayDriverVersion returns OK") {
-        struct Data {VkDriverId driverId; unsigned int major; unsigned int minor; unsigned int patch; unsigned int expectedVersion;};
+        struct Data {VkDriverId driverId; uint16_t major; uint16_t minor; uint16_t patch; uint32_t expectedVersion;};
         auto args = GENERATE(
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 470, 45, 1, 47045},
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 470, 101, 1, 47099},
@@ -297,7 +297,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetDisplayDriverVersion with version override returns OK") {
-        struct Data {std::string override; unsigned int expectedVersion;};
+        struct Data {std::string override; uint32_t expectedVersion;};
         auto args = GENERATE(
             Data{"", 47045},
             Data{"0", 47045},

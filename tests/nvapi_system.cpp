@@ -5,7 +5,7 @@
 #include "../inc/nvapi_interface.h"
 #include "../inc/catch.hpp"
 
-typedef void* (*PFN_NvAPI_QueryInterface)(unsigned int id);
+typedef void* (*PFN_NvAPI_QueryInterface)(uint32_t id);
 typedef decltype(&NvAPI_Initialize) PFN_NvAPI_Initialize;
 typedef decltype(&NvAPI_Unload) PFN_NvAPI_Unload;
 typedef decltype(&NvAPI_GetInterfaceVersionString) PFN_NvAPI_GetInterfaceVersionString;
