@@ -87,7 +87,7 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
     }
 
     SECTION("EnumPhysicalGPUs succeeds") {
-        NvPhysicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
+        NvPhysicalGpuHandle handles[NVAPI_MAX_PHYSICAL_GPUS];
         NvU32 count = 0U;
         for (auto handle : handles)
             handle = nullptr;
@@ -105,6 +105,13 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
         NvAPI_ShortString name2;
         REQUIRE(NvAPI_GPU_GetFullName(handles[1], name2) == NVAPI_OK);
         REQUIRE(strcmp(name2, "Device2") == 0);
+    }
+
+    SECTION("EnumEnumTCCPhysicalGPUs succeeds") {
+        NvPhysicalGpuHandle handles[NVAPI_MAX_PHYSICAL_GPUS];
+        NvU32 count = -1U;
+        REQUIRE(NvAPI_EnumTCCPhysicalGPUs(handles, &count) == NVAPI_OK);
+        REQUIRE(count == 0);
     }
 
     SECTION("EnumNvidiaDisplayHandle succeeds") {
