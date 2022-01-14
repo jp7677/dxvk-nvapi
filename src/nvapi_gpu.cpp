@@ -230,11 +230,10 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        if (!adapter->HasNvml())
-            return NoImplementation(n);
-
-        if (!adapter->HasNvmlDevice())
-            return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"));
+        if (!adapter->HasNvml() || !adapter->HasNvmlDevice()) {
+            strcpy(szBiosRevision, "N/A");
+            return Ok(n);
+        }
 
         char version[NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE];
         auto result = adapter->GetNvmlDeviceVbiosVersion(version, NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE);

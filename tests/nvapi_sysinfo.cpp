@@ -738,7 +738,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         }
     }
 
-    SECTION("NVML depending methods return no-implementation when NVML is not available") {
+    SECTION("NVML depending methods succeed when NVML is not available") {
         ALLOW_CALL(*nvml, IsAvailable()) // NOLINT(bugprone-use-after-move)
             .RETURN(false);
 
@@ -748,23 +748,29 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         NvPhysicalGpuHandle handle;
         REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
 
-        NvAPI_ShortString revision;
-        REQUIRE(NvAPI_GPU_GetVbiosVersionString(handle, revision) == NVAPI_NO_IMPLEMENTATION);
-        NV_GPU_DYNAMIC_PSTATES_INFO_EX info;
-        info.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;
-        REQUIRE(NvAPI_GPU_GetDynamicPstatesInfoEx(handle, &info) == NVAPI_NO_IMPLEMENTATION);
-        NV_GPU_THERMAL_SETTINGS settings;
-        settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
-        REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_NO_IMPLEMENTATION);
-        NV_GPU_PERF_PSTATE_ID pstate;
-        REQUIRE(NvAPI_GPU_GetCurrentPstate(handle, &pstate) == NVAPI_NO_IMPLEMENTATION);
-        NV_GPU_CLOCK_FREQUENCIES frequencies;
-        frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
-        frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
-        REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_NO_IMPLEMENTATION);
+        SECTION("GetVbiosVersionString returns OK when NVML is not available") {
+            NvAPI_ShortString revision;
+            REQUIRE(NvAPI_GPU_GetVbiosVersionString(handle, revision) == NVAPI_OK);
+            REQUIRE(strcmp(revision, "N/A") == 0);
+        }
+
+        SECTION("NVML depending methods return no-implementation when NVML is not available") {
+            NV_GPU_DYNAMIC_PSTATES_INFO_EX info;
+            info.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;
+            REQUIRE(NvAPI_GPU_GetDynamicPstatesInfoEx(handle, &info) == NVAPI_NO_IMPLEMENTATION);
+            NV_GPU_THERMAL_SETTINGS settings;
+            settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
+            REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_NO_IMPLEMENTATION);
+            NV_GPU_PERF_PSTATE_ID pstate;
+            REQUIRE(NvAPI_GPU_GetCurrentPstate(handle, &pstate) == NVAPI_NO_IMPLEMENTATION);
+            NV_GPU_CLOCK_FREQUENCIES frequencies;
+            frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
+            frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
+            REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_NO_IMPLEMENTATION);
+        }
     }
 
-    SECTION("NVML depending methods return handle-invalidated when NVML is available but without suitable adapter") {
+    SECTION("NVML depending methods succeed when NVML is available but without suitable adapter") {
         ALLOW_CALL(*nvml, IsAvailable()) // NOLINT(bugprone-use-after-move)
             .RETURN(true);
         ALLOW_CALL(*nvml, DeviceGetHandleByPciBusId_v2(_, _))
@@ -778,20 +784,26 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         NvPhysicalGpuHandle handle;
         REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
 
-        NvAPI_ShortString revision;
-        REQUIRE(NvAPI_GPU_GetVbiosVersionString(handle, revision) == NVAPI_HANDLE_INVALIDATED);
-        NV_GPU_DYNAMIC_PSTATES_INFO_EX info;
-        info.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;
-        REQUIRE(NvAPI_GPU_GetDynamicPstatesInfoEx(handle, &info) == NVAPI_HANDLE_INVALIDATED);
-        NV_GPU_THERMAL_SETTINGS settings;
-        settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
-        REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_HANDLE_INVALIDATED);
-        NV_GPU_PERF_PSTATE_ID pstate;
-        REQUIRE(NvAPI_GPU_GetCurrentPstate(handle, &pstate) == NVAPI_HANDLE_INVALIDATED);
-        NV_GPU_CLOCK_FREQUENCIES frequencies;
-        frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
-        frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
-        REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_HANDLE_INVALIDATED);
+        SECTION("GetVbiosVersionString returns OK when NVML is available but without suitable adapter") {
+            NvAPI_ShortString revision;
+            REQUIRE(NvAPI_GPU_GetVbiosVersionString(handle, revision) == NVAPI_OK);
+            REQUIRE(strcmp(revision, "N/A") == 0);
+        }
+
+        SECTION("NVML depending methods return handle-invalidated when NVML is available but without suitable adapter") {
+            NV_GPU_DYNAMIC_PSTATES_INFO_EX info;
+            info.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;
+            REQUIRE(NvAPI_GPU_GetDynamicPstatesInfoEx(handle, &info) == NVAPI_HANDLE_INVALIDATED);
+            NV_GPU_THERMAL_SETTINGS settings;
+            settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
+            REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_HANDLE_INVALIDATED);
+            NV_GPU_PERF_PSTATE_ID pstate;
+            REQUIRE(NvAPI_GPU_GetCurrentPstate(handle, &pstate) == NVAPI_HANDLE_INVALIDATED);
+            NV_GPU_CLOCK_FREQUENCIES frequencies;
+            frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
+            frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
+            REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_HANDLE_INVALIDATED);
+        }
     }
 }
 
