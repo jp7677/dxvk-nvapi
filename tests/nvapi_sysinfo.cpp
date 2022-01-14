@@ -66,10 +66,8 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
     REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
     SECTION("EnumLogicalGPUs succeeds") {
-        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
+        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS]{};
         NvU32 count = 0U;
-        for (auto handle : handles)
-            handle = nullptr;
 
         REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
         REQUIRE(handles[0] != handles[1]);
@@ -87,10 +85,8 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
     }
 
     SECTION("EnumPhysicalGPUs succeeds") {
-        NvPhysicalGpuHandle handles[NVAPI_MAX_PHYSICAL_GPUS];
+        NvPhysicalGpuHandle handles[NVAPI_MAX_PHYSICAL_GPUS]{};
         NvU32 count = 0U;
-        for (auto handle : handles)
-            handle = nullptr;
 
         REQUIRE(NvAPI_EnumPhysicalGPUs(handles, &count) == NVAPI_OK);
         REQUIRE(handles[0] != handles[1]);
@@ -164,10 +160,8 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_EnumNvidiaDisplayHandle(1U, &displayHandle2) == NVAPI_OK);
         REQUIRE(NvAPI_EnumNvidiaDisplayHandle(2U, &displayHandle3) == NVAPI_OK);
 
-        NvPhysicalGpuHandle handles1[NVAPI_MAX_PHYSICAL_GPUS];
+        NvPhysicalGpuHandle handles1[NVAPI_MAX_PHYSICAL_GPUS]{};
         NvU32 count1 = 0U;
-        for (auto handle : handles1)
-            handle = nullptr;
 
         REQUIRE(NvAPI_GetPhysicalGPUsFromDisplay(displayHandle1, handles1, &count1) == NVAPI_OK);
         REQUIRE(handles1[0] != nullptr);
@@ -177,20 +171,16 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_GPU_GetFullName(handles1[0], name1) == NVAPI_OK);
         REQUIRE(strcmp(name1, "Device1") == 0);
 
-        NvPhysicalGpuHandle handles2[NVAPI_MAX_PHYSICAL_GPUS];
+        NvPhysicalGpuHandle handles2[NVAPI_MAX_PHYSICAL_GPUS]{};
         NvU32 count2 = 0;
-        for (auto handle : handles2)
-            handle = nullptr;
 
         REQUIRE(NvAPI_GetPhysicalGPUsFromDisplay(displayHandle2, handles2, &count2) == NVAPI_OK);
         REQUIRE(handles2[0] != nullptr);
         REQUIRE(count2 == 1);
         REQUIRE(handles2[0] == handles1[0]);
 
-        NvPhysicalGpuHandle handles3[NVAPI_MAX_PHYSICAL_GPUS];
+        NvPhysicalGpuHandle handles3[NVAPI_MAX_PHYSICAL_GPUS]{};
         NvU32 count3 = 0U;
-        for (auto handle : handles3)
-            handle = nullptr;
 
         REQUIRE(NvAPI_GetPhysicalGPUsFromDisplay(displayHandle3, handles3, &count3) == NVAPI_OK);
         REQUIRE(handles3[0] != nullptr);
