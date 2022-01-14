@@ -69,9 +69,11 @@ See [Quirks-for-usage-with-DXVK-NVAPI](https://github.com/jp7677/dxvk-nvapi/wiki
 The following environment variables tweak DXVK-NVAPI's runtime behavior:
 
 - `DXVK_NVAPI_DRIVER_VERSION` lets you override the reported driver version. Valid values are numbers between 100 and 99999. Use e.g. `DXVK_NVAPI_DRIVER_VERSION=47141` to report driver version `471.41`.
-- `DXVK_NVAPI_ALLOW_OTHER_DRIVERS` - when set, lets you use DXVK-NVAPI without running an NVIDIA card on NVIDIA's proprietary driver. Useful for using D3D11 extensions on a non-NVIDIA GPU.
+- `DXVK_NVAPI_ALLOW_OTHER_DRIVERS`, when set, lets you use DXVK-NVAPI without running an NVIDIA card on NVIDIA's proprietary driver. Useful for using D3D11 extensions on a non-NVIDIA GPU.
 - `DXVK_NVAPI_LOG_LEVEL` set to `info` prints log statements. The default behavior omits any logging. Please fill an issue if using log servery `info` creates log spam. There are no other log levels.
 - `DXVK_NVAPI_LOG_PATH` enables file logging additionally to console output and sets the path where the log file `dxvk-nvapi.log` should be written to. Log statements are appended to an existing file. Please remove this file once in a while to prevent excessive grow. This requires `DXVK_NVAPI_LOG_LEVEL` set to `info`.
+
+DXVK-NVAPI honors [DXVK device filter](https://github.com/doitsujin/dxvk#device-filter). Forcing to advertise only a specific GPU might solve issues in a multi-GPU setup.
 
 This project provides a test suite. Run the package script with `--enable-tests` (see above) to build `nvapi64-tests.exe`. Running the tests executable without arguments queries the local system and provides system information about visible GPUs:
 
