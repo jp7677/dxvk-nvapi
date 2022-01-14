@@ -174,8 +174,12 @@ namespace dxvk {
             : VK_PHYSICAL_DEVICE_TYPE_OTHER;
     }
 
-    uint32_t NvapiAdapter::GetBusId() const {
+    uint32_t NvapiAdapter::GetPciBusId() const {
         return m_devicePciBusProperties.pciBus;
+    }
+
+    uint32_t NvapiAdapter::GetPciDeviceId() const {
+        return m_devicePciBusProperties.pciDevice;
     }
 
     uint32_t NvapiAdapter::GetVRamSize() const {
