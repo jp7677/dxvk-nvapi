@@ -76,7 +76,50 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        *pBusId = adapter->GetBusId();
+        *pBusId = adapter->GetPciBusId();
+
+        return Ok(n);
+    }
+
+    NvAPI_Status __cdecl NvAPI_GPU_GetBusSlotId(NvPhysicalGpuHandle hPhysicalGpu, NvU32 *pBusSlotId) {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (hPhysicalGpu == nullptr || pBusSlotId == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        // The bus slot ID seems to be the PCI Device ID. This is based on the CUDA documentation which says:
+        // 'PCI device (also known as slot) identifier of the device',
+        // see https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html#group__CUDART__DEVICE_1g1bf9d625a931d657e08db2b4391170f0
+        *pBusSlotId = adapter->GetPciDeviceId();
+
+        return Ok(n);
+    }
+
+    NvAPI_Status __cdecl NvAPI_GPU_GetBusType(NvPhysicalGpuHandle hPhysicalGpu,NV_GPU_BUS_TYPE *pBusType) {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (hPhysicalGpu == nullptr || pBusType == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        if (adapter->GetArchitectureId() >= NV_GPU_ARCHITECTURE_GM200)
+            *pBusType = NVAPI_GPU_BUS_TYPE_PCI_EXPRESS; // Assume PCIe on Maxwell and newer
+        else
+            *pBusType = NVAPI_GPU_BUS_TYPE_UNDEFINED;
+
 
         return Ok(n);
     }

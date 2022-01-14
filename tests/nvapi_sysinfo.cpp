@@ -419,6 +419,57 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(busId == id);
     }
 
+    SECTION("GetBusSlotId returns OK") {
+        auto id = 3U;
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+            .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, VK_EXT_PCI_BUS_INFO_EXTENSION_NAME});
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+            .LR_SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [&id](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        pciBusInfoProps->pciDevice = id;
+                    }));
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NvU32 busSlotId;
+        REQUIRE(NvAPI_GPU_GetBusSlotId(handle, &busSlotId) == NVAPI_OK);
+        REQUIRE(busSlotId == id);
+    }
+
+    SECTION("GetBusType returns OK") {
+        struct Data {std::string extensionName; NV_GPU_BUS_TYPE expectedBusType;};
+        auto args = GENERATE(
+            Data{VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, NVAPI_GPU_BUS_TYPE_PCI_EXPRESS},
+            Data{"ext", NVAPI_GPU_BUS_TYPE_UNDEFINED});
+
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+            .RETURN(std::set<std::string>{
+                VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,
+                args.extensionName});
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                    }));
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NV_GPU_BUS_TYPE type;
+        REQUIRE(NvAPI_GPU_GetBusType(handle, &type) == NVAPI_OK);
+        REQUIRE(type == args.expectedBusType);
+    }
+
     SECTION("GetPhysicalFrameBufferSize returns OK") {
         ALLOW_CALL(*vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT({
