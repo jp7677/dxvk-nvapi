@@ -49,13 +49,21 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_EnumTCCPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount)  {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (nvGPUHandle == nullptr || pGpuCount == nullptr)
+            return InvalidArgument(n);
+
         // There is no TCC mode on Linux, see https://forums.developer.nvidia.com/t/gpudirect-is-tcc-mode-a-requirement/79248
         // TCC can be queried on Windows using NVML by using https://docs.nvidia.com/deploy/nvml-api/group__nvmlDeviceQueries.html#group__nvmlDeviceQueries_1g6ad5e9e80313f958515b36acd1cb27b7
         // But we assume that no sane person would use this NVAPI implementation on Windows with GPUs in TCC mode.
         // Please open an issue if otherwise.
         *pGpuCount = 0;
 
-        return Ok(__func__);
+        return Ok(n);
     }
 
     NvAPI_Status __cdecl NvAPI_GetDisplayDriverVersion(NvDisplayHandle hNvDisplay, NV_DISPLAY_DRIVER_VERSION *pVersion) {
