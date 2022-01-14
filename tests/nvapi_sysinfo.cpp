@@ -218,6 +218,31 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(3U, &handle4) == NVAPI_INVALID_ARGUMENT);
         REQUIRE(handle4 == nullptr);
     }
+
+    SECTION("GetAssociatedNvidiaDisplayName succeeds") {
+        NvDisplayHandle handle1 = nullptr;
+        NvDisplayHandle handle2 = nullptr;
+        NvDisplayHandle handle3 = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0U, &handle1) == NVAPI_OK);
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(1U, &handle2) == NVAPI_OK);
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(2U, &handle3) == NVAPI_OK);
+
+        NvAPI_ShortString name1;
+        REQUIRE(NvAPI_GetAssociatedNvidiaDisplayName(handle1, name1) == NVAPI_OK);
+        REQUIRE(strcmp(name1, "Output1") == 0);
+
+        NvAPI_ShortString name2;
+        REQUIRE(NvAPI_GetAssociatedNvidiaDisplayName(handle2, name2) == NVAPI_OK);
+        REQUIRE(strcmp(name2, "Output2") == 0);
+
+        NvAPI_ShortString name3;
+        REQUIRE(NvAPI_GetAssociatedNvidiaDisplayName(handle3, name3) == NVAPI_OK);
+        REQUIRE(strcmp(name3, "Output3") == 0);
+
+        NvAPI_ShortString name4;
+        NvDisplayHandle handle4 = nullptr;
+        REQUIRE(NvAPI_GetAssociatedNvidiaDisplayName(handle4, name4) == NVAPI_INVALID_ARGUMENT);
+    }
 }
 
 TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {

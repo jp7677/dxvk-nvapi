@@ -148,6 +148,24 @@ extern "C" {
         return EndEnumeration(str::format(__func__, " ", thisEnum));
     }
 
+    NvAPI_Status __cdecl NvAPI_GetAssociatedNvidiaDisplayName(NvDisplayHandle NvDispHandle, NvAPI_ShortString szDisplayName) {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (NvDispHandle == nullptr)
+            return InvalidArgument(n);
+
+        auto output = reinterpret_cast<NvapiOutput*>(NvDispHandle);
+        if (!nvapiAdapterRegistry->IsOutput(output))
+            return ExpectedDisplayHandle(n);
+
+        strcpy(szDisplayName, output->GetDeviceName().c_str());
+
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_GetInterfaceVersionString(NvAPI_ShortString szDesc) {
         constexpr auto n = __func__;
 
