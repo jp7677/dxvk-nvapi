@@ -15,6 +15,7 @@ typedef decltype(&NvAPI_GPU_GetGPUType) PFN_NvAPI_GPU_GetGPUType;
 typedef decltype(&NvAPI_GPU_GetPCIIdentifiers) PFN_NvAPI_GPU_GetPCIIdentifiers;
 typedef decltype(&NvAPI_GPU_GetFullName) PFN_NvAPI_GPU_GetFullName;
 typedef decltype(&NvAPI_GPU_GetBusId) PFN_NvAPI_GPU_GetBusId;
+typedef decltype(&NvAPI_GPU_GetBusSlotId) PFN_NvAPI_GPU_GetBusSlotId;
 typedef decltype(&NvAPI_GPU_GetPhysicalFrameBufferSize) PFN_NvAPI_GPU_GetPhysicalFrameBufferSize;
 typedef decltype(&NvAPI_GPU_GetAdapterIdFromPhysicalGpu) PFN_NvAPI_GPU_GetAdapterIdFromPhysicalGpu;
 typedef decltype(&NvAPI_GPU_GetArchInfo) PFN_NvAPI_GPU_GetArchInfo;
@@ -102,6 +103,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     auto nvAPI_GPU_GetPCIIdentifiers = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetPCIIdentifiers>(nvAPI_QueryInterface, "NvAPI_GPU_GetPCIIdentifiers");
     auto nvAPI_GPU_GetFullName = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetFullName>(nvAPI_QueryInterface, "NvAPI_GPU_GetFullName");
     auto nvAPI_GPU_GetBusId = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetBusId>(nvAPI_QueryInterface, "NvAPI_GPU_GetBusId");
+    auto nvAPI_GPU_GetBusSlotId = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetBusSlotId>(nvAPI_QueryInterface, "NvAPI_GPU_GetBusSlotId");
     auto nvAPI_GPU_GetPhysicalFrameBufferSize = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetPhysicalFrameBufferSize>(nvAPI_QueryInterface, "NvAPI_GPU_GetPhysicalFrameBufferSize");
     auto nvAPI_GPU_GetAdapterIdFromPhysicalGpu = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetAdapterIdFromPhysicalGpu>(nvAPI_QueryInterface, "NvAPI_GPU_GetAdapterIdFromPhysicalGpu");
     auto nvAPI_GPU_GetArchInfo = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetArchInfo>(nvAPI_QueryInterface, "NvAPI_GPU_GetArchInfo");
@@ -151,7 +153,9 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
 
         NvU32 busId;
         REQUIRE(nvAPI_GPU_GetBusId(handle, &busId) == NVAPI_OK);
-        std::cout << "    Bus ID:                     PCI:" << std::setw(2) << std::dec << busId << std::endl;
+        NvU32 busSlotId;
+        REQUIRE(nvAPI_GPU_GetBusSlotId(handle, &busSlotId) == NVAPI_OK);
+        std::cout << "    Bus:Slot ID:                PCI:" << std::setw(2) << std::hex << busId << ":" << std::setw(2) << std::hex << busSlotId << std::endl;
 
         NvU32 size;
         REQUIRE(nvAPI_GPU_GetPhysicalFrameBufferSize(handle, &size) == NVAPI_OK);
