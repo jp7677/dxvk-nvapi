@@ -166,11 +166,11 @@ void SetupResourceFactory(
 void ConfigureGetPhysicalDeviceProperties2(
         VkPhysicalDeviceProperties2* props,
         std::function<void(
-                VkPhysicalDeviceProperties*,
-                VkPhysicalDeviceIDProperties*,
-                VkPhysicalDevicePCIBusInfoPropertiesEXT*,
-                VkPhysicalDeviceDriverPropertiesKHR*,
-                VkPhysicalDeviceFragmentShadingRatePropertiesKHR*)> configure) { // NOLINT(performance-unnecessary-value-param)
+            VkPhysicalDeviceProperties*,
+            VkPhysicalDeviceIDProperties*,
+            VkPhysicalDevicePCIBusInfoPropertiesEXT*,
+            VkPhysicalDeviceDriverPropertiesKHR*,
+            VkPhysicalDeviceFragmentShadingRatePropertiesKHR*)> configure) { // NOLINT(performance-unnecessary-value-param)
     VkPhysicalDeviceIDProperties* idProps = nullptr;
     VkPhysicalDevicePCIBusInfoPropertiesEXT* pciBusInfoProps = nullptr;
     VkPhysicalDeviceDriverPropertiesKHR* driverProps = nullptr;
