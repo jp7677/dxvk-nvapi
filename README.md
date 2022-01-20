@@ -61,6 +61,7 @@ Wine does not includes DXVK-NVAPI.
 - Ensure that DXVK is installed in your x86/x64 Wine prefix.
 - Ensure that Wine uses DXVK's `dxgi.dll`, e.g. with `WINEDLLOVERRIDES=dxgi=n`.
 - Disable the `nvapiHack` in DXVK with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
+- NVIDIA DLSS also requires `nvngx.dll` and `_nvngx.dll` to be present in the Wine prefix.
 
 ## Tweaks, debugging and troubleshooting
 
