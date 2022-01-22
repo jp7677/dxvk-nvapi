@@ -81,6 +81,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetPhysicalFrameBufferSize)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetAdapterIdFromPhysicalGpu)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetArchInfo)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_CudaEnumComputeCapableGpus)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetDynamicPstatesInfoEx)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetThermalSettings)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetVbiosVersionString)

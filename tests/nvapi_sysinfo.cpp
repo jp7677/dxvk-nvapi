@@ -385,6 +385,45 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         }
     }
 
+    SECTION("CudaEnumComputeCapableGpus returns OK") {
+        struct Data {VkDriverId driverId; std::string extensionName; uint32_t gpuCount;};
+        auto args = GENERATE(
+            Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, 1},
+            Data{VK_DRIVER_ID_MESA_RADV, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 0},
+            Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, "ext", 0});
+
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+            .RETURN(std::set<std::string>{
+                VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,
+                args.extensionName});
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = args.driverId;
+                        if (args.extensionName == VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
+                            fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
+                    }));
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NV_COMPUTE_GPU_TOPOLOGY gpuTopology;
+        gpuTopology.version = NV_COMPUTE_GPU_TOPOLOGY_VER;
+        gpuTopology.computeGpus = new NV_COMPUTE_GPU[1];
+        REQUIRE(NvAPI_GPU_CudaEnumComputeCapableGpus(&gpuTopology) == NVAPI_OK);
+        REQUIRE(gpuTopology.gpuCount == args.gpuCount);
+        if (gpuTopology.gpuCount == 1) {
+            REQUIRE(gpuTopology.computeGpus[0].hPhysicalGpu == handle);
+            REQUIRE(gpuTopology.computeGpus[0].flags == 0x0b);
+        }
+
+        delete gpuTopology.computeGpus;
+    }
+
     SECTION("GetGPUType returns OK") {
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(

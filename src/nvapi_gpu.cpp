@@ -217,6 +217,48 @@ extern "C" {
         return Ok(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_GPU_CudaEnumComputeCapableGpus(NV_COMPUTE_GPU_TOPOLOGY *pComputeTopo) {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pComputeTopo == nullptr)
+            return InvalidArgument(n);
+
+        if (pComputeTopo->version != NV_COMPUTE_GPU_TOPOLOGY_VER && pComputeTopo->version != NV_COMPUTE_GPU_TOPOLOGY_VER1)
+            return IncompatibleStructVersion(n);
+
+        auto pComputeTopoV1 = reinterpret_cast<NV_COMPUTE_GPU_TOPOLOGY_V1*>(pComputeTopo);
+
+        auto cudaCapableGpuCount = 0U;
+        // Those flags match NVAPI on Windows for a normal desktop machine
+        auto flags = NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_CAPABLE | NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_ENABLE | NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_RECOMMENDED;
+        for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++) {
+            auto adapter = nvapiAdapterRegistry->GetAdapter(i);
+            if (adapter->GetDriverId() != VK_DRIVER_ID_NVIDIA_PROPRIETARY ||
+                adapter->GetArchitectureId() < NV_GPU_ARCHITECTURE_GM200) // Maxwell is the oldest generation we can detect
+                continue;
+
+            if (pComputeTopo->version == NV_COMPUTE_GPU_TOPOLOGY_VER1) {
+                pComputeTopoV1->computeGpus[cudaCapableGpuCount].hPhysicalGpu = reinterpret_cast<NvPhysicalGpuHandle>(adapter);
+                pComputeTopoV1->computeGpus[cudaCapableGpuCount].flags = flags;
+            } else {
+                pComputeTopo->computeGpus[cudaCapableGpuCount].hPhysicalGpu = reinterpret_cast<NvPhysicalGpuHandle>(adapter);
+                pComputeTopo->computeGpus[cudaCapableGpuCount].flags = flags;
+            }
+
+            cudaCapableGpuCount++;
+        }
+
+        if (pComputeTopo->version == NV_COMPUTE_GPU_TOPOLOGY_VER1)
+            pComputeTopoV1->gpuCount = cudaCapableGpuCount;
+        else
+            pComputeTopo->gpuCount = cudaCapableGpuCount;
+
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_GPU_GetVbiosVersionString(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szBiosRevision) {
         constexpr auto n = __func__;
 
