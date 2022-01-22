@@ -172,7 +172,7 @@ extern "C" {
         if (szDesc == nullptr)
             return InvalidArgument(n);
 
-        strcpy(szDesc, "R510");
+        strcpy(szDesc, "DXVK_NVAPI");
 
         return Ok(n);
     }

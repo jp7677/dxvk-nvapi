@@ -3,7 +3,7 @@ using namespace trompeloeil;
 TEST_CASE("GetInterfaceVersionString returns OK", "[.sysinfo]") {
     NvAPI_ShortString desc;
     REQUIRE(NvAPI_GetInterfaceVersionString(desc) == NVAPI_OK);
-    REQUIRE(strcmp(desc, "R510") == 0);
+    REQUIRE(strcmp(desc, "DXVK_NVAPI") == 0);
 }
 
 TEST_CASE("GetErrorMessage returns OK", "[.sysinfo]") {
