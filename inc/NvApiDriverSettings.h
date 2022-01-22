@@ -112,6 +112,7 @@
 #define MAXWELL_B_SAMPLE_INTERLEAVE_STRING         L"Enable sample interleaving (MFAA)"
 #define PRERENDERLIMIT_STRING                      L"Maximum pre-rendered frames"
 #define PS_SHADERDISKCACHE_STRING                  L"Shader Cache"
+#define PS_SHADERDISKCACHE_MAX_SIZE_STRING         L"Shader disk cache maximum size"
 #define PS_TEXFILTER_ANISO_OPTS2_STRING            L"Texture filtering - Anisotropic sample optimization"
 #define PS_TEXFILTER_BILINEAR_IN_ANISO_STRING      L"Texture filtering - Anisotropic filter optimization"
 #define PS_TEXFILTER_DISABLE_TRILIN_SLOPE_STRING   L"Texture filtering - Trilinear optimization"
@@ -211,6 +212,7 @@ enum ESetting {
     MAXWELL_B_SAMPLE_INTERLEAVE_ID                = 0x0098C1AC,
     PRERENDERLIMIT_ID                             = 0x007BA09E,
     PS_SHADERDISKCACHE_ID                         = 0x00198FFF,
+    PS_SHADERDISKCACHE_MAX_SIZE_ID                = 0x00AC8497,
     PS_TEXFILTER_ANISO_OPTS2_ID                   = 0x00E73211,
     PS_TEXFILTER_BILINEAR_IN_ANISO_ID             = 0x0084CD70,
     PS_TEXFILTER_DISABLE_TRILIN_SLOPE_ID          = 0x002ECAF2,
@@ -222,9 +224,9 @@ enum ESetting {
     SET_VAB_DATA_ID                               = 0x00AB8687,
     VSYNCMODE_ID                                  = 0x00A879CF,
     VSYNCTEARCONTROL_ID                           = 0x005A375C,
-    TOTAL_DWORD_SETTING_NUM = 93,
+    TOTAL_DWORD_SETTING_NUM = 94,
     TOTAL_WSTRING_SETTING_NUM = 4,
-    TOTAL_SETTING_NUM = 97,
+    TOTAL_SETTING_NUM = 98,
     INVALID_SETTING_ID = 0xFFFFFFFF
 };
 
@@ -1017,7 +1019,14 @@ enum EValues_PS_SHADERDISKCACHE {
     PS_SHADERDISKCACHE_OFF                               = 0x00000000,
     PS_SHADERDISKCACHE_ON                                = 0x00000001,
     PS_SHADERDISKCACHE_NUM_VALUES = 2,
-    PS_SHADERDISKCACHE_DEFAULT = 0x1
+    PS_SHADERDISKCACHE_DEFAULT = PS_SHADERDISKCACHE_ON
+};
+
+enum EValues_PS_SHADERDISKCACHE_MAX_SIZE {
+    PS_SHADERDISKCACHE_MAX_SIZE_MIN                      = 0x0,
+    PS_SHADERDISKCACHE_MAX_SIZE_MAX                      = 0xffffffff,
+    PS_SHADERDISKCACHE_MAX_SIZE_NUM_VALUES = 2,
+    PS_SHADERDISKCACHE_MAX_SIZE_DEFAULT = 0x1000
 };
 
 enum EValues_PS_TEXFILTER_ANISO_OPTS2 {
