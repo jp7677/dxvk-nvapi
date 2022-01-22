@@ -182,6 +182,14 @@ namespace dxvk {
         return m_devicePciBusProperties.pciDevice;
     }
 
+    uint32_t NvapiAdapter::GetBoardId() const {
+        // There is also https://docs.nvidia.com/deploy/nvml-api/group__nvmlDeviceQueries.html#group__nvmlDeviceQueries_1gbf4a80f14b6093ce98e4c2dd511275c5
+        // But since we don't have NVML everywhere, we will create a board ID derived from PCI Domain/BUS/Device ID
+        return m_devicePciBusProperties.pciDomain << 16
+            | m_devicePciBusProperties.pciBus << 8
+            | m_devicePciBusProperties.pciDevice;
+    }
+
     uint32_t NvapiAdapter::GetVRamSize() const {
         // The total size of all device-local heaps sometimes do not match what other tools are reporting,
         // though this is best we have.
