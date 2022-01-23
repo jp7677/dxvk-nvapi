@@ -116,10 +116,9 @@ extern "C" {
             return ExpectedPhysicalGpuHandle(n);
 
         if (adapter->GetArchitectureId() >= NV_GPU_ARCHITECTURE_GM200)
-            *pBusType = NVAPI_GPU_BUS_TYPE_PCI_EXPRESS; // Assume PCIe on Maxwell and newer
+            *pBusType = NVAPI_GPU_BUS_TYPE_PCI_EXPRESS; // Assume PCIe on Maxwell like generation and newer
         else
             *pBusType = NVAPI_GPU_BUS_TYPE_UNDEFINED;
-
 
         return Ok(n);
     }
