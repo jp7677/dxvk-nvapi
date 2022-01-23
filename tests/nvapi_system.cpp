@@ -11,6 +11,7 @@ typedef decltype(&NvAPI_Unload) PFN_NvAPI_Unload;
 typedef decltype(&NvAPI_GetInterfaceVersionString) PFN_NvAPI_GetInterfaceVersionString;
 typedef decltype(&NvAPI_SYS_GetDriverAndBranchVersion) PFN_NvAPI_SYS_GetDriverAndBranchVersion;
 typedef decltype(&NvAPI_EnumPhysicalGPUs) PFN_NvAPI_EnumPhysicalGPUs;
+typedef decltype(&NvAPI_GetGPUIDfromPhysicalGPU) PFN_NvAPI_GetGPUIDfromPhysicalGPU;
 typedef decltype(&NvAPI_GPU_GetGPUType) PFN_NvAPI_GPU_GetGPUType;
 typedef decltype(&NvAPI_GPU_GetPCIIdentifiers) PFN_NvAPI_GPU_GetPCIIdentifiers;
 typedef decltype(&NvAPI_GPU_GetFullName) PFN_NvAPI_GPU_GetFullName;
@@ -19,6 +20,7 @@ typedef decltype(&NvAPI_GPU_GetBusSlotId) PFN_NvAPI_GPU_GetBusSlotId;
 typedef decltype(&NvAPI_GPU_GetPhysicalFrameBufferSize) PFN_NvAPI_GPU_GetPhysicalFrameBufferSize;
 typedef decltype(&NvAPI_GPU_GetAdapterIdFromPhysicalGpu) PFN_NvAPI_GPU_GetAdapterIdFromPhysicalGpu;
 typedef decltype(&NvAPI_GPU_GetArchInfo) PFN_NvAPI_GPU_GetArchInfo;
+typedef decltype(&NvAPI_GPU_CudaEnumComputeCapableGpus) PFN_NvAPI_GPU_CudaEnumComputeCapableGpus;
 typedef decltype(&NvAPI_GPU_GetVbiosVersionString) PFN_NvAPI_GPU_GetVbiosVersionString;
 typedef decltype(&NvAPI_GPU_GetDynamicPstatesInfoEx) PFN_NvAPI_GPU_GetDynamicPstatesInfoEx;
 typedef decltype(&NvAPI_GPU_GetThermalSettings) PFN_NvAPI_GPU_GetThermalSettings;
@@ -99,6 +101,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     auto nvAPI_GetInterfaceVersionString = GetNvAPIProcAddress<PFN_NvAPI_GetInterfaceVersionString>(nvAPI_QueryInterface, "NvAPI_GetInterfaceVersionString");
     auto nvAPI_SYS_GetDriverAndBranchVersion = GetNvAPIProcAddress<PFN_NvAPI_SYS_GetDriverAndBranchVersion>(nvAPI_QueryInterface, "NvAPI_SYS_GetDriverAndBranchVersion");
     auto nvAPI_EnumPhysicalGPUs = GetNvAPIProcAddress<PFN_NvAPI_EnumPhysicalGPUs>(nvAPI_QueryInterface, "NvAPI_EnumPhysicalGPUs");
+    auto nvAPI_GetGPUIDfromPhysicalGPU = GetNvAPIProcAddress<PFN_NvAPI_GetGPUIDfromPhysicalGPU>(nvAPI_QueryInterface, "NvAPI_GetGPUIDfromPhysicalGPU");
     auto nvAPI_GPU_GetGPUType = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetGPUType>(nvAPI_QueryInterface, "NvAPI_GPU_GetGPUType");
     auto nvAPI_GPU_GetPCIIdentifiers = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetPCIIdentifiers>(nvAPI_QueryInterface, "NvAPI_GPU_GetPCIIdentifiers");
     auto nvAPI_GPU_GetFullName = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetFullName>(nvAPI_QueryInterface, "NvAPI_GPU_GetFullName");
@@ -107,6 +110,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     auto nvAPI_GPU_GetPhysicalFrameBufferSize = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetPhysicalFrameBufferSize>(nvAPI_QueryInterface, "NvAPI_GPU_GetPhysicalFrameBufferSize");
     auto nvAPI_GPU_GetAdapterIdFromPhysicalGpu = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetAdapterIdFromPhysicalGpu>(nvAPI_QueryInterface, "NvAPI_GPU_GetAdapterIdFromPhysicalGpu");
     auto nvAPI_GPU_GetArchInfo = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetArchInfo>(nvAPI_QueryInterface, "NvAPI_GPU_GetArchInfo");
+    auto nvAPI_GPU_CudaEnumComputeCapableGpus = GetNvAPIProcAddress<PFN_NvAPI_GPU_CudaEnumComputeCapableGpus>(nvAPI_QueryInterface, "NvAPI_GPU_CudaEnumComputeCapableGpus");
     auto nvAPI_GPU_GetVbiosVersionString = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetVbiosVersionString>(nvAPI_QueryInterface, "NvAPI_GPU_GetVbiosVersionString");
     auto nvAPI_GPU_GetDynamicPstatesInfoEx = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetDynamicPstatesInfoEx>(nvAPI_QueryInterface, "NvAPI_GPU_GetDynamicPstatesInfoEx");
     auto nvAPI_GPU_GetThermalSettings = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetThermalSettings>(nvAPI_QueryInterface, "NvAPI_GPU_GetThermalSettings");
@@ -127,7 +131,14 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     std::cout << "Driver version:                 " << (version / 100) << "." << std::setfill('0') << std::setw(2) << (version % 100) << std::endl;
     std::cout << "Driver branch:                  " << branch << std::endl;
 
-    NvPhysicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
+    NV_COMPUTE_GPU_TOPOLOGY_V1 computeGpuTopology; // Version 2 returns `NVAPI_INCOMPATIBLE_STRUCT_VERSION` on NVIDIA's NVAPI on Windows, so enforce version 1
+    computeGpuTopology.version = NV_COMPUTE_GPU_TOPOLOGY_VER1;
+    REQUIRE(nvAPI_GPU_CudaEnumComputeCapableGpus(reinterpret_cast<NV_COMPUTE_GPU_TOPOLOGY*>(&computeGpuTopology)) == NVAPI_OK);
+    std::vector<NV_COMPUTE_GPU> computeGpus;
+    for (auto i = 0U; i < computeGpuTopology.gpuCount; i++)
+        computeGpus.push_back(NV_COMPUTE_GPU{computeGpuTopology.computeGpus[i].hPhysicalGpu, computeGpuTopology.computeGpus[i].flags});
+
+    NvPhysicalGpuHandle handles[NVAPI_MAX_PHYSICAL_GPUS];
     NvU32 count;
     REQUIRE(nvAPI_EnumPhysicalGPUs(handles, &count) == NVAPI_OK);
     for (auto i = 0U; i < count; i++) {
@@ -157,6 +168,10 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         REQUIRE(nvAPI_GPU_GetBusSlotId(handle, &busSlotId) == NVAPI_OK);
         std::cout << "    Bus:Slot ID:                PCI:" << std::setw(2) << std::hex << busId << ":" << std::setw(2) << std::hex << busSlotId << std::endl;
 
+        NvU32 gpuId;
+        REQUIRE(nvAPI_GetGPUIDfromPhysicalGPU(handle, &gpuId) == NVAPI_OK);
+        std::cout << "    Board ID:                   0x" << std::hex << gpuId << std::endl;
+
         NvU32 size;
         REQUIRE(nvAPI_GPU_GetPhysicalFrameBufferSize(handle, &size) == NVAPI_OK);
         std::cout << "    Physical framebuffer size:  " << std::dec << size / 1024 << "MB" << std::endl;
@@ -171,7 +186,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
             : std::cout << "N/A" << std::endl;
 
         NV_GPU_ARCH_INFO archInfo;
-        archInfo.version = NV_GPU_ARCH_INFO_VER_2;
+        archInfo.version = NV_GPU_ARCH_INFO_VER;
         result = nvAPI_GPU_GetArchInfo(handle, &archInfo);
         std::cout << "    Architecture ID:            ";
         result == NVAPI_OK
@@ -181,6 +196,15 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         result == NVAPI_OK
             ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << archInfo.implementation_id << std::endl
             : std::cout << "N/A" << std::endl;
+
+        auto computeGpusIt = std::find_if(
+            std::begin(computeGpus),
+            std::end(computeGpus),
+            [handle](const auto& cudaGpu) { return cudaGpu.hPhysicalGpu == handle; });
+        std::cout << "    Compute capable:            ";
+        computeGpusIt != std::end(computeGpus)
+            ? std::cout << "Yes (Compute GPU topology flags: 0x" << std::setfill('0') << std::setw(2) << std::hex << (computeGpusIt->flags) << ")" << std::endl // TODO: print other info if available
+            : std::cout << "-" << std::endl;
 
         NvAPI_ShortString revision;
         result = nvAPI_GPU_GetVbiosVersionString(handle, revision);
@@ -199,7 +223,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
             : std::cout << "N/A" << std::endl;
 
         NV_GPU_THERMAL_SETTINGS settings;
-        settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
+        settings.version = NV_GPU_THERMAL_SETTINGS_VER;
         result = nvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings);
         std::cout << "    Current GPU temperature:    ";
         result == NVAPI_OK
@@ -214,7 +238,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
             : std::cout << "N/A" << std::endl;
 
         NV_GPU_CLOCK_FREQUENCIES frequencies;
-        frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
+        frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER;
         frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
         result = nvAPI_GPU_GetAllClockFrequencies(handle, &frequencies);
         std::cout << "    Current graphics clock:     ";
