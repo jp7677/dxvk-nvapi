@@ -9,6 +9,7 @@ This implementation currently offers entry points for supporting the following f
 - NVIDIA DLSS for Vulkan, by supporting the relevant adapter information by querying from [Vulkan](https://www.vulkan.org/).
 - NVIDIA DLSS for D3D11 and D3D12, by querying from Vulkan and forwarding the relevant calls into DXVK / VKD3D-Proton.
 - Several NVAPI D3D11 extensions, among others `SetDepthBoundsTest` and `UAVOverlap`, by forwarding the relevant calls into DXVK.
+- NVIDIA PhysX, by supporting entry points for querying PhysX capability.
 - Several GPU topology related methods for adapter and display information, by querying from DXVK and Vulkan.
 
 While originally being developed for usage with Unreal Engine 4, most notably for `Assetto Corsa Competizione`, more entry points have been added for enabling other NVIDIA related technologies. DXVK-NVAPI does not and will never cover the complete surface of NVIDIA's NVAPI. It is not meant as a full replacement, but rather as an addition to DXVK and VKD3D-Proton to enable several GPU features.
@@ -61,11 +62,10 @@ Wine does not includes DXVK-NVAPI.
 - Ensure that DXVK is installed in your x86/x64 Wine prefix.
 - Ensure that Wine uses DXVK's `dxgi.dll`, e.g. with `WINEDLLOVERRIDES=dxgi=n`.
 - Disable the `nvapiHack` in DXVK with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
-- NVIDIA DLSS also requires `nvngx.dll` and `_nvngx.dll` to be present in the Wine prefix.
 
 ## Tweaks, debugging and troubleshooting
 
-See [Quirks-for-usage-with-DXVK-NVAPI](https://github.com/jp7677/dxvk-nvapi/wiki/Quirks-for-usage-with-DXVK-NVAPI) for any known quirks or work arounds.
+See the [DXVK-NVAPI Wiki](https://github.com/jp7677/dxvk-nvapi/wiki) for common issues and workarounds.
 
 The following environment variables tweak DXVK-NVAPI's runtime behavior:
 
@@ -73,8 +73,6 @@ The following environment variables tweak DXVK-NVAPI's runtime behavior:
 - `DXVK_NVAPI_ALLOW_OTHER_DRIVERS`, when set, lets you use DXVK-NVAPI without running an NVIDIA card on NVIDIA's proprietary driver. Useful for using D3D11 extensions on a non-NVIDIA GPU.
 - `DXVK_NVAPI_LOG_LEVEL` set to `info` prints log statements. The default behavior omits any logging. Please fill an issue if using log servery `info` creates log spam. There are no other log levels.
 - `DXVK_NVAPI_LOG_PATH` enables file logging additionally to console output and sets the path where the log file `dxvk-nvapi.log` should be written to. Log statements are appended to an existing file. Please remove this file once in a while to prevent excessive grow. This requires `DXVK_NVAPI_LOG_LEVEL` set to `info`.
-
-DXVK-NVAPI honors [DXVK device filter](https://github.com/doitsujin/dxvk#device-filter). Forcing to advertise only a specific GPU might solve issues in a multi-GPU setup.
 
 This project provides a test suite. Run the package script with `--enable-tests` (see above) to build `nvapi64-tests.exe`. Running the tests executable without arguments queries the local system and provides system information about visible GPUs:
 
