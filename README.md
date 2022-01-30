@@ -89,7 +89,7 @@ The actual unit tests can be run with `nvapi64-tests.exe [@unit-tests]` to valid
 - [DXVK](https://github.com/doitsujin/dxvk)
 - [DXVK-AGS](https://github.com/doitsujin/dxvk-ags)
 - [VKD3D-Proton](https://github.com/HansKristian-Work/vkd3d-proton)
-- [NVAPI](https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/group__dx.html)
+- [NVAPI](https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/index.html)
 - [NVAPI Open Source SDK](https://download.nvidia.com/XFree86/nvapi-open-source-sdk/)
 - [NVAPI (wine-staging) standalone](https://github.com/SveSop/nvapi_standalone)
 
