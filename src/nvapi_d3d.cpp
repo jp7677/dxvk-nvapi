@@ -61,9 +61,7 @@ extern "C" {
         return Ok(n);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D1x_GetGraphicsCapabilities(IUnknown *pDevice,
-                                                    NvU32 structVersion,
-                                                    NV_D3D1x_GRAPHICS_CAPS *pGraphicsCaps) {
+    NvAPI_Status __cdecl NvAPI_D3D1x_GetGraphicsCapabilities(IUnknown *pDevice, NvU32 structVersion, NV_D3D1x_GRAPHICS_CAPS *pGraphicsCaps) {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
 
