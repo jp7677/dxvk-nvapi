@@ -164,17 +164,17 @@ namespace trompeloeil { using std::unique_lock; }
   TROMPELOEIL_IDENTITY(TROMPELOEIL_ARG16(__VA_ARGS__,                          \
                                          15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0))
 
-#if defined(_MSC_VER)
+#if TROMPELOEIL_MSVC
 
 #define TROMPELOEIL_CONCAT_(x, y, ...) x ## y __VA_ARGS__
 #define TROMPELOEIL_CONCAT(x, ...) TROMPELOEIL_CONCAT_(x, __VA_ARGS__)
 
-#else /* defined(_MSC_VER) */
+#else /* TROMPELOEIL_MSVC */
 
 #define TROMPELOEIL_CONCAT_(x, ...) x ## __VA_ARGS__
 #define TROMPELOEIL_CONCAT(x, ...) TROMPELOEIL_CONCAT_(x, __VA_ARGS__)
 
-#endif /* !defined(_MSC_VER) */
+#endif /* !TROMPELOEIL_MSVC */
 
 #define TROMPELOEIL_SEPARATE1(p1) p1
 #define TROMPELOEIL_SEPARATE2(p1,p2) p1 p2
@@ -1106,16 +1106,6 @@ namespace trompeloeil
     {
       return true;
     }
-
-    friend
-    std::ostream&
-    operator<<(
-      std::ostream& os,
-      wildcard const&)
-    noexcept
-    {
-      return os << " matching _";
-    }
   };
 
   TROMPELOEIL_INLINE_VAR wildcard _{};
@@ -1129,7 +1119,7 @@ template <typename T>
   template <typename T>
   struct typed_matcher : matcher
   {
-    operator T() const;
+    operator T() const { return {}; }
   };
 
   template <>
@@ -1158,7 +1148,7 @@ template <typename T>
     template <typename V,
               typename = detail::enable_if_t<!is_matcher<V>{}>,
               typename = invoke_result_type<Pred, V&&, T...>>
-    operator V&&() const;
+    operator V&&() const { return *this; }
 
 #endif
 
@@ -1215,7 +1205,7 @@ template <typename T>
     operator T C::*() const;
     template <typename T, typename C, typename ... As>
     operator memfunptr<T,C,As...>() const;
-#endif /* TROMPELOEIL_GCC */
+#endif /* TROMPELOEIL_GCC || TROMPELOEIL_MSVC */
     operator std::nullptr_t() const;
   };
 
@@ -1257,7 +1247,7 @@ template <typename T>
   noexcept(noexcept(is_null_redirect(t)))
   -> decltype(is_null_redirect(t))
   {
-    // Redirect evaluation to supress wrong non-null warnings in g++ 9 and 10.
+    // Redirect evaluation to suppress wrong non-null warnings in g++ 9 and 10.
     return is_null_redirect(t);
   }
 
@@ -1414,14 +1404,14 @@ template <typename T>
       auto p = reinterpret_cast<uint8_t const*>(&t);
       for (size_t i = 0; i < sizeof(T); ++i)
       {
-        os << " 0x" << std::setw(2) << unsigned(p[i]);
+        os << " 0x" << std::setw(2) << std::right << unsigned(p[i]);
         if ((i & 0xf) == 0xf) os << '\n';
       }
       os << " }";
     }
   };
 
-  template <typename T>
+  template <typename T, typename = void>
   struct printer
   {
     static
@@ -1434,6 +1424,18 @@ template <typename T>
     }
   };
 
+  template <>
+  struct printer<wildcard>
+  {
+    static
+    void
+    print(
+	  std::ostream& os,
+	  wildcard const&)
+    {
+      os << " matching _";
+    }
+  };
   template <typename T>
   void
   print(
@@ -1944,7 +1946,14 @@ template <typename T>
   const
   noexcept
   {
-    return matchers.empty();
+    for (const auto& matcher : matchers)
+    {
+      if (!matcher.is_satisfied())
+      {
+        return false;
+      }
+    }
+    return true;
   }
 
   inline
@@ -2098,7 +2107,7 @@ template <typename T>
   public:
     template <typename U,
               typename = decltype(can_match_parameter<detail::remove_reference_t<decltype(std::declval<U>())>>(std::declval<M>()))>
-    operator U() const;
+    operator U() const { return {}; }
 
     template <typename U>
     explicit
@@ -2823,7 +2832,7 @@ template <typename T>
       }
     }
   private:
-    // work around for MS STL ossue 942
+    // work around for MS STL issue 942
     // https://github.com/microsoft/STL/issues/942
     detail::conditional_t<N == 0,
                           std::vector<sequence_matcher>,
@@ -2916,6 +2925,12 @@ template <typename T>
     {
       died = true;
       sequences->validate(severity::nonfatal, call_name, loc);
+
+      sequences->increment_call();
+      if (sequences->is_satisfied())
+      {
+        sequences->retire_predecessors();
+      }
     }
 
     template <typename ... T>
@@ -4428,7 +4443,7 @@ template <typename T>
 #define TROMPELOEIL_COUNT_ID(name)                                       \
   TROMPELOEIL_CONCAT(trompeloeil_c_ ## name ## _, __COUNTER__)
 
-#ifdef _MSC_VER
+#if TROMPELOEIL_MSVC
 #define TROMPELOEIL_MAKE_MOCK0(name, sig, ...)                           \
   TROMPELOEIL_MAKE_MOCK_(name,,0, sig, __VA_ARGS__,,)
 #define TROMPELOEIL_MAKE_MOCK1(name, sig, ...)                           \
