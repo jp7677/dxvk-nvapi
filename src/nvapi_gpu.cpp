@@ -230,30 +230,34 @@ extern "C" {
 
         auto pComputeTopoV1 = reinterpret_cast<NV_COMPUTE_GPU_TOPOLOGY_V1*>(pComputeTopo);
 
-        auto cudaCapableGpuCount = 0U;
-        // Those flags match NVAPI on Windows for a normal desktop machine
-        auto flags = NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_CAPABLE | NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_ENABLE | NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_RECOMMENDED;
+        auto cudaCapableGpus = std::vector<NvPhysicalGpuHandle>(0);
         for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++) {
             auto adapter = nvapiAdapterRegistry->GetAdapter(i);
             if (adapter->GetDriverId() != VK_DRIVER_ID_NVIDIA_PROPRIETARY ||
                 adapter->GetArchitectureId() < NV_GPU_ARCHITECTURE_GM200) // Maxwell is the oldest generation we can detect
                 continue;
 
-            if (pComputeTopo->version == NV_COMPUTE_GPU_TOPOLOGY_VER1) {
-                pComputeTopoV1->computeGpus[cudaCapableGpuCount].hPhysicalGpu = reinterpret_cast<NvPhysicalGpuHandle>(adapter);
-                pComputeTopoV1->computeGpus[cudaCapableGpuCount].flags = flags;
-            } else {
-                pComputeTopo->computeGpus[cudaCapableGpuCount].hPhysicalGpu = reinterpret_cast<NvPhysicalGpuHandle>(adapter);
-                pComputeTopo->computeGpus[cudaCapableGpuCount].flags = flags;
-            }
-
-            cudaCapableGpuCount++;
+            cudaCapableGpus.push_back(reinterpret_cast<NvPhysicalGpuHandle>(adapter));
         }
 
         if (pComputeTopo->version == NV_COMPUTE_GPU_TOPOLOGY_VER1)
-            pComputeTopoV1->gpuCount = cudaCapableGpuCount;
-        else
-            pComputeTopo->gpuCount = cudaCapableGpuCount;
+            pComputeTopoV1->gpuCount = cudaCapableGpus.size();
+        else {
+            pComputeTopo->computeGpus = new NV_COMPUTE_GPU[cudaCapableGpus.size()];
+            pComputeTopo->gpuCount = cudaCapableGpus.size();
+        }
+
+        // Those flags match NVAPI on Windows for a normal desktop machine
+        auto flags = NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_CAPABLE | NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_ENABLE | NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_RECOMMENDED;
+        for (auto i = 0U; i < cudaCapableGpus.size(); i++) {
+            if (pComputeTopo->version == NV_COMPUTE_GPU_TOPOLOGY_VER1) {
+                pComputeTopoV1->computeGpus[i].hPhysicalGpu = cudaCapableGpus[i];
+                pComputeTopoV1->computeGpus[i].flags = flags;
+            } else {
+                pComputeTopo->computeGpus[i].hPhysicalGpu = cudaCapableGpus[i];
+                pComputeTopo->computeGpus[i].flags = flags;
+            }
+        }
 
         return Ok(n);
     }
