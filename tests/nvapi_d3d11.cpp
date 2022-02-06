@@ -296,31 +296,33 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         REQUIRE(contextRefCount == 0);
     }
 
-    SECTION("GetResourceHandle returns OK") {
-        // Test device call twice to ensure correct reference counting when hitting the device cache
-        D3D11BufferMock resource;
-        auto handle = reinterpret_cast<NVDX_ObjectHandle>(&resource);
-        REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, &handle) == NVAPI_OK);
-        REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, &handle) == NVAPI_OK);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(contextRefCount == 0);
-    }
+    SECTION("GetResourceHandle succeeds") {
+        SECTION("GetResourceHandle returns OK") {
+            // Test device call twice to ensure correct reference counting when hitting the device cache
+            D3D11BufferMock resource;
+            auto handle = reinterpret_cast<NVDX_ObjectHandle>(&resource);
+            REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, &handle) == NVAPI_OK);
+            REQUIRE(deviceRefCount == 0);
+            REQUIRE(contextRefCount == 0);
+        }
 
-    SECTION("GetResourceHandle with NULL argument returns InvalidArgument") {
-        D3D11BufferMock resource;
-        NVDX_ObjectHandle handle;
-        REQUIRE(NvAPI_D3D11_GetResourceHandle(nullptr, &resource, &handle) == NVAPI_INVALID_ARGUMENT);
-        REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), nullptr, &handle) == NVAPI_INVALID_ARGUMENT);
-        REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, nullptr) == NVAPI_INVALID_ARGUMENT);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(contextRefCount == 0);
-    }
+        SECTION("GetResourceHandle with NULL argument returns InvalidArgument") {
+            D3D11BufferMock resource;
+            NVDX_ObjectHandle handle;
+            REQUIRE(NvAPI_D3D11_GetResourceHandle(nullptr, &resource, &handle) == NVAPI_INVALID_ARGUMENT);
+            REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), nullptr, &handle) == NVAPI_INVALID_ARGUMENT);
+            REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, nullptr) == NVAPI_INVALID_ARGUMENT);
+            REQUIRE(deviceRefCount == 0);
+            REQUIRE(contextRefCount == 0);
+        }
 
-    SECTION("GetResourceHandle output handle is a simple recast of the input resource pointer") {
-        // While the handles returned by NvAPI are opaque with unspecified values, our interaction with DXVK *requires* that we implement them as a simple recast
-        D3D11BufferMock resource;
-        NVDX_ObjectHandle handle;
-        REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, &handle) == NVAPI_OK);
-        REQUIRE(reinterpret_cast<void*>(handle) == reinterpret_cast<void*>(&resource));
+        SECTION("GetResourceHandle output handle is a simple recast of the input resource pointer") {
+            // While the handles returned by NVAPI are opaque with unspecified values, our interaction with DXVK *requires* that we implement them as a simple recast
+            D3D11BufferMock resource;
+            NVDX_ObjectHandle handle;
+            REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, &handle) == NVAPI_OK);
+            REQUIRE(reinterpret_cast<void*>(handle) == reinterpret_cast<void*>(&resource));
+        }
     }
 }
