@@ -125,8 +125,11 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (pDevice == nullptr || structVersion != NV_D3D12_GRAPHICS_CAPS_VER1)
+        if (pDevice == nullptr)
             return InvalidArgument(n);
+
+        if (structVersion != NV_D3D12_GRAPHICS_CAPS_VER1)
+            return IncompatibleStructVersion(n);
 
         pGraphicsCaps->majorSMVersion = 0;
         pGraphicsCaps->minorSMVersion = 0;
