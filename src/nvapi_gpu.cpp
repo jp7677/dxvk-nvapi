@@ -182,36 +182,54 @@ extern "C" {
         if (adapter->GetDriverId() != VK_DRIVER_ID_NVIDIA_PROPRIETARY)
             return NvidiaDeviceNotFound(n);
 
-        pGpuArchInfo->architecture_id = adapter->GetArchitectureId();
+        auto architectureId = adapter->GetArchitectureId();
 
         // Assume the implementation ID from the architecture ID. No simple way
         // to do a more fine-grained query at this time. Would need wine-nvml
         // usage.
-        switch(pGpuArchInfo->architecture_id) {
+        NV_GPU_ARCH_IMPLEMENTATION_ID implementationId;
+        switch(architectureId) {
             case NV_GPU_ARCHITECTURE_GA100:
-                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GA102;
+                implementationId = NV_GPU_ARCH_IMPLEMENTATION_GA102;
                 break;
             case NV_GPU_ARCHITECTURE_TU100:
-                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_TU102;
+                implementationId = NV_GPU_ARCH_IMPLEMENTATION_TU102;
                 break;
             case NV_GPU_ARCHITECTURE_GV100:
-                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GV100;
+                implementationId = NV_GPU_ARCH_IMPLEMENTATION_GV100;
                 break;
             case NV_GPU_ARCHITECTURE_GP100:
-                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GP102;
+                implementationId = NV_GPU_ARCH_IMPLEMENTATION_GP102;
                 break;
             case NV_GPU_ARCHITECTURE_GM200:
-                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GM204;
+                implementationId = NV_GPU_ARCH_IMPLEMENTATION_GM204;
                 break;
             case NV_GPU_ARCHITECTURE_GK100:
-                pGpuArchInfo->implementation_id = NV_GPU_ARCH_IMPLEMENTATION_GK104;
+                implementationId = NV_GPU_ARCH_IMPLEMENTATION_GK104;
                 break;
             default:
                 return Error(n);
         }
 
         // Assume first revision, no way to query currently.
-        pGpuArchInfo->revision_id = NV_GPU_CHIP_REV_A01;
+        auto revisionId = NV_GPU_CHIP_REV_A01;
+
+        switch (pGpuArchInfo->version) {
+            case NV_GPU_ARCH_INFO_VER_1: {
+                auto pGpuArchInfoV1 = reinterpret_cast<NV_GPU_ARCH_INFO_V1*>(pGpuArchInfo);
+                pGpuArchInfoV1->architecture = architectureId;
+                pGpuArchInfoV1->implementation = implementationId;
+                pGpuArchInfoV1->revision = revisionId;
+                break;
+            }
+            case NV_GPU_ARCH_INFO_VER_2:
+                pGpuArchInfo->architecture_id = architectureId;
+                pGpuArchInfo->implementation_id = implementationId;
+                pGpuArchInfo->revision_id = revisionId;
+                break;
+            default:
+                return Error(n); // Unreachable, but just to be sure
+        }
 
         return Ok(n);
     }
@@ -228,8 +246,6 @@ extern "C" {
         if (pComputeTopo->version != NV_COMPUTE_GPU_TOPOLOGY_VER && pComputeTopo->version != NV_COMPUTE_GPU_TOPOLOGY_VER1)
             return IncompatibleStructVersion(n);
 
-        auto pComputeTopoV1 = reinterpret_cast<NV_COMPUTE_GPU_TOPOLOGY_V1*>(pComputeTopo);
-
         auto cudaCapableGpus = std::vector<NvPhysicalGpuHandle>(0);
         for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++) {
             auto adapter = nvapiAdapterRegistry->GetAdapter(i);
@@ -240,23 +256,29 @@ extern "C" {
             cudaCapableGpus.push_back(reinterpret_cast<NvPhysicalGpuHandle>(adapter));
         }
 
-        if (pComputeTopo->version == NV_COMPUTE_GPU_TOPOLOGY_VER1)
-            pComputeTopoV1->gpuCount = cudaCapableGpus.size();
-        else {
-            pComputeTopo->computeGpus = new NV_COMPUTE_GPU[cudaCapableGpus.size()];
-            pComputeTopo->gpuCount = cudaCapableGpus.size();
-        }
-
         // Those flags match NVAPI on Windows for a normal desktop machine
         auto flags = NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_CAPABLE | NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_ENABLE | NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_RECOMMENDED;
-        for (auto i = 0U; i < cudaCapableGpus.size(); i++) {
-            if (pComputeTopo->version == NV_COMPUTE_GPU_TOPOLOGY_VER1) {
-                pComputeTopoV1->computeGpus[i].hPhysicalGpu = cudaCapableGpus[i];
-                pComputeTopoV1->computeGpus[i].flags = flags;
-            } else {
-                pComputeTopo->computeGpus[i].hPhysicalGpu = cudaCapableGpus[i];
-                pComputeTopo->computeGpus[i].flags = flags;
+
+        switch (pComputeTopo->version) {
+            case NV_COMPUTE_GPU_TOPOLOGY_VER1: {
+                auto pComputeTopoV1 = reinterpret_cast<NV_COMPUTE_GPU_TOPOLOGY_V1*>(pComputeTopo);
+                pComputeTopoV1->gpuCount = cudaCapableGpus.size();
+                for (auto i = 0U; i < cudaCapableGpus.size(); i++) {
+                    pComputeTopoV1->computeGpus[i].hPhysicalGpu = cudaCapableGpus[i];
+                    pComputeTopoV1->computeGpus[i].flags = flags;
+                }
+                break;
             }
+            case NV_COMPUTE_GPU_TOPOLOGY_VER:
+                pComputeTopo->gpuCount = cudaCapableGpus.size();
+                pComputeTopo->computeGpus = new NV_COMPUTE_GPU[cudaCapableGpus.size()];
+                for (auto i = 0U; i < cudaCapableGpus.size(); i++) {
+                    pComputeTopo->computeGpus[i].hPhysicalGpu = cudaCapableGpus[i];
+                    pComputeTopo->computeGpus[i].flags = flags;
+                }
+                break;
+            default:
+                return Error(n); // Unreachable, but just to be sure
         }
 
         return Ok(n);
@@ -385,15 +407,7 @@ extern "C" {
         switch (result) {
             case NVML_SUCCESS:
                 switch (pThermalSettings->version) {
-                    case NV_GPU_THERMAL_SETTINGS_VER_2:
-                        pThermalSettings->count = 1;
-                        pThermalSettings->sensor[0].controller = NVAPI_THERMAL_CONTROLLER_UNKNOWN;
-                        pThermalSettings->sensor[0].target = NVAPI_THERMAL_TARGET_GPU;
-                        pThermalSettings->sensor[0].currentTemp = static_cast<int>(temp);
-                        pThermalSettings->sensor[0].defaultMaxTemp = 127;
-                        pThermalSettings->sensor[0].defaultMinTemp = -256;
-                        break;
-                    case NV_GPU_THERMAL_SETTINGS_VER_1:
+                    case NV_GPU_THERMAL_SETTINGS_VER_1: {
                         auto pThermalSettingsV1 = reinterpret_cast<NV_GPU_THERMAL_SETTINGS_V1*>(pThermalSettings);
                         pThermalSettingsV1->count = 1;
                         pThermalSettingsV1->sensor[0].controller = NVAPI_THERMAL_CONTROLLER_UNKNOWN;
@@ -402,20 +416,32 @@ extern "C" {
                         pThermalSettingsV1->sensor[0].defaultMaxTemp = 127;
                         pThermalSettingsV1->sensor[0].defaultMinTemp = 0;
                         break;
+                    }
+                    case NV_GPU_THERMAL_SETTINGS_VER_2:
+                        pThermalSettings->count = 1;
+                        pThermalSettings->sensor[0].controller = NVAPI_THERMAL_CONTROLLER_UNKNOWN;
+                        pThermalSettings->sensor[0].target = NVAPI_THERMAL_TARGET_GPU;
+                        pThermalSettings->sensor[0].currentTemp = static_cast<NvS32>(temp);
+                        pThermalSettings->sensor[0].defaultMaxTemp = 127;
+                        pThermalSettings->sensor[0].defaultMinTemp = -256;
+                        break;
+                    default:
+                        return Error(n); // Unreachable, but just to be sure
                 }
-
                 return Ok(n, alreadyLoggedOk);
             case NVML_ERROR_NOT_SUPPORTED:
                 switch (pThermalSettings->version) {
-                    case NV_GPU_THERMAL_SETTINGS_VER_2:
-                        pThermalSettings->count = 0;
-                        break;
-                    case NV_GPU_THERMAL_SETTINGS_VER_1:
+                    case NV_GPU_THERMAL_SETTINGS_VER_1: {
                         auto pThermalSettingsV1 = reinterpret_cast<NV_GPU_THERMAL_SETTINGS_V1*>(pThermalSettings);
                         pThermalSettingsV1->count = 0;
                         break;
+                    }
+                    case NV_GPU_THERMAL_SETTINGS_VER_2:
+                        pThermalSettings->count = 0;
+                        break;
+                    default:
+                        return Error(n); // Unreachable, but just to be sure
                 }
-
                 return NotSupported(n);
             case NVML_ERROR_GPU_IS_LOST:
                 return HandleInvalidated(n);
@@ -504,8 +530,21 @@ extern "C" {
         auto resultGpu = adapter->GetNvmlDeviceClockInfo(NVML_CLOCK_GRAPHICS, &clock);
             switch (resultGpu) {
                 case NVML_SUCCESS:
-                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent = 1;
-                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency = (clock * 1000);
+                    switch (pClkFreqs->version) {
+                        case NV_GPU_CLOCK_FREQUENCIES_VER_1: {
+                            auto pClkFreqsV1 = reinterpret_cast<NV_GPU_CLOCK_FREQUENCIES_V1*>(pClkFreqs);
+                            pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent = 1;
+                            pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency = (clock * 1000);
+                            break;
+                        }
+                        case NV_GPU_CLOCK_FREQUENCIES_VER_2:
+                        case NV_GPU_CLOCK_FREQUENCIES_VER_3:
+                            pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent = 1;
+                            pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency = (clock * 1000);
+                            break;
+                        default:
+                            return Error(n); // Unreachable, but just to be sure
+                    }
                     break;
                 case NVML_ERROR_NOT_SUPPORTED:
                     break;
@@ -518,8 +557,21 @@ extern "C" {
         auto resultMem = adapter->GetNvmlDeviceClockInfo(NVML_CLOCK_MEM, &clock);
             switch (resultMem) {
                 case NVML_SUCCESS:
-                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent = 1;
-                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency = (clock * 1000);
+                    switch (pClkFreqs->version) {
+                        case NV_GPU_CLOCK_FREQUENCIES_VER_1: {
+                            auto pClkFreqsV1 = reinterpret_cast<NV_GPU_CLOCK_FREQUENCIES_V1*>(pClkFreqs);
+                            pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent = 1;
+                            pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency = (clock * 1000);
+                            break;
+                        }
+                        case NV_GPU_CLOCK_FREQUENCIES_VER_2:
+                        case NV_GPU_CLOCK_FREQUENCIES_VER_3:
+                            pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent = 1;
+                            pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency = (clock * 1000);
+                            break;
+                        default:
+                            return Error(n); // Unreachable, but just to be sure
+                    }
                     break;
                 case NVML_ERROR_NOT_SUPPORTED:
                     break;
@@ -532,8 +584,21 @@ extern "C" {
         auto resultVid = adapter->GetNvmlDeviceClockInfo(NVML_CLOCK_VIDEO, &clock);
             switch (resultVid) {
                 case NVML_SUCCESS:
-                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent = 1;
-                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency = (clock * 1000);
+                    switch (pClkFreqs->version) {
+                        case NV_GPU_CLOCK_FREQUENCIES_VER_1: {
+                            auto pClkFreqsV1 = reinterpret_cast<NV_GPU_CLOCK_FREQUENCIES_V1*>(pClkFreqs);
+                            pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent = 1;
+                            pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency = (clock * 1000);
+                            break;
+                        }
+                        case NV_GPU_CLOCK_FREQUENCIES_VER_2:
+                        case NV_GPU_CLOCK_FREQUENCIES_VER_3:
+                            pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent = 1;
+                            pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency = (clock * 1000);
+                            break;
+                        default:
+                            return Error(n); // Unreachable, but just to be sure
+                    }
                     break;
                 case NVML_ERROR_NOT_SUPPORTED:
                     break;

@@ -645,12 +645,32 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         NvPhysicalGpuHandle handle;
         REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
 
+        SECTION("GetArchInfo (V1) returns OK") {
+            NV_GPU_ARCH_INFO_V1 archInfo;
+            archInfo.version = NV_GPU_ARCH_INFO_VER_1;
+            REQUIRE(NvAPI_GPU_GetArchInfo(handle, reinterpret_cast<NV_GPU_ARCH_INFO *>(&archInfo)) == NVAPI_OK);
+            REQUIRE(archInfo.architecture == args.expectedArchId);
+            REQUIRE(archInfo.implementation == args.expectedImplId);
+            REQUIRE(archInfo.revision == NV_GPU_CHIP_REV_A01);
+        }
+
+        SECTION("GetArchInfo (V2) returns OK") {
+            NV_GPU_ARCH_INFO_V2 archInfo;
+            archInfo.version = NV_GPU_ARCH_INFO_VER_2;
+            REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_OK);
+            REQUIRE(archInfo.architecture_id == args.expectedArchId);
+            REQUIRE(archInfo.implementation_id == args.expectedImplId);
+            REQUIRE(archInfo.revision_id == NV_GPU_CHIP_REV_A01);
+        }
+    }
+
+    SECTION("GetArchInfo with future struct version returns incompatible-struct-version") {
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
         NV_GPU_ARCH_INFO archInfo;
-        archInfo.version = NV_GPU_ARCH_INFO_VER_2;
-        REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_OK);
-        REQUIRE(archInfo.architecture_id == args.expectedArchId);
-        REQUIRE(archInfo.implementation_id == args.expectedImplId);
-        REQUIRE(archInfo.revision_id == NV_GPU_CHIP_REV_A01);
+        archInfo.version = NV_GPU_ARCH_INFO_VER_2 + 1;
+        REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
     }
 
     SECTION("GetArchInfo returns device-not-found when no NVIDIA device is present") {
@@ -748,8 +768,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 REQUIRE(info.utilization[i].bIsPresent == 0);
         }
 
-        SECTION("GetThermalSettings returns OK") {
-            auto temp = 65;
+        SECTION("GetThermalSettings succeeds") {
+            auto temp = 65U;
             ALLOW_CALL(*nvml, DeviceGetTemperature(_, _, _)) // NOLINT(bugprone-use-after-move)
                 .LR_SIDE_EFFECT(*_3 = temp)
                 .RETURN(NVML_SUCCESS);
@@ -760,15 +780,35 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             NvPhysicalGpuHandle handle;
             REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
 
-            NV_GPU_THERMAL_SETTINGS settings;
-            settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
-            REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_OK);
-            REQUIRE(settings.count == 1);
-            REQUIRE(settings.sensor[0].controller == NVAPI_THERMAL_CONTROLLER_UNKNOWN);
-            REQUIRE(settings.sensor[0].target == NVAPI_THERMAL_TARGET_GPU);
-            REQUIRE(settings.sensor[0].currentTemp == static_cast<int>(temp));
-            REQUIRE(settings.sensor[0].defaultMaxTemp == 127);
-            REQUIRE(settings.sensor[0].defaultMinTemp == -256);
+            SECTION("GetThermalSettings (V1) returns OK") {
+                NV_GPU_THERMAL_SETTINGS_V1 settings;
+                settings.version = NV_GPU_THERMAL_SETTINGS_VER_1;
+                REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, reinterpret_cast<NV_GPU_THERMAL_SETTINGS*>(&settings)) == NVAPI_OK);
+                REQUIRE(settings.count == 1);
+                REQUIRE(settings.sensor[0].controller == NVAPI_THERMAL_CONTROLLER_UNKNOWN);
+                REQUIRE(settings.sensor[0].target == NVAPI_THERMAL_TARGET_GPU);
+                REQUIRE(settings.sensor[0].currentTemp == temp);
+                REQUIRE(settings.sensor[0].defaultMaxTemp == 127U);
+                REQUIRE(settings.sensor[0].defaultMinTemp == 0U);
+            }
+
+            SECTION("GetThermalSettings (V2) returns OK") {
+                NV_GPU_THERMAL_SETTINGS_V2 settings;
+                settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
+                REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_OK);
+                REQUIRE(settings.count == 1);
+                REQUIRE(settings.sensor[0].controller == NVAPI_THERMAL_CONTROLLER_UNKNOWN);
+                REQUIRE(settings.sensor[0].target == NVAPI_THERMAL_TARGET_GPU);
+                REQUIRE(settings.sensor[0].currentTemp == static_cast<int>(temp));
+                REQUIRE(settings.sensor[0].defaultMaxTemp == 127);
+                REQUIRE(settings.sensor[0].defaultMinTemp == -256);
+            }
+
+            SECTION("GetThermalSettings with future struct version returns incompatible-struct-version") {
+                NV_GPU_THERMAL_SETTINGS settings;
+                settings.version = NV_GPU_THERMAL_SETTINGS_VER_2 + 1;
+                REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
         }
 
         SECTION("GetCurrentPstate returns OK") {
@@ -807,16 +847,52 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             NvPhysicalGpuHandle handle;
             REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
 
+            SECTION("GetAllClockFrequencies (V1) returns OK") {
+                NV_GPU_CLOCK_FREQUENCIES_V1 frequencies;
+                frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_1;
+                REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, reinterpret_cast<NV_GPU_CLOCK_FREQUENCIES*>(&frequencies)) == NVAPI_OK);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent == 1);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency == graphicsClock * 1000);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent == 1);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency == memoryClock * 1000);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent == 1);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency == videoClock * 1000);
+            }
+
+            SECTION("GetAllClockFrequencies (V2) returns OK") {
+                NV_GPU_CLOCK_FREQUENCIES_V2 frequencies;
+                frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
+                frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
+                REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_OK);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent == 1);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency == graphicsClock * 1000);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent == 1);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency == memoryClock * 1000);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent == 1);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency == videoClock * 1000);
+            }
+
+            SECTION("GetAllClockFrequencies (V3) returns OK") {
+                NV_GPU_CLOCK_FREQUENCIES_V2 frequencies;
+                frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_3;
+                frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
+                REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_OK);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent == 1);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency == graphicsClock * 1000);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent == 1);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency == memoryClock * 1000);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent == 1);
+                REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency == videoClock * 1000);
+            }
+        }
+
+        SECTION("GetAllClockFrequencies with future struct version returns incompatible-struct-version") {
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
             NV_GPU_CLOCK_FREQUENCIES frequencies;
-            frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
-            frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
-            REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_OK);
-            REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent == 1);
-            REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency == graphicsClock * 1000);
-            REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent == 1);
-            REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency == memoryClock * 1000);
-            REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent == 1);
-            REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency == videoClock * 1000);
+            frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_3 + 1;
+            REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
 
         SECTION("GetAllClockFrequencies returns not-supported for base/boost clock types") {
