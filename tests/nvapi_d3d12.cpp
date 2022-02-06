@@ -191,25 +191,44 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "");
         }
 
+        SECTION("GetGraphicsCapabilities with future struct version returns incompatible-struct-version") {
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NV_D3D12_GRAPHICS_CAPS graphicsCaps{};
+            REQUIRE(NvAPI_D3D12_GetGraphicsCapabilities(static_cast<ID3D12Device*>(&device), NV_D3D12_GRAPHICS_CAPS_VER1 + 1, &graphicsCaps) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
         delete luid;
     }
 
-    SECTION("CreateGraphicsPipelineState for SetDepthBounds returns OK") {
-        // See https://developer.nvidia.com/unlocking-gpu-intrinsics-hlsl how to use NvAPI_D3D12_CreateGraphicsPipelineState
-        auto desc = D3D12_GRAPHICS_PIPELINE_STATE_DESC{};
-        NVAPI_D3D12_PSO_ENABLE_DEPTH_BOUND_TEST_DESC extensionDesc;
-        extensionDesc.baseVersion = NV_PSO_EXTENSION_DESC_VER;
-        extensionDesc.psoExtension = NV_PSO_ENABLE_DEPTH_BOUND_TEST_EXTENSION;
-        extensionDesc.version = NV_ENABLE_DEPTH_BOUND_TEST_PSO_EXTENSION_DESC_VER;
-        extensionDesc.EnableDBT = true;
-        const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = { &extensionDesc };
-        ID3D12PipelineState* pipelineState = nullptr;
-        REQUIRE_CALL(device, CreateGraphicsPipelineState(&desc, __uuidof(ID3D12PipelineState), reinterpret_cast<void**>(&pipelineState)))
-            .RETURN(S_OK);
+    SECTION("CreateGraphicsPipelineState succeeds") {
+        SECTION("CreateGraphicsPipelineState for SetDepthBounds returns OK") {
+            // See https://developer.nvidia.com/unlocking-gpu-intrinsics-hlsl how to use NvAPI_D3D12_CreateGraphicsPipelineState
+            auto desc = D3D12_GRAPHICS_PIPELINE_STATE_DESC{};
+            NVAPI_D3D12_PSO_ENABLE_DEPTH_BOUND_TEST_DESC_V1 extensionDesc{};
+            extensionDesc.baseVersion = NV_PSO_EXTENSION_DESC_VER_1;
+            extensionDesc.psoExtension = NV_PSO_ENABLE_DEPTH_BOUND_TEST_EXTENSION;
+            extensionDesc.version = NV_ENABLE_DEPTH_BOUND_TEST_PSO_EXTENSION_DESC_VER;
+            extensionDesc.EnableDBT = true;
+            const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = { &extensionDesc };
+            ID3D12PipelineState* pipelineState = nullptr;
+            REQUIRE_CALL(device, CreateGraphicsPipelineState(&desc, __uuidof(ID3D12PipelineState), reinterpret_cast<void**>(&pipelineState)))
+                .RETURN(S_OK);
 
-        REQUIRE(NvAPI_D3D12_CreateGraphicsPipelineState(&device, &desc, 1, extensions, &pipelineState) == NVAPI_OK);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
+            REQUIRE(NvAPI_D3D12_CreateGraphicsPipelineState(&device, &desc, 1, extensions, &pipelineState) == NVAPI_OK);
+            REQUIRE(deviceRefCount == 0);
+            REQUIRE(commandListRefCount == 0);
+        }
+
+        SECTION("CreateGraphicsPipelineState with future struct version returns incompatible-struct-version") {
+            auto desc = D3D12_GRAPHICS_PIPELINE_STATE_DESC{};
+            NVAPI_D3D12_PSO_ENABLE_DEPTH_BOUND_TEST_DESC extensionDesc;
+            extensionDesc.baseVersion = NV_PSO_EXTENSION_DESC_VER_1 + 1;
+            const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = { &extensionDesc };
+            ID3D12PipelineState* pipelineState = nullptr;
+            REQUIRE(NvAPI_D3D12_CreateGraphicsPipelineState(&device, &desc, 1, extensions, &pipelineState) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
     }
 
     SECTION("SetDepthBoundsTestValues returns OK") {
