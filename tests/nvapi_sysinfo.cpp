@@ -818,6 +818,30 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent == 1);
             REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency == videoClock * 1000);
         }
+
+        SECTION("GetAllClockFrequencies returns not-supported for base/boost clock types") {
+            struct Data {NV_GPU_CLOCK_FREQUENCIES_CLOCK_TYPE clockType;};
+            auto args = GENERATE(
+                Data{NV_GPU_CLOCK_FREQUENCIES_BASE_CLOCK},
+                Data{NV_GPU_CLOCK_FREQUENCIES_BOOST_CLOCK});
+
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+            SECTION("GetAllClockFrequencies (V2) returns not-supported") {
+                NV_GPU_CLOCK_FREQUENCIES_V2 frequencies;
+                frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
+                frequencies.ClockType = args.clockType;
+                REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_NOT_SUPPORTED);
+            }
+
+            SECTION("GetAllClockFrequencies (V3) returns not-supported") {
+                NV_GPU_CLOCK_FREQUENCIES_V2 frequencies;
+                frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_3;
+                frequencies.ClockType = args.clockType;
+                REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_NOT_SUPPORTED);
+            }
+        }
     }
 
     SECTION("NVML depending methods succeed when NVML is not available") {

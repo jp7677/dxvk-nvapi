@@ -478,7 +478,8 @@ extern "C" {
             return IncompatibleStructVersion(n);
 
         // Only check for CURRENT_FREQ, and not for the other types ie. BOOST or DEFAULT for now
-        if (pClkFreqs->ClockType != static_cast<unsigned int>(NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ))
+        if ((pClkFreqs->version == NV_GPU_CLOCK_FREQUENCIES_VER_2 || pClkFreqs->version == NV_GPU_CLOCK_FREQUENCIES_VER_3)
+            && pClkFreqs->ClockType != static_cast<NvU32>(NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ))
             return NotSupported(n, alreadyLoggedNotSupported);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
