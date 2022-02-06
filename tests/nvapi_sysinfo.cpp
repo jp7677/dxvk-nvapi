@@ -12,7 +12,7 @@ TEST_CASE("GetErrorMessage returns OK", "[.sysinfo]") {
     REQUIRE(strcmp(desc, "NVAPI_NVIDIA_DEVICE_NOT_FOUND") == 0);
 }
 
-TEST_CASE("Initialize succeed", "[.sysinfo]") {
+TEST_CASE("Initialize succeeds", "[.sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();

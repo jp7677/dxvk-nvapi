@@ -21,7 +21,7 @@ TEST_CASE("D3D methods succeed", "[.d3d]") {
         REQUIRE(NvAPI_D3D_BeginResourceRendering(&unknown, NVDX_ObjectHandle(), 0) == NVAPI_OK);
     }
 
-    SECTION("BeginResourceRendering returns OK") {
+    SECTION("EndResourceRendering returns OK") {
         REQUIRE(NvAPI_D3D_EndResourceRendering(&unknown, NVDX_ObjectHandle(), 0) == NVAPI_OK);
     }
 

@@ -112,7 +112,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(supported == false);
     }
 
-    SECTION("NvAPI_D3D12_GetGraphicsCapabilities returns OK") {
+    SECTION("GetGraphicsCapabilities succeeds") {
         auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
         auto vulkan = std::make_unique<VulkanMock>();
         auto nvml = std::make_unique<NvmlMock>();
@@ -136,7 +136,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         ALLOW_CALL(device, GetAdapterLuid(_))
             .LR_RETURN(luid);
 
-        SECTION("NvAPI_D3D12_GetGraphicsCapabilities without matching adapter returns OK with sm_0") {
+        SECTION("GetGraphicsCapabilities without matching adapter returns OK with sm_0") {
             SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
@@ -148,7 +148,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             REQUIRE(deviceRefCount == 0);
         }
 
-        SECTION("NvAPI_D3D12_GetGraphicsCapabilities returns OK with valid SM") {
+        SECTION("GetGraphicsCapabilities returns OK with valid SM") {
             struct Data {VkDriverId driverId; std::string extensionName; uint16_t expectedMajorSMVersion; uint16_t expectedMinorSMVersion;};
             auto args = GENERATE(
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 6},

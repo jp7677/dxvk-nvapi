@@ -175,7 +175,7 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         REQUIRE(deviceRefCount == 0);
     }
 
-    SECTION("(NvAPI_D3D11_)CreateUnorderedAccessView/CreateShaderResourceView/GetResourceGPUVirtualAddress/GetResourceGPUVirtualAddressEx/GetCudaTextureObject/CreateSamplerState without extended DXVK interface returns error") {
+    SECTION("CreateUnorderedAccessView/CreateShaderResourceView/GetResourceGPUVirtualAddress/GetResourceGPUVirtualAddressEx/GetCudaTextureObject/CreateSamplerState without extended DXVK interface returns error") {
         ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice1::guid, _))
             .RETURN(E_NOINTERFACE);
         ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext1::guid, _))
