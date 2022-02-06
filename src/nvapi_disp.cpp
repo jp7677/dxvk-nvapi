@@ -15,20 +15,31 @@ extern "C" {
         if (pHdrCapabilities == nullptr)
             return InvalidArgument(n);
 
-        if (pHdrCapabilities->version != NV_HDR_CAPABILITIES_VER1 && pHdrCapabilities->version != NV_HDR_CAPABILITIES_VER2)
-            return IncompatibleStructVersion(n);
-
         // Report that HDR is not available
-        pHdrCapabilities->isST2084EotfSupported = false;
-        pHdrCapabilities->isTraditionalHdrGammaSupported = false;
-        pHdrCapabilities->isEdrSupported = false;
-        pHdrCapabilities->driverExpandDefaultHdrParameters = false;
-        pHdrCapabilities->isTraditionalSdrGammaSupported = false;
-        // pHdrCapabilities->display_data
-
-        if (pHdrCapabilities->version == NV_HDR_CAPABILITIES_VER2)
-            pHdrCapabilities->isDolbyVisionSupported = false;
-            // pHdrCapabilities->dv_static_metadata
+        switch (pHdrCapabilities->version) {
+            case NV_HDR_CAPABILITIES_VER1: {
+                auto pHdrCapabilitiesV1 = reinterpret_cast<NV_HDR_CAPABILITIES_V1*>(pHdrCapabilities);
+                pHdrCapabilitiesV1->isST2084EotfSupported = false;
+                pHdrCapabilitiesV1->isTraditionalHdrGammaSupported = false;
+                pHdrCapabilitiesV1->isEdrSupported = false;
+                pHdrCapabilitiesV1->driverExpandDefaultHdrParameters = false;
+                pHdrCapabilitiesV1->isTraditionalSdrGammaSupported = false;
+                // pHdrCapabilities->display_data
+                break;
+            }
+            case NV_HDR_CAPABILITIES_VER2:
+                pHdrCapabilities->isST2084EotfSupported = false;
+                pHdrCapabilities->isTraditionalHdrGammaSupported = false;
+                pHdrCapabilities->isEdrSupported = false;
+                pHdrCapabilities->driverExpandDefaultHdrParameters = false;
+                pHdrCapabilities->isTraditionalSdrGammaSupported = false;
+                // pHdrCapabilities->display_data
+                pHdrCapabilities->isDolbyVisionSupported = false;
+                // pHdrCapabilities->dv_static_metadata
+                break;
+            default:
+                return IncompatibleStructVersion(n);
+        }
 
         return Ok(str::format(n, " ", displayId));
     }

@@ -889,16 +889,35 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 }
 
-TEST_CASE("GetHdrCapabilities returns OK", "[.sysinfo]") {
-    NV_HDR_CAPABILITIES capabilities;
-    capabilities.version = NV_HDR_CAPABILITIES_VER2;
-    REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, &capabilities) == NVAPI_OK);
-    REQUIRE(capabilities.isST2084EotfSupported == false);
-    REQUIRE(capabilities.isTraditionalHdrGammaSupported == false);
-    REQUIRE(capabilities.isEdrSupported == false);
-    REQUIRE(capabilities.driverExpandDefaultHdrParameters == false);
-    REQUIRE(capabilities.isTraditionalSdrGammaSupported == false);
-    REQUIRE(capabilities.isDolbyVisionSupported == false);
+TEST_CASE("GetHdrCapabilities succeeds", "[.sysinfo]") {
+    SECTION("GetHdrCapabilities (V1) returns OK") {
+        NV_HDR_CAPABILITIES_V1 capabilities;
+        capabilities.version = NV_HDR_CAPABILITIES_VER1;
+        REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, reinterpret_cast<NV_HDR_CAPABILITIES *>(&capabilities)) == NVAPI_OK);
+        REQUIRE(capabilities.isST2084EotfSupported == false);
+        REQUIRE(capabilities.isTraditionalHdrGammaSupported == false);
+        REQUIRE(capabilities.isEdrSupported == false);
+        REQUIRE(capabilities.driverExpandDefaultHdrParameters == false);
+        REQUIRE(capabilities.isTraditionalSdrGammaSupported == false);
+    }
+
+    SECTION("GetHdrCapabilities (V2) returns OK") {
+        NV_HDR_CAPABILITIES_V2 capabilities;
+        capabilities.version = NV_HDR_CAPABILITIES_VER2;
+        REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, &capabilities) == NVAPI_OK);
+        REQUIRE(capabilities.isST2084EotfSupported == false);
+        REQUIRE(capabilities.isTraditionalHdrGammaSupported == false);
+        REQUIRE(capabilities.isEdrSupported == false);
+        REQUIRE(capabilities.driverExpandDefaultHdrParameters == false);
+        REQUIRE(capabilities.isTraditionalSdrGammaSupported == false);
+        REQUIRE(capabilities.isDolbyVisionSupported == false);
+    }
+
+    SECTION("GetHdrCapabilities with future struct version returns incompatible-struct-version") {
+        NV_HDR_CAPABILITIES capabilities;
+        capabilities.version = NV_HDR_CAPABILITIES_VER2 + 1;
+        REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, &capabilities) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
 }
 
 TEST_CASE("GetDisplayViewportsByResolution returns mosaic-not-active", "[.sysinfo]") {
