@@ -690,7 +690,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
 
         NV_GPU_ARCH_INFO archInfo;
-        archInfo.version = NV_GPU_ARCH_INFO_VER_2;
+        archInfo.version = NV_GPU_ARCH_INFO_VER;
         REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
 
         ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
@@ -941,12 +941,12 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             info.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;
             REQUIRE(NvAPI_GPU_GetDynamicPstatesInfoEx(handle, &info) == NVAPI_NO_IMPLEMENTATION);
             NV_GPU_THERMAL_SETTINGS settings;
-            settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
+            settings.version = NV_GPU_THERMAL_SETTINGS_VER;
             REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_NO_IMPLEMENTATION);
             NV_GPU_PERF_PSTATE_ID pstate;
             REQUIRE(NvAPI_GPU_GetCurrentPstate(handle, &pstate) == NVAPI_NO_IMPLEMENTATION);
             NV_GPU_CLOCK_FREQUENCIES frequencies;
-            frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
+            frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER;
             frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
             REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_NO_IMPLEMENTATION);
         }
@@ -977,12 +977,12 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             info.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;
             REQUIRE(NvAPI_GPU_GetDynamicPstatesInfoEx(handle, &info) == NVAPI_HANDLE_INVALIDATED);
             NV_GPU_THERMAL_SETTINGS settings;
-            settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
+            settings.version = NV_GPU_THERMAL_SETTINGS_VER;
             REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_HANDLE_INVALIDATED);
             NV_GPU_PERF_PSTATE_ID pstate;
             REQUIRE(NvAPI_GPU_GetCurrentPstate(handle, &pstate) == NVAPI_HANDLE_INVALIDATED);
             NV_GPU_CLOCK_FREQUENCIES frequencies;
-            frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
+            frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER;
             frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
             REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_HANDLE_INVALIDATED);
         }
