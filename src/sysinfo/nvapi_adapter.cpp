@@ -71,7 +71,7 @@ namespace dxvk {
 
         auto allowOtherDrivers = env::getEnvVariable(allowOtherDriversEnvName);
         if (!allowOtherDrivers.empty())
-            log::write(str::format(allowOtherDrivers, " is set, reporting also GPUs with non-NVIDIA proprietary driver."));
+            log::write(str::format(allowOtherDriversEnvName, " is set, reporting also GPUs with non-NVIDIA proprietary driver."));
 
         if (GetDriverId() != VK_DRIVER_ID_NVIDIA_PROPRIETARY && allowOtherDrivers.empty())
             return false;
