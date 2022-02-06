@@ -35,19 +35,31 @@ extern "C" {
         if (pDevice == nullptr || pSliState == nullptr)
             return InvalidArgument(n);
 
-        if (pSliState->version != NV_GET_CURRENT_SLI_STATE_VER1 && pSliState->version != NV_GET_CURRENT_SLI_STATE_VER2)
-            return IncompatibleStructVersion(n);
-
-        // Report that SLI is not available
-        pSliState->maxNumAFRGroups = 1;
-        pSliState->numAFRGroups = 1;
-        pSliState->currentAFRIndex = 0;
-        pSliState->nextFrameAFRIndex = 0;
-        pSliState->previousFrameAFRIndex = 0;
-        pSliState->bIsCurAFRGroupNew = false;
-
-        if (pSliState->version == NV_GET_CURRENT_SLI_STATE_VER2)
-            pSliState->numVRSLIGpus = 0;
+        switch (pSliState->version) {
+            case NV_GET_CURRENT_SLI_STATE_VER1: {
+                auto pSliStateV1 = reinterpret_cast<NV_GET_CURRENT_SLI_STATE_V1*>(pSliState);
+                // Report that SLI is not available
+                pSliStateV1->maxNumAFRGroups = 1;
+                pSliStateV1->numAFRGroups = 1;
+                pSliStateV1->currentAFRIndex = 0;
+                pSliStateV1->nextFrameAFRIndex = 0;
+                pSliStateV1->previousFrameAFRIndex = 0;
+                pSliStateV1->bIsCurAFRGroupNew = false;
+                break;
+            }
+            case NV_GET_CURRENT_SLI_STATE_VER2:
+                // Report that SLI is not available
+                pSliState->maxNumAFRGroups = 1;
+                pSliState->numAFRGroups = 1;
+                pSliState->currentAFRIndex = 0;
+                pSliState->nextFrameAFRIndex = 0;
+                pSliState->previousFrameAFRIndex = 0;
+                pSliState->bIsCurAFRGroupNew = false;
+                pSliState->numVRSLIGpus = 0;
+                break;
+            default:
+                return IncompatibleStructVersion(n);
+        }
 
         return Ok(n, alreadyLoggedOk);
     }
@@ -65,31 +77,27 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
 
-        switch(structVersion) {
-            case NV_D3D1x_GRAPHICS_CAPS_VER1:
+        switch (structVersion) {
+            case NV_D3D1x_GRAPHICS_CAPS_VER1: {
                 memset(pGraphicsCaps, 0, sizeof(NV_D3D1x_GRAPHICS_CAPS_V1));
+                auto pGraphicsCapsV1 = reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V1*>(pGraphicsCaps);
+                pGraphicsCapsV1->bExclusiveScissorRectsSupported = 0;
+                pGraphicsCapsV1->bVariablePixelRateShadingSupported = 0;
                 break;
+            }
             case NV_D3D1x_GRAPHICS_CAPS_VER2:
                 memset(pGraphicsCaps, 0, sizeof(NV_D3D1x_GRAPHICS_CAPS_V2));
+                // bFastUAVClearSupported is reported mostly for the sake of DLSS.
+                // All NVIDIA Vulkan drivers support this.
+                pGraphicsCaps->bFastUAVClearSupported = 1;
+                // dummy SM version number (unused by DLSS):
+                pGraphicsCaps->majorSMVersion = 0;
+                pGraphicsCaps->minorSMVersion = 0;
+                pGraphicsCaps->bExclusiveScissorRectsSupported = 0;
+                pGraphicsCaps->bVariablePixelRateShadingSupported = 0;
                 break;
             default:
                 return IncompatibleStructVersion(n);
-        }
-
-        switch(structVersion) {
-            case NV_D3D1x_GRAPHICS_CAPS_VER2:
-                // bFastUAVClearSupported is reported mostly for the sake of DLSS.
-                // All NVIDIA Vulkan drivers support this.
-                (*reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V2*>(pGraphicsCaps)).bFastUAVClearSupported = 1;
-                // dummy SM version number (unused by DLSS):
-                (*reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V2*>(pGraphicsCaps)).majorSMVersion = 0;
-                (*reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V2*>(pGraphicsCaps)).minorSMVersion = 0;
-            
-                [[fallthrough]];
-            
-            case NV_D3D1x_GRAPHICS_CAPS_VER1:
-                (*reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V1*>(pGraphicsCaps)).bExclusiveScissorRectsSupported = 0;
-                (*reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V1*>(pGraphicsCaps)).bVariablePixelRateShadingSupported = 0;
         }
 
         return Ok(n, alreadyLoggedOk);
