@@ -3,9 +3,7 @@
 
 namespace dxvk {
     NvapiD3dInstance::NvapiD3dInstance(ResourceFactory &resourceFactory)
-            : m_resourceFactory(resourceFactory) {
-
-    }
+            : m_resourceFactory(resourceFactory) {}
 
     NvapiD3dInstance::~NvapiD3dInstance() = default;
 
@@ -28,7 +26,7 @@ namespace dxvk {
     }
 
     void NvapiD3dInstance::Sleep() {
-        if(IsReflexAvailable() && m_isLfxEnabled)
+        if (m_isLfxEnabled)
             m_lfx->WaitAndBeginFrame();
     }
 

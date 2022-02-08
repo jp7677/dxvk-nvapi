@@ -17,10 +17,10 @@ namespace dxvk {
         HMODULE m_lfxModule{};
         bool m_enabled = false;
 
-        typedef void (*PFN_winelfx_WaitAndBeginFrame)();
-        typedef void (*PFN_winelfx_SetTargetFrameTime)(__int64);
+        typedef void (*PFN_lfx_WaitAndBeginFrame)();
+        typedef void (*PFN_lfx_SetTargetFrameTime)(__int64);
 
-        PFN_winelfx_WaitAndBeginFrame m_winelfx_WaitAndBeginFrame{};
-        PFN_winelfx_SetTargetFrameTime m_winelfx_SetTargetFrameTime{};
+        PFN_lfx_WaitAndBeginFrame m_lfx_WaitAndBeginFrame{};
+        PFN_lfx_SetTargetFrameTime m_lfx_SetTargetFrameTime{};
     };
 }

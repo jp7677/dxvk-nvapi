@@ -104,14 +104,32 @@ TEST_CASE("Reflex methods", "[.d3d]"){
 
     auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
 
-    SECTION("Enabling Reflex does not return OK when LFX is unavailable") {
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
-        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+    SECTION("LatencyFleX-depending methods return NoImplementation when LFX is unavailable") {
+        SECTION("GetSleepStatus returns NoImplementation") {
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-        NV_SET_SLEEP_MODE_PARAMS params {};
-        params.version = NV_SET_SLEEP_MODE_PARAMS_VER;
-        params.bLowLatencyMode = true;
-        REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) != NVAPI_OK);
+            NV_GET_SLEEP_STATUS_PARAMS params{};
+            params.version = NV_GET_SLEEP_STATUS_PARAMS_VER;
+            REQUIRE(NvAPI_D3D_GetSleepStatus(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
+        }
+
+        SECTION("SetSleepMode returns NoImplementation") {
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NV_SET_SLEEP_MODE_PARAMS params{};
+            params.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+            params.bLowLatencyMode = true;
+            REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
+        }
+
+        SECTION("Sleep returns NoImplementation") {
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            REQUIRE(NvAPI_D3D_Sleep(&unknown) == NVAPI_NO_IMPLEMENTATION);
+        }
     }
     
     SECTION("Reflex methods work when LFX is available") {
