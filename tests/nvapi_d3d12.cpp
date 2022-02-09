@@ -116,11 +116,12 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
         auto vulkan = std::make_unique<VulkanMock>();
         auto nvml = std::make_unique<NvmlMock>();
+        auto lfx = std::make_unique<LfxMock>();
         DXGIDxvkAdapterMock adapter;
         DXGIOutputMock output;
         auto luid = new LUID{};
 
-        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, adapter, output);
+        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
 
         ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12Device), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12Device*>(&device))
@@ -137,7 +138,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             .LR_RETURN(luid);
 
         SECTION("GetGraphicsCapabilities without matching adapter returns OK with sm_0") {
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_D3D12_GRAPHICS_CAPS graphicsCaps{};
@@ -178,7 +179,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                                 fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
                         }));
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_D3D12_GRAPHICS_CAPS graphicsCaps;
@@ -192,7 +193,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         }
 
         SECTION("GetGraphicsCapabilities with future struct version returns incompatible-struct-version") {
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_D3D12_GRAPHICS_CAPS graphicsCaps{};

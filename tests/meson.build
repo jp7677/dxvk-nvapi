@@ -6,10 +6,12 @@ nvapi_src = files([
   '../src/util/util_log.cpp',
   '../src/sysinfo/vulkan.cpp',
   '../src/sysinfo/nvml.cpp',
+  '../src/d3d/lfx.cpp',
+  '../src/d3d/nvapi_d3d_instance.cpp',
   '../src/sysinfo/nvapi_output.cpp',
   '../src/sysinfo/nvapi_adapter.cpp',
   '../src/sysinfo/nvapi_adapter_registry.cpp',
-  '../src/sysinfo/resource_factory.cpp',
+  '../src/resource_factory.cpp',
   '../src/d3d11/nvapi_d3d11_device.cpp',
   '../src/d3d12/nvapi_d3d12_device.cpp',
 ])

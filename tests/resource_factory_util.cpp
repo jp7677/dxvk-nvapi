@@ -9,16 +9,18 @@ void ResetResourceFactory() {
 void SetupResourceFactory(
         std::unique_ptr<DXGIFactory1Mock> dxgiFactory,
         std::unique_ptr<Vulkan> vulkan,
-        std::unique_ptr<Nvml> nvml) {
-    resourceFactory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml));
+        std::unique_ptr<Nvml> nvml,
+        std::unique_ptr<Lfx> lfx) {
+    resourceFactory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
     nvapiAdapterRegistry.reset();
     initializationCount = 0ULL;
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 16> ConfigureDefaultTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 17> ConfigureDefaultTestEnvironment(
         DXGIFactory1Mock& dxgiFactory,
         VulkanMock& vulkan,
         NvmlMock& nvml,
+        LfxMock& lfx,
         DXGIDxvkAdapterMock& adapter,
         DXGIOutputMock& output) {
     return {
@@ -64,14 +66,17 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)),
 
         NAMED_ALLOW_CALL(nvml, IsAvailable())
+            .RETURN(false),
+        NAMED_ALLOW_CALL(lfx, IsAvailable())
             .RETURN(false)
     };
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 28> ConfigureExtendedTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 29> ConfigureExtendedTestEnvironment(
         DXGIFactory1Mock& dxgiFactory,
         VulkanMock& vulkan,
         NvmlMock& nvml,
+        LfxMock& lfx,
         DXGIDxvkAdapterMock& adapter1,
         DXGIDxvkAdapterMock& adapter2,
         DXGIOutputMock& output1,
@@ -159,6 +164,8 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)),
 
         NAMED_ALLOW_CALL(nvml, IsAvailable())
+            .RETURN(false),
+        NAMED_ALLOW_CALL(lfx, IsAvailable())
             .RETURN(false)
     };
 }

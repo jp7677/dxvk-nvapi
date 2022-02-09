@@ -20,4 +20,8 @@ namespace dxvk {
     std::unique_ptr<Nvml> ResourceFactory::CreateNvml() {
         return std::make_unique<Nvml>();
     }
+
+    std::unique_ptr <Lfx> ResourceFactory::CreateLfx() {
+        return std::make_unique<Lfx>();
+    }
 }

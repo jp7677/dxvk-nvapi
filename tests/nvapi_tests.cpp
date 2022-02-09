@@ -14,8 +14,8 @@
 #include "../src/nvapi_mosaic.cpp"
 
 #include "nvapi_sysinfo_mocks.cpp"
-#include "nvapi_sysinfo_util.cpp"
 #include "nvapi_d3d_mocks.cpp"
+#include "resource_factory_util.cpp"
 #include "nvapi_d3d11_mocks.cpp"
 #include "nvapi_d3d12_mocks.cpp"
 

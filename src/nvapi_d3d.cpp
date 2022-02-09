@@ -1,4 +1,5 @@
 #include "nvapi_private.h"
+#include "nvapi_static.h"
 #include "util/util_statuscode.h"
 
 extern "C" {
@@ -101,5 +102,60 @@ extern "C" {
         }
 
         return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D_Sleep(IUnknown *pDevice) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedOk = false;
+        static bool alreadyLoggedUnavailable = false;
+
+        if (pDevice == nullptr)
+            return InvalidArgument(n);
+
+        if (!nvapiD3dInstance->IsReflexAvailable())
+            return NoImplementation(n, alreadyLoggedUnavailable);
+
+        nvapiD3dInstance->Sleep();
+
+        return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D_SetSleepMode(IUnknown *pDevice,
+                                                NV_SET_SLEEP_MODE_PARAMS *pSetSleepModeParams) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedUnavailable = false;
+
+        if (pDevice == nullptr)
+            return InvalidArgument(n);
+
+        if (pSetSleepModeParams->version != NV_SET_SLEEP_MODE_PARAMS_VER1)
+            return IncompatibleStructVersion(n);
+
+        if (!nvapiD3dInstance->IsReflexAvailable())
+            return NoImplementation(n, alreadyLoggedUnavailable);
+
+        nvapiD3dInstance->SetReflexEnabled(pSetSleepModeParams->bLowLatencyMode);
+        if (pSetSleepModeParams->bLowLatencyMode) {
+            log::write(str::format(n, ": interval ", pSetSleepModeParams->minimumIntervalUs, " us"));
+            nvapiD3dInstance->SetTargetFrameTime(pSetSleepModeParams->minimumIntervalUs);
+        }
+
+        auto f = str::format(n, " (", pSetSleepModeParams->bLowLatencyMode ? "Enable" : "Disable", ")");
+        return Ok(f);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D_GetSleepStatus(IUnknown *pDevice,
+                                                  NV_GET_SLEEP_STATUS_PARAMS *pGetSleepStatusParams) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedUnavailable = false;
+
+        if (pGetSleepStatusParams->version != NV_GET_SLEEP_STATUS_PARAMS_VER1)
+            return IncompatibleStructVersion(n);
+
+        if (!nvapiD3dInstance->IsReflexAvailable())
+            return NoImplementation(n, alreadyLoggedUnavailable);
+
+        pGetSleepStatusParams->bLowLatencyMode = nvapiD3dInstance->IsReflexEnabled();
+        return Ok(n);
     }
 }
