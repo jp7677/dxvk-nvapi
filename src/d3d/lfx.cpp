@@ -8,32 +8,31 @@ namespace dxvk {
     Lfx::Lfx() {
         const auto lfxModuleName = "latencyflex_layer.dll";
         const auto lfxModuleNameFallback = "latencyflex_wine.dll";
+        auto useFallbackEntrypoints = false;
+
         m_lfxModule = ::LoadLibraryA(lfxModuleName);
-        if (m_lfxModule) {
-            m_lfx_WaitAndBeginFrame = reinterpret_cast<PFN_lfx_WaitAndBeginFrame>(GetProcAddress(m_lfxModule,
-                                                                                                 "lfx_WaitAndBeginFrame"));
-            m_lfx_SetTargetFrameTime = reinterpret_cast<PFN_lfx_SetTargetFrameTime>(GetProcAddress(m_lfxModule,
-                                                                                                   "lfx_SetTargetFrameTime"));
-        } else {
-            auto lastError = ::GetLastError();
-            if (lastError != ERROR_MOD_NOT_FOUND) {
-                log::write(str::format("Loading ", lfxModuleName, " failed with error code: ", lastError));
-            } else {
-                // Try fallback entrypoints. These were used by an older version of LatencyFleX.
-                m_lfxModule = ::LoadLibraryA(lfxModuleNameFallback);
-                if (m_lfxModule) {
-                    m_lfx_WaitAndBeginFrame = reinterpret_cast<PFN_lfx_WaitAndBeginFrame>(GetProcAddress(m_lfxModule,
-                                                                                                         "winelfx_WaitAndBeginFrame"));
-                    m_lfx_SetTargetFrameTime = reinterpret_cast<PFN_lfx_SetTargetFrameTime>(GetProcAddress(m_lfxModule,
-                                                                                                           "winelfx_SetTargetFrameTime"));
-                } else {
-                    lastError = ::GetLastError();
-                    if (lastError != ERROR_MOD_NOT_FOUND) // Ignore library not found
-                        log::write(
-                                str::format("Loading ", lfxModuleNameFallback, " failed with error code: ", lastError));
-                }
-            }
+        if (m_lfxModule == nullptr && ::GetLastError() == ERROR_MOD_NOT_FOUND) {
+            // Try fallback entrypoints. These were used by versions prior to [9c2836f].
+            // The fallback logic can be removed once enough time has passed since the release.
+            // [9c2836f]: https://github.com/ishitatsuyuki/LatencyFleX/commit/9c2836faf14196190a915064b53c27e675e47960
+            m_lfxModule = ::LoadLibraryA(lfxModuleNameFallback);
+            useFallbackEntrypoints = true;
         }
+
+        if (m_lfxModule == nullptr) {
+            auto lastError = ::GetLastError();
+            if (lastError != ERROR_MOD_NOT_FOUND) // Ignore library not found
+                log::write(str::format("Loading ", !useFallbackEntrypoints ? lfxModuleName : lfxModuleNameFallback,
+                                       " failed with error code: ", lastError));
+            return;
+        }
+
+        m_lfx_WaitAndBeginFrame = reinterpret_cast<PFN_lfx_WaitAndBeginFrame>(reinterpret_cast<void *>(
+                GetProcAddress(m_lfxModule,
+                               !useFallbackEntrypoints ? "lfx_WaitAndBeginFrame" : "winelfx_WaitAndBeginFrame")));
+        m_lfx_SetTargetFrameTime = reinterpret_cast<PFN_lfx_SetTargetFrameTime>(reinterpret_cast<void *>(
+                GetProcAddress(m_lfxModule,
+                               !useFallbackEntrypoints ? "lfx_SetTargetFrameTime" : "winelfx_SetTargetFrameTime")));
     }
 
     Lfx::~Lfx() {
