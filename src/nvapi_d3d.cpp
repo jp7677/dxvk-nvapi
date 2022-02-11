@@ -109,9 +109,6 @@ extern "C" {
         static bool alreadyLoggedOk = false;
         static bool alreadyLoggedUnavailable = false;
 
-        if (pDevice == nullptr)
-            return InvalidArgument(n);
-
         if (!nvapiD3dInstance->IsReflexAvailable())
             return NoImplementation(n, alreadyLoggedUnavailable);
 
