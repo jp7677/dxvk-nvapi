@@ -18,7 +18,7 @@ extern "C" {
         // VKD3D does not know any NVIDIA intrinsics
         *pSupported = false;
 
-        return Ok(str::format(n, " ", opCode, " (", fromCode(opCode), ")"));
+        return Ok(str::format(n, " (", opCode, "/", fromCode(opCode), ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderWithName(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
@@ -214,9 +214,9 @@ extern "C" {
         extensionNames.pop_back();
 
         if (!NvapiD3d12Device::CreateGraphicsPipelineState(pDevice, pPSODesc, numExtensions, ppExtensions, ppPSO))
-            return NotSupported(str::format(n, " ", numExtensions, " (", extensionNames, ")"));
+            return NotSupported(str::format(n, " (", numExtensions, "/", extensionNames, ")"));
 
-        return Ok(str::format(n, " ", numExtensions, " (", extensionNames, ")"), alreadyLoggedOk);
+        return Ok(str::format(n, " (", numExtensions, "/", extensionNames, ")"), alreadyLoggedOk);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_SetDepthBoundsTestValues(ID3D12GraphicsCommandList *pCommandList, const float minDepth, const float maxDepth) {

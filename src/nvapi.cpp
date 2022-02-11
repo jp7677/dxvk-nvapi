@@ -181,12 +181,12 @@ extern "C" {
 
         *pNvDispHandle = reinterpret_cast<NvDisplayHandle>(output);
 
-        return Ok(str::format(n, " ", thisEnum));
+        return Ok(str::format(n, " (", thisEnum, ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_EnumNvidiaUnAttachedDisplayHandle(NvU32 thisEnum, NvUnAttachedDisplayHandle *pNvUnAttachedDispHandle) {
         // DXVK does not know about unattached displays
-        return EndEnumeration(str::format(__func__, " ", thisEnum));
+        return EndEnumeration(str::format(__func__, " (", thisEnum, ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_GetAssociatedNvidiaDisplayName(NvDisplayHandle NvDispHandle, NvAPI_ShortString szDisplayName) {
@@ -227,7 +227,7 @@ extern "C" {
         auto error = fromErrorNr(nr);
         strcpy(szDesc, error.c_str());
 
-        return Ok(str::format(n, " ", nr, " (", error, ")"));
+        return Ok(str::format(n, " (", nr, "/", error, ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_Unload() {

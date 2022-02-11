@@ -16,7 +16,7 @@ extern "C" {
         // DXVK does not know any NVIDIA intrinsics backdoors
         *supported = false;
 
-        return Ok(str::format(n, " ", code, " (", fromCode(code), ")"));
+        return Ok(str::format(n, " (", code, "/", fromCode(code), ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_SetDepthBoundsTest(IUnknown *pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth) {

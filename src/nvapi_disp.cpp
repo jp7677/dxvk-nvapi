@@ -41,7 +41,7 @@ extern "C" {
                 return IncompatibleStructVersion(n);
         }
 
-        return Ok(str::format(n, " ", displayId));
+        return Ok(str::format(n, " (", displayId, ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char *displayName, NvU32 *displayId) {
@@ -55,11 +55,11 @@ extern "C" {
 
         auto id = nvapiAdapterRegistry->GetOutputId(std::string(displayName));
         if (id == -1)
-            return InvalidArgument(str::format(n, " ", displayName));
+            return InvalidArgument(str::format(n, " (", displayName, ")"));
 
         *displayId = id;
 
-        return Ok(str::format(n, " ", displayName));
+        return Ok(str::format(n, " (", displayName, ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_DISP_GetGDIPrimaryDisplayId(NvU32 *displayId) {
