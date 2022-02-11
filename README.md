@@ -8,7 +8,7 @@ This implementation currently offers entry points for supporting the following f
 
 - NVIDIA DLSS for Vulkan, by supporting the relevant adapter information by querying from [Vulkan](https://www.vulkan.org/).
 - NVIDIA DLSS for D3D11 and D3D12, by querying from Vulkan and forwarding the relevant calls into DXVK / VKD3D-Proton.
-- NVIDIA Reflex Low-Latency bridged to [LatencyFleX](https://github.com/ishitatsuyuki/LatencyFleX). This is not the official implementation and this requires additional setup.
+- NVIDIA Reflex, by forwarding the relevant calls into [LatencyFleX](https://github.com/ishitatsuyuki/LatencyFleX).
 - Several NVAPI D3D11 extensions, among others `SetDepthBoundsTest` and `UAVOverlap`, by forwarding the relevant calls into DXVK.
 - NVIDIA PhysX, by supporting entry points for querying PhysX capability.
 - Several GPU topology related methods for adapter and display information, by querying from DXVK and Vulkan.
