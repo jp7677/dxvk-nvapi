@@ -37,7 +37,9 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING *pSetting) {
         constexpr auto n = __func__;
 
-        auto name = str::format("0x", std::hex, settingId);
+        auto id = str::format("0x", std::hex, settingId);
+        auto name = std::string("Unknown");
+
         auto itD = std::find_if(
             std::begin(mapSettingDWORD),
             std::end(mapSettingDWORD),
@@ -52,7 +54,7 @@ extern "C" {
         if (itW != std::end(mapSettingWSTRING))
             name = str::fromws(itW->settingNameString);
 
-        return SettingNotFound(str::format(n, " (", name, ")"));
+        return SettingNotFound(str::format(n, " (", id, "/", name, ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_DestroySession(NvDRSSessionHandle hSession) {
