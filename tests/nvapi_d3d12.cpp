@@ -192,12 +192,21 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "");
         }
 
-        SECTION("GetGraphicsCapabilities with future struct version returns incompatible-struct-version") {
+        SECTION("GetGraphicsCapabilities with unknown struct version returns incompatible-struct-version") {
             SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_D3D12_GRAPHICS_CAPS graphicsCaps{};
             REQUIRE(NvAPI_D3D12_GetGraphicsCapabilities(static_cast<ID3D12Device*>(&device), NV_D3D12_GRAPHICS_CAPS_VER1 + 1, &graphicsCaps) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetGraphicsCapabilities with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NV_D3D12_GRAPHICS_CAPS graphicsCaps{};
+            REQUIRE(NvAPI_D3D12_GetGraphicsCapabilities(static_cast<ID3D12Device*>(&device), NV_D3D12_GRAPHICS_CAPS_VER, &graphicsCaps) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
 
         delete luid;
@@ -222,13 +231,26 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             REQUIRE(commandListRefCount == 0);
         }
 
-        SECTION("CreateGraphicsPipelineState with future struct version returns incompatible-struct-version") {
+        SECTION("CreateGraphicsPipelineState with unknown struct version returns incompatible-struct-version") {
             auto desc = D3D12_GRAPHICS_PIPELINE_STATE_DESC{};
             NVAPI_D3D12_PSO_ENABLE_DEPTH_BOUND_TEST_DESC extensionDesc;
             extensionDesc.baseVersion = NV_PSO_EXTENSION_DESC_VER_1 + 1;
             const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = { &extensionDesc };
             ID3D12PipelineState* pipelineState = nullptr;
             REQUIRE(NvAPI_D3D12_CreateGraphicsPipelineState(&device, &desc, 1, extensions, &pipelineState) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("CreateGraphicsPipelineState with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            ALLOW_CALL(device, CreateGraphicsPipelineState(_, _, _))
+                .RETURN(S_OK);
+
+            auto desc = D3D12_GRAPHICS_PIPELINE_STATE_DESC{};
+            NVAPI_D3D12_PSO_ENABLE_DEPTH_BOUND_TEST_DESC extensionDesc;
+            extensionDesc.baseVersion = NV_PSO_EXTENSION_DESC_VER;
+            const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = { &extensionDesc };
+            ID3D12PipelineState* pipelineState = nullptr;
+            REQUIRE(NvAPI_D3D12_CreateGraphicsPipelineState(&device, &desc, 1, extensions, &pipelineState) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
     }
 

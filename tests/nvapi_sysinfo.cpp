@@ -667,13 +667,23 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         }
     }
 
-    SECTION("GetArchInfo with future struct version returns incompatible-struct-version") {
+    SECTION("GetArchInfo with unknown struct version returns incompatible-struct-version") {
         NvPhysicalGpuHandle handle;
         REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
 
         NV_GPU_ARCH_INFO archInfo;
         archInfo.version = NV_GPU_ARCH_INFO_VER_2 + 1;
         REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
+
+    SECTION("GetArchInfo with current struct version returns not incompatible-struct-version") {
+        // This test should fail when a header update provides a newer not yet implemented struct version
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NV_GPU_ARCH_INFO archInfo;
+        archInfo.version = NV_GPU_ARCH_INFO_VER;
+        REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
     }
 
     SECTION("GetArchInfo returns device-not-found when no NVIDIA device is present") {
@@ -807,10 +817,17 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 REQUIRE(settings.sensor[0].defaultMinTemp == -256);
             }
 
-            SECTION("GetThermalSettings with future struct version returns incompatible-struct-version") {
+            SECTION("GetThermalSettings with unknown struct version returns incompatible-struct-version") {
                 NV_GPU_THERMAL_SETTINGS settings;
                 settings.version = NV_GPU_THERMAL_SETTINGS_VER_2 + 1;
                 REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("GetThermalSettings with current struct version returns not incompatible-struct-version") {
+                // This test should fail when a header update provides a newer not yet implemented struct version
+                NV_GPU_THERMAL_SETTINGS settings;
+                settings.version = NV_GPU_THERMAL_SETTINGS_VER;
+                REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
             }
         }
 
@@ -889,13 +906,23 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             }
         }
 
-        SECTION("GetAllClockFrequencies with future struct version returns incompatible-struct-version") {
+        SECTION("GetAllClockFrequencies with unknown struct version returns incompatible-struct-version") {
             NvPhysicalGpuHandle handle;
             REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
 
             NV_GPU_CLOCK_FREQUENCIES frequencies;
             frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_3 + 1;
             REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetAllClockFrequencies with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+            NV_GPU_CLOCK_FREQUENCIES frequencies;
+            frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER;
+            REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
 
         SECTION("GetAllClockFrequencies returns not-supported for base/boost clock types") {
@@ -1016,10 +1043,17 @@ TEST_CASE("GetHdrCapabilities succeeds", "[.sysinfo]") {
         REQUIRE(capabilities.isDolbyVisionSupported == false);
     }
 
-    SECTION("GetHdrCapabilities with future struct version returns incompatible-struct-version") {
+    SECTION("GetHdrCapabilities with unknown struct version returns incompatible-struct-version") {
         NV_HDR_CAPABILITIES capabilities;
         capabilities.version = NV_HDR_CAPABILITIES_VER2 + 1;
         REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, &capabilities) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
+
+    SECTION("GetHdrCapabilities with current struct version returns not incompatible-struct-version") {
+        // This test should fail when a header update provides a newer not yet implemented struct version
+        NV_HDR_CAPABILITIES capabilities;
+        capabilities.version = NV_HDR_CAPABILITIES_VER;
+        REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, &capabilities) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
     }
 }
 

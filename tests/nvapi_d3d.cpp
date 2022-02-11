@@ -52,10 +52,17 @@ TEST_CASE("D3D methods succeed", "[.d3d]") {
             REQUIRE(state.numVRSLIGpus == 0);
         }
 
-        SECTION("GetCurrentSLIState with future struct version returns incompatible-struct-version") {
+        SECTION("GetCurrentSLIState with unknown struct version returns incompatible-struct-version") {
             NV_GET_CURRENT_SLI_STATE state;
             state.version = NV_GET_CURRENT_SLI_STATE_VER2 + 1;
             REQUIRE(NvAPI_D3D_GetCurrentSLIState(&unknown, &state) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetCurrentSLIState with current struct version returns not incompatible-struct-version") {
+            // This test fails when a header update provides a newer not yet implemented struct version
+            NV_GET_CURRENT_SLI_STATE state;
+            state.version = NV_GET_CURRENT_SLI_STATE_VER;
+            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&unknown, &state) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
     }
 
@@ -87,13 +94,20 @@ TEST_CASE("D3D methods succeed", "[.d3d]") {
             REQUIRE(caps.bVariablePixelRateShadingSupported == 0);
         }
 
-        SECTION("GetGraphicsCapabilities with future struct version returns incompatible-struct-version") {
+        SECTION("GetGraphicsCapabilities with unknown struct version returns incompatible-struct-version") {
             NV_D3D1x_GRAPHICS_CAPS caps;
             REQUIRE(NvAPI_D3D1x_GetGraphicsCapabilities(&unknown, NV_D3D1x_GRAPHICS_CAPS_VER2 + 1, &caps) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
+
+        SECTION("GetGraphicsCapabilities with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            NV_D3D1x_GRAPHICS_CAPS caps;
+            REQUIRE(NvAPI_D3D1x_GetGraphicsCapabilities(&unknown, NV_D3D1x_GRAPHICS_CAPS_VER, &caps) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
     }
 }
-TEST_CASE("Reflex methods", "[.d3d]"){
+
+TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]"){
     UnknownMock unknown;
     auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
     auto vulkan = std::make_unique<VulkanMock>();
@@ -104,68 +118,101 @@ TEST_CASE("Reflex methods", "[.d3d]"){
 
     auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
 
-    SECTION("LatencyFleX-depending methods return NoImplementation when LFX is unavailable") {
-        SECTION("GetSleepStatus returns NoImplementation") {
+    ALLOW_CALL(*lfx, IsAvailable())
+        .RETURN(false);
+
+    SECTION("Reflex methods succeed when LFX is available") {
+        ALLOW_CALL(*lfx, IsAvailable())
+            .RETURN(true); // NOLINT(bugprone-use-after-move)
+
+        SECTION("GetSleepStatus returns OK") {
             SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
+            NV_GET_SLEEP_STATUS_PARAMS_V1 params{};
+            params.version = NV_GET_SLEEP_STATUS_PARAMS_VER1;
+            REQUIRE(NvAPI_D3D_GetSleepStatus(&unknown, &params) == NVAPI_OK);
+        }
+
+        SECTION("SetSleepMode returns OK") {
+            REQUIRE_CALL(*lfx, SetTargetFrameTime(250ULL * 1000)); // NOLINT(bugprone-use-after-move)
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NV_SET_SLEEP_MODE_PARAMS_V1 params{};
+            params.version = NV_SET_SLEEP_MODE_PARAMS_VER1;
+            params.bLowLatencyMode = true;
+            params.minimumIntervalUs = 250;
+            REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_OK);
+        }
+
+        SECTION("Sleep calls LFX throttle callback and returns OK") {
+            REQUIRE_CALL(*lfx, SetTargetFrameTime(500ULL * 1000)); // NOLINT(bugprone-use-after-move)
+            REQUIRE_CALL(*lfx, WaitAndBeginFrame());
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NV_SET_SLEEP_MODE_PARAMS params{};
+            params.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+            params.bLowLatencyMode = true;
+            params.minimumIntervalUs = 500;
+            REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_OK);
+            REQUIRE(NvAPI_D3D_Sleep(&unknown) == NVAPI_OK);
+        }
+
+        SECTION("GetSleepStatus with unknown struct version returns incompatible-struct-version") {
+            NV_GET_SLEEP_STATUS_PARAMS params{};
+            params.version = NV_GET_SLEEP_STATUS_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_D3D_GetSleepStatus(&unknown, &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetSleepStatus with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NV_GET_SLEEP_STATUS_PARAMS params{};
+            params.version = NV_GET_SLEEP_STATUS_PARAMS_VER;
+            REQUIRE(NvAPI_D3D_GetSleepStatus(&unknown, &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("SetSleepMode with unknown struct version returns incompatible-struct-version") {
+            NV_SET_SLEEP_MODE_PARAMS params{};
+            params.version = NV_SET_SLEEP_MODE_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("SetSleepMode with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NV_SET_SLEEP_MODE_PARAMS params{};
+            params.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+            REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
+
+    SECTION("LatencyFleX depending methods succeed when LFX is unavailable") {
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        SECTION("GetSleepStatus returns NoImplementation") {
             NV_GET_SLEEP_STATUS_PARAMS params{};
             params.version = NV_GET_SLEEP_STATUS_PARAMS_VER;
             REQUIRE(NvAPI_D3D_GetSleepStatus(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
         }
 
         SECTION("SetSleepMode returns NoImplementation") {
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
-            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
-
             NV_SET_SLEEP_MODE_PARAMS params{};
             params.version = NV_SET_SLEEP_MODE_PARAMS_VER;
-            params.bLowLatencyMode = true;
             REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
         }
 
         SECTION("Sleep returns NoImplementation") {
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
-            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
-
             REQUIRE(NvAPI_D3D_Sleep(&unknown) == NVAPI_NO_IMPLEMENTATION);
-        }
-    }
-    
-    SECTION("Reflex methods work when LFX is available") {
-        ALLOW_CALL(*lfx, IsAvailable()).RETURN(true); // NOLINT(bugprone-use-after-move)
-
-        SECTION("GetSleepStatus returns OK") {
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
-            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
-
-            NV_GET_SLEEP_STATUS_PARAMS params{};
-            params.version = NV_GET_SLEEP_STATUS_PARAMS_VER;
-            REQUIRE(NvAPI_D3D_GetSleepStatus(&unknown, &params) == NVAPI_OK);
-        }
-
-        SECTION("SetSleepMode returns OK") {
-            REQUIRE_CALL(*lfx, SetTargetFrameTime(UINT64_C(0))); // NOLINT(bugprone-use-after-move)
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
-            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
-
-            NV_SET_SLEEP_MODE_PARAMS params{};
-            params.version = NV_SET_SLEEP_MODE_PARAMS_VER;
-            params.bLowLatencyMode = true;
-            REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_OK);
-        }
-
-        SECTION("Sleep calls LFX throttle callback and returns OK") {
-            REQUIRE_CALL(*lfx, SetTargetFrameTime(UINT64_C(0))); // NOLINT(bugprone-use-after-move)
-            REQUIRE_CALL(*lfx, WaitAndBeginFrame());
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
-            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
-
-            NV_SET_SLEEP_MODE_PARAMS params{};
-            params.version = NV_SET_SLEEP_MODE_PARAMS_VER;
-            params.bLowLatencyMode = true;
-            REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_OK);
-            REQUIRE(NvAPI_D3D_Sleep(&unknown) == NVAPI_OK);
         }
     }
 }
