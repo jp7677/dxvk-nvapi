@@ -7,6 +7,7 @@
 #include "../src/nvapi_d3d.cpp"
 #include "../src/nvapi_d3d11.cpp"
 #include "../src/nvapi_d3d12.cpp"
+#include "../src/nvapi_drs.cpp"
 #include "../src/nvapi.cpp"
 #include "../src/nvapi_sys.cpp"
 #include "../src/nvapi_gpu.cpp"
@@ -22,4 +23,5 @@
 #include "nvapi_d3d.cpp"
 #include "nvapi_d3d11.cpp"
 #include "nvapi_d3d12.cpp"
+#include "nvapi_drs.cpp"
 #include "nvapi_sysinfo.cpp"
