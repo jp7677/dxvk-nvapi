@@ -23,9 +23,7 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_FindApplicationByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString appName, NvDRSProfileHandle *phProfile, NVDRS_APPLICATION *pApplication) {
-        constexpr auto n = __func__;
-
-        return ExecutableNotFound(str::format(n, " (", str::fromnvs(appName), ")"));
+        return ExecutableNotFound(str::format(__func__, " (", str::fromnvs(appName), ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle *phProfile) {
