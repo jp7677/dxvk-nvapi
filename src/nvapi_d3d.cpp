@@ -107,50 +107,42 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D_Sleep(IUnknown *pDevice) {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
-        static bool alreadyLoggedUnavailable = false;
+        static bool alreadyLoggedNoLfx = false;
 
         if (!nvapiD3dInstance->IsReflexAvailable())
-            return NoImplementation(n, alreadyLoggedUnavailable);
+            return NoImplementation(n, alreadyLoggedNoLfx);
 
         nvapiD3dInstance->Sleep();
 
         return Ok(n, alreadyLoggedOk);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D_SetSleepMode(IUnknown *pDevice,
-                                                NV_SET_SLEEP_MODE_PARAMS *pSetSleepModeParams) {
+    NvAPI_Status __cdecl NvAPI_D3D_SetSleepMode(IUnknown *pDevice, NV_SET_SLEEP_MODE_PARAMS *pSetSleepModeParams) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedUnavailable = false;
-
-        if (pDevice == nullptr)
-            return InvalidArgument(n);
+        static bool alreadyLoggedNoLfx = false;
 
         if (pSetSleepModeParams->version != NV_SET_SLEEP_MODE_PARAMS_VER1)
             return IncompatibleStructVersion(n);
 
         if (!nvapiD3dInstance->IsReflexAvailable())
-            return NoImplementation(n, alreadyLoggedUnavailable);
+            return NoImplementation(n, alreadyLoggedNoLfx);
 
         nvapiD3dInstance->SetReflexEnabled(pSetSleepModeParams->bLowLatencyMode);
-        if (pSetSleepModeParams->bLowLatencyMode) {
-            log::write(str::format(n, ": interval ", pSetSleepModeParams->minimumIntervalUs, " us"));
+        if (pSetSleepModeParams->bLowLatencyMode)
             nvapiD3dInstance->SetTargetFrameTime(pSetSleepModeParams->minimumIntervalUs);
-        }
 
-        auto f = str::format(n, " (", pSetSleepModeParams->bLowLatencyMode ? "Enable" : "Disable", ")");
-        return Ok(f);
+        return Ok(str::format(n, " (", pSetSleepModeParams->bLowLatencyMode ? (str::format("Enabled/", pSetSleepModeParams->minimumIntervalUs, "us")) : "Disabled", ")"));
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D_GetSleepStatus(IUnknown *pDevice,
-                                                  NV_GET_SLEEP_STATUS_PARAMS *pGetSleepStatusParams) {
+    NvAPI_Status __cdecl NvAPI_D3D_GetSleepStatus(IUnknown *pDevice, NV_GET_SLEEP_STATUS_PARAMS *pGetSleepStatusParams) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedUnavailable = false;
+        static bool alreadyLoggedNoLfx = false;
 
         if (pGetSleepStatusParams->version != NV_GET_SLEEP_STATUS_PARAMS_VER1)
             return IncompatibleStructVersion(n);
 
         if (!nvapiD3dInstance->IsReflexAvailable())
-            return NoImplementation(n, alreadyLoggedUnavailable);
+            return NoImplementation(n, alreadyLoggedNoLfx);
 
         pGetSleepStatusParams->bLowLatencyMode = nvapiD3dInstance->IsReflexEnabled();
         return Ok(n);
