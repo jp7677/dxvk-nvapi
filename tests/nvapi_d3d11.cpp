@@ -97,10 +97,10 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
             .RETURN(false);
         FORBID_CALL(context, SetBarrierControl(_));
 
-        REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11Device *>(&device)) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11Device *>(&device)) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11DeviceContext *>(&context)) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11DeviceContext *>(&context)) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11Device*>(&device)) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D11_BeginUAVOverlap(static_cast<ID3D11DeviceContext*>(&context)) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D11_EndUAVOverlap(static_cast<ID3D11DeviceContext*>(&context)) == NVAPI_ERROR);
         REQUIRE(deviceRefCount == 0);
         REQUIRE(contextRefCount == 0);
     }
