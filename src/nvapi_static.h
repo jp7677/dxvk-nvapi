@@ -8,5 +8,8 @@ static std::unique_ptr<dxvk::ResourceFactory> resourceFactory;
 static std::unique_ptr<dxvk::NvapiAdapterRegistry> nvapiAdapterRegistry;
 static std::unique_ptr<dxvk::NvapiD3dInstance> nvapiD3dInstance;
 
+static NvDRSSessionHandle nvapiDrsSession{};
+static NvDRSProfileHandle nvapiDrsProfile{};
+
 static auto initializationMutex = std::mutex{};
 static auto initializationCount = 0ULL;

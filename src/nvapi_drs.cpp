@@ -1,5 +1,6 @@
 #include "../inc/NvApiDriverSettings.c"
 #include "nvapi_private.h"
+#include "nvapi_static.h"
 #include "util/util_statuscode.h"
 
 extern "C" {
@@ -8,7 +9,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DRS_CreateSession(NvDRSSessionHandle *phSession) {
         constexpr auto n = __func__;
 
-        *phSession = reinterpret_cast<NvDRSSessionHandle>(nvapiAdapterRegistry->GetAdapter()); // Just another opaque pointer, we don't use it anywhere
+        *phSession = nvapiDrsSession;
 
         return Ok(n);
     }
@@ -21,7 +22,7 @@ extern "C" {
         return ProfileNotFound(str::format(__func__, " (", str::fromnvs(profileName), ")"));
     }
 
-    NvAPI_Status __cdecl NvAPI_DRS_FindApplicationByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString appName, NvDRSProfileHandle *phProfile, __inout NVDRS_APPLICATION *pApplication) {
+    NvAPI_Status __cdecl NvAPI_DRS_FindApplicationByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString appName, NvDRSProfileHandle *phProfile, NVDRS_APPLICATION *pApplication) {
         constexpr auto n = __func__;
 
         return ExecutableNotFound(str::format(n, " (", str::fromnvs(appName), ")"));
@@ -30,7 +31,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle *phProfile) {
         constexpr auto n = __func__;
 
-        *phProfile = reinterpret_cast<NvDRSProfileHandle>(nvapiAdapterRegistry->GetAdapter()); // Just another opaque pointer, we don't use it anywhere
+        *phProfile = nvapiDrsProfile;
 
         return Ok(n);
     }
