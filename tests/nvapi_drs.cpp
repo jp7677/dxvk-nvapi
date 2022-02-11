@@ -39,7 +39,7 @@ TEST_CASE("DRS methods succeed", "[.drs]") {
         auto args = GENERATE(
             Data{FXAA_ALLOW_ID},
             Data{CUDA_EXCLUDED_GPUS_ID},
-            Data{0x1234});
+            Data{0x12345678});
 
         NvDRSSessionHandle handle{};
         NvDRSProfileHandle profile{};
