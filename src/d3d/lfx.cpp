@@ -27,10 +27,10 @@ namespace dxvk {
             return;
         }
 
-        m_lfx_WaitAndBeginFrame = reinterpret_cast<PFN_lfx_WaitAndBeginFrame>(reinterpret_cast<void *>(
+        m_lfx_WaitAndBeginFrame = reinterpret_cast<PFN_lfx_WaitAndBeginFrame>(reinterpret_cast<void*>(
                 GetProcAddress(m_lfxModule,
                                !useFallbackEntrypoints ? "lfx_WaitAndBeginFrame" : "winelfx_WaitAndBeginFrame")));
-        m_lfx_SetTargetFrameTime = reinterpret_cast<PFN_lfx_SetTargetFrameTime>(reinterpret_cast<void *>(
+        m_lfx_SetTargetFrameTime = reinterpret_cast<PFN_lfx_SetTargetFrameTime>(reinterpret_cast<void*>(
                 GetProcAddress(m_lfxModule,
                                !useFallbackEntrypoints ? "lfx_SetTargetFrameTime" : "winelfx_SetTargetFrameTime")));
     }
