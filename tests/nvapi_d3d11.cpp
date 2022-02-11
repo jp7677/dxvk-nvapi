@@ -128,34 +128,7 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         REQUIRE(contextRefCount == 0);
     }
 
-    SECTION("Failing CreateCubinComputeShader/CreateCubinComputeShaderWithName inside DXVK returns error") {
-        ALLOW_CALL(device, CreateCubinComputeShaderWithNameNVX(_, _, _, _, _, _, _))
-            .RETURN(false);
-
-        NVDX_ObjectHandle objhandle;
-        REQUIRE(NvAPI_D3D11_CreateCubinComputeShaderWithName(static_cast<ID3D11Device*>(&device), "X", 1U, 0U,0U,0U, "foo", &objhandle) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D11_CreateCubinComputeShader(static_cast<ID3D11Device*>(&device), "X", 1U, 0U,0U,0U, &objhandle) == NVAPI_ERROR);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(contextRefCount == 0);
-    }
-
-    SECTION("LaunchCubinShader/CreateCubinComputeShader/CreateCubinComputeShaderWithName without extended DXVK interface returns error") {
-        ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice1::guid, _))
-            .RETURN(E_NOINTERFACE);
-        ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext1::guid, _))
-            .RETURN(E_NOINTERFACE);
-        FORBID_CALL(context, LaunchCubinShaderNVX(_, _, _, _, _, _, _, _, _, _));
-        FORBID_CALL(device, CreateCubinComputeShaderWithNameNVX(_, _, _, _, _, _, _));
-
-        REQUIRE(NvAPI_D3D11_LaunchCubinShader(static_cast<ID3D11DeviceContext*>(&context), NVDX_ObjectHandle(), 0,0,0, nullptr, 0, nullptr, 0, nullptr, 0) == NVAPI_ERROR);
-        NVDX_ObjectHandle objhandle;
-        REQUIRE(NvAPI_D3D11_CreateCubinComputeShaderWithName(static_cast<ID3D11Device*>(&device), "X", 1U, 0U,0U,0U, "foo", &objhandle) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D11_CreateCubinComputeShader(static_cast<ID3D11Device*>(&device), "X", 1U, 0U,0U,0U, &objhandle) == NVAPI_ERROR);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(contextRefCount == 0);
-    }
-
-    SECTION("IsFatbinPTXSupported without DXVK extension succeeds but reports unsupported") {
+    SECTION("IsFatbinPTXSupported without DXVK extension returns OK but reports unsupported") {
         ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_NVX_BINARY_IMPORT))
             .RETURN(false);
 
@@ -165,12 +138,30 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         REQUIRE(deviceRefCount == 0);
     }
 
-    SECTION("IsFatbinPTXSupported without DXVK extension succeeds but reports unsupported") {
-        ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_NVX_BINARY_IMPORT))
-            .RETURN(false);
+    SECTION("CreateCubinComputeShader/CreateCubinComputeShaderWithName/LaunchCubinShader without extended DXVK interface returns error") {
+        ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice1::guid, _))
+            .RETURN(E_NOINTERFACE);
+        ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext1::guid, _))
+            .RETURN(E_NOINTERFACE);
+        FORBID_CALL(device, CreateCubinComputeShaderWithNameNVX(_, _, _, _, _, _, _));
+        FORBID_CALL(context, LaunchCubinShaderNVX(_, _, _, _, _, _, _, _, _, _));
+
+        NVDX_ObjectHandle objhandle;
+        REQUIRE(NvAPI_D3D11_CreateCubinComputeShaderWithName(static_cast<ID3D11Device *>(&device), "X", 1U, 0U,0U,0U, "foo", &objhandle) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D11_CreateCubinComputeShader(static_cast<ID3D11Device*>(&device), "X", 1U, 0U,0U,0U, &objhandle) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D11_LaunchCubinShader(static_cast<ID3D11DeviceContext*>(&context), NVDX_ObjectHandle(), 0,0,0, nullptr, 0, nullptr, 0, nullptr, 0) == NVAPI_ERROR);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
+    }
+
+    SECTION("IsFatbinPTXSupported without extended DXVK interface returns OK but reports unsupported") {
+        ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice1::guid, _))
+            .RETURN(E_NOINTERFACE);
+        ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext1::guid, _))
+            .RETURN(E_NOINTERFACE);
 
         bool supported = true;
-        REQUIRE(NvAPI_D3D11_IsFatbinPTXSupported(static_cast<ID3D11Device*>(&device), &supported) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D11_IsFatbinPTXSupported(static_cast<ID3D11Device *>(&device), &supported) == NVAPI_OK);
         REQUIRE(supported == false);
         REQUIRE(deviceRefCount == 0);
     }
@@ -273,7 +264,38 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         REQUIRE(contextRefCount == 0);
     }
 
-    SECTION("DestroyCubinComputeShader treats handle as a COM object and releases it") {
+    SECTION("LaunchCubinShader/CreateCubinComputeShader/CreateCubinComputeShaderWithName returns OK") {
+        auto shader = "X";
+        NVDX_ObjectHandle objhandle{};
+        REQUIRE_CALL(device, CreateCubinComputeShaderWithNameNVX(reinterpret_cast<void*>(&shader), 1U, 2U, 3U, 4U, nullptr, reinterpret_cast<IUnknown**>(&objhandle)))
+            .TIMES(1)
+            .RETURN(true);
+        REQUIRE_CALL(device, CreateCubinComputeShaderWithNameNVX(reinterpret_cast<void*>(&shader), 1U, 2U, 3U, 4U, "foo", reinterpret_cast<IUnknown**>(&objhandle)))
+            .TIMES(1)
+            .RETURN(true);
+        REQUIRE_CALL(context, LaunchCubinShaderNVX(reinterpret_cast<IUnknown*>(objhandle), 1U, 2U, 3U, nullptr, 0U, nullptr, 0U, nullptr, 0U))
+            .TIMES(1)
+            .RETURN(true);
+
+        REQUIRE(NvAPI_D3D11_CreateCubinComputeShader(static_cast<ID3D11Device*>(&device), reinterpret_cast<void*>(&shader), 1U, 2U,3U,4U, &objhandle) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D11_CreateCubinComputeShaderWithName(static_cast<ID3D11Device *>(&device), reinterpret_cast<void*>(&shader), 1U, 2U,3U,4U, "foo", &objhandle) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D11_LaunchCubinShader(static_cast<ID3D11DeviceContext*>(&context), objhandle, 1U,2U,3U, nullptr, 0U, nullptr, 0U, nullptr, 0U) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
+    }
+
+    SECTION("CreateCubinComputeShader/CreateCubinComputeShaderWithName with failure inside DXVK returns error") {
+        ALLOW_CALL(device, CreateCubinComputeShaderWithNameNVX(_, _, _, _, _, _, _))
+            .RETURN(false);
+
+        NVDX_ObjectHandle objhandle;
+        REQUIRE(NvAPI_D3D11_CreateCubinComputeShaderWithName(static_cast<ID3D11Device*>(&device), "X", 1U, 0U,0U,0U, "foo", &objhandle) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D11_CreateCubinComputeShader(static_cast<ID3D11Device*>(&device), "X", 1U, 0U,0U,0U, &objhandle) == NVAPI_ERROR);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
+    }
+
+    SECTION("DestroyCubinComputeShader returns OK and treats handle as a COM object and releases it") {
         // it's part of our contract with DXVK that cuda shader handles are really COM objects
         UnknownMock unknown;
         REQUIRE_CALL(unknown, Release())
@@ -286,43 +308,124 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         REQUIRE(contextRefCount == 0);
     }
 
-    SECTION("DestroyCubinComputeShader does not succeed (or crash) on a NULL or NVDX_OBJECT_NONE handle") {
+    SECTION("DestroyCubinComputeShader returns error on a NULL or NVDX_OBJECT_NONE handle") {
         // this also checks the assumption that NVDX_OBJECT_NONE casts <-> NULL, which should forever be true but will break some stuff in subtle ways if not, so ¯\_(ツ)_/¯
         REQUIRE(NVDX_OBJECT_NONE == reinterpret_cast<NVDX_ObjectHandle>(NULL /* not nullptr which is cast-proofed */));
         REQUIRE(reinterpret_cast<void*>(NVDX_OBJECT_NONE) == nullptr);
-        REQUIRE(NvAPI_D3D11_DestroyCubinComputeShader(static_cast<ID3D11Device*>(&device), nullptr) != NVAPI_OK);
-        REQUIRE(NvAPI_D3D11_DestroyCubinComputeShader(static_cast<ID3D11Device*>(&device), NVDX_OBJECT_NONE) != NVAPI_OK);
+        REQUIRE(NvAPI_D3D11_DestroyCubinComputeShader(static_cast<ID3D11Device*>(&device), nullptr) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D11_DestroyCubinComputeShader(static_cast<ID3D11Device*>(&device), NVDX_OBJECT_NONE) == NVAPI_ERROR);
         REQUIRE(deviceRefCount == 0);
         REQUIRE(contextRefCount == 0);
     }
 
-    SECTION("GetResourceHandle succeeds") {
-        SECTION("GetResourceHandle returns OK") {
-            // Test device call twice to ensure correct reference counting when hitting the device cache
-            D3D11BufferMock resource;
-            auto handle = reinterpret_cast<NVDX_ObjectHandle>(&resource);
-            REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, &handle) == NVAPI_OK);
-            REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, &handle) == NVAPI_OK);
-            REQUIRE(deviceRefCount == 0);
-            REQUIRE(contextRefCount == 0);
-        }
+    SECTION("IsFatbinPTXSupported returns OK") {
+        bool supported = false;
+        REQUIRE(NvAPI_D3D11_IsFatbinPTXSupported(static_cast<ID3D11Device*>(&device), &supported) == NVAPI_OK);
+        REQUIRE(supported == true);
+        REQUIRE(deviceRefCount == 0);
+    }
 
-        SECTION("GetResourceHandle with NULL argument returns InvalidArgument") {
-            D3D11BufferMock resource;
-            NVDX_ObjectHandle handle;
-            REQUIRE(NvAPI_D3D11_GetResourceHandle(nullptr, &resource, &handle) == NVAPI_INVALID_ARGUMENT);
-            REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), nullptr, &handle) == NVAPI_INVALID_ARGUMENT);
-            REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, nullptr) == NVAPI_INVALID_ARGUMENT);
-            REQUIRE(deviceRefCount == 0);
-            REQUIRE(contextRefCount == 0);
-        }
+    SECTION("CreateUnorderedAccessView/CreateShaderResourceView returns OK") {
+        D3D11BufferMock resource;
+        D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+        ID3D11UnorderedAccessView* pUAV;
+        D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+        ID3D11ShaderResourceView* srv;
+        NvU32 handle;
+        REQUIRE_CALL(device, CreateUnorderedAccessViewAndGetDriverHandleNVX(&resource, &uavDesc, &pUAV, reinterpret_cast<uint32_t *>(&handle)))
+            .TIMES(1)
+            .RETURN(true);
+        REQUIRE_CALL(device, CreateShaderResourceViewAndGetDriverHandleNVX(&resource, &srvDesc, &srv, reinterpret_cast<uint32_t *>(&handle)))
+            .TIMES(1)
+            .RETURN(true);
 
-        SECTION("GetResourceHandle output handle is a simple recast of the input resource pointer") {
-            // While the handles returned by NVAPI are opaque with unspecified values, our interaction with DXVK *requires* that we implement them as a simple recast
-            D3D11BufferMock resource;
-            NVDX_ObjectHandle handle;
-            REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, &handle) == NVAPI_OK);
-            REQUIRE(reinterpret_cast<void*>(handle) == reinterpret_cast<void*>(&resource));
-        }
+        REQUIRE(NvAPI_D3D11_CreateUnorderedAccessView(static_cast<ID3D11Device*>(&device), &resource, &uavDesc, &pUAV, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D11_CreateShaderResourceView(static_cast<ID3D11Device*>(&device), &resource, &srvDesc, &srv, &handle) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
+    }
+
+    SECTION("GetResourceHandle returns OK") {
+        D3D11BufferMock resource;
+        NVDX_ObjectHandle handle;
+        // Test device call twice to ensure correct reference counting when hitting the device cache
+        REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, &handle) == NVAPI_OK);
+        // While the handles returned by NVAPI are opaque with unspecified values, our interaction with DXVK *requires* that we implement them as a simple recast
+        REQUIRE(reinterpret_cast<void*>(handle) == reinterpret_cast<void*>(&resource));
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
+    }
+
+    SECTION("GetResourceHandle with NULL argument returns InvalidArgument") {
+        D3D11BufferMock resource;
+        NVDX_ObjectHandle handle;
+        REQUIRE(NvAPI_D3D11_GetResourceHandle(nullptr, &resource, &handle) == NVAPI_INVALID_ARGUMENT);
+        REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), nullptr, &handle) == NVAPI_INVALID_ARGUMENT);
+        REQUIRE(NvAPI_D3D11_GetResourceHandle(static_cast<ID3D11Device*>(&device), &resource, nullptr) == NVAPI_INVALID_ARGUMENT);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
+    }
+
+    SECTION("GetResourceGPUVirtualAddress/GetResourceGPUVirtualAddressEx returns OK") {
+        D3D11BufferMock resource;
+        auto handle = reinterpret_cast<NVDX_ObjectHandle>(&resource);
+        NvU64 vaStart;
+        NV_GET_GPU_VIRTUAL_ADDRESS_V1 params{};
+        params.version = NV_GET_GPU_VIRTUAL_ADDRESS_VER1;
+        params.hResource = handle;
+        REQUIRE_CALL(device, GetResourceHandleGPUVirtualAddressAndSizeNVX(static_cast<void*>(handle), _, _))
+            .SIDE_EFFECT({
+                *_2 = 64UL;
+                *_3 = 128UL;
+            })
+            .TIMES(2)
+            .RETURN(true);
+
+        REQUIRE(NvAPI_D3D11_GetResourceGPUVirtualAddress(static_cast<ID3D11Device*>(&device), handle, &vaStart) == NVAPI_OK);
+        REQUIRE(vaStart == 64UL);
+        REQUIRE(NvAPI_D3D11_GetResourceGPUVirtualAddressEx(static_cast<ID3D11Device*>(&device), &params) == NVAPI_OK);
+        REQUIRE(params.gpuVAStart == 64UL);
+        REQUIRE(params.gpuVASize == 128UL);
+
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
+    }
+
+    SECTION("GetResourceGPUVirtualAddressEx with unknown struct version returns incompatible-struct-version") {
+        NV_GET_GPU_VIRTUAL_ADDRESS params{};
+        params.version = NV_GET_GPU_VIRTUAL_ADDRESS_VER1 + 1;
+        REQUIRE(NvAPI_D3D11_GetResourceGPUVirtualAddressEx(static_cast<ID3D11Device*>(&device), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
+
+    SECTION("GetResourceGPUVirtualAddressEx with current struct version returns not incompatible-struct-version") {
+        // This test should fail when a header update provides a newer not yet implemented struct version
+        NV_GET_GPU_VIRTUAL_ADDRESS params{};
+        params.version = NV_GET_GPU_VIRTUAL_ADDRESS_VER;
+        REQUIRE(NvAPI_D3D11_GetResourceGPUVirtualAddressEx(static_cast<ID3D11Device*>(&device), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
+
+    SECTION("CreateSamplerState returns OK") {
+        NvU32 handle;
+        D3D11_SAMPLER_DESC samplerDesc{};
+        ID3D11SamplerState* samplerState;
+        REQUIRE_CALL(device, CreateSamplerStateAndGetDriverHandleNVX(&samplerDesc, &samplerState, reinterpret_cast<uint32_t*>(&handle)))
+            .TIMES(1)
+            .RETURN(true);
+
+        REQUIRE(NvAPI_D3D11_CreateSamplerState(static_cast<ID3D11Device*>(&device), &samplerDesc, &samplerState, &handle) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
+    }
+
+    SECTION("GetCudaTextureObject returns OK") {
+        NvU32 handle;
+        REQUIRE_CALL(device, GetCudaTextureObjectNVX(0x1U, 0x2U, reinterpret_cast<uint32_t*>(&handle)))
+            .TIMES(1)
+            .RETURN(true);
+
+        REQUIRE(NvAPI_D3D11_GetCudaTextureObject(static_cast<ID3D11Device*>(&device), 0x1U, 0x2U, &handle) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(contextRefCount == 0);
     }
 }
