@@ -71,7 +71,7 @@ namespace dxvk {
 
         auto allowOtherDrivers = env::getEnvVariable(allowOtherDriversEnvName);
         if (!allowOtherDrivers.empty())
-            log::write(str::format(allowOtherDriversEnvName, " is set, reporting also GPUs with non-NVIDIA proprietary driver."));
+            log::write(str::format(allowOtherDriversEnvName, " is set, reporting also GPUs with non-NVIDIA proprietary driver"));
 
         if (GetDriverId() != VK_DRIVER_ID_NVIDIA_PROPRIETARY && allowOtherDrivers.empty())
             return false;
@@ -122,11 +122,11 @@ namespace dxvk {
             if (std::string(end).empty() && driverVersionOverride >= 100 && driverVersionOverride <= 99999) {
                 std::stringstream stream;
                 stream << (driverVersionOverride / 100) << "." << std::setfill('0') << std::setw(2) << (driverVersionOverride % 100);
-                log::write(str::format(driverVersionEnvName, " is set to '", driverVersion, "', reporting driver version ", stream.str(), "."));
+                log::write(str::format(driverVersionEnvName, " is set to '", driverVersion, "', reporting driver version ", stream.str()));
                 m_driverVersionOverride = driverVersionOverride;
             }
             else
-                log::write(str::format(driverVersionEnvName, " is set to '", driverVersion, "', but this value is invalid. Please set a number between 100 and 99999."));
+                log::write(str::format(driverVersionEnvName, " is set to '", driverVersion, "', but this value is invalid, please set a number between 100 and 99999"));
         }
 
         return true;
