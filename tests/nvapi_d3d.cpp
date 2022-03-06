@@ -121,7 +121,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]"){
     ALLOW_CALL(*lfx, IsAvailable())
         .RETURN(false);
 
-    SECTION("Reflex methods succeed when LFX is available") {
+    SECTION("LatencyFleX depending methods succeed when LFX is available") {
         ALLOW_CALL(*lfx, IsAvailable())
             .RETURN(true); // NOLINT(bugprone-use-after-move)
 
