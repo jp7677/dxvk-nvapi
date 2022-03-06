@@ -147,4 +147,14 @@ extern "C" {
         pGetSleepStatusParams->bLowLatencyMode = nvapiD3dInstance->IsReflexEnabled();
         return Ok(n);
     }
+
+    NvAPI_Status __cdecl NvAPI_D3D_GetLatency(IUnknown *pDev, NV_LATENCY_RESULT_PARAMS *pGetLatencyParams) {
+        static bool alreadyLogged = false;
+        return NoImplementation(__func__, alreadyLogged);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D_SetLatencyMarker(IUnknown *pDev, NV_LATENCY_MARKER_PARAMS* pSetLatencyMarkerParams) {
+        static bool alreadyLogged = false;
+        return NoImplementation(__func__, alreadyLogged);
+    }
 }

@@ -215,4 +215,16 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]"){
             REQUIRE(NvAPI_D3D_Sleep(&unknown) == NVAPI_NO_IMPLEMENTATION);
         }
     }
+
+    SECTION("GetLatency returns no-implementation") {
+        NV_LATENCY_RESULT_PARAMS params;
+        params.version = NV_LATENCY_RESULT_PARAMS_VER;
+        REQUIRE(NvAPI_D3D_GetLatency(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
+    }
+
+    SECTION("SetLatencyMarker returns no-implementation") {
+        NV_LATENCY_MARKER_PARAMS params;
+        params.version = NV_LATENCY_MARKER_PARAMS_VER;
+        REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
+    }
 }
