@@ -3,7 +3,6 @@
 namespace dxvk::str {
     std::string fromws(const WCHAR* ws) {
         auto len = ::WideCharToMultiByte(CP_UTF8, 0, ws, -1, nullptr, 0, nullptr, nullptr);
-
         if (len <= 1)
             return "";
 
@@ -21,7 +20,6 @@ namespace dxvk::str {
 
     std::wstring tows(const char* mbs) {
         auto len = ::MultiByteToWideChar(CP_UTF8, 0, mbs, -1, nullptr, 0);
-
         if (len <= 1)
             return L"";
 
