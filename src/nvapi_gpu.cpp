@@ -58,7 +58,7 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        strcpy(szName, adapter->GetDeviceName().c_str());
+        str::tonvss(szName, adapter->GetDeviceName());
 
         return Ok(n);
     }
@@ -298,7 +298,7 @@ extern "C" {
             return ExpectedPhysicalGpuHandle(n);
 
         if (!adapter->HasNvml() || !adapter->HasNvmlDevice()) {
-            strcpy(szBiosRevision, "N/A");
+            str::tonvss(szBiosRevision, "N/A");
             return Ok(n);
         }
 
@@ -306,7 +306,7 @@ extern "C" {
         auto result = adapter->GetNvmlDeviceVbiosVersion(version, NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE);
         switch (result) {
             case NVML_SUCCESS:
-                strcpy(szBiosRevision, version);
+                str::tonvss(szBiosRevision, version);
                 return Ok(n);
             case NVML_ERROR_NOT_SUPPORTED:
                 return NotSupported(n);
