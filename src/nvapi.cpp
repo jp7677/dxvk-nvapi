@@ -122,8 +122,8 @@ extern "C" {
         // Ignore hNvDisplay and query the first adapter
         pVersion->drvVersion = nvapiAdapterRegistry->GetAdapter()->GetDriverVersion();
         pVersion->bldChangeListNum = 0;
-        strcpy(pVersion->szBuildBranchString, str::format(NVAPI_VERSION, "_", DXVK_NVAPI_VERSION).c_str());
-        strcpy(pVersion->szAdapterString, nvapiAdapterRegistry->GetAdapter()->GetDeviceName().c_str());
+        str::tonvss(pVersion->szBuildBranchString, str::format(NVAPI_VERSION, "_", DXVK_NVAPI_VERSION));
+        str::tonvss(pVersion->szAdapterString, nvapiAdapterRegistry->GetAdapter()->GetDeviceName());
 
         return Ok(n);
     }
@@ -202,7 +202,7 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsOutput(output))
             return ExpectedDisplayHandle(n);
 
-        strcpy(szDisplayName, output->GetDeviceName().c_str());
+        str::tonvss(szDisplayName, output->GetDeviceName());
 
         return Ok(n);
     }
@@ -213,7 +213,7 @@ extern "C" {
         if (szDesc == nullptr)
             return InvalidArgument(n);
 
-        strcpy(szDesc, "DXVK_NVAPI");
+        str::tonvss(szDesc, "DXVK_NVAPI");
 
         return Ok(n);
     }
@@ -225,7 +225,7 @@ extern "C" {
             return InvalidArgument(n);
 
         auto error = fromErrorNr(nr);
-        strcpy(szDesc, error.c_str());
+        str::tonvss(szDesc, error);
 
         return Ok(str::format(n, " (", nr, "/", error, ")"));
     }

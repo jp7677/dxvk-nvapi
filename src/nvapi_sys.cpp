@@ -31,7 +31,7 @@ extern "C" {
             return InvalidArgument(n);
 
         *pDriverVersion = nvapiAdapterRegistry->GetAdapter()->GetDriverVersion();
-        strcpy(szBuildBranchString, str::format(NVAPI_VERSION, "_", DXVK_NVAPI_VERSION).c_str());
+        str::tonvss(szBuildBranchString, str::format(NVAPI_VERSION, "_", DXVK_NVAPI_VERSION));
 
         return Ok(n);
     }
