@@ -122,7 +122,7 @@ extern "C" {
         // Ignore hNvDisplay and query the first adapter
         pVersion->drvVersion = nvapiAdapterRegistry->GetAdapter()->GetDriverVersion();
         pVersion->bldChangeListNum = 0;
-        strcpy(pVersion->szBuildBranchString, str::format(NVAPI_VERSION, "_", DXVK_NVAPI_VERSION).c_str());
+        snprintf(pVersion->szBuildBranchString, sizeof(pVersion->szBuildBranchString), "%s_%s", NVAPI_VERSION, DXVK_NVAPI_VERSION);
         strcpy(pVersion->szAdapterString, nvapiAdapterRegistry->GetAdapter()->GetDeviceName().c_str());
 
         return Ok(n);
