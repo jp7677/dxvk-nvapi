@@ -33,8 +33,8 @@ namespace dxvk::str {
         return result;
     }
 
-    std::string fromnvs(NvAPI_UnicodeString nvs) {
-        auto w = std::wstring(reinterpret_cast<wchar_t*>(nvs));
+    std::string fromnvus(NvAPI_UnicodeString nvus) {
+        auto w = std::wstring(reinterpret_cast<wchar_t*>(nvus));
         return {w.begin(), w.end()};
     }
 }

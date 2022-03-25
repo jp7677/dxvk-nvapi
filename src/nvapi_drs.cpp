@@ -19,11 +19,11 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_FindProfileByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString profileName, NvDRSProfileHandle* phProfile) {
-        return ProfileNotFound(str::format(__func__, " (", str::fromnvs(profileName), ")"));
+        return ProfileNotFound(str::format(__func__, " (", str::fromnvus(profileName), ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_FindApplicationByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString appName, NvDRSProfileHandle *phProfile, NVDRS_APPLICATION *pApplication) {
-        return ExecutableNotFound(str::format(__func__, " (", str::fromnvs(appName), ")"));
+        return ExecutableNotFound(str::format(__func__, " (", str::fromnvus(appName), ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle *phProfile) {

@@ -14,7 +14,7 @@ namespace dxvk::str {
 
     std::wstring tows(const char* mbs);
 
-    std::string fromnvs(NvAPI_UnicodeString nvs);
+    std::string fromnvus(NvAPI_UnicodeString nvus);
 
     inline void format1(std::stringstream&) { }
 
