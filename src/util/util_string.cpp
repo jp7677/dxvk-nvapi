@@ -35,4 +35,9 @@ namespace dxvk::str {
         auto w = std::wstring(reinterpret_cast<wchar_t*>(nvus));
         return {w.begin(), w.end()};
     }
+
+    void tonvss(NvAPI_ShortString nvss, std::string str) {
+        str.resize(NVAPI_SHORT_STRING_MAX);
+        strcpy(nvss, str.c_str());
+    }
 }

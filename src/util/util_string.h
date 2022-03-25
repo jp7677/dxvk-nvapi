@@ -16,6 +16,8 @@ namespace dxvk::str {
 
     std::string fromnvus(NvAPI_UnicodeString nvus);
 
+    void tonvss(NvAPI_ShortString nvss, std::string str);
+
     inline void format1(std::stringstream&) { }
 
     template<typename... Tx>
