@@ -14,7 +14,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         fetch-depth: 0
@@ -34,7 +34,7 @@ jobs:
           echo "::set-output name=VERSION_NAME::${VERSION_NAME}"
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: dxvk-nvapi-${{ steps.build.outputs.VERSION_NAME }}
         path: build/dxvk-nvapi-${{ steps.build.outputs.VERSION_NAME }}
