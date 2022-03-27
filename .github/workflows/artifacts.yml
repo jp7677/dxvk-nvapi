@@ -3,6 +3,7 @@ name: Artifacts (Package)
 on:
   push:
     branches: [ master ]
+    tags: [ v* ]
   pull_request:
     branches: [ master ]
   # Allows you to run this workflow manually
@@ -27,7 +28,11 @@ jobs:
       uses: Joshua-Ashton/arch-mingw-github-action@v7
       with:
         command: |
-          export VERSION_NAME="${GITHUB_REF##*/}-${GITHUB_SHA##*/}"
+          if ${{ github.ref_type == 'tag' }}; then
+            export VERSION_NAME=$(git describe --always --tags --dirty=+)
+          else
+            export VERSION_NAME="${GITHUB_REF##*/}-${GITHUB_SHA##*/}"
+          fi
           ./package-release.sh "${VERSION_NAME}" build --no-package --enable-tests
           mkdir "${HOME}/dxvk-nvapi-wine-prefix"
           DXVK_NVAPI_LOG_LEVEL=info WINEPREFIX="${HOME}/dxvk-nvapi-wine-prefix" WINEDEBUG="-all" wine "./build/dxvk-nvapi-${VERSION_NAME}/x64/nvapi64-tests.exe" [@unit-tests]
