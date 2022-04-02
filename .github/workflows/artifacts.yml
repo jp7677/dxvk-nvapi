@@ -20,35 +20,42 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
+    - name: Prepare version name
+      id: prepare
+      run: |
+        if ${{ github.ref_type == 'tag' }}; then
+          export VERSION=$(git describe --always --tags --dirty=+)
+        else
+          export VERSION="${GITHUB_REF##*/}-${GITHUB_SHA##*/}"
+        fi
+        echo "Version name: ${VERSION}"
+        echo "::set-output name=VERSION::${VERSION}"
+
     - name: Setup problem matcher
       uses: Joshua-Ashton/gcc-problem-matcher@v1
 
     - name: Build release and run unit tests
-      id: build
       uses: Joshua-Ashton/arch-mingw-github-action@v7
       with:
         command: |
-          if ${{ github.ref_type == 'tag' }}; then
-            export VERSION_NAME=$(git describe --always --tags --dirty=+)
-          else
-            export VERSION_NAME="${GITHUB_REF##*/}-${GITHUB_SHA##*/}"
-          fi
-          echo "::set-output name=VERSION_NAME::${VERSION_NAME}"
-          ./package-release.sh "${VERSION_NAME}" build --no-package --enable-tests
+          ./package-release.sh "${{ steps.prepare.outputs.VERSION }}" \
+            build \
+            --no-package \
+            --enable-tests
           mkdir "${HOME}/tests-prefix"
           WINEPREFIX="${HOME}/tests-prefix" WINEDEBUG=-all wine \
-            "./build/dxvk-nvapi-${VERSION_NAME}/x64/nvapi64-tests.exe" \
+            "./build/dxvk-nvapi-${{ steps.prepare.outputs.VERSION }}/x64/nvapi64-tests.exe" \
+            [@unit-tests] \
             --use-colour no \
-            --out tests-results.log \
-            [@unit-tests]
+            --out tests-results.log
 
-    - name: Present test results
+    - name: Present tests results
       if: success() || failure()
       run: cat tests-results.log
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: dxvk-nvapi-${{ steps.build.outputs.VERSION_NAME }}.tar.gz
-        path: build/dxvk-nvapi-${{ steps.build.outputs.VERSION_NAME }}
+        name: dxvk-nvapi-${{ steps.prepare.outputs.VERSION }}.tar.gz
+        path: build/dxvk-nvapi-${{ steps.prepare.outputs.VERSION }}
         if-no-files-found: error
