@@ -56,6 +56,6 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: dxvk-nvapi-${{ steps.prepare.outputs.VERSION }}.tar.gz
+        name: dxvk-nvapi-${{ steps.prepare.outputs.VERSION }}
         path: build/dxvk-nvapi-${{ steps.prepare.outputs.VERSION }}
         if-no-files-found: error
