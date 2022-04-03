@@ -19,20 +19,24 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
-    - name: Prepare version name
+    - name: Prepare environment (none-tag)
+      if: github.ref_type != 'tag'
       run: |
-        if ${{ github.ref_type == 'tag' }}; then
-          export VERSION=$(git describe --always --tags --dirty=+)
-        else
-          export VERSION="${GITHUB_REF##*/}-${GITHUB_SHA##*/}"
-        fi
-        echo "Version name: ${VERSION}"
+        export VERSION="${GITHUB_REF##*/}-${GITHUB_SHA##*/}"
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
+        echo "ARTIFACT=build/dxvk-nvapi-${VERSION}" >> $GITHUB_ENV
+
+    - name: Prepare environment (tag)
+      if: github.ref_type == 'tag'
+      run: |
+        export VERSION=$(git describe --always --tags --dirty=+)
+        echo "VERSION=${VERSION}" >> $GITHUB_ENV
+        echo "ARTIFACT=dxvk-nvapi-${VERSION}.tar.gz" >> $GITHUB_ENV
 
     - name: Setup problem matcher
       uses: Joshua-Ashton/gcc-problem-matcher@v1
 
-    - name: Build release and run unit tests
+    - name: Build and run tests
       uses: Joshua-Ashton/arch-mingw-github-action@v7
       with:
         command: |
@@ -45,9 +49,13 @@ jobs:
       if: success() || failure()
       run: cat tests.log
 
+    - name: Create tarball
+      if: github.ref_type == 'tag'
+      run: tar cvfz "dxvk-nvapi-${{ env.VERSION }}.tar.gz" -C "./build/dxvk-nvapi-${{ env.VERSION }}" .
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
         name: dxvk-nvapi-${{ env.VERSION }}
-        path: build/dxvk-nvapi-${{ env.VERSION }}
+        path: ${{ env.ARTIFACT }}
         if-no-files-found: error
