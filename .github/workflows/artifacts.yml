@@ -6,7 +6,6 @@ on:
     tags: [ v* ]
   pull_request:
     branches: [ master ]
-  # Allows you to run this workflow manually
   workflow_dispatch:
 
 jobs:
@@ -21,7 +20,6 @@ jobs:
         fetch-depth: 0
 
     - name: Prepare version name
-      id: prepare
       run: |
         if ${{ github.ref_type == 'tag' }}; then
           export VERSION=$(git describe --always --tags --dirty=+)
@@ -29,7 +27,7 @@ jobs:
           export VERSION="${GITHUB_REF##*/}-${GITHUB_SHA##*/}"
         fi
         echo "Version name: ${VERSION}"
-        echo "::set-output name=VERSION::${VERSION}"
+        echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
     - name: Setup problem matcher
       uses: Joshua-Ashton/gcc-problem-matcher@v1
@@ -38,24 +36,18 @@ jobs:
       uses: Joshua-Ashton/arch-mingw-github-action@v7
       with:
         command: |
-          ./package-release.sh "${{ steps.prepare.outputs.VERSION }}" \
-            build \
-            --no-package \
-            --enable-tests
+          ./package-release.sh "${{ env.VERSION }}" build --enable-tests
           mkdir "${HOME}/tests-prefix"
           WINEPREFIX="${HOME}/tests-prefix" WINEDEBUG=-all wine \
-            "./build/dxvk-nvapi-${{ steps.prepare.outputs.VERSION }}/x64/nvapi64-tests.exe" \
-            [@unit-tests] \
-            --use-colour no \
-            --out tests-results.log
+            "./build/dxvk-nvapi-${{ env.VERSION }}/x64/nvapi64-tests.exe" [@unit-tests] -o tests.log
 
     - name: Present tests results
       if: success() || failure()
-      run: cat tests-results.log
+      run: cat tests.log
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: dxvk-nvapi-${{ steps.prepare.outputs.VERSION }}
-        path: build/dxvk-nvapi-${{ steps.prepare.outputs.VERSION }}
+        name: dxvk-nvapi-${{ env.VERSION }}
+        path: build/dxvk-nvapi-${{ env.VERSION }}
         if-no-files-found: error
