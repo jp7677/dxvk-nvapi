@@ -10,10 +10,10 @@ This implementation currently offers entry points for supporting the following f
 - NVIDIA DLSS for D3D11 and D3D12, by querying from Vulkan and forwarding the relevant calls into DXVK / VKD3D-Proton.
 - NVIDIA Reflex, by forwarding the relevant calls into [LatencyFleX](https://github.com/ishitatsuyuki/LatencyFleX).
 - Several NVAPI D3D11 extensions, among others `SetDepthBoundsTest` and `UAVOverlap`, by forwarding the relevant calls into DXVK.
-- NVIDIA PhysX, by supporting entry points for querying PhysX capability.
+- NVIDIA PhysX, by supporting entry points for querying PhysX capabilities.
 - Several GPU topology related methods for adapter and display information, by querying from DXVK and Vulkan.
 
-While originally being developed for usage with Unreal Engine 4, most notably for `Assetto Corsa Competizione`, more entry points have been added for enabling other NVIDIA related technologies. DXVK-NVAPI does not and will never cover the complete surface of NVIDIA's NVAPI. It is not meant as a full replacement, but rather as an addition to DXVK and VKD3D-Proton to enable several GPU features.
+While originally being developed for usage with Unreal Engine 4, most notably for `Assetto Corsa Competizione`, more entry points have been added over time for enabling other NVIDIA related technologies. DXVK-NVAPI does not and will never cover the complete surface of NVIDIA's NVAPI. It is not meant as a full replacement, but rather as an addition to DXVK and VKD3D-Proton to enable several GPU features.
 
 ## Requirements
 
@@ -32,7 +32,7 @@ Run:
 ```
 
 Alternatively [DXVK-Docker](https://github.com/jp7677/dxvk-docker) provides a way for a build setup using docker/podman.
-Prebuilt binaries of release versions are available at <https://github.com/jp7677/dxvk-nvapi/releases>.
+Prebuilt binaries of release versions are available at <https://github.com/jp7677/dxvk-nvapi/releases>. GitHub Actions is set up for building development snapshots.
 
 ## How to use
 
