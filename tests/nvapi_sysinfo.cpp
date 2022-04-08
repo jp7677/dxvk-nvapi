@@ -709,6 +709,15 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
     }
 
+    SECTION("GetPstates20 returns no-implementation") {
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+        NV_GPU_PERF_PSTATES20_INFO params;
+        params.version = NV_GPU_PERF_PSTATES_INFO_VER;
+        REQUIRE(NvAPI_GPU_GetPstates20(handle, &params) == NVAPI_NO_IMPLEMENTATION);
+    }
+
     SECTION("NVML depending methods succeed when NVML is available") {
         ALLOW_CALL(*nvml, IsAvailable()) // NOLINT(bugprone-use-after-move)
             .RETURN(true);

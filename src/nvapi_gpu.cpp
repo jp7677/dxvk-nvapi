@@ -615,4 +615,8 @@ extern "C" {
 
        return Ok(n, alreadyLoggedOk);
     }
+
+    NvAPI_Status __cdecl NvAPI_GPU_GetPstates20(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_PERF_PSTATES20_INFO *pPstatesInfo){
+        return NoImplementation(__func__);
+    }
 }

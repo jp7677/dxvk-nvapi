@@ -93,6 +93,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetThermalSettings)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetVbiosVersionString)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetCurrentPstate)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetPstates20)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_GPU_GetAllClockFrequencies)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DRS_FindApplicationByName)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DRS_FindProfileByName)
