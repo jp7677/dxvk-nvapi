@@ -35,7 +35,9 @@ TEST_CASE("DRS methods succeed", "[.drs]") {
     }
 
     SECTION("GetSetting returns setting-not-found") {
-        struct Data {int32_t settingId;};
+        struct Data {
+            int32_t settingId;
+        };
         auto args = GENERATE(
             Data{FXAA_ALLOW_ID},
             Data{CUDA_EXCLUDED_GPUS_ID},

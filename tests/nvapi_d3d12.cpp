@@ -18,7 +18,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .RETURN(deviceRefCount);
 
     ALLOW_CALL(device, GetExtensionSupport(_))
-            .RETURN(true);
+        .RETURN(true);
 
     ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandList1), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandList1*>(&commandList))
@@ -44,7 +44,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         extensionDesc.baseVersion = NV_PSO_EXTENSION_DESC_VER;
         extensionDesc.psoExtension = NV_PSO_SET_SHADER_EXTNENSION_SLOT_AND_SPACE;
         extensionDesc.version = NV_SET_SHADER_EXTENSION_SLOT_DESC_VER;
-        const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = { &extensionDesc };
+        const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = {&extensionDesc};
         ID3D12PipelineState* pipelineState = nullptr;
         REQUIRE(NvAPI_D3D12_CreateGraphicsPipelineState(&device, &desc, 1, extensions, &pipelineState) == NVAPI_NOT_SUPPORTED);
     }
@@ -67,8 +67,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(NvAPI_D3D12_DestroyCubinComputeShader(static_cast<ID3D12Device*>(&device), nullptr) == NVAPI_ERROR);
 
         D3D12_CPU_DESCRIPTOR_HANDLE srvHandle;
-        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, srvHandle, nullptr)  == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, nullptr)  == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, srvHandle, nullptr) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, nullptr) == NVAPI_ERROR);
 
         REQUIRE(NvAPI_D3D12_CaptureUAVInfo(static_cast<ID3D12Device*>(&device), nullptr) == NVAPI_ERROR);
         bool isPTXSupported;
@@ -94,8 +94,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(NvAPI_D3D12_DestroyCubinComputeShader(static_cast<ID3D12Device*>(&device), nullptr) == NVAPI_ERROR);
 
         D3D12_CPU_DESCRIPTOR_HANDLE srvHandle;
-        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, srvHandle, nullptr)  == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, nullptr)  == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, srvHandle, nullptr) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, nullptr) == NVAPI_ERROR);
 
         REQUIRE(NvAPI_D3D12_CaptureUAVInfo(static_cast<ID3D12Device*>(&device), nullptr) == NVAPI_ERROR);
         bool isPTXSupported;
@@ -150,7 +150,12 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         }
 
         SECTION("GetGraphicsCapabilities returns OK with valid SM") {
-            struct Data {VkDriverId driverId; std::string extensionName; uint16_t expectedMajorSMVersion; uint16_t expectedMinorSMVersion;};
+            struct Data {
+                VkDriverId driverId;
+                std::string extensionName;
+                uint16_t expectedMajorSMVersion;
+                uint16_t expectedMinorSMVersion;
+            };
             auto args = GENERATE(
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 6},
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME, 7, 5},
@@ -171,7 +176,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 .SIDE_EFFECT(
                     ConfigureGetPhysicalDeviceProperties2(_3,
                         [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                            auto luid = LUID{0x00000001,0x00000002};
+                            auto luid = LUID{0x00000001, 0x00000002};
                             memcpy(&idProps->deviceLUID, &luid, sizeof(luid));
                             idProps->deviceLUIDValid = VK_TRUE;
                             driverProps->driverID = args.driverId;
@@ -221,7 +226,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             extensionDesc.psoExtension = NV_PSO_ENABLE_DEPTH_BOUND_TEST_EXTENSION;
             extensionDesc.version = NV_ENABLE_DEPTH_BOUND_TEST_PSO_EXTENSION_DESC_VER;
             extensionDesc.EnableDBT = true;
-            const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = { &extensionDesc };
+            const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = {&extensionDesc};
             ID3D12PipelineState* pipelineState = nullptr;
             REQUIRE_CALL(device, CreateGraphicsPipelineState(&desc, __uuidof(ID3D12PipelineState), reinterpret_cast<void**>(&pipelineState)))
                 .RETURN(S_OK);
@@ -235,7 +240,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             auto desc = D3D12_GRAPHICS_PIPELINE_STATE_DESC{};
             NVAPI_D3D12_PSO_ENABLE_DEPTH_BOUND_TEST_DESC extensionDesc;
             extensionDesc.baseVersion = NV_PSO_EXTENSION_DESC_VER_1 + 1;
-            const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = { &extensionDesc };
+            const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = {&extensionDesc};
             ID3D12PipelineState* pipelineState = nullptr;
             REQUIRE(NvAPI_D3D12_CreateGraphicsPipelineState(&device, &desc, 1, extensions, &pipelineState) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
@@ -248,7 +253,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             auto desc = D3D12_GRAPHICS_PIPELINE_STATE_DESC{};
             NVAPI_D3D12_PSO_ENABLE_DEPTH_BOUND_TEST_DESC extensionDesc;
             extensionDesc.baseVersion = NV_PSO_EXTENSION_DESC_VER;
-            const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = { &extensionDesc };
+            const NVAPI_D3D12_PSO_EXTENSION_DESC* extensions[] = {&extensionDesc};
             ID3D12PipelineState* pipelineState = nullptr;
             REQUIRE(NvAPI_D3D12_CreateGraphicsPipelineState(&device, &desc, 1, extensions, &pipelineState) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
@@ -306,8 +311,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             .RETURN(S_OK)
             .TIMES(1);
 
-        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, samplerHandle, nullptr)  == NVAPI_OK);
-        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, nullptr)  == NVAPI_OK);
+        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, samplerHandle, nullptr) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, nullptr) == NVAPI_OK);
         REQUIRE(deviceRefCount == 0);
         REQUIRE(commandListRefCount == 0);
     }

@@ -7,22 +7,22 @@ void ResetResourceFactory() {
 }
 
 void SetupResourceFactory(
-        std::unique_ptr<DXGIFactory1Mock> dxgiFactory,
-        std::unique_ptr<Vulkan> vulkan,
-        std::unique_ptr<Nvml> nvml,
-        std::unique_ptr<Lfx> lfx) {
+    std::unique_ptr<DXGIFactory1Mock> dxgiFactory,
+    std::unique_ptr<Vulkan> vulkan,
+    std::unique_ptr<Nvml> nvml,
+    std::unique_ptr<Lfx> lfx) {
     resourceFactory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
     nvapiAdapterRegistry.reset();
     initializationCount = 0ULL;
 }
 
 [[nodiscard]] std::array<std::unique_ptr<expectation>, 17> ConfigureDefaultTestEnvironment(
-        DXGIFactory1Mock& dxgiFactory,
-        VulkanMock& vulkan,
-        NvmlMock& nvml,
-        LfxMock& lfx,
-        DXGIDxvkAdapterMock& adapter,
-        DXGIOutputMock& output) {
+    DXGIFactory1Mock& dxgiFactory,
+    VulkanMock& vulkan,
+    NvmlMock& nvml,
+    LfxMock& lfx,
+    DXGIDxvkAdapterMock& adapter,
+    DXGIOutputMock& output) {
     return {
         NAMED_ALLOW_CALL(dxgiFactory, AddRef())
             .RETURN(1),
@@ -49,7 +49,7 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(output, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(output, GetDesc(_))
-            .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
+            .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0, 0, 0, 0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
             .RETURN(S_OK),
 
         NAMED_ALLOW_CALL(vulkan, IsAvailable())
@@ -68,20 +68,19 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(nvml, IsAvailable())
             .RETURN(false),
         NAMED_ALLOW_CALL(lfx, IsAvailable())
-            .RETURN(false)
-    };
+            .RETURN(false)};
 }
 
 [[nodiscard]] std::array<std::unique_ptr<expectation>, 29> ConfigureExtendedTestEnvironment(
-        DXGIFactory1Mock& dxgiFactory,
-        VulkanMock& vulkan,
-        NvmlMock& nvml,
-        LfxMock& lfx,
-        DXGIDxvkAdapterMock& adapter1,
-        DXGIDxvkAdapterMock& adapter2,
-        DXGIOutputMock& output1,
-        DXGIOutputMock& output2,
-        DXGIOutputMock& output3) {
+    DXGIFactory1Mock& dxgiFactory,
+    VulkanMock& vulkan,
+    NvmlMock& nvml,
+    LfxMock& lfx,
+    DXGIDxvkAdapterMock& adapter1,
+    DXGIDxvkAdapterMock& adapter2,
+    DXGIOutputMock& output1,
+    DXGIOutputMock& output2,
+    DXGIOutputMock& output3) {
     return {
         NAMED_ALLOW_CALL(dxgiFactory, AddRef())
             .RETURN(1),
@@ -128,19 +127,19 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(output1, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(output1, GetDesc(_))
-            .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
+            .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0, 0, 0, 0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
             .RETURN(S_OK),
 
         NAMED_ALLOW_CALL(output2, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(output2, GetDesc(_))
-            .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output2", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
+            .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output2", {0, 0, 0, 0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
             .RETURN(S_OK),
 
         NAMED_ALLOW_CALL(output3, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(output3, GetDesc(_))
-            .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output3", {0,0,0,0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
+            .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output3", {0, 0, 0, 0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
             .RETURN(S_OK),
 
         NAMED_ALLOW_CALL(vulkan, IsAvailable())
@@ -166,24 +165,27 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(nvml, IsAvailable())
             .RETURN(false),
         NAMED_ALLOW_CALL(lfx, IsAvailable())
-            .RETURN(false)
-    };
+            .RETURN(false)};
 }
 
 void ConfigureGetPhysicalDeviceProperties2(
-        VkPhysicalDeviceProperties2* props,
-        std::function<void(
-            VkPhysicalDeviceProperties*,
-            VkPhysicalDeviceIDProperties*,
-            VkPhysicalDevicePCIBusInfoPropertiesEXT*,
-            VkPhysicalDeviceDriverPropertiesKHR*,
-            VkPhysicalDeviceFragmentShadingRatePropertiesKHR*)> configure) { // NOLINT(performance-unnecessary-value-param)
+    VkPhysicalDeviceProperties2* props,
+    std::function<void(
+        VkPhysicalDeviceProperties*,
+        VkPhysicalDeviceIDProperties*,
+        VkPhysicalDevicePCIBusInfoPropertiesEXT*,
+        VkPhysicalDeviceDriverPropertiesKHR*,
+        VkPhysicalDeviceFragmentShadingRatePropertiesKHR*)>
+        configure) { // NOLINT(performance-unnecessary-value-param)
     VkPhysicalDeviceIDProperties* idProps = nullptr;
     VkPhysicalDevicePCIBusInfoPropertiesEXT* pciBusInfoProps = nullptr;
     VkPhysicalDeviceDriverPropertiesKHR* driverProps = nullptr;
     VkPhysicalDeviceFragmentShadingRatePropertiesKHR* fragmentShadingRateProps = nullptr;
 
-    struct VkStructure {VkStructureType sType;void* pNext;};
+    struct VkStructure {
+        VkStructureType sType;
+        void* pNext;
+    };
     auto next = reinterpret_cast<VkStructure*>(props);
     while (next != nullptr) {
         switch (next->sType) {

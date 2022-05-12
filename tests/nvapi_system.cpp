@@ -27,7 +27,7 @@ typedef decltype(&NvAPI_GPU_GetThermalSettings) PFN_NvAPI_GPU_GetThermalSettings
 typedef decltype(&NvAPI_GPU_GetCurrentPstate) PFN_NvAPI_GPU_GetCurrentPstate;
 typedef decltype(&NvAPI_GPU_GetAllClockFrequencies) PFN_NvAPI_GPU_GetAllClockFrequencies;
 
-template<typename T>
+template <typename T>
 T GetNvAPIProcAddress(PFN_NvAPI_QueryInterface nvAPI_QueryInterface, const char* name) {
     auto it = std::find_if(std::begin(nvapi_interface_table), std::end(nvapi_interface_table),
         [&name](const auto& item) {
@@ -81,7 +81,8 @@ static std::string ToFormattedLuid(LUID& luid) {
     std::stringstream ss;
     ss << std::hex << std::setfill('0');
     for (auto i = 0U; i < sizeof(luid); i++) {
-        if (i == 4) ss << '-';
+        if (i == 4)
+            ss << '-';
         ss << std::setw(2) << static_cast<unsigned>(uid[i]);
     }
     return ss.str();
@@ -180,9 +181,9 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         result = nvAPI_GPU_GetAdapterIdFromPhysicalGpu(handle, static_cast<void*>(&luid));
         std::cout << "    Adapter ID/LUID:            ";
         result == NVAPI_OK
-            ? std::cout << ToFormattedLuid(luid) <<
-                " (" << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.HighPart <<
-                "/" << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.LowPart << ")" << std::endl
+            ? std::cout << ToFormattedLuid(luid) << " ("
+                        << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.HighPart << "/"
+                        << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.LowPart << ")" << std::endl
             : std::cout << "N/A" << std::endl;
 
         NV_GPU_ARCH_INFO archInfo;
@@ -190,7 +191,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         result = nvAPI_GPU_GetArchInfo(handle, &archInfo);
         std::cout << "    Architecture ID:            ";
         result == NVAPI_OK
-            ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << archInfo.architecture_id << " (" << ToGpuArchitecture(archInfo.architecture_id) << ")" <<  std::endl
+            ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << archInfo.architecture_id << " (" << ToGpuArchitecture(archInfo.architecture_id) << ")" << std::endl
             : std::cout << "N/A" << std::endl;
         std::cout << "    Implementation ID:          ";
         result == NVAPI_OK
@@ -242,15 +243,15 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
         result = nvAPI_GPU_GetAllClockFrequencies(handle, &frequencies);
         std::cout << "    Current graphics clock:     ";
-        result == NVAPI_OK && frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent
+        result == NVAPI_OK&& frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent
             ? std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency / 1000 << "MHz" << std::endl
             : std::cout << "N/A" << std::endl;
         std::cout << "    Current memory clock:       ";
-        result == NVAPI_OK && frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent
+        result == NVAPI_OK&& frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent
             ? std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency / 1000 << "MHz" << std::endl
             : std::cout << "N/A" << std::endl;
         std::cout << "    Current video clock:        ";
-        result == NVAPI_OK && frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent
+        result == NVAPI_OK&& frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent
             ? std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency / 1000 << "MHz" << std::endl
             : std::cout << "N/A" << std::endl;
     }
