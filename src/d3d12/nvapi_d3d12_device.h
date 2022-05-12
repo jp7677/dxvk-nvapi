@@ -8,7 +8,7 @@ namespace dxvk {
 
     class NvapiD3d12Device {
 
-    public:
+      public:
         static std::optional<LUID> GetLuid(IUnknown* unknown);
 
         static bool CreateGraphicsPipelineState(ID3D12Device* device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pipelineStateDescription, NvU32 numberOfExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** extensions, ID3D12PipelineState** pipelineState);
@@ -22,7 +22,7 @@ namespace dxvk {
         static bool CaptureUAVInfo(ID3D12Device* device, NVAPI_UAV_INFO* uavInfo);
         static bool IsFatbinPTXSupported(ID3D12Device* device);
 
-    private:
+      private:
         inline static std::unordered_map<ID3D12Device*, ID3D12DeviceExt*> m_cubinDeviceMap;
         inline static std::unordered_map<ID3D12GraphicsCommandList*, ID3D12GraphicsCommandListExt*> m_CommandListMap;
 

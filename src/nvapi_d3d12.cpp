@@ -9,11 +9,11 @@
 extern "C" {
     using namespace dxvk;
 
-    NvAPI_Status __cdecl NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device *pDevice, NvU32 opCode, bool *pSupported) {
+    NvAPI_Status __cdecl NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device* pDevice, NvU32 opCode, bool* pSupported) {
         constexpr auto n = __func__;
 
         if (pDevice == nullptr || pSupported == nullptr)
-                return InvalidArgument(n);
+            return InvalidArgument(n);
 
         // VKD3D does not know any NVIDIA intrinsics
         *pSupported = false;
@@ -194,7 +194,7 @@ extern "C" {
         return Ok(n, alreadyLoggedOk);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D12_CreateGraphicsPipelineState(ID3D12Device *pDevice, const D3D12_GRAPHICS_PIPELINE_STATE_DESC *pPSODesc, NvU32 numExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** ppExtensions, ID3D12PipelineState **ppPSO) {
+    NvAPI_Status __cdecl NvAPI_D3D12_CreateGraphicsPipelineState(ID3D12Device* pDevice, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pPSODesc, NvU32 numExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** ppExtensions, ID3D12PipelineState** ppPSO) {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
 
@@ -208,7 +208,7 @@ extern "C" {
             return IncompatibleStructVersion(n);
 
         std::string extensionNames;
-        for(auto i = 0U; i < numExtensions;i++)
+        for (auto i = 0U; i < numExtensions; i++)
             extensionNames += str::format(fromPsoExtension(ppExtensions[i]->psoExtension), ",");
 
         extensionNames.pop_back();
@@ -219,7 +219,7 @@ extern "C" {
         return Ok(str::format(n, " (", numExtensions, "/", extensionNames, ")"), alreadyLoggedOk);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D12_SetDepthBoundsTestValues(ID3D12GraphicsCommandList *pCommandList, const float minDepth, const float maxDepth) {
+    NvAPI_Status __cdecl NvAPI_D3D12_SetDepthBoundsTestValues(ID3D12GraphicsCommandList* pCommandList, const float minDepth, const float maxDepth) {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
@@ -227,7 +227,7 @@ extern "C" {
         if (pCommandList == nullptr)
             return InvalidArgument(n);
 
-        if(!NvapiD3d12Device::SetDepthBoundsTestValues(pCommandList, minDepth, maxDepth))
+        if (!NvapiD3d12Device::SetDepthBoundsTestValues(pCommandList, minDepth, maxDepth))
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);

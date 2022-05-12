@@ -6,7 +6,7 @@
 extern "C" {
     using namespace dxvk;
 
-    NvAPI_Status __cdecl NvAPI_Disp_GetHdrCapabilities(NvU32 displayId, NV_HDR_CAPABILITIES *pHdrCapabilities) {
+    NvAPI_Status __cdecl NvAPI_Disp_GetHdrCapabilities(NvU32 displayId, NV_HDR_CAPABILITIES* pHdrCapabilities) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -44,7 +44,7 @@ extern "C" {
         return Ok(str::format(n, " (", displayId, ")"));
     }
 
-    NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char *displayName, NvU32 *displayId) {
+    NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char* displayName, NvU32* displayId) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -62,7 +62,7 @@ extern "C" {
         return Ok(str::format(n, " (", displayName, ")"));
     }
 
-    NvAPI_Status __cdecl NvAPI_DISP_GetGDIPrimaryDisplayId(NvU32 *displayId) {
+    NvAPI_Status __cdecl NvAPI_DISP_GetGDIPrimaryDisplayId(NvU32* displayId) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)

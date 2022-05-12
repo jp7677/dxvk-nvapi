@@ -6,7 +6,7 @@
 extern "C" {
     using namespace dxvk;
 
-    NvAPI_Status __cdecl NvAPI_SYS_GetPhysicalGpuFromDisplayId(NvU32 displayId, NvPhysicalGpuHandle *hPhysicalGpu) {
+    NvAPI_Status __cdecl NvAPI_SYS_GetPhysicalGpuFromDisplayId(NvU32 displayId, NvPhysicalGpuHandle* hPhysicalGpu) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -16,7 +16,7 @@ extern "C" {
         if (output == nullptr)
             return InvalidArgument(n);
 
-        *hPhysicalGpu = (NvPhysicalGpuHandle) output->GetParent();
+        *hPhysicalGpu = (NvPhysicalGpuHandle)output->GetParent();
 
         return Ok(n);
     }

@@ -26,7 +26,7 @@ namespace dxvk {
         return true;
     }
 
-    bool NvapiD3d12Device::CreateCubinComputeShaderWithName(ID3D12Device* device, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader){
+    bool NvapiD3d12Device::CreateCubinComputeShaderWithName(ID3D12Device* device, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
         auto cubinDevice = GetCubinDevice(device);
         if (cubinDevice == nullptr)
             return false;
@@ -46,9 +46,8 @@ namespace dxvk {
         auto cubinDevice = GetCubinDevice(device);
         if (cubinDevice == nullptr)
             return false;
-            
-        return SUCCEEDED(cubinDevice->GetCudaTextureObject(srvHandle, samplerHandle, reinterpret_cast<UINT32*>(cudaTextureHandle)));
 
+        return SUCCEEDED(cubinDevice->GetCudaTextureObject(srvHandle, samplerHandle, reinterpret_cast<UINT32*>(cudaTextureHandle)));
     }
 
     bool NvapiD3d12Device::GetCudaSurfaceObject(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle) {
@@ -90,7 +89,7 @@ namespace dxvk {
 
         auto cubinDevice = GetDeviceExt(device, D3D12_VK_NVX_BINARY_IMPORT);
         if (cubinDevice != nullptr)
-             m_cubinDeviceMap.emplace(device, cubinDevice.ptr());
+            m_cubinDeviceMap.emplace(device, cubinDevice.ptr());
 
         return cubinDevice;
     }
@@ -109,7 +108,7 @@ namespace dxvk {
     Com<ID3D12GraphicsCommandListExt> NvapiD3d12Device::GetCommandListExt(ID3D12GraphicsCommandList* commandList) {
         std::scoped_lock lock(m_CommandListMutex);
         auto it = m_CommandListMap.find(commandList);
-        if (it!= m_CommandListMap.end())
+        if (it != m_CommandListMap.end())
             return it->second;
 
         Com<ID3D12GraphicsCommandListExt> commandListExt;

@@ -2,8 +2,8 @@
 #include "nvapi_d3d_instance.h"
 
 namespace dxvk {
-    NvapiD3dInstance::NvapiD3dInstance(ResourceFactory &resourceFactory)
-            : m_resourceFactory(resourceFactory) {}
+    NvapiD3dInstance::NvapiD3dInstance(ResourceFactory& resourceFactory)
+        : m_resourceFactory(resourceFactory) {}
 
     NvapiD3dInstance::~NvapiD3dInstance() = default;
 

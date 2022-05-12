@@ -9,7 +9,7 @@
 namespace dxvk {
     class NvapiAdapter {
 
-    public:
+      public:
         NvapiAdapter(Vulkan& vulkan, Nvml& nvml);
         ~NvapiAdapter();
 
@@ -37,7 +37,7 @@ namespace dxvk {
         [[nodiscard]] nvmlReturn_t GetNvmlPerformanceState(nvmlPstates_t* pState) const;
         [[nodiscard]] nvmlReturn_t GetNvmlDeviceClockInfo(nvmlClockType_t type, unsigned int* clock) const;
 
-    private:
+      private:
         Vulkan& m_vulkan;
         Nvml& m_nvml;
 

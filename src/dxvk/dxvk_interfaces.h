@@ -7,19 +7,20 @@
 #endif // __GNUC__
 
 #define DXVK_DEFINE_GUID(iface) \
-    template<> inline GUID const& __mingw_uuidof<iface> () { return iface::guid; }
+    template <>                 \
+    inline GUID const& __mingw_uuidof<iface>() { return iface::guid; }
 
 enum D3D11_VK_EXTENSION : uint32_t {
-    D3D11_VK_EXT_MULTI_DRAW_INDIRECT        = 0,
-    D3D11_VK_EXT_MULTI_DRAW_INDIRECT_COUNT  = 1,
-    D3D11_VK_EXT_DEPTH_BOUNDS               = 2,
-    D3D11_VK_EXT_BARRIER_CONTROL            = 3,
-    D3D11_VK_NVX_BINARY_IMPORT              = 4,
-    D3D11_VK_NVX_IMAGE_VIEW_HANDLE          = 5,
+    D3D11_VK_EXT_MULTI_DRAW_INDIRECT = 0,
+    D3D11_VK_EXT_MULTI_DRAW_INDIRECT_COUNT = 1,
+    D3D11_VK_EXT_DEPTH_BOUNDS = 2,
+    D3D11_VK_EXT_BARRIER_CONTROL = 3,
+    D3D11_VK_NVX_BINARY_IMPORT = 4,
+    D3D11_VK_NVX_IMAGE_VIEW_HANDLE = 5,
 };
 
 enum D3D11_VK_BARRIER_CONTROL : uint32_t {
-    D3D11_VK_BARRIER_CONTROL_IGNORE_WRITE_AFTER_WRITE   = 1 << 0,
+    D3D11_VK_BARRIER_CONTROL_IGNORE_WRITE_AFTER_WRITE = 1 << 0,
 };
 
 /**
@@ -39,8 +40,8 @@ IDXGIVkInteropAdapter : public IUnknown {
      * \param [out] pPhysDev The physical device
      */
     virtual void STDMETHODCALLTYPE GetVulkanHandles(
-        VkInstance*           pInstance,
-        VkPhysicalDevice*     pPhysDev) = 0;
+        VkInstance * pInstance,
+        VkPhysicalDevice * pPhysDev) = 0;
 };
 
 MIDL_INTERFACE("8a6e3c42-f74c-45b7-8265-a231b677ca17")
@@ -54,48 +55,48 @@ ID3D11VkExtDevice : public IUnknown {
      * \returns \c TRUE if the extension is supported
      */
     virtual BOOL STDMETHODCALLTYPE GetExtensionSupport(
-        D3D11_VK_EXTENSION      Extension) = 0;
+        D3D11_VK_EXTENSION Extension) = 0;
 };
 
 MIDL_INTERFACE("cfcf64ef-9586-46d0-bca4-97cf2ca61b06")
 ID3D11VkExtDevice1 : public ID3D11VkExtDevice {
-  static const GUID guid;
+    static const GUID guid;
 
-  virtual bool STDMETHODCALLTYPE GetResourceHandleGPUVirtualAddressAndSizeNVX(
-          void*                   hObject,
-          uint64_t*               gpuVAStart,
-          uint64_t*               gpuVASize) = 0;
+    virtual bool STDMETHODCALLTYPE GetResourceHandleGPUVirtualAddressAndSizeNVX(
+        void* hObject,
+        uint64_t* gpuVAStart,
+        uint64_t* gpuVASize) = 0;
 
-  virtual bool STDMETHODCALLTYPE CreateUnorderedAccessViewAndGetDriverHandleNVX(
-          ID3D11Resource*         pResource,
-          const D3D11_UNORDERED_ACCESS_VIEW_DESC* pDesc,
-          ID3D11UnorderedAccessView** ppUAV,
-          uint32_t*               pDriverHandle) = 0;
+    virtual bool STDMETHODCALLTYPE CreateUnorderedAccessViewAndGetDriverHandleNVX(
+        ID3D11Resource * pResource,
+        const D3D11_UNORDERED_ACCESS_VIEW_DESC* pDesc,
+        ID3D11UnorderedAccessView** ppUAV,
+        uint32_t* pDriverHandle) = 0;
 
-  virtual bool STDMETHODCALLTYPE CreateShaderResourceViewAndGetDriverHandleNVX(
-          ID3D11Resource*         pResource,
-          const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc,
-          ID3D11ShaderResourceView** ppSRV,
-          uint32_t*               pDriverHandle) = 0;
+    virtual bool STDMETHODCALLTYPE CreateShaderResourceViewAndGetDriverHandleNVX(
+        ID3D11Resource * pResource,
+        const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc,
+        ID3D11ShaderResourceView** ppSRV,
+        uint32_t* pDriverHandle) = 0;
 
-  virtual bool STDMETHODCALLTYPE CreateSamplerStateAndGetDriverHandleNVX(
-          const D3D11_SAMPLER_DESC* pSamplerDesc,
-          ID3D11SamplerState**    ppSamplerState,
-          uint32_t*               pDriverHandle) = 0;
+    virtual bool STDMETHODCALLTYPE CreateSamplerStateAndGetDriverHandleNVX(
+        const D3D11_SAMPLER_DESC* pSamplerDesc,
+        ID3D11SamplerState** ppSamplerState,
+        uint32_t* pDriverHandle) = 0;
 
-  virtual bool STDMETHODCALLTYPE CreateCubinComputeShaderWithNameNVX(
-          const void*             pCubin,
-          uint32_t                size,
-          uint32_t                blockX,
-          uint32_t                blockY,
-          uint32_t                blockZ,
-          const char*             pShaderName,
-          IUnknown**              phShader) = 0;
+    virtual bool STDMETHODCALLTYPE CreateCubinComputeShaderWithNameNVX(
+        const void* pCubin,
+        uint32_t size,
+        uint32_t blockX,
+        uint32_t blockY,
+        uint32_t blockZ,
+        const char* pShaderName,
+        IUnknown** phShader) = 0;
 
-  virtual bool STDMETHODCALLTYPE GetCudaTextureObjectNVX(
-          uint32_t                srvDriverHandle,
-          uint32_t                samplerDriverHandle,
-          uint32_t*               pCudaTextureHandle) = 0;
+    virtual bool STDMETHODCALLTYPE GetCudaTextureObjectNVX(
+        uint32_t srvDriverHandle,
+        uint32_t samplerDriverHandle,
+        uint32_t * pCudaTextureHandle) = 0;
 };
 
 MIDL_INTERFACE("fd0bca13-5cb6-4c3a-987e-4750de2ca791")
@@ -103,57 +104,57 @@ ID3D11VkExtContext : public IUnknown {
     static const GUID guid;
 
     virtual void STDMETHODCALLTYPE MultiDrawIndirect(
-        UINT                    DrawCount,
-        ID3D11Buffer*           pBufferForArgs,
-        UINT                    ByteOffsetForArgs,
-        UINT                    ByteStrideForArgs) = 0;
+        UINT DrawCount,
+        ID3D11Buffer * pBufferForArgs,
+        UINT ByteOffsetForArgs,
+        UINT ByteStrideForArgs) = 0;
 
     virtual void STDMETHODCALLTYPE MultiDrawIndexedIndirect(
-        UINT                    DrawCount,
-        ID3D11Buffer*           pBufferForArgs,
-        UINT                    ByteOffsetForArgs,
-        UINT                    ByteStrideForArgs) = 0;
+        UINT DrawCount,
+        ID3D11Buffer * pBufferForArgs,
+        UINT ByteOffsetForArgs,
+        UINT ByteStrideForArgs) = 0;
 
     virtual void STDMETHODCALLTYPE MultiDrawIndirectCount(
-        UINT                    MaxDrawCount,
-        ID3D11Buffer*           pBufferForCount,
-        UINT                    ByteOffsetForCount,
-        ID3D11Buffer*           pBufferForArgs,
-        UINT                    ByteOffsetForArgs,
-        UINT                    ByteStrideForArgs) = 0;
+        UINT MaxDrawCount,
+        ID3D11Buffer * pBufferForCount,
+        UINT ByteOffsetForCount,
+        ID3D11Buffer * pBufferForArgs,
+        UINT ByteOffsetForArgs,
+        UINT ByteStrideForArgs) = 0;
 
     virtual void STDMETHODCALLTYPE MultiDrawIndexedIndirectCount(
-        UINT                    MaxDrawCount,
-        ID3D11Buffer*           pBufferForCount,
-        UINT                    ByteOffsetForCount,
-        ID3D11Buffer*           pBufferForArgs,
-        UINT                    ByteOffsetForArgs,
-        UINT                    ByteStrideForArgs) = 0;
+        UINT MaxDrawCount,
+        ID3D11Buffer * pBufferForCount,
+        UINT ByteOffsetForCount,
+        ID3D11Buffer * pBufferForArgs,
+        UINT ByteOffsetForArgs,
+        UINT ByteStrideForArgs) = 0;
 
-  virtual void STDMETHODCALLTYPE SetDepthBoundsTest(
-        BOOL                    Enable,
-        FLOAT                   MinDepthBounds,
-        FLOAT                   MaxDepthBounds) = 0;
+    virtual void STDMETHODCALLTYPE SetDepthBoundsTest(
+        BOOL Enable,
+        FLOAT MinDepthBounds,
+        FLOAT MaxDepthBounds) = 0;
 
-  virtual void STDMETHODCALLTYPE SetBarrierControl(
-        UINT                    ControlFlags) = 0;
+    virtual void STDMETHODCALLTYPE SetBarrierControl(
+        UINT ControlFlags) = 0;
 };
 
 MIDL_INTERFACE("874b09b2-ae0b-41d8-8476-5f3b7a0e879d")
 ID3D11VkExtContext1 : public ID3D11VkExtContext {
-  static const GUID guid;
+    static const GUID guid;
 
-  virtual bool STDMETHODCALLTYPE LaunchCubinShaderNVX(
-          IUnknown*               hShader,
-          uint32_t                gridX,
-          uint32_t                gridY,
-          uint32_t                gridZ,
-          const void*             pParams,
-          uint32_t                paramSize,
-          void* const*            pReadResources,
-          uint32_t                numReadResources,
-          void* const*            pWriteResources,
-          uint32_t                numWriteResources) = 0;
+    virtual bool STDMETHODCALLTYPE LaunchCubinShaderNVX(
+        IUnknown * hShader,
+        uint32_t gridX,
+        uint32_t gridY,
+        uint32_t gridZ,
+        const void* pParams,
+        uint32_t paramSize,
+        void* const* pReadResources,
+        uint32_t numReadResources,
+        void* const* pWriteResources,
+        uint32_t numWriteResources) = 0;
 };
 
 DXVK_DEFINE_GUID(IDXGIVkInteropAdapter)

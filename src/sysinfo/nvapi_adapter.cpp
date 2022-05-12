@@ -94,7 +94,7 @@ namespace dxvk {
         // Mosaic setup is not supported, thus one display output refers to one GPU
         Com<IDXGIOutput> dxgiOutput;
         for (auto i = 0U; dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
-            auto nvapiOutput = new NvapiOutput((uintptr_t) this);
+            auto nvapiOutput = new NvapiOutput((uintptr_t)this);
             nvapiOutput->Initialize(dxgiOutput);
             outputs.push_back(nvapiOutput);
         }
@@ -124,8 +124,7 @@ namespace dxvk {
                 stream << (driverVersionOverride / 100) << "." << std::setfill('0') << std::setw(2) << (driverVersionOverride % 100);
                 log::write(str::format(driverVersionEnvName, " is set to '", driverVersion, "', reporting driver version ", stream.str()));
                 m_driverVersionOverride = driverVersionOverride;
-            }
-            else
+            } else
                 log::write(str::format(driverVersionEnvName, " is set to '", driverVersion, "', but this value is invalid, please set a number between 100 and 99999"));
         }
 
@@ -141,8 +140,7 @@ namespace dxvk {
         // and does not have a patch number
         return m_driverVersionOverride > 0
             ? m_driverVersionOverride
-            : VK_VERSION_MAJOR(m_vkDriverVersion) * 100 +
-                std::min(VK_VERSION_MINOR(m_vkDriverVersion), 99U);
+            : VK_VERSION_MAJOR(m_vkDriverVersion) * 100 + std::min(VK_VERSION_MINOR(m_vkDriverVersion), 99U);
     }
 
     VkDriverIdKHR NvapiAdapter::GetDriverId() const {
@@ -256,11 +254,11 @@ namespace dxvk {
         return {m_nvml.ErrorString(result)};
     }
 
-    nvmlReturn_t NvapiAdapter::GetNvmlDeviceTemperature(nvmlTemperatureSensors_t sensorType, unsigned int *temp) const {
+    nvmlReturn_t NvapiAdapter::GetNvmlDeviceTemperature(nvmlTemperatureSensors_t sensorType, unsigned int* temp) const {
         return m_nvml.DeviceGetTemperature(m_nvmlDevice, sensorType, temp);
     }
 
-    nvmlReturn_t NvapiAdapter::GetNvmlDeviceUtilizationRates(nvmlUtilization_t *utilization) const {
+    nvmlReturn_t NvapiAdapter::GetNvmlDeviceUtilizationRates(nvmlUtilization_t* utilization) const {
         return m_nvml.DeviceGetUtilizationRates(m_nvmlDevice, utilization);
     }
 
@@ -268,7 +266,7 @@ namespace dxvk {
         return m_nvml.DeviceGetVbiosVersion(m_nvmlDevice, version, length);
     }
 
-    nvmlReturn_t NvapiAdapter::GetNvmlPerformanceState(nvmlPstates_t *pState) const {
+    nvmlReturn_t NvapiAdapter::GetNvmlPerformanceState(nvmlPstates_t* pState) const {
         return m_nvml.DeviceGetPerformanceState(m_nvmlDevice, pState);
     }
 

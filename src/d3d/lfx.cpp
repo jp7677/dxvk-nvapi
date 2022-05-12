@@ -23,16 +23,16 @@ namespace dxvk {
             auto lastError = ::GetLastError();
             if (lastError != ERROR_MOD_NOT_FOUND) // Ignore library not found
                 log::write(str::format("Loading ", !useFallbackEntrypoints ? lfxModuleName : lfxModuleNameFallback,
-                                       " failed with error code: ", lastError));
+                    " failed with error code: ", lastError));
             return;
         }
 
         m_lfx_WaitAndBeginFrame = reinterpret_cast<PFN_lfx_WaitAndBeginFrame>(reinterpret_cast<void*>(
-                GetProcAddress(m_lfxModule,
-                               !useFallbackEntrypoints ? "lfx_WaitAndBeginFrame" : "winelfx_WaitAndBeginFrame")));
+            GetProcAddress(m_lfxModule,
+                !useFallbackEntrypoints ? "lfx_WaitAndBeginFrame" : "winelfx_WaitAndBeginFrame")));
         m_lfx_SetTargetFrameTime = reinterpret_cast<PFN_lfx_SetTargetFrameTime>(reinterpret_cast<void*>(
-                GetProcAddress(m_lfxModule,
-                               !useFallbackEntrypoints ? "lfx_SetTargetFrameTime" : "winelfx_SetTargetFrameTime")));
+            GetProcAddress(m_lfxModule,
+                !useFallbackEntrypoints ? "lfx_SetTargetFrameTime" : "winelfx_SetTargetFrameTime")));
     }
 
     Lfx::~Lfx() {

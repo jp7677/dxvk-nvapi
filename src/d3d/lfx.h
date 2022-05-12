@@ -5,7 +5,7 @@
 
 namespace dxvk {
     class Lfx {
-    public:
+      public:
         Lfx();
         virtual ~Lfx();
 
@@ -13,7 +13,7 @@ namespace dxvk {
         virtual void WaitAndBeginFrame();
         virtual void SetTargetFrameTime(uint64_t frame_time_ns);
 
-    private:
+      private:
         typedef void (*PFN_lfx_WaitAndBeginFrame)();
         typedef void (*PFN_lfx_SetTargetFrameTime)(__int64);
 
