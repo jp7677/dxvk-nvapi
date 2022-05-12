@@ -1,10 +1,10 @@
 class MockFactory : public ResourceFactory {
 
-public:
+  public:
     MockFactory(std::unique_ptr<IDXGIFactory1> dxgiFactory1Mock, std::unique_ptr<Vulkan> vulkanMock,
-                std::unique_ptr<Nvml> nvmlMock, std::unique_ptr<Lfx> lfxMock)
-            : m_dxgiFactoryMock(std::move(dxgiFactory1Mock)), m_vulkanMock(std::move(vulkanMock)),
-              m_nvmlMock(std::move(nvmlMock)), m_lfxMock(std::move(lfxMock)) {};
+        std::unique_ptr<Nvml> nvmlMock, std::unique_ptr<Lfx> lfxMock)
+        : m_dxgiFactoryMock(std::move(dxgiFactory1Mock)), m_vulkanMock(std::move(vulkanMock)),
+          m_nvmlMock(std::move(nvmlMock)), m_lfxMock(std::move(lfxMock)){};
 
     Com<IDXGIFactory1> CreateDXGIFactory1() override {
         Com<IDXGIFactory1> dxgiFactory = m_dxgiFactoryMock.get();
@@ -23,7 +23,7 @@ public:
         return std::move(m_lfxMock);
     }
 
-private:
+  private:
     std::unique_ptr<IDXGIFactory1> m_dxgiFactoryMock;
     std::unique_ptr<Vulkan> m_vulkanMock;
     std::unique_ptr<Nvml> m_nvmlMock;

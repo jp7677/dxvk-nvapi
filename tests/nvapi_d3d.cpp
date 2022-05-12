@@ -106,7 +106,7 @@ TEST_CASE("D3D methods succeed", "[.d3d]") {
     }
 }
 
-TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]"){
+TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
     UnknownMock unknown;
     auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
     auto vulkan = std::make_unique<VulkanMock>();

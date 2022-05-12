@@ -285,7 +285,13 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetDisplayDriverVersion returns OK") {
-        struct Data {VkDriverId driverId; uint16_t major; uint16_t minor; uint16_t patch; uint32_t expectedVersion;};
+        struct Data {
+            VkDriverId driverId;
+            uint16_t major;
+            uint16_t minor;
+            uint16_t patch;
+            uint32_t expectedVersion;
+        };
         auto args = GENERATE(
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 470, 45, 1, 47045},
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 470, 101, 1, 47099},
@@ -322,7 +328,10 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetDisplayDriverVersion with version override returns OK") {
-        struct Data {std::string override; uint32_t expectedVersion;};
+        struct Data {
+            std::string override;
+            uint32_t expectedVersion;
+        };
         auto args = GENERATE(
             Data{"", 47045},
             Data{"0", 47045},
@@ -366,8 +375,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         pciBusInfoProps->pciDomain = 0x01;
                         pciBusInfoProps->pciBus = 0x02;
                         pciBusInfoProps->pciDevice = 0x03;
-                    })
-            );
+                    }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -389,7 +397,11 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("CudaEnumComputeCapableGpus returns OK") {
-        struct Data {VkDriverId driverId; std::string extensionName; uint32_t gpuCount;};
+        struct Data {
+            VkDriverId driverId;
+            std::string extensionName;
+            uint32_t gpuCount;
+        };
         auto args = GENERATE(
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, 1},
             Data{VK_DRIVER_ID_MESA_RADV, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 0},
@@ -550,7 +562,10 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetBusType returns OK") {
-        struct Data {std::string extensionName; NV_GPU_BUS_TYPE expectedBusType;};
+        struct Data {
+            std::string extensionName;
+            NV_GPU_BUS_TYPE expectedBusType;
+        };
         auto args = GENERATE(
             Data{VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, NVAPI_GPU_BUS_TYPE_PCI_EXPRESS},
             Data{"ext", NVAPI_GPU_BUS_TYPE_UNDEFINED});
@@ -599,13 +614,13 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     SECTION("GetAdapterIdFromPhysicalGpu returns OK") {
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(
-                 ConfigureGetPhysicalDeviceProperties2(_3,
-                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                         auto luid = LUID{0x04030211, 0x08070655};
-                         memcpy(&idProps->deviceLUID, &luid, sizeof(luid));
-                         idProps->deviceLUIDValid = VK_TRUE;
-                         driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
-                     }));
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        auto luid = LUID{0x04030211, 0x08070655};
+                        memcpy(&idProps->deviceLUID, &luid, sizeof(luid));
+                        idProps->deviceLUIDValid = VK_TRUE;
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                    }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -616,11 +631,15 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         LUID luid;
         REQUIRE(NvAPI_GPU_GetAdapterIdFromPhysicalGpu(handle, static_cast<void*>(&luid)) == NVAPI_OK);
         REQUIRE(luid.HighPart == 0x08070655);
-        REQUIRE(luid.LowPart  == 0x04030211);
+        REQUIRE(luid.LowPart == 0x04030211);
     }
 
     SECTION("GetArchInfo returns OK") {
-        struct Data {std::string extensionName; NV_GPU_ARCHITECTURE_ID expectedArchId; NV_GPU_ARCH_IMPLEMENTATION_ID expectedImplId;};
+        struct Data {
+            std::string extensionName;
+            NV_GPU_ARCHITECTURE_ID expectedArchId;
+            NV_GPU_ARCH_IMPLEMENTATION_ID expectedImplId;
+        };
         auto args = GENERATE(
             Data{VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, NV_GPU_ARCHITECTURE_GA100, NV_GPU_ARCH_IMPLEMENTATION_GA102},
             Data{VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME, NV_GPU_ARCHITECTURE_TU100, NV_GPU_ARCH_IMPLEMENTATION_TU102},
@@ -651,7 +670,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         SECTION("GetArchInfo (V1) returns OK") {
             NV_GPU_ARCH_INFO_V1 archInfo;
             archInfo.version = NV_GPU_ARCH_INFO_VER_1;
-            REQUIRE(NvAPI_GPU_GetArchInfo(handle, reinterpret_cast<NV_GPU_ARCH_INFO *>(&archInfo)) == NVAPI_OK);
+            REQUIRE(NvAPI_GPU_GetArchInfo(handle, reinterpret_cast<NV_GPU_ARCH_INFO*>(&archInfo)) == NVAPI_OK);
             REQUIRE(archInfo.architecture == args.expectedArchId);
             REQUIRE(archInfo.implementation == args.expectedImplId);
             REQUIRE(archInfo.revision == NV_GPU_CHIP_REV_A01);
@@ -935,7 +954,9 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         }
 
         SECTION("GetAllClockFrequencies returns not-supported for base/boost clock types") {
-            struct Data {NV_GPU_CLOCK_FREQUENCIES_CLOCK_TYPE clockType;};
+            struct Data {
+                NV_GPU_CLOCK_FREQUENCIES_CLOCK_TYPE clockType;
+            };
             auto args = GENERATE(
                 Data{NV_GPU_CLOCK_FREQUENCIES_BASE_CLOCK},
                 Data{NV_GPU_CLOCK_FREQUENCIES_BOOST_CLOCK});
@@ -1032,7 +1053,7 @@ TEST_CASE("GetHdrCapabilities succeeds", "[.sysinfo]") {
     SECTION("GetHdrCapabilities (V1) returns OK") {
         NV_HDR_CAPABILITIES_V1 capabilities;
         capabilities.version = NV_HDR_CAPABILITIES_VER1;
-        REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, reinterpret_cast<NV_HDR_CAPABILITIES *>(&capabilities)) == NVAPI_OK);
+        REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, reinterpret_cast<NV_HDR_CAPABILITIES*>(&capabilities)) == NVAPI_OK);
         REQUIRE(capabilities.isST2084EotfSupported == false);
         REQUIRE(capabilities.isTraditionalHdrGammaSupported == false);
         REQUIRE(capabilities.isEdrSupported == false);

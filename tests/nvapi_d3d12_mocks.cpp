@@ -3,7 +3,7 @@ using namespace trompeloeil;
 class ID3D12Vkd3dDevice : public ID3D12Device, public ID3D12DeviceExt {};
 
 class D3D12Vkd3dDeviceMock : public mock_interface<ID3D12Vkd3dDevice> {
-    MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void **), override);
+    MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
     IMPLEMENT_MOCK3(GetPrivateData);
@@ -59,7 +59,7 @@ class D3D12Vkd3dDeviceMock : public mock_interface<ID3D12Vkd3dDevice> {
 class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList1, public ID3D12GraphicsCommandListExt {};
 
 class D3D12Vkd3dGraphicsCommandListMock : public mock_interface<ID3D12Vkd3dGraphicsCommandList> {
-    MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void **), override);
+    MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
     IMPLEMENT_MOCK3(GetPrivateData);
