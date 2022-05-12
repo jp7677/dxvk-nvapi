@@ -64,12 +64,12 @@ namespace dxvk {
         vkGetPhysicalDeviceMemoryProperties2(vkDevice, memoryProperties2);
     }
 
-    template<typename T>
+    template <typename T>
     T Vulkan::GetProcAddress(const char* name) const {
         return reinterpret_cast<T>(reinterpret_cast<void*>(::GetProcAddress(m_vkModule, name)));
     }
 
-    template<typename T>
+    template <typename T>
     T Vulkan::GetInstanceProcAddress(VkInstance vkInstance, const char* name) const {
         return reinterpret_cast<T>(m_vkGetInstanceProcAddr(vkInstance, name));
     }

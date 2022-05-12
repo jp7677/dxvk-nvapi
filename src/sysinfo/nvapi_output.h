@@ -6,7 +6,7 @@
 namespace dxvk {
     class NvapiOutput {
 
-    public:
+      public:
         explicit NvapiOutput(uintptr_t parent);
         ~NvapiOutput();
 
@@ -15,7 +15,7 @@ namespace dxvk {
         [[nodiscard]] std::string GetDeviceName() const;
         [[nodiscard]] bool IsPrimary() const;
 
-    private:
+      private:
         uintptr_t m_parent;
         std::string m_deviceName;
         bool m_isPrimary{};

@@ -5,7 +5,7 @@
 extern "C" {
     using namespace dxvk;
 
-    NvAPI_Status __cdecl NvAPI_D3D_GetObjectHandleForResource(IUnknown *pDevice, IUnknown *pResource, NVDX_ObjectHandle *pHandle) {
+    NvAPI_Status __cdecl NvAPI_D3D_GetObjectHandleForResource(IUnknown* pDevice, IUnknown* pResource, NVDX_ObjectHandle* pHandle) {
         static bool alreadyLogged = false;
         // Fake-implement with a dumb passthrough, though no other NvAPI entry points
         // we're likely to implement should care about the actual handle value.
@@ -13,23 +13,23 @@ extern "C" {
         return Ok(__func__, alreadyLogged);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D_SetResourceHint(IUnknown *pDev, NVDX_ObjectHandle obj, NVAPI_D3D_SETRESOURCEHINT_CATEGORY dwHintCategory, NvU32 dwHintName, NvU32 *pdwHintValue) {
+    NvAPI_Status __cdecl NvAPI_D3D_SetResourceHint(IUnknown* pDev, NVDX_ObjectHandle obj, NVAPI_D3D_SETRESOURCEHINT_CATEGORY dwHintCategory, NvU32 dwHintName, NvU32* pdwHintValue) {
         static bool alreadyLogged = false;
         return NoImplementation(__func__, alreadyLogged);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D_BeginResourceRendering(IUnknown *pDeviceOrContext, NVDX_ObjectHandle obj, NvU32 Flags) {
+    NvAPI_Status __cdecl NvAPI_D3D_BeginResourceRendering(IUnknown* pDeviceOrContext, NVDX_ObjectHandle obj, NvU32 Flags) {
         static bool alreadyLogged = false;
         // Synchronisation hints for SLI...
         return Ok(__func__, alreadyLogged);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D_EndResourceRendering(IUnknown *pDeviceOrContext, NVDX_ObjectHandle obj, NvU32 Flags) {
+    NvAPI_Status __cdecl NvAPI_D3D_EndResourceRendering(IUnknown* pDeviceOrContext, NVDX_ObjectHandle obj, NvU32 Flags) {
         static bool alreadyLogged = false;
         return Ok(__func__, alreadyLogged);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D_GetCurrentSLIState(IUnknown *pDevice, NV_GET_CURRENT_SLI_STATE *pSliState) {
+    NvAPI_Status __cdecl NvAPI_D3D_GetCurrentSLIState(IUnknown* pDevice, NV_GET_CURRENT_SLI_STATE* pSliState) {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
 
@@ -74,7 +74,7 @@ extern "C" {
         return Ok(n);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D1x_GetGraphicsCapabilities(IUnknown *pDevice, NvU32 structVersion, NV_D3D1x_GRAPHICS_CAPS *pGraphicsCaps) {
+    NvAPI_Status __cdecl NvAPI_D3D1x_GetGraphicsCapabilities(IUnknown* pDevice, NvU32 structVersion, NV_D3D1x_GRAPHICS_CAPS* pGraphicsCaps) {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
 
@@ -104,7 +104,7 @@ extern "C" {
         return Ok(n, alreadyLoggedOk);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D_Sleep(IUnknown *pDevice) {
+    NvAPI_Status __cdecl NvAPI_D3D_Sleep(IUnknown* pDevice) {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
         static bool alreadyLoggedNoLfx = false;
@@ -117,7 +117,7 @@ extern "C" {
         return Ok(n, alreadyLoggedOk);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D_SetSleepMode(IUnknown *pDevice, NV_SET_SLEEP_MODE_PARAMS *pSetSleepModeParams) {
+    NvAPI_Status __cdecl NvAPI_D3D_SetSleepMode(IUnknown* pDevice, NV_SET_SLEEP_MODE_PARAMS* pSetSleepModeParams) {
         constexpr auto n = __func__;
         static bool alreadyLoggedNoLfx = false;
 
@@ -134,7 +134,7 @@ extern "C" {
         return Ok(str::format(n, " (", pSetSleepModeParams->bLowLatencyMode ? (str::format("Enabled/", pSetSleepModeParams->minimumIntervalUs, "us")) : "Disabled", ")"));
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D_GetSleepStatus(IUnknown *pDevice, NV_GET_SLEEP_STATUS_PARAMS *pGetSleepStatusParams) {
+    NvAPI_Status __cdecl NvAPI_D3D_GetSleepStatus(IUnknown* pDevice, NV_GET_SLEEP_STATUS_PARAMS* pGetSleepStatusParams) {
         constexpr auto n = __func__;
         static bool alreadyLoggedNoLfx = false;
 
@@ -148,12 +148,12 @@ extern "C" {
         return Ok(n);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D_GetLatency(IUnknown *pDev, NV_LATENCY_RESULT_PARAMS *pGetLatencyParams) {
+    NvAPI_Status __cdecl NvAPI_D3D_GetLatency(IUnknown* pDev, NV_LATENCY_RESULT_PARAMS* pGetLatencyParams) {
         static bool alreadyLogged = false;
         return NoImplementation(__func__, alreadyLogged);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D_SetLatencyMarker(IUnknown *pDev, NV_LATENCY_MARKER_PARAMS* pSetLatencyMarkerParams) {
+    NvAPI_Status __cdecl NvAPI_D3D_SetLatencyMarker(IUnknown* pDev, NV_LATENCY_MARKER_PARAMS* pSetLatencyMarkerParams) {
         static bool alreadyLogged = false;
         return NoImplementation(__func__, alreadyLogged);
     }

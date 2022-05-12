@@ -12,8 +12,8 @@
 #include "util/util_log.h"
 
 #define INSERT_AND_RETURN_WHEN_EQUALS(method) \
-    if (std::string(it->func) == #method) \
-        return registry.insert({id, (void*) method}).first->second;
+    if (std::string(it->func) == #method)     \
+        return registry.insert({id, (void*)method}).first->second;
 
 extern "C" {
     using namespace dxvk;
@@ -67,7 +67,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_LaunchCubinShader)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_CaptureUAVInfo)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_GetGraphicsCapabilities)
-        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_IsFatbinPTXSupported) 
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_IsFatbinPTXSupported)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_GetObjectHandleForResource)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_SetResourceHint)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D_GetCurrentSLIState)

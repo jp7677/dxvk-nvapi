@@ -4,8 +4,8 @@
 
 namespace dxvk {
     class NvapiD3dInstance {
-    public:
-        explicit NvapiD3dInstance(ResourceFactory &resourceFactory);
+      public:
+        explicit NvapiD3dInstance(ResourceFactory& resourceFactory);
         ~NvapiD3dInstance();
 
         void Initialize();
@@ -15,7 +15,7 @@ namespace dxvk {
         void Sleep();
         void SetTargetFrameTime(uint64_t frameTimeUs);
 
-    private:
+      private:
         ResourceFactory& m_resourceFactory;
         std::unique_ptr<Lfx> m_lfx;
         bool m_isLfxEnabled = false;

@@ -65,35 +65,35 @@ namespace dxvk {
         return m_nvmlErrorString(result);
     }
 
-    nvmlReturn_t Nvml::DeviceGetHandleByPciBusId_v2(const char *pciBusId, nvmlDevice_t *device) const {
+    nvmlReturn_t Nvml::DeviceGetHandleByPciBusId_v2(const char* pciBusId, nvmlDevice_t* device) const {
         return m_nvmlDeviceGetHandleByPciBusId_v2(pciBusId, device);
     }
 
-    nvmlReturn_t Nvml::DeviceGetPciInfo_v3(nvmlDevice_t device, nvmlPciInfo_t *pci) const {
+    nvmlReturn_t Nvml::DeviceGetPciInfo_v3(nvmlDevice_t device, nvmlPciInfo_t* pci) const {
         return m_nvmlDeviceGetPciInfo_v3(device, pci);
     }
 
-    nvmlReturn_t Nvml::DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int *temp) const {
+    nvmlReturn_t Nvml::DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int* temp) const {
         return m_nvmlDeviceGetTemperature(device, sensorType, temp);
     }
 
-    nvmlReturn_t Nvml::DeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t *utilization) const {
+    nvmlReturn_t Nvml::DeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t* utilization) const {
         return m_nvmlDeviceGetUtilizationRates(device, utilization);
     }
 
-    nvmlReturn_t Nvml::DeviceGetVbiosVersion(nvmlDevice_t device, char *version, unsigned int length) const {
+    nvmlReturn_t Nvml::DeviceGetVbiosVersion(nvmlDevice_t device, char* version, unsigned int length) const {
         return m_nvmlDeviceGetVbiosVersion(device, version, length);
     }
 
-    nvmlReturn_t Nvml::DeviceGetPerformanceState(nvmlDevice_t device, nvmlPstates_t *pState) const {
+    nvmlReturn_t Nvml::DeviceGetPerformanceState(nvmlDevice_t device, nvmlPstates_t* pState) const {
         return m_nvmlDeviceGetPerformanceState(device, pState);
     }
 
-    nvmlReturn_t Nvml::DeviceGetClockInfo(nvmlDevice_t device, nvmlClockType_t type, unsigned int *clock) const {
+    nvmlReturn_t Nvml::DeviceGetClockInfo(nvmlDevice_t device, nvmlClockType_t type, unsigned int* clock) const {
         return m_nvmlDeviceGetClockInfo(device, type, clock);
     }
 
-    template<typename T>
+    template <typename T>
     T Nvml::GetProcAddress(const char* name) {
         return reinterpret_cast<T>(reinterpret_cast<void*>(::GetProcAddress(m_nvmlModule, name)));
     }

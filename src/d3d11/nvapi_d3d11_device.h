@@ -7,7 +7,7 @@
 namespace dxvk {
     class NvapiD3d11Device {
 
-    public:
+      public:
         static bool SetDepthBoundsTest(IUnknown* deviceOrContext, bool enable, float minDepth, float maxDepth);
         static bool BeginUAVOverlap(IUnknown* deviceOrContext);
         static bool EndUAVOverlap(IUnknown* deviceOrContext);
@@ -18,13 +18,13 @@ namespace dxvk {
         static bool DestroyCubinShader(NVDX_ObjectHandle hShader);
         static bool GetResourceDriverHandle(ID3D11Resource* pResource, NVDX_ObjectHandle* phObject);
         static bool GetResourceHandleGPUVirtualAddressAndSize(ID3D11Device* pDevice, NVDX_ObjectHandle hObject, NvU64* gpuVAStart, NvU64* gpuVASize);
-        static bool CreateUnorderedAccessViewAndGetDriverHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC*  pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle);
+        static bool CreateUnorderedAccessViewAndGetDriverHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC* pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle);
         static bool CreateShaderResourceViewAndGetDriverHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc, ID3D11ShaderResourceView** ppSRV, NvU32* pDriverHandle);
         static bool GetCudaTextureObject(ID3D11Device* pDevice, uint32_t srvDriverHandle, uint32_t samplerDriverHandle, uint32_t* pCudaTextureHandle);
         static bool CreateSamplerStateAndGetDriverHandle(ID3D11Device* pDevice, const D3D11_SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState, uint32_t* pDriverHandle);
         static bool IsFatbinPTXSupported(ID3D11Device* pDevice);
 
-    private:
+      private:
         inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_depthBoundsDeviceOrContextMap;
         inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_barrierControlDeviceOrContextMap;
         inline static std::unordered_map<IUnknown*, ID3D11VkExtContext*> m_multiDrawIndirectContextMap;

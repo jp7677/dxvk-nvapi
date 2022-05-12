@@ -7,12 +7,12 @@ namespace dxvk {
      * Implements automatic reference
      * counting for COM objects.
      */
-    template<typename T>
+    template <typename T>
     class Com {
 
-    public:
-        Com() { }
-        Com(std::nullptr_t) { }
+      public:
+        Com() {}
+        Com(std::nullptr_t) {}
         Com(T* object) : m_ptr(object) {
             this->incRef();
         }
@@ -25,28 +25,28 @@ namespace dxvk {
             other.m_ptr = nullptr;
         }
 
-        Com& operator = (T* object) {
+        Com& operator=(T* object) {
             this->decRef();
             m_ptr = object;
             this->incRef();
             return *this;
         }
 
-        Com& operator = (const Com& other) {
+        Com& operator=(const Com& other) {
             other.incRef();
             this->decRef();
             m_ptr = other.m_ptr;
             return *this;
         }
 
-        Com& operator = (Com&& other) {
+        Com& operator=(Com&& other) {
             this->decRef();
             this->m_ptr = other.m_ptr;
             other.m_ptr = nullptr;
             return *this;
         }
 
-        Com& operator = (std::nullptr_t) {
+        Com& operator=(std::nullptr_t) {
             this->decRef();
             m_ptr = nullptr;
             return *this;
@@ -56,21 +56,21 @@ namespace dxvk {
             this->decRef();
         }
 
-        T* operator -> () const {
+        T* operator->() const {
             return m_ptr;
         }
 
-        T**       operator & ()       { return &m_ptr; }
-        T* const* operator & () const { return &m_ptr; }
+        T** operator&() { return &m_ptr; }
+        T* const* operator&() const { return &m_ptr; }
 
-        bool operator == (const Com<T>& other) const { return m_ptr == other.m_ptr; }
-        bool operator != (const Com<T>& other) const { return m_ptr != other.m_ptr; }
+        bool operator==(const Com<T>& other) const { return m_ptr == other.m_ptr; }
+        bool operator!=(const Com<T>& other) const { return m_ptr != other.m_ptr; }
 
-        bool operator == (const T* other) const { return m_ptr == other; }
-        bool operator != (const T* other) const { return m_ptr != other; }
+        bool operator==(const T* other) const { return m_ptr == other; }
+        bool operator!=(const T* other) const { return m_ptr != other; }
 
-        bool operator == (std::nullptr_t) const { return m_ptr == nullptr; }
-        bool operator != (std::nullptr_t) const { return m_ptr != nullptr; }
+        bool operator==(std::nullptr_t) const { return m_ptr == nullptr; }
+        bool operator!=(std::nullptr_t) const { return m_ptr != nullptr; }
 
         T* ref() const {
             this->incRef();
@@ -81,7 +81,7 @@ namespace dxvk {
             return m_ptr;
         }
 
-    private:
+      private:
         T* m_ptr = nullptr;
 
         void incRef() const {
@@ -93,10 +93,9 @@ namespace dxvk {
             if (m_ptr != nullptr)
                 m_ptr->Release();
         }
-
     };
 
-    template<typename T>
+    template <typename T>
     T* ref(T* object) {
         if (object != nullptr)
             object->AddRef();

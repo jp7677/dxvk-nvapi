@@ -18,21 +18,21 @@ namespace dxvk::str {
 
     void tonvss(NvAPI_ShortString nvss, std::string str);
 
-    inline void format1(std::stringstream&) { }
+    inline void format1(std::stringstream&) {}
 
-    template<typename... Tx>
-    void format1(std::stringstream& str, const WCHAR *arg, const Tx&... args) {
+    template <typename... Tx>
+    void format1(std::stringstream& str, const WCHAR* arg, const Tx&... args) {
         str << fromws(arg);
         format1(str, args...);
     }
 
-    template<typename T, typename... Tx>
+    template <typename T, typename... Tx>
     void format1(std::stringstream& str, const T& arg, const Tx&... args) {
         str << arg;
         format1(str, args...);
     }
 
-    template<typename... Args>
+    template <typename... Args>
     std::string format(const Args&... args) {
         std::stringstream stream;
         format1(stream, args...);

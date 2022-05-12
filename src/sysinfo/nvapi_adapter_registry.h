@@ -10,7 +10,7 @@
 namespace dxvk {
     class NvapiAdapterRegistry {
 
-    public:
+      public:
         explicit NvapiAdapterRegistry(ResourceFactory& resourceFactory);
         ~NvapiAdapterRegistry();
 
@@ -27,7 +27,7 @@ namespace dxvk {
         [[nodiscard]] short GetPrimaryOutputId() const;
         [[nodiscard]] short GetOutputId(const std::string& displayName) const;
 
-    private:
+      private:
         ResourceFactory& m_resourceFactory;
         std::unique_ptr<Vulkan> m_vulkan;
         std::unique_ptr<Nvml> m_nvml;

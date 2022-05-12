@@ -85,15 +85,15 @@ namespace dxvk {
         return d3d11ExtDevice1->GetResourceHandleGPUVirtualAddressAndSizeNVX(reinterpret_cast<void*>(hObject), reinterpret_cast<uint64_t*>(gpuVAStart), reinterpret_cast<uint64_t*>(gpuVASize));
     }
 
-    bool NvapiD3d11Device::CreateUnorderedAccessViewAndGetDriverHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC*  pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle) {
+    bool NvapiD3d11Device::CreateUnorderedAccessViewAndGetDriverHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC* pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle) {
         Com<ID3D11VkExtDevice1> d3d11ExtDevice1;
         if (FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&d3d11ExtDevice1))))
             return false;
 
         return d3d11ExtDevice1->CreateUnorderedAccessViewAndGetDriverHandleNVX(pResource, pDesc, ppUAV, reinterpret_cast<uint32_t*>(pDriverHandle));
     }
-    
-    bool NvapiD3d11Device::CreateShaderResourceViewAndGetDriverHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC*  pDesc, ID3D11ShaderResourceView** ppSRV, NvU32* pDriverHandle) {
+
+    bool NvapiD3d11Device::CreateShaderResourceViewAndGetDriverHandle(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc, ID3D11ShaderResourceView** ppSRV, NvU32* pDriverHandle) {
         Com<ID3D11VkExtDevice1> d3d11ExtDevice1;
         if (FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&d3d11ExtDevice1))))
             return false;
@@ -110,14 +110,14 @@ namespace dxvk {
         return d3d11ExtDevice1->GetCudaTextureObjectNVX(srvDriverHandle, samplerDriverHandle, reinterpret_cast<uint32_t*>(pCudaTextureHandle));
     }
 
-     bool NvapiD3d11Device::CreateSamplerStateAndGetDriverHandle(ID3D11Device* pDevice, const D3D11_SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState, uint32_t* pDriverHandle) {
+    bool NvapiD3d11Device::CreateSamplerStateAndGetDriverHandle(ID3D11Device* pDevice, const D3D11_SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState, uint32_t* pDriverHandle) {
         // note - getting the driver handle for a sampler state is typically a one-shot thing, no need to add complexity by caching availability of the underlying extensions, we'll just let DXVK tell us if it failed.
         Com<ID3D11VkExtDevice1> d3d11ExtDevice1;
         if (FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&d3d11ExtDevice1))))
             return false;
 
         return d3d11ExtDevice1->CreateSamplerStateAndGetDriverHandleNVX(pSamplerDesc, ppSamplerState, pDriverHandle);
-     }
+    }
 
     bool NvapiD3d11Device::IsFatbinPTXSupported(ID3D11Device* pDevice) {
         return GetBinaryImportDeviceContext(pDevice) != nullptr;

@@ -14,7 +14,7 @@
 extern "C" {
     using namespace dxvk;
 
-    NvAPI_Status __cdecl NvAPI_EnumLogicalGPUs(NvLogicalGpuHandle nvGPUHandle[NVAPI_MAX_LOGICAL_GPUS], NvU32 *pGpuCount) {
+    NvAPI_Status __cdecl NvAPI_EnumLogicalGPUs(NvLogicalGpuHandle nvGPUHandle[NVAPI_MAX_LOGICAL_GPUS], NvU32* pGpuCount) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -31,7 +31,7 @@ extern "C" {
         return Ok(n);
     }
 
-    NvAPI_Status __cdecl NvAPI_EnumPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount) {
+    NvAPI_Status __cdecl NvAPI_EnumPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32* pGpuCount) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -48,7 +48,7 @@ extern "C" {
         return Ok(n);
     }
 
-    NvAPI_Status __cdecl NvAPI_EnumTCCPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount)  {
+    NvAPI_Status __cdecl NvAPI_EnumTCCPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32* pGpuCount) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -66,7 +66,7 @@ extern "C" {
         return Ok(n);
     }
 
-    NvAPI_Status __cdecl NvAPI_GetGPUIDfromPhysicalGPU(NvPhysicalGpuHandle hPhysicalGpu, NvU32 *pGpuId) {
+    NvAPI_Status __cdecl NvAPI_GetGPUIDfromPhysicalGPU(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pGpuId) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -85,7 +85,7 @@ extern "C" {
         return Ok(n);
     }
 
-    NvAPI_Status __cdecl NvAPI_GetPhysicalGPUFromGPUID(NvU32 gpuId, NvPhysicalGpuHandle *hPhysicalGpu) {
+    NvAPI_Status __cdecl NvAPI_GetPhysicalGPUFromGPUID(NvU32 gpuId, NvPhysicalGpuHandle* hPhysicalGpu) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -107,7 +107,7 @@ extern "C" {
         return Ok(n);
     }
 
-    NvAPI_Status __cdecl NvAPI_GetDisplayDriverVersion(NvDisplayHandle hNvDisplay, NV_DISPLAY_DRIVER_VERSION *pVersion) {
+    NvAPI_Status __cdecl NvAPI_GetDisplayDriverVersion(NvDisplayHandle hNvDisplay, NV_DISPLAY_DRIVER_VERSION* pVersion) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -128,7 +128,7 @@ extern "C" {
         return Ok(n);
     }
 
-    NvAPI_Status __cdecl NvAPI_GetPhysicalGPUsFromLogicalGPU(NvLogicalGpuHandle hLogicalGPU,NvPhysicalGpuHandle hPhysicalGPU[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount) {
+    NvAPI_Status __cdecl NvAPI_GetPhysicalGPUsFromLogicalGPU(NvLogicalGpuHandle hLogicalGPU, NvPhysicalGpuHandle hPhysicalGPU[NVAPI_MAX_PHYSICAL_GPUS], NvU32* pGpuCount) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -147,7 +147,7 @@ extern "C" {
         return Ok(n);
     }
 
-    NvAPI_Status __cdecl NvAPI_GetPhysicalGPUsFromDisplay(NvDisplayHandle hNvDisp, NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32 *pGpuCount) {
+    NvAPI_Status __cdecl NvAPI_GetPhysicalGPUsFromDisplay(NvDisplayHandle hNvDisp, NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32* pGpuCount) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -166,7 +166,7 @@ extern "C" {
         return Ok(n);
     }
 
-    NvAPI_Status __cdecl NvAPI_EnumNvidiaDisplayHandle(NvU32 thisEnum, NvDisplayHandle *pNvDispHandle) {
+    NvAPI_Status __cdecl NvAPI_EnumNvidiaDisplayHandle(NvU32 thisEnum, NvDisplayHandle* pNvDispHandle) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
@@ -184,7 +184,7 @@ extern "C" {
         return Ok(str::format(n, " (", thisEnum, ")"));
     }
 
-    NvAPI_Status __cdecl NvAPI_EnumNvidiaUnAttachedDisplayHandle(NvU32 thisEnum, NvUnAttachedDisplayHandle *pNvUnAttachedDispHandle) {
+    NvAPI_Status __cdecl NvAPI_EnumNvidiaUnAttachedDisplayHandle(NvU32 thisEnum, NvUnAttachedDisplayHandle* pNvUnAttachedDispHandle) {
         // DXVK does not know about unattached displays
         return EndEnumeration(str::format(__func__, " (", thisEnum, ")"));
     }

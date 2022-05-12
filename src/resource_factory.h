@@ -9,7 +9,7 @@
 namespace dxvk {
     class ResourceFactory {
 
-    public:
+      public:
         ResourceFactory();
         virtual ~ResourceFactory();
 

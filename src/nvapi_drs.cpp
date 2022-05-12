@@ -6,7 +6,7 @@
 extern "C" {
     using namespace dxvk;
 
-    NvAPI_Status __cdecl NvAPI_DRS_CreateSession(NvDRSSessionHandle *phSession) {
+    NvAPI_Status __cdecl NvAPI_DRS_CreateSession(NvDRSSessionHandle* phSession) {
         constexpr auto n = __func__;
 
         *phSession = nvapiDrsSession;
@@ -22,11 +22,11 @@ extern "C" {
         return ProfileNotFound(str::format(__func__, " (", str::fromnvus(profileName), ")"));
     }
 
-    NvAPI_Status __cdecl NvAPI_DRS_FindApplicationByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString appName, NvDRSProfileHandle *phProfile, NVDRS_APPLICATION *pApplication) {
+    NvAPI_Status __cdecl NvAPI_DRS_FindApplicationByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString appName, NvDRSProfileHandle* phProfile, NVDRS_APPLICATION* pApplication) {
         return ExecutableNotFound(str::format(__func__, " (", str::fromnvus(appName), ")"));
     }
 
-    NvAPI_Status __cdecl NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle *phProfile) {
+    NvAPI_Status __cdecl NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
         constexpr auto n = __func__;
 
         *phProfile = nvapiDrsProfile;
@@ -34,7 +34,7 @@ extern "C" {
         return Ok(n);
     }
 
-    NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING *pSetting) {
+    NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
         constexpr auto n = __func__;
 
         auto id = str::format("0x", std::hex, settingId);

@@ -1,13 +1,13 @@
 #include "resource_factory.h"
 
 namespace dxvk {
-    ResourceFactory::ResourceFactory()  = default;
+    ResourceFactory::ResourceFactory() = default;
 
-    ResourceFactory::~ResourceFactory()  = default;
+    ResourceFactory::~ResourceFactory() = default;
 
     Com<IDXGIFactory1> ResourceFactory::CreateDXGIFactory1() {
         Com<IDXGIFactory1> dxgiFactory;
-        if(FAILED(::CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgiFactory)))
+        if (FAILED(::CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgiFactory)))
             return nullptr;
 
         return dxgiFactory;
@@ -21,7 +21,7 @@ namespace dxvk {
         return std::make_unique<Nvml>();
     }
 
-    std::unique_ptr <Lfx> ResourceFactory::CreateLfx() {
+    std::unique_ptr<Lfx> ResourceFactory::CreateLfx() {
         return std::make_unique<Lfx>();
     }
 }

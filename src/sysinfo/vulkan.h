@@ -5,7 +5,7 @@
 namespace dxvk {
     class Vulkan {
 
-    public:
+      public:
         Vulkan();
         virtual ~Vulkan();
 
@@ -14,11 +14,13 @@ namespace dxvk {
         virtual void GetPhysicalDeviceProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceProperties2* deviceProperties2) const;
         virtual void GetPhysicalDeviceMemoryProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceMemoryProperties2* memoryProperties2) const;
 
-    private:
+      private:
         HMODULE m_vkModule{};
         PFN_vkGetInstanceProcAddr m_vkGetInstanceProcAddr{};
 
-        template<typename T> T GetProcAddress(const char* name) const;
-        template<typename T> T GetInstanceProcAddress(VkInstance vkInstance, const char* name) const;
+        template <typename T>
+        T GetProcAddress(const char* name) const;
+        template <typename T>
+        T GetInstanceProcAddress(VkInstance vkInstance, const char* name) const;
     };
 }
