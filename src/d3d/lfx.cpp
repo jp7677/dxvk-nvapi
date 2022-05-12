@@ -36,7 +36,9 @@ namespace dxvk {
     }
 
     Lfx::~Lfx() {
-        if (m_lfxModule == nullptr) return;
+        if (m_lfxModule == nullptr)
+            return;
+
         ::FreeLibrary(m_lfxModule);
         m_lfxModule = nullptr;
     }
