@@ -1,0 +1,14 @@
+---
+Language:        Cpp
+ColumnLimit:     0
+IndentWidth: 4
+IndentCaseLabels: true
+IndentExternBlock: Indent
+NamespaceIndentation: All
+FixNamespaceComments: false
+BreakBeforeBinaryOperators: NonAssignment
+AlignAfterOpenBracket: DontAlign
+AlignOperands: DontAlign
+PointerAlignment: Left
+SortIncludes: Never
+...
