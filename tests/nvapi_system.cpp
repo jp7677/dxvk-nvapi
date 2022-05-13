@@ -155,9 +155,10 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         REQUIRE(nvAPI_GPU_GetPCIIdentifiers(handle, &deviceId, &subSystemId, &revisionId, &extDeviceId) == NVAPI_OK);
         std::cout << "    Device ID:                  0x" << std::setfill('0') << std::setw(8) << std::hex << deviceId << std::endl;
         std::cout << "    Subsystem ID:               ";
-        subSystemId != 0
-            ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << subSystemId << std::endl
-            : std::cout << "N/A" << std::endl;
+        if (subSystemId != 0)
+            std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << subSystemId << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
 
         NvAPI_ShortString fullName;
         REQUIRE(nvAPI_GPU_GetFullName(handle, fullName) == NVAPI_OK);
@@ -180,32 +181,37 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         LUID luid;
         result = nvAPI_GPU_GetAdapterIdFromPhysicalGpu(handle, static_cast<void*>(&luid));
         std::cout << "    Adapter ID/LUID:            ";
-        result == NVAPI_OK
-            ? std::cout << ToFormattedLuid(luid) << " ("
-                        << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.HighPart << "/"
-                        << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.LowPart << ")" << std::endl
-            : std::cout << "N/A" << std::endl;
+        if (result == NVAPI_OK)
+            std::cout << ToFormattedLuid(luid) << " ("
+                      << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.HighPart << "/"
+                      << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.LowPart << ")" << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
 
         NV_GPU_ARCH_INFO archInfo;
         archInfo.version = NV_GPU_ARCH_INFO_VER;
         result = nvAPI_GPU_GetArchInfo(handle, &archInfo);
         std::cout << "    Architecture ID:            ";
-        result == NVAPI_OK
-            ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << archInfo.architecture_id << " (" << ToGpuArchitecture(archInfo.architecture_id) << ")" << std::endl
-            : std::cout << "N/A" << std::endl;
+        if (result == NVAPI_OK)
+            std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << archInfo.architecture_id << " (" << ToGpuArchitecture(archInfo.architecture_id) << ")" << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
+
         std::cout << "    Implementation ID:          ";
-        result == NVAPI_OK
-            ? std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << archInfo.implementation_id << std::endl
-            : std::cout << "N/A" << std::endl;
+        if (result == NVAPI_OK)
+            std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << archInfo.implementation_id << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
 
         auto computeGpusIt = std::find_if(
             std::begin(computeGpus),
             std::end(computeGpus),
             [handle](const auto& cudaGpu) { return cudaGpu.hPhysicalGpu == handle; });
         std::cout << "    Compute capable:            ";
-        computeGpusIt != std::end(computeGpus)
-            ? std::cout << "Yes (Compute GPU topology flags: 0x" << std::setfill('0') << std::setw(2) << std::hex << (computeGpusIt->flags) << ")" << std::endl // TODO: print other info if available
-            : std::cout << "-" << std::endl;
+        if (computeGpusIt != std::end(computeGpus))
+            std::cout << "Yes (Compute GPU topology flags: 0x" << std::setfill('0') << std::setw(2) << std::hex << (computeGpusIt->flags) << ")" << std::endl; // TODO: print other info if available
+        else
+            std::cout << "-" << std::endl;
 
         NvAPI_ShortString revision;
         result = nvAPI_GPU_GetVbiosVersionString(handle, revision);
@@ -215,45 +221,56 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         info.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;
         result = nvAPI_GPU_GetDynamicPstatesInfoEx(handle, &info);
         std::cout << "    Current GPU utilization:    ";
-        result == NVAPI_OK
-            ? std::cout << std::dec << info.utilization[0].percentage << "%" << std::endl
-            : std::cout << "N/A" << std::endl;
+        if (result == NVAPI_OK)
+            std::cout << std::dec << info.utilization[0].percentage << "%" << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
+
         std::cout << "    Current memory utilization: ";
-        result == NVAPI_OK
-            ? std::cout << std::dec << info.utilization[1].percentage << "%" << std::endl
-            : std::cout << "N/A" << std::endl;
+        if (result == NVAPI_OK)
+            std::cout << std::dec << info.utilization[1].percentage << "%" << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
 
         NV_GPU_THERMAL_SETTINGS settings;
         settings.version = NV_GPU_THERMAL_SETTINGS_VER;
         result = nvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings);
         std::cout << "    Current GPU temperature:    ";
-        result == NVAPI_OK
-            ? std::cout << std::dec << settings.sensor[0].currentTemp << "C" << std::endl
-            : std::cout << "N/A" << std::endl;
+        if (result == NVAPI_OK)
+            std::cout << std::dec << settings.sensor[0].currentTemp << "C" << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
 
         NV_GPU_PERF_PSTATE_ID currentPstate;
         result = nvAPI_GPU_GetCurrentPstate(handle, &currentPstate);
         std::cout << "    Current performance state:  ";
-        result == NVAPI_OK
-            ? std::cout << "P" << std::dec << currentPstate << std::endl
-            : std::cout << "N/A" << std::endl;
+        if (result == NVAPI_OK)
+            std::cout << "P" << std::dec << currentPstate << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
 
         NV_GPU_CLOCK_FREQUENCIES frequencies;
         frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER;
         frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
         result = nvAPI_GPU_GetAllClockFrequencies(handle, &frequencies);
+
         std::cout << "    Current graphics clock:     ";
-        result == NVAPI_OK&& frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent
-            ? std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency / 1000 << "MHz" << std::endl
-            : std::cout << "N/A" << std::endl;
+        if (result == NVAPI_OK && frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent)
+            std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency / 1000 << "MHz" << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
+
         std::cout << "    Current memory clock:       ";
-        result == NVAPI_OK&& frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent
-            ? std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency / 1000 << "MHz" << std::endl
-            : std::cout << "N/A" << std::endl;
+        if (result == NVAPI_OK && frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent)
+            std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency / 1000 << "MHz" << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
+
         std::cout << "    Current video clock:        ";
-        result == NVAPI_OK&& frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent
-            ? std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency / 1000 << "MHz" << std::endl
-            : std::cout << "N/A" << std::endl;
+        if (result == NVAPI_OK && frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent)
+            std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency / 1000 << "MHz" << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
     }
 
     REQUIRE(nvAPI_Unload() == NVAPI_OK);
