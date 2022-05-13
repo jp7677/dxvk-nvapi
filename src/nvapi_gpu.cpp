@@ -249,7 +249,8 @@ extern "C" {
         auto cudaCapableGpus = std::vector<NvPhysicalGpuHandle>(0);
         for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++) {
             auto adapter = nvapiAdapterRegistry->GetAdapter(i);
-            if (adapter->GetDriverId() != VK_DRIVER_ID_NVIDIA_PROPRIETARY || adapter->GetArchitectureId() < NV_GPU_ARCHITECTURE_GM200) // Maxwell is the oldest generation we can detect
+            if (adapter->GetDriverId() != VK_DRIVER_ID_NVIDIA_PROPRIETARY
+                || adapter->GetArchitectureId() < NV_GPU_ARCHITECTURE_GM200) // Maxwell is the oldest generation we can detect
                 continue;
 
             cudaCapableGpus.push_back(reinterpret_cast<NvPhysicalGpuHandle>(adapter));
