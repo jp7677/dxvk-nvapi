@@ -1,5 +1,3 @@
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-
 using namespace trompeloeil;
 
 class DXGIFactory1Mock : public mock_interface<IDXGIFactory1> {
