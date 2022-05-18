@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../nvapi_private.h"
+
 namespace dxvk {
     inline std::string fromPsoExtension(const uint32_t code) {
         static const std::map<uint32_t, std::string> codes{

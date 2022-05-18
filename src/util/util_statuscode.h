@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../nvapi_private.h"
 #include "util_string.h"
 #include "util_log.h"
 

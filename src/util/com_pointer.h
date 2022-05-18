@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../nvapi_private.h"
+
 namespace dxvk {
     /**
      * \brief COM pointer
