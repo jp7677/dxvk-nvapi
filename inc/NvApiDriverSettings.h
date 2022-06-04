@@ -1,6 +1,6 @@
 /*****************************************************************************\
 |*                                                                             *|
-|* Copyright (c) 2019-2021, NVIDIA CORPORATION. All rights reserved.           *|
+|* Copyright (c) 2019-2022, NVIDIA CORPORATION. All rights reserved.           *|
 |*                                                                             *|
 |* Permission is hereby granted, free of charge, to any person obtaining a     *|
 |* copy of this software and associated documentation files (the "Software"),  *|
@@ -264,7 +264,7 @@ enum EValues_OGL_DEFAULT_SWAP_INTERVAL_FRACTIONAL {
     OGL_DEFAULT_SWAP_INTERVAL_FRACTIONAL_ZERO_SCANLINES  = 0,
     OGL_DEFAULT_SWAP_INTERVAL_FRACTIONAL_ONE_FULL_FRAME_OF_SCANLINES = 100,
     OGL_DEFAULT_SWAP_INTERVAL_FRACTIONAL_NUM_VALUES = 2,
-    OGL_DEFAULT_SWAP_INTERVAL_FRACTIONAL_DEFAULT = 0
+    OGL_DEFAULT_SWAP_INTERVAL_FRACTIONAL_DEFAULT = 0U
 };
 
 enum EValues_OGL_DEFAULT_SWAP_INTERVAL_SIGN {
@@ -358,7 +358,7 @@ enum EValues_OGL_THREAD_CONTROL {
     OGL_THREAD_CONTROL_ENABLE                            = 0x00000001,
     OGL_THREAD_CONTROL_DISABLE                           = 0x00000002,
     OGL_THREAD_CONTROL_NUM_VALUES = 2,
-    OGL_THREAD_CONTROL_DEFAULT = 0
+    OGL_THREAD_CONTROL_DEFAULT = 0U
 };
 
 enum EValues_OGL_TMON_LEVEL {
