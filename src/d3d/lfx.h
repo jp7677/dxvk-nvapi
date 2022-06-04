@@ -1,7 +1,6 @@
 #pragma once
 
-#include <minwindef.h>
-#include <cstdint>
+#include "../nvapi_private.h"
 
 namespace dxvk {
     class Lfx {
