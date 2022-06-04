@@ -3,8 +3,8 @@
 #include "../nvapi_private.h"
 
 namespace dxvk {
-    inline std::string fromErrorNr(const short errorNr) {
-        static const std::map<short, std::string> errors{
+    inline std::string fromErrorNr(const int16_t errorNr) {
+        static const std::map<int16_t, std::string> errors{
             {-1, "NVAPI_ERROR"},
             {-2, "NVAPI_LIBRARY_NOT_FOUND"},
             {-3, "NVAPI_NO_IMPLEMENTATION"},

@@ -43,7 +43,7 @@ namespace dxvk {
         return !m_nvapiAdapters.empty();
     }
 
-    u_short NvapiAdapterRegistry::GetAdapterCount() const {
+    uint16_t NvapiAdapterRegistry::GetAdapterCount() const {
         return m_nvapiAdapters.size();
     }
 
@@ -51,7 +51,7 @@ namespace dxvk {
         return m_nvapiAdapters.front();
     }
 
-    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(const u_short index) const {
+    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(const uint16_t index) const {
         return index < m_nvapiAdapters.size() ? m_nvapiAdapters[index] : nullptr;
     }
 
@@ -71,7 +71,7 @@ namespace dxvk {
         return std::find(m_nvapiAdapters.begin(), m_nvapiAdapters.end(), handle) != m_nvapiAdapters.end();
     }
 
-    NvapiOutput* NvapiAdapterRegistry::GetOutput(const u_short index) const {
+    NvapiOutput* NvapiAdapterRegistry::GetOutput(const uint16_t index) const {
         return index < m_nvapiOutputs.size() ? m_nvapiOutputs[index] : nullptr;
     }
 
@@ -79,21 +79,21 @@ namespace dxvk {
         return std::find(m_nvapiOutputs.begin(), m_nvapiOutputs.end(), handle) != m_nvapiOutputs.end();
     }
 
-    short NvapiAdapterRegistry::GetPrimaryOutputId() const {
+    int16_t NvapiAdapterRegistry::GetPrimaryOutputId() const {
         auto it = std::find_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(),
             [](const auto& output) {
                 return output->IsPrimary();
             });
 
-        return static_cast<short>(it != m_nvapiOutputs.end() ? std::distance(m_nvapiOutputs.begin(), it) : -1);
+        return static_cast<int16_t>(it != m_nvapiOutputs.end() ? std::distance(m_nvapiOutputs.begin(), it) : -1);
     }
 
-    short NvapiAdapterRegistry::GetOutputId(const std::string& displayName) const {
+    int16_t NvapiAdapterRegistry::GetOutputId(const std::string& displayName) const {
         auto it = std::find_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(),
             [&displayName](const auto& output) {
                 return output->GetDeviceName() == displayName;
             });
 
-        return static_cast<short>(it != m_nvapiOutputs.end() ? std::distance(m_nvapiOutputs.begin(), it) : -1);
+        return static_cast<int16_t>(it != m_nvapiOutputs.end() ? std::distance(m_nvapiOutputs.begin(), it) : -1);
     }
 }
