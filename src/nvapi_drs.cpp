@@ -1,7 +1,10 @@
-#include "../inc/NvApiDriverSettings.c"
 #include "nvapi_private.h"
-#include "nvapi_static.h"
+#include "../inc/NvApiDriverSettings.c"
 #include "util/util_statuscode.h"
+
+static auto drs = 1U;
+static auto nvapiDrsSession = reinterpret_cast<NvDRSSessionHandle>(&drs);
+static auto nvapiDrsProfile = reinterpret_cast<NvDRSProfileHandle>(&drs);
 
 extern "C" {
     using namespace dxvk;

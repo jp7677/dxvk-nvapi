@@ -14,11 +14,26 @@ nvapi_src = files([
   '../src/resource_factory.cpp',
   '../src/d3d11/nvapi_d3d11_device.cpp',
   '../src/d3d12/nvapi_d3d12_device.cpp',
+  '../src/nvapi_globals.cpp',
+  '../src/nvapi.cpp',
+  '../src/nvapi_d3d.cpp',
+  '../src/nvapi_d3d11.cpp',
+  '../src/nvapi_d3d12.cpp',
+  '../src/nvapi_disp.cpp',
+  '../src/nvapi_drs.cpp',
+  '../src/nvapi_gpu.cpp',
+  '../src/nvapi_mosaic.cpp',
+  '../src/nvapi_sys.cpp',
 ])
 
 nvapi_tests_src = files([
   'main.cpp',
-  'nvapi_tests.cpp',
+  'resource_factory_util.cpp',
+  'nvapi_d3d.cpp',
+  'nvapi_d3d11.cpp',
+  'nvapi_d3d12.cpp',
+  'nvapi_drs.cpp',
+  'nvapi_sysinfo.cpp',
   'nvapi_system.cpp',
 ])
 

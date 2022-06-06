@@ -1,4 +1,10 @@
+#pragma once
+
+#include "nvapi_tests_private.h"
+#include "../src/dxvk/dxvk_interfaces.h"
+
 using namespace trompeloeil;
+using namespace dxvk;
 
 class ID3D11DxvkDevice : public ID3D11Device, public ID3D11VkExtDevice1 {};
 

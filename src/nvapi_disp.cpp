@@ -1,5 +1,5 @@
 #include "nvapi_private.h"
-#include "nvapi_static.h"
+#include "nvapi_globals.h"
 #include "util/util_statuscode.h"
 #include "util/util_string.h"
 

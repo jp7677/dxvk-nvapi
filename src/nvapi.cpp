@@ -1,5 +1,5 @@
 #include "nvapi_private.h"
-#include "nvapi_static.h"
+#include "nvapi_globals.h"
 #include "util/util_statuscode.h"
 #include "util/util_error.h"
 #include "util/util_string.h"
@@ -7,6 +7,7 @@
 #include "util/util_log.h"
 #include "../version.h"
 
+static auto initializationMutex = std::mutex{};
 
 extern "C" {
     using namespace dxvk;

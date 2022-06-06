@@ -1,4 +1,9 @@
+#include "nvapi_tests_private.h"
+#include "resource_factory_util.h"
+#include "nvapi_sysinfo_mocks.h"
+
 using namespace trompeloeil;
+using namespace dxvk;
 
 TEST_CASE("GetInterfaceVersionString returns OK", "[.sysinfo]") {
     NvAPI_ShortString desc;
