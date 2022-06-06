@@ -307,6 +307,9 @@ extern "C" {
             case NVML_SUCCESS:
                 str::tonvss(szBiosRevision, version);
                 return Ok(n);
+            case NVML_ERROR_FUNCTION_NOT_FOUND:
+                str::tonvss(szBiosRevision, "N/A");
+                return Ok(n);
             case NVML_ERROR_NOT_SUPPORTED:
                 return NotSupported(n);
             case NVML_ERROR_GPU_IS_LOST:
@@ -358,6 +361,8 @@ extern "C" {
                     pDynamicPstatesInfoEx->utilization[i].bIsPresent = 0;
 
                 return Ok(n, alreadyLoggedOk);
+            case NVML_ERROR_FUNCTION_NOT_FOUND:
+                return NoImplementation(n, alreadyLoggedNoNvml);
             case NVML_ERROR_NOT_SUPPORTED:
                 pDynamicPstatesInfoEx->flags = 0;
                 for (auto& util : pDynamicPstatesInfoEx->utilization)
@@ -428,6 +433,8 @@ extern "C" {
                         return Error(n); // Unreachable, but just to be sure
                 }
                 return Ok(n, alreadyLoggedOk);
+            case NVML_ERROR_FUNCTION_NOT_FOUND:
+                return NoImplementation(n, alreadyLoggedNoNvml);
             case NVML_ERROR_NOT_SUPPORTED:
                 switch (pThermalSettings->version) {
                     case NV_GPU_THERMAL_SETTINGS_VER_1: {
@@ -477,6 +484,8 @@ extern "C" {
             case NVML_SUCCESS:
                 *pCurrentPstate = static_cast<NV_GPU_PERF_PSTATE_ID>(pState);
                 return Ok(n, alreadyLoggedOk);
+            case NVML_ERROR_FUNCTION_NOT_FOUND:
+                return NoImplementation(n, alreadyLoggedNoNvml);
             case NVML_ERROR_NOT_SUPPORTED:
                 return NotSupported(n);
             case NVML_ERROR_GPU_IS_LOST:
@@ -545,6 +554,8 @@ extern "C" {
                         return Error(n); // Unreachable, but just to be sure
                 }
                 break;
+            case NVML_ERROR_FUNCTION_NOT_FOUND:
+                return NoImplementation(n, alreadyLoggedNoNvml);
             case NVML_ERROR_NOT_SUPPORTED:
                 break;
             case NVML_ERROR_GPU_IS_LOST:

@@ -32,13 +32,7 @@ namespace dxvk {
         if (m_nvmlInit_v2 == nullptr
             || m_nvmlShutdown == nullptr
             || m_nvmlErrorString == nullptr
-            || m_nvmlDeviceGetHandleByPciBusId_v2 == nullptr
-            || m_nvmlDeviceGetPciInfo_v3 == nullptr
-            || m_nvmlDeviceGetTemperature == nullptr
-            || m_nvmlDeviceGetUtilizationRates == nullptr
-            || m_nvmlDeviceGetVbiosVersion == nullptr
-            || m_nvmlDeviceGetPerformanceState == nullptr
-            || m_nvmlDeviceGetClockInfo == nullptr)
+            || m_nvmlDeviceGetHandleByPciBusId_v2 == nullptr)
             log::write(str::format("NVML loaded but initialization failed"));
         else {
             auto result = m_nvmlInit_v2();
@@ -74,27 +68,39 @@ namespace dxvk {
     }
 
     nvmlReturn_t Nvml::DeviceGetPciInfo_v3(nvmlDevice_t device, nvmlPciInfo_t* pci) const {
-        return m_nvmlDeviceGetPciInfo_v3(device, pci);
+        return m_nvmlDeviceGetPciInfo_v3
+            ? m_nvmlDeviceGetPciInfo_v3(device, pci)
+            : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
     nvmlReturn_t Nvml::DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int* temp) const {
-        return m_nvmlDeviceGetTemperature(device, sensorType, temp);
+        return m_nvmlDeviceGetTemperature
+            ? m_nvmlDeviceGetTemperature(device, sensorType, temp)
+            : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
     nvmlReturn_t Nvml::DeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t* utilization) const {
-        return m_nvmlDeviceGetUtilizationRates(device, utilization);
+        return m_nvmlDeviceGetUtilizationRates
+            ? m_nvmlDeviceGetUtilizationRates(device, utilization)
+            : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
     nvmlReturn_t Nvml::DeviceGetVbiosVersion(nvmlDevice_t device, char* version, unsigned int length) const {
-        return m_nvmlDeviceGetVbiosVersion(device, version, length);
+        return m_nvmlDeviceGetVbiosVersion
+            ? m_nvmlDeviceGetVbiosVersion(device, version, length)
+            : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
     nvmlReturn_t Nvml::DeviceGetPerformanceState(nvmlDevice_t device, nvmlPstates_t* pState) const {
-        return m_nvmlDeviceGetPerformanceState(device, pState);
+        return m_nvmlDeviceGetPerformanceState
+            ? m_nvmlDeviceGetPerformanceState(device, pState)
+            : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
     nvmlReturn_t Nvml::DeviceGetClockInfo(nvmlDevice_t device, nvmlClockType_t type, unsigned int* clock) const {
-        return m_nvmlDeviceGetClockInfo(device, type, clock);
+        return m_nvmlDeviceGetClockInfo
+            ? m_nvmlDeviceGetClockInfo(device, type, clock)
+            : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
     template <typename T>
