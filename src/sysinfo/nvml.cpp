@@ -26,6 +26,8 @@ namespace dxvk {
         GETPROCADDR(nvmlDeviceGetVbiosVersion);
         GETPROCADDR(nvmlDeviceGetPerformanceState);
         GETPROCADDR(nvmlDeviceGetClockInfo);
+        GETPROCADDR(nvmlDeviceGetBusType);
+        GETPROCADDR(nvmlDeviceGetDynamicPstatesInfo);
 
 #undef GETPROCADDR
 
@@ -100,6 +102,18 @@ namespace dxvk {
     nvmlReturn_t Nvml::DeviceGetClockInfo(nvmlDevice_t device, nvmlClockType_t type, unsigned int* clock) const {
         return m_nvmlDeviceGetClockInfo
             ? m_nvmlDeviceGetClockInfo(device, type, clock)
+            : NVML_ERROR_FUNCTION_NOT_FOUND;
+    }
+
+    nvmlReturn_t Nvml::DeviceGetBusType(nvmlDevice_t device, nvmlBusType_t* type) const {
+        return m_nvmlDeviceGetBusType
+            ? m_nvmlDeviceGetBusType(device, type)
+            : NVML_ERROR_FUNCTION_NOT_FOUND;
+    }
+
+    nvmlReturn_t Nvml::DeviceGetDynamicPstatesInfo(nvmlDevice_t device, nvmlGpuDynamicPstatesInfo_t* pDynamicPstatesInfo) const {
+        return m_nvmlDeviceGetDynamicPstatesInfo
+            ? m_nvmlDeviceGetDynamicPstatesInfo(device, pDynamicPstatesInfo)
             : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 

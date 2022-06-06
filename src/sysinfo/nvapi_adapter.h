@@ -36,6 +36,8 @@ namespace dxvk {
         [[nodiscard]] nvmlReturn_t GetNvmlDeviceVbiosVersion(char* version, unsigned int length) const;
         [[nodiscard]] nvmlReturn_t GetNvmlDevicePerformanceState(nvmlPstates_t* pState) const;
         [[nodiscard]] nvmlReturn_t GetNvmlDeviceClockInfo(nvmlClockType_t type, unsigned int* clock) const;
+        [[nodiscard]] nvmlReturn_t GetNvmlDeviceBusType(nvmlBusType_t* type) const;
+        [[nodiscard]] nvmlReturn_t GetNvmlDeviceDynamicPstatesInfo(nvmlGpuDynamicPstatesInfo_t* pDynamicPstatesInfo) const;
 
       private:
         Vulkan& m_vulkan;
