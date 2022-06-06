@@ -479,7 +479,7 @@ extern "C" {
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
         nvmlPstates_t pState;
-        auto result = adapter->GetNvmlPerformanceState(&pState);
+        auto result = adapter->GetNvmlDevicePerformanceState(&pState);
         switch (result) {
             case NVML_SUCCESS:
                 *pCurrentPstate = static_cast<NV_GPU_PERF_PSTATE_ID>(pState);
