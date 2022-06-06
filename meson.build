@@ -8,9 +8,8 @@ project('dxvk-nvapi',
   meson_version : '>= 0.49.0')
 
 dxvk_compiler = meson.get_compiler('cpp')
-if dxvk_compiler.has_link_argument('-Wl,--file-alignment=4096')
-  add_global_link_arguments('-Wl,--file-alignment=4096', language: 'cpp')
-endif
+add_project_arguments(dxvk_compiler.get_supported_arguments('-Wno-unused-parameter'), language : 'cpp')
+add_project_link_arguments(dxvk_compiler.get_supported_link_arguments('-Wl,--file-alignment=4096'), language: 'cpp')
 
 dxvk_cpu_family = target_machine.cpu_family()
 if dxvk_cpu_family == 'x86_64'
