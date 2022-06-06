@@ -433,6 +433,63 @@ extern "C" {
         }
     }
 
+    static NV_THERMAL_TARGET MapThermalTarget(nvmlThermalTarget_t target) {
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_NONE) == static_cast<int>(NVAPI_THERMAL_TARGET_NONE));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_GPU) == static_cast<int>(NVAPI_THERMAL_TARGET_GPU));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_MEMORY) == static_cast<int>(NVAPI_THERMAL_TARGET_MEMORY));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_POWER_SUPPLY) == static_cast<int>(NVAPI_THERMAL_TARGET_POWER_SUPPLY));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_BOARD) == static_cast<int>(NVAPI_THERMAL_TARGET_BOARD));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_VCD_BOARD) == static_cast<int>(NVAPI_THERMAL_TARGET_VCD_BOARD));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_VCD_INLET) == static_cast<int>(NVAPI_THERMAL_TARGET_VCD_INLET));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_VCD_OUTLET) == static_cast<int>(NVAPI_THERMAL_TARGET_VCD_OUTLET));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_ALL) == static_cast<int>(NVAPI_THERMAL_TARGET_ALL));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_UNKNOWN) == static_cast<int>(NVAPI_THERMAL_TARGET_UNKNOWN));
+        return static_cast<NV_THERMAL_TARGET>(target);
+    }
+
+    static NV_THERMAL_CONTROLLER MapThermalController(nvmlThermalController_t controller) {
+        switch (controller) {
+            case NVML_THERMAL_CONTROLLER_NONE:
+                return NVAPI_THERMAL_CONTROLLER_NONE;
+            case NVML_THERMAL_CONTROLLER_GPU_INTERNAL:
+                return NVAPI_THERMAL_CONTROLLER_GPU_INTERNAL;
+            case NVML_THERMAL_CONTROLLER_ADM1032:
+                return NVAPI_THERMAL_CONTROLLER_ADM1032;
+            // case NVML_THERMAL_CONTROLLER_ADT7461:
+            //     return NVAPI_THERMAL_CONTROLLER_ADT7461;
+            case NVML_THERMAL_CONTROLLER_MAX6649:
+                return NVAPI_THERMAL_CONTROLLER_MAX6649;
+            case NVML_THERMAL_CONTROLLER_MAX1617:
+                return NVAPI_THERMAL_CONTROLLER_MAX1617;
+            case NVML_THERMAL_CONTROLLER_LM99:
+                return NVAPI_THERMAL_CONTROLLER_LM99;
+            case NVML_THERMAL_CONTROLLER_LM89:
+                return NVAPI_THERMAL_CONTROLLER_LM89;
+            case NVML_THERMAL_CONTROLLER_LM64:
+                return NVAPI_THERMAL_CONTROLLER_LM64;
+            // case NVML_THERMAL_CONTROLLER_G781:
+            //     return NVAPI_THERMAL_CONTROLLER_G781;
+            case NVML_THERMAL_CONTROLLER_ADT7473:
+                return NVAPI_THERMAL_CONTROLLER_ADT7473;
+            case NVML_THERMAL_CONTROLLER_SBMAX6649:
+                return NVAPI_THERMAL_CONTROLLER_SBMAX6649;
+            case NVML_THERMAL_CONTROLLER_VBIOSEVT:
+                return NVAPI_THERMAL_CONTROLLER_VBIOSEVT;
+            case NVML_THERMAL_CONTROLLER_OS:
+                return NVAPI_THERMAL_CONTROLLER_OS;
+            // case NVML_THERMAL_CONTROLLER_NVSYSCON_CANOAS:
+            //     return NVAPI_THERMAL_CONTROLLER_NVSYSCON_CANOAS;
+            // case NVML_THERMAL_CONTROLLER_NVSYSCON_E551:
+            //     return NVAPI_THERMAL_CONTROLLER_NVSYSCON_E551;
+            // case NVML_THERMAL_CONTROLLER_MAX6649R:
+            //     return NVAPI_THERMAL_CONTROLLER_MAX6649R;
+            // case NVML_THERMAL_CONTROLLER_ADT7473S:
+            //     return NVAPI_THERMAL_CONTROLLER_ADT7473S;
+            default:
+                return NVAPI_THERMAL_CONTROLLER_UNKNOWN;
+        }
+    }
+
     NvAPI_Status __cdecl NvAPI_GPU_GetThermalSettings(NvPhysicalGpuHandle hPhysicalGpu, NvU32 sensorIndex, NV_GPU_THERMAL_SETTINGS* pThermalSettings) {
         constexpr auto n = __func__;
         static bool alreadyLoggedNoNvml = false;
@@ -452,7 +509,7 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        if (sensorIndex != 0 && sensorIndex != NVAPI_THERMAL_TARGET_ALL) {
+        if (!adapter->HasNvmlDevice() && sensorIndex != 0 && sensorIndex != NVAPI_THERMAL_TARGET_ALL) {
             pThermalSettings->count = 0;
             return Ok(n, alreadyLoggedOk);
         }
@@ -463,8 +520,70 @@ extern "C" {
         if (!adapter->HasNvmlDevice())
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
+        nvmlGpuThermalSettings_t thermalSettings;
+        auto result = adapter->GetNvmlDeviceThermalSettings(sensorIndex, &thermalSettings);
+        switch (result) {
+            case NVML_SUCCESS:
+                switch (pThermalSettings->version) {
+                    case NV_GPU_THERMAL_SETTINGS_VER_1: {
+                        auto pThermalSettingsV1 = reinterpret_cast<NV_GPU_THERMAL_SETTINGS_V1*>(pThermalSettings);
+                        pThermalSettingsV1->count = thermalSettings.count;
+                        for (auto i = 0U; i < thermalSettings.count; i++) {
+                            pThermalSettingsV1->sensor[i].controller = MapThermalController(thermalSettings.sensor[i].controller);
+                            pThermalSettingsV1->sensor[i].target = MapThermalTarget(thermalSettings.sensor[i].target);
+                            pThermalSettingsV1->sensor[i].currentTemp = thermalSettings.sensor[i].currentTemp;
+                            pThermalSettingsV1->sensor[i].defaultMaxTemp = thermalSettings.sensor[i].defaultMaxTemp;
+                            pThermalSettingsV1->sensor[i].defaultMinTemp = thermalSettings.sensor[i].defaultMinTemp;
+                        }
+                        break;
+                    }
+                    case NV_GPU_THERMAL_SETTINGS_VER_2:
+                        pThermalSettings->count = thermalSettings.count;
+                        for (auto i = 0U; i < thermalSettings.count; i++) {
+                            pThermalSettings->sensor[i].controller = MapThermalController(thermalSettings.sensor[i].controller);
+                            pThermalSettings->sensor[i].target = MapThermalTarget(thermalSettings.sensor[i].target);
+                            pThermalSettings->sensor[i].currentTemp = static_cast<NvS32>(thermalSettings.sensor[i].currentTemp);
+                            pThermalSettings->sensor[i].defaultMaxTemp = static_cast<NvS32>(thermalSettings.sensor[i].defaultMaxTemp);
+                            pThermalSettings->sensor[i].defaultMinTemp = static_cast<NvS32>(thermalSettings.sensor[i].defaultMinTemp);
+                        }
+                        break;
+                    default:
+                        return Error(n); // Unreachable, but just to be sure
+                }
+                return Ok(n, alreadyLoggedOk);
+            case NVML_ERROR_FUNCTION_NOT_FOUND:
+                // probably an older version of NVML that doesn't support nvmlDeviceGetThermalSettings yet
+                // retry with nvmlDeviceGetTemperature before giving up
+                break;
+            case NVML_ERROR_INVALID_ARGUMENT:
+                return InvalidArgument(n);
+            case NVML_ERROR_NOT_SUPPORTED:
+                switch (pThermalSettings->version) {
+                    case NV_GPU_THERMAL_SETTINGS_VER_1: {
+                        auto pThermalSettingsV1 = reinterpret_cast<NV_GPU_THERMAL_SETTINGS_V1*>(pThermalSettings);
+                        pThermalSettingsV1->count = 0;
+                        break;
+                    }
+                    case NV_GPU_THERMAL_SETTINGS_VER_2:
+                        pThermalSettings->count = 0;
+                        break;
+                    default:
+                        return Error(n); // Unreachable, but just to be sure
+                }
+                return NotSupported(n);
+            case NVML_ERROR_GPU_IS_LOST:
+                return HandleInvalidated(n);
+            default:
+                return Error(str::format(n, ": ", adapter->GetNvmlErrorString(result)));
+        }
+
+        if (sensorIndex != 0 && sensorIndex != NVAPI_THERMAL_TARGET_ALL) {
+            pThermalSettings->count = 0;
+            return Ok(n, alreadyLoggedOk);
+        }
+
         unsigned int temp;
-        auto result = adapter->GetNvmlDeviceTemperature(NVML_TEMPERATURE_GPU, &temp);
+        result = adapter->GetNvmlDeviceTemperature(NVML_TEMPERATURE_GPU, &temp);
         switch (result) {
             case NVML_SUCCESS:
                 switch (pThermalSettings->version) {
