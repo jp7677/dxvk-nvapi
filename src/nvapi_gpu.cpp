@@ -370,8 +370,39 @@ extern "C" {
         if (!adapter->HasNvmlDevice())
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
+        nvmlGpuDynamicPstatesInfo_t gpuDynamicPstatesInfo;
+        auto result = adapter->GetNvmlDeviceDynamicPstatesInfo(&gpuDynamicPstatesInfo);
+        switch (result) {
+            case NVML_SUCCESS:
+                // nvmlGpuDynamicPstatesInfo_t also has `flags` but they are reserved for future use
+                pDynamicPstatesInfoEx->flags = 0;
+                // order of the first four utilization domains in NVML matches NVAPI
+                // to consider: should be avoid blindly copying domains 4-7 in case they don't match once introduced?
+                static_assert(NVML_MAX_GPU_UTILIZATIONS == NVAPI_MAX_GPU_UTILIZATIONS);
+                for (auto i = 0U; i < NVAPI_MAX_GPU_UTILIZATIONS; i++) {
+                    pDynamicPstatesInfoEx->utilization[i].bIsPresent = gpuDynamicPstatesInfo.utilization[i].bIsPresent ? 1 : 0;
+                    pDynamicPstatesInfoEx->utilization[i].percentage = gpuDynamicPstatesInfo.utilization[i].percentage;
+                }
+
+                return Ok(n, alreadyLoggedOk);
+            case NVML_ERROR_FUNCTION_NOT_FOUND:
+                // probably an older version of NVML that doesn't support nvmlDeviceGetDynamicPstatesInfo yet
+                // retry with nvmlDeviceGetUtilizationRates before giving up
+                break;
+            case NVML_ERROR_NOT_SUPPORTED:
+                pDynamicPstatesInfoEx->flags = 0;
+                for (auto& util : pDynamicPstatesInfoEx->utilization)
+                    util.bIsPresent = 0;
+
+                return NotSupported(n);
+            case NVML_ERROR_GPU_IS_LOST:
+                return HandleInvalidated(n);
+            default:
+                return Error(str::format(n, ": ", adapter->GetNvmlErrorString(result)));
+        }
+
         nvmlUtilization_t utilization;
-        auto result = adapter->GetNvmlDeviceUtilizationRates(&utilization);
+        result = adapter->GetNvmlDeviceUtilizationRates(&utilization);
         switch (result) {
             case NVML_SUCCESS:
                 pDynamicPstatesInfoEx->flags = 0;
