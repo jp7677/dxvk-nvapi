@@ -21,11 +21,11 @@ namespace dxvk {
         GETPROCADDR(nvmlErrorString);
         GETPROCADDR(nvmlDeviceGetHandleByPciBusId_v2);
         GETPROCADDR(nvmlDeviceGetPciInfo_v3);
+        GETPROCADDR(nvmlDeviceGetClockInfo);
         GETPROCADDR(nvmlDeviceGetTemperature);
+        GETPROCADDR(nvmlDeviceGetPerformanceState);
         GETPROCADDR(nvmlDeviceGetUtilizationRates);
         GETPROCADDR(nvmlDeviceGetVbiosVersion);
-        GETPROCADDR(nvmlDeviceGetPerformanceState);
-        GETPROCADDR(nvmlDeviceGetClockInfo);
         GETPROCADDR(nvmlDeviceGetBusType);
         GETPROCADDR(nvmlDeviceGetDynamicPstatesInfo);
 
@@ -75,9 +75,21 @@ namespace dxvk {
             : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
+    nvmlReturn_t Nvml::DeviceGetClockInfo(nvmlDevice_t device, nvmlClockType_t type, unsigned int* clock) const {
+        return m_nvmlDeviceGetClockInfo
+            ? m_nvmlDeviceGetClockInfo(device, type, clock)
+            : NVML_ERROR_FUNCTION_NOT_FOUND;
+    }
+
     nvmlReturn_t Nvml::DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int* temp) const {
         return m_nvmlDeviceGetTemperature
             ? m_nvmlDeviceGetTemperature(device, sensorType, temp)
+            : NVML_ERROR_FUNCTION_NOT_FOUND;
+    }
+
+    nvmlReturn_t Nvml::DeviceGetPerformanceState(nvmlDevice_t device, nvmlPstates_t* pState) const {
+        return m_nvmlDeviceGetPerformanceState
+            ? m_nvmlDeviceGetPerformanceState(device, pState)
             : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
@@ -90,18 +102,6 @@ namespace dxvk {
     nvmlReturn_t Nvml::DeviceGetVbiosVersion(nvmlDevice_t device, char* version, unsigned int length) const {
         return m_nvmlDeviceGetVbiosVersion
             ? m_nvmlDeviceGetVbiosVersion(device, version, length)
-            : NVML_ERROR_FUNCTION_NOT_FOUND;
-    }
-
-    nvmlReturn_t Nvml::DeviceGetPerformanceState(nvmlDevice_t device, nvmlPstates_t* pState) const {
-        return m_nvmlDeviceGetPerformanceState
-            ? m_nvmlDeviceGetPerformanceState(device, pState)
-            : NVML_ERROR_FUNCTION_NOT_FOUND;
-    }
-
-    nvmlReturn_t Nvml::DeviceGetClockInfo(nvmlDevice_t device, nvmlClockType_t type, unsigned int* clock) const {
-        return m_nvmlDeviceGetClockInfo
-            ? m_nvmlDeviceGetClockInfo(device, type, clock)
             : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
