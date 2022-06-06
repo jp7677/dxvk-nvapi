@@ -18,6 +18,8 @@ namespace dxvk {
         [[nodiscard]] virtual nvmlReturn_t DeviceGetVbiosVersion(nvmlDevice_t device, char* version, unsigned int length) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetPerformanceState(nvmlDevice_t device, nvmlPstates_t* pState) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetClockInfo(nvmlDevice_t device, nvmlClockType_t type, unsigned int* clock) const;
+        [[nodiscard]] virtual nvmlReturn_t DeviceGetBusType(nvmlDevice_t device, nvmlBusType_t* type) const;
+        [[nodiscard]] virtual nvmlReturn_t DeviceGetDynamicPstatesInfo(nvmlDevice_t device, nvmlGpuDynamicPstatesInfo_t* pDynamicPstatesInfo) const;
 
       private:
         typedef decltype(&nvmlInit_v2) PFN_nvmlInit_v2;
@@ -30,6 +32,8 @@ namespace dxvk {
         typedef decltype(&nvmlDeviceGetVbiosVersion) PFN_nvmlDeviceGetVbiosVersion;
         typedef decltype(&nvmlDeviceGetPerformanceState) PFN_nvmlDeviceGetPerformanceState;
         typedef decltype(&nvmlDeviceGetClockInfo) PFN_nvmlDeviceGetClockInfo;
+        typedef decltype(&nvmlDeviceGetBusType) PFN_nvmlDeviceGetBusType;
+        typedef decltype(&nvmlDeviceGetDynamicPstatesInfo) PFN_nvmlDeviceGetDynamicPstatesInfo;
 
         HMODULE m_nvmlModule{};
         PFN_nvmlInit_v2 m_nvmlInit_v2{};
@@ -42,6 +46,8 @@ namespace dxvk {
         PFN_nvmlDeviceGetVbiosVersion m_nvmlDeviceGetVbiosVersion{};
         PFN_nvmlDeviceGetPerformanceState m_nvmlDeviceGetPerformanceState{};
         PFN_nvmlDeviceGetClockInfo m_nvmlDeviceGetClockInfo{};
+        PFN_nvmlDeviceGetBusType m_nvmlDeviceGetBusType{};
+        PFN_nvmlDeviceGetDynamicPstatesInfo m_nvmlDeviceGetDynamicPstatesInfo{};
 
         template <typename T>
         T GetProcAddress(const char* name);

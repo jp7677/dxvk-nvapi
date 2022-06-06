@@ -269,4 +269,12 @@ namespace dxvk {
     nvmlReturn_t NvapiAdapter::GetNvmlDeviceClockInfo(nvmlClockType_t type, unsigned int* clock) const {
         return m_nvml.DeviceGetClockInfo(m_nvmlDevice, type, clock);
     }
+
+    nvmlReturn_t NvapiAdapter::GetNvmlDeviceBusType(nvmlBusType_t* type) const {
+        return m_nvml.DeviceGetBusType(m_nvmlDevice, type);
+    }
+
+    nvmlReturn_t NvapiAdapter::GetNvmlDeviceDynamicPstatesInfo(nvmlGpuDynamicPstatesInfo_t* pDynamicPstatesInfo) const {
+        return m_nvml.DeviceGetDynamicPstatesInfo(m_nvmlDevice, pDynamicPstatesInfo);
+    }
 }
