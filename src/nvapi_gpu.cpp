@@ -115,6 +115,32 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
+        if (adapter->HasNvmlDevice()) {
+            nvmlBusType_t busType;
+            auto result = adapter->GetNvmlDeviceBusType(&busType);
+            if (result == NVML_SUCCESS) {
+                switch (busType) {
+                    case NVML_BUS_TYPE_PCI:
+                        *pBusType = NVAPI_GPU_BUS_TYPE_PCI;
+                        break;
+                    case NVML_BUS_TYPE_PCIE:
+                        *pBusType = NVAPI_GPU_BUS_TYPE_PCI_EXPRESS;
+                        break;
+                    case NVML_BUS_TYPE_FPCI:
+                        *pBusType = NVAPI_GPU_BUS_TYPE_FPCI;
+                        break;
+                    case NVML_BUS_TYPE_AGP:
+                        *pBusType = NVAPI_GPU_BUS_TYPE_AGP;
+                        break;
+                    default:
+                        *pBusType = NVAPI_GPU_BUS_TYPE_UNDEFINED;
+                        break;
+                }
+
+                return Ok(n);
+            }
+        }
+
         if (adapter->GetArchitectureId() >= NV_GPU_ARCHITECTURE_GM200)
             *pBusType = NVAPI_GPU_BUS_TYPE_PCI_EXPRESS; // Assume PCIe on Maxwell like generation and newer
         else
