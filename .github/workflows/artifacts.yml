@@ -40,6 +40,7 @@ jobs:
       uses: Joshua-Ashton/arch-mingw-github-action@v7
       with:
         command: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           ./package-release.sh "${{ env.VERSION }}" build --enable-tests
           mkdir "${HOME}/tests-prefix"
           WINEPREFIX="${HOME}/tests-prefix" WINEDEBUG=-all wine \
