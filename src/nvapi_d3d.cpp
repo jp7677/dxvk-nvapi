@@ -109,6 +109,9 @@ extern "C" {
         static bool alreadyLoggedOk = false;
         static bool alreadyLoggedNoLfx = false;
 
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
         if (!nvapiD3dInstance->IsReflexAvailable())
             return NoImplementation(n, alreadyLoggedNoLfx);
 
@@ -120,6 +123,9 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D_SetSleepMode(IUnknown* pDevice, NV_SET_SLEEP_MODE_PARAMS* pSetSleepModeParams) {
         constexpr auto n = __func__;
         static bool alreadyLoggedNoLfx = false;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
 
         if (pSetSleepModeParams->version != NV_SET_SLEEP_MODE_PARAMS_VER1)
             return IncompatibleStructVersion(n);
@@ -137,6 +143,9 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D_GetSleepStatus(IUnknown* pDevice, NV_GET_SLEEP_STATUS_PARAMS* pGetSleepStatusParams) {
         constexpr auto n = __func__;
         static bool alreadyLoggedNoLfx = false;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
 
         if (pGetSleepStatusParams->version != NV_GET_SLEEP_STATUS_PARAMS_VER1)
             return IncompatibleStructVersion(n);
