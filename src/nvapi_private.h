@@ -12,6 +12,10 @@
 #include <fstream>
 #include <ctime>
 #include <mutex>
+#include <memory>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include <dxgi.h>
 #include <d3d11_1.h>
