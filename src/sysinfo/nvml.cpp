@@ -14,16 +14,20 @@ namespace dxvk {
             return;
         }
 
-        m_nvmlInit_v2 = GetProcAddress<PFN_nvmlInit_v2>("nvmlInit_v2");
-        m_nvmlShutdown = GetProcAddress<PFN_nvmlShutdown>("nvmlShutdown");
-        m_nvmlErrorString = GetProcAddress<PFN_nvmlErrorString>("nvmlErrorString");
-        m_nvmlDeviceGetHandleByPciBusId_v2 = GetProcAddress<PFN_nvmlDeviceGetHandleByPciBusId_v2>("nvmlDeviceGetHandleByPciBusId_v2");
-        m_nvmlDeviceGetPciInfo_v3 = GetProcAddress<PFN_nvmlDeviceGetPciInfo_v3>("nvmlDeviceGetPciInfo_v3");
-        m_nvmlDeviceGetTemperature = GetProcAddress<PFN_nvmlDeviceGetTemperature>("nvmlDeviceGetTemperature");
-        m_nvmlDeviceGetUtilizationRates = GetProcAddress<PFN_nvmlDeviceGetUtilizationRates>("nvmlDeviceGetUtilizationRates");
-        m_nvmlDeviceGetVbiosVersion = GetProcAddress<PFN_nvmlDeviceGetVbiosVersion>("nvmlDeviceGetVbiosVersion");
-        m_nvmlDeviceGetPerformanceState = GetProcAddress<PFN_nvmlDeviceGetPerformanceState>("nvmlDeviceGetPerformanceState");
-        m_nvmlDeviceGetClockInfo = GetProcAddress<PFN_nvmlDeviceGetClockInfo>("nvmlDeviceGetClockInfo");
+#define GETPROCADDR(x) m_##x = GetProcAddress<PFN_##x>(#x)
+
+        GETPROCADDR(nvmlInit_v2);
+        GETPROCADDR(nvmlShutdown);
+        GETPROCADDR(nvmlErrorString);
+        GETPROCADDR(nvmlDeviceGetHandleByPciBusId_v2);
+        GETPROCADDR(nvmlDeviceGetPciInfo_v3);
+        GETPROCADDR(nvmlDeviceGetTemperature);
+        GETPROCADDR(nvmlDeviceGetUtilizationRates);
+        GETPROCADDR(nvmlDeviceGetVbiosVersion);
+        GETPROCADDR(nvmlDeviceGetPerformanceState);
+        GETPROCADDR(nvmlDeviceGetClockInfo);
+
+#undef GETPROCADDR
 
         if (m_nvmlInit_v2 == nullptr
             || m_nvmlShutdown == nullptr
