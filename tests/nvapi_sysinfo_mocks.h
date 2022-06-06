@@ -1,4 +1,12 @@
+#pragma once
+
+#include "nvapi_tests_private.h"
+#include "../src/dxvk/dxvk_interfaces.h"
+#include "../src/sysinfo/vulkan.h"
+#include "../src/sysinfo/nvml.h"
+
 using namespace trompeloeil;
+using namespace dxvk;
 
 class DXGIFactory1Mock : public mock_interface<IDXGIFactory1> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -30,8 +38,8 @@ class DXGIDxvkAdapterMock : public mock_interface<IDXGIDxvkAdapter> {
     IMPLEMENT_MOCK2(EnumOutputs);
     IMPLEMENT_MOCK1(GetDesc);
     IMPLEMENT_MOCK2(CheckInterfaceSupport);
-    IMPLEMENT_MOCK2(GetVulkanHandles);
     IMPLEMENT_MOCK1(GetDesc1);
+    IMPLEMENT_MOCK2(GetVulkanHandles);
 };
 
 class DXGIOutputMock : public mock_interface<IDXGIOutput> {

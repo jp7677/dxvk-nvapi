@@ -1,4 +1,10 @@
+#pragma once
+
+#include "nvapi_tests_private.h"
+#include "../src/vkd3d-proton/vkd3d-proton_interfaces.h"
+
 using namespace trompeloeil;
+using namespace dxvk;
 
 class ID3D12Vkd3dDevice : public ID3D12Device, public ID3D12DeviceExt {};
 

@@ -14,6 +14,16 @@ nvapi_src = files([
   'd3d/nvapi_d3d_instance.cpp',
   'd3d11/nvapi_d3d11_device.cpp',
   'd3d12/nvapi_d3d12_device.cpp',
+  'nvapi_globals.cpp',
+  'nvapi.cpp',
+  'nvapi_d3d.cpp',
+  'nvapi_d3d11.cpp',
+  'nvapi_d3d12.cpp',
+  'nvapi_disp.cpp',
+  'nvapi_drs.cpp',
+  'nvapi_gpu.cpp',
+  'nvapi_mosaic.cpp',
+  'nvapi_sys.cpp',
   'nvapi_interface.cpp',
 ])
 

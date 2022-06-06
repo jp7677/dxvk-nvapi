@@ -1,3 +1,10 @@
+#pragma once
+
+#include "nvapi_tests_private.h"
+#include "../src/resource_factory.h"
+
+using namespace dxvk;
+
 class MockFactory : public ResourceFactory {
 
   public:

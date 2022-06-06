@@ -1,4 +1,10 @@
+#include "nvapi_tests_private.h"
+#include "resource_factory_util.h"
+#include "nvapi_sysinfo_mocks.h"
+#include "nvapi_d3d12_mocks.h"
+
 using namespace trompeloeil;
+using namespace dxvk;
 
 TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     D3D12Vkd3dDeviceMock device;

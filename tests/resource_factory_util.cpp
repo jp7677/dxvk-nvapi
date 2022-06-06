@@ -1,10 +1,4 @@
-#include "mock_factory.cpp"
-
-void ResetResourceFactory() {
-    resourceFactory.reset();
-    nvapiAdapterRegistry.reset();
-    initializationCount = 0ULL;
-}
+#include "resource_factory_util.h"
 
 void SetupResourceFactory(
     std::unique_ptr<DXGIFactory1Mock> dxgiFactory,

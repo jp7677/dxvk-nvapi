@@ -1,4 +1,9 @@
+#include "nvapi_tests_private.h"
+#include "nvapi_d3d_mocks.h"
+#include "nvapi_d3d11_mocks.h"
+
 using namespace trompeloeil;
+using namespace dxvk;
 
 TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
     D3D11DxvkDeviceMock device;
