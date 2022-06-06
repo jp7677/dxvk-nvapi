@@ -275,15 +275,32 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto blockX = 3U;
         auto blockY = 4U;
         auto blockZ = 5U;
-        const char* shaderName = "";
+        auto shaderHandle = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122);
+        auto handle = &shaderHandle;
+        REQUIRE_CALL(device, CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, _, handle))
+            .WITH(_6 == std::string(""))
+            .RETURN(S_OK)
+            .TIMES(1);
+
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShader(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, reinterpret_cast<NVDX_ObjectHandle*>(handle)) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
+    }
+
+    SECTION("CreateCubinComputeShaderWithName returns OK") {
+        const void* cubinData = nullptr;
+        auto cubinSize = 2U;
+        auto blockX = 3U;
+        auto blockY = 4U;
+        auto blockZ = 5U;
+        auto shaderName = "shader";
         auto shaderHandle = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122);
         auto handle = &shaderHandle;
         REQUIRE_CALL(device, CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, handle))
             .RETURN(S_OK)
-            .TIMES(2);
+            .TIMES(1);
 
         REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderWithName(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, shaderName, reinterpret_cast<NVDX_ObjectHandle*>(handle)) == NVAPI_OK);
-        REQUIRE(NvAPI_D3D12_CreateCubinComputeShader(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, reinterpret_cast<NVDX_ObjectHandle*>(handle)) == NVAPI_OK);
         REQUIRE(deviceRefCount == 0);
         REQUIRE(commandListRefCount == 0);
     }
