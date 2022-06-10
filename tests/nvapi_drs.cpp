@@ -1,7 +1,6 @@
 #include "nvapi_tests_private.h"
 #include "../inc/NvApiDriverSettings.h"
 
-using namespace dxvk;
 using namespace trompeloeil;
 
 TEST_CASE("DRS methods succeed", "[.drs]") {

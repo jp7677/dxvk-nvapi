@@ -1,5 +1,8 @@
 #include "resource_factory_util.h"
 
+using namespace trompeloeil;
+using namespace dxvk;
+
 void SetupResourceFactory(
     std::unique_ptr<DXGIFactory1Mock> dxgiFactory,
     std::unique_ptr<Vulkan> vulkan,

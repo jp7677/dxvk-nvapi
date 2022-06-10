@@ -3,7 +3,6 @@
 #include "nvapi_d3d_mocks.h"
 
 using namespace trompeloeil;
-using namespace dxvk;
 
 TEST_CASE("D3D methods succeed", "[.d3d]") {
     UnknownMock unknown;

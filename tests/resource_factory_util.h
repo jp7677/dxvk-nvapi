@@ -7,11 +7,11 @@
 
 void SetupResourceFactory(
     std::unique_ptr<DXGIFactory1Mock> dxgiFactory,
-    std::unique_ptr<Vulkan> vulkan,
-    std::unique_ptr<Nvml> nvml,
-    std::unique_ptr<Lfx> lfx);
+    std::unique_ptr<dxvk::Vulkan> vulkan,
+    std::unique_ptr<dxvk::Nvml> nvml,
+    std::unique_ptr<dxvk::Lfx> lfx);
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 17> ConfigureDefaultTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 17> ConfigureDefaultTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -19,7 +19,7 @@ void SetupResourceFactory(
     DXGIDxvkAdapterMock& adapter,
     DXGIOutputMock& output);
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 29> ConfigureExtendedTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 29> ConfigureExtendedTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,

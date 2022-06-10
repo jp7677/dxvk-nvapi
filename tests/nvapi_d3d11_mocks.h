@@ -3,12 +3,9 @@
 #include "nvapi_tests_private.h"
 #include "../src/dxvk/dxvk_interfaces.h"
 
-using namespace trompeloeil;
-using namespace dxvk;
-
 class ID3D11DxvkDevice : public ID3D11Device, public ID3D11VkExtDevice1 {};
 
-class D3D11DxvkDeviceMock : public mock_interface<ID3D11DxvkDevice> {
+class D3D11DxvkDeviceMock : public trompeloeil::mock_interface<ID3D11DxvkDevice> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -63,7 +60,7 @@ class D3D11DxvkDeviceMock : public mock_interface<ID3D11DxvkDevice> {
 
 class ID3D11DxvkDeviceContext : public ID3D11DeviceContext, public ID3D11VkExtContext1 {};
 
-class D3D11DxvkDeviceContextMock : public mock_interface<ID3D11DxvkDeviceContext> {
+class D3D11DxvkDeviceContextMock : public trompeloeil::mock_interface<ID3D11DxvkDeviceContext> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -188,7 +185,7 @@ class D3D11DxvkDeviceContextMock : public mock_interface<ID3D11DxvkDeviceContext
     IMPLEMENT_MOCK10(LaunchCubinShaderNVX);
 };
 
-class D3D11BufferMock : public mock_interface<ID3D11Buffer> {
+class D3D11BufferMock : public trompeloeil::mock_interface<ID3D11Buffer> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);

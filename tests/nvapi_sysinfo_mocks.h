@@ -5,10 +5,7 @@
 #include "../src/sysinfo/vulkan.h"
 #include "../src/sysinfo/nvml.h"
 
-using namespace trompeloeil;
-using namespace dxvk;
-
-class DXGIFactory1Mock : public mock_interface<IDXGIFactory1> {
+class DXGIFactory1Mock : public trompeloeil::mock_interface<IDXGIFactory1> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -27,7 +24,7 @@ class DXGIFactory1Mock : public mock_interface<IDXGIFactory1> {
 
 class IDXGIDxvkAdapter : public IDXGIAdapter1, public IDXGIVkInteropAdapter {};
 
-class DXGIDxvkAdapterMock : public mock_interface<IDXGIDxvkAdapter> {
+class DXGIDxvkAdapterMock : public trompeloeil::mock_interface<IDXGIDxvkAdapter> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -42,7 +39,7 @@ class DXGIDxvkAdapterMock : public mock_interface<IDXGIDxvkAdapter> {
     IMPLEMENT_MOCK2(GetVulkanHandles);
 };
 
-class DXGIOutputMock : public mock_interface<IDXGIOutput> {
+class DXGIOutputMock : public trompeloeil::mock_interface<IDXGIOutput> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -64,14 +61,14 @@ class DXGIOutputMock : public mock_interface<IDXGIOutput> {
     IMPLEMENT_MOCK1(GetFrameStatistics);
 };
 
-class VulkanMock : public mock_interface<Vulkan> {
+class VulkanMock : public trompeloeil::mock_interface<dxvk::Vulkan> {
     IMPLEMENT_CONST_MOCK0(IsAvailable);
     IMPLEMENT_CONST_MOCK2(GetDeviceExtensions);
     IMPLEMENT_CONST_MOCK3(GetPhysicalDeviceProperties2);
     IMPLEMENT_CONST_MOCK3(GetPhysicalDeviceMemoryProperties2);
 };
 
-class NvmlMock : public mock_interface<Nvml> {
+class NvmlMock : public trompeloeil::mock_interface<dxvk::Nvml> {
     IMPLEMENT_CONST_MOCK0(IsAvailable);
     IMPLEMENT_CONST_MOCK1(ErrorString);
     IMPLEMENT_CONST_MOCK2(DeviceGetHandleByPciBusId_v2);
