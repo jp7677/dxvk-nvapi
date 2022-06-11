@@ -45,8 +45,9 @@ Using DXVK-NVAPI in Proton, Lutris or Wine requires DXVK to see the GPU as an NV
 Proton 6.3-6 and newer includes DXVK-NVAPI but it is disabled by default.
 
 - Use `PROTON_ENABLE_NVAPI=1` as game launch argument in Steam to enable DXVK-NVAPI. Use additionally `PROTON_HIDE_NVIDIA_GPU=0` for certain titles that don't rely on DXGI for obtaining the current GPU type.
-- Disable the `nvapiHack` in DXVK with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
-- Copy and replace  `nvapi.dll`/`nvapi64.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 6.3/` if you want to manually update the included version.
+- Copy and replace `nvapi.dll`/`nvapi64.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 7.0/` if you want to manually update the included version.
+
+Proton 7.0-1 and older does not disable the `nvapiHack` in DXVK automatically when `PROTON_ENABLE_NVAPI=1` is set. Additionally disable the `nvapiHack` in DXVK bundled with those Proton versions with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
 
 ### Lutris
 
@@ -59,10 +60,12 @@ DXVK-NVAPI is enabled by default since Lutris 0.5.9. It's updated automatically.
 Wine does not includes DXVK-NVAPI.
 
 - Copy `nvapi.dll`/`nvapi64.dll` into the `syswow64`/`system32` folder of your x86/x64 Wine prefix.
-- Ensure that Wine uses the native version of `nvapi`/`nvapi64`, e.g. with `WINEDLLOVERRIDES=nvapi64,nvapi=n`.
+- Ensure that Wine uses the native version of `nvapi`/`nvapi64`, e.g. with `WINEDLLOVERRIDES=nvapi,nvapi64=n`.
 - Ensure that DXVK is installed in your x86/x64 Wine prefix.
 - Ensure that Wine uses DXVK's `dxgi.dll`, e.g. with `WINEDLLOVERRIDES=dxgi=n`.
-- Disable the `nvapiHack` in DXVK with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
+- Set `DXVK_ENABLE_NVAPI=1` to disable DXVK's `nvapiHack` in DXVK.
+
+DXVK 1.10 and older does not support `DXVK_ENABLE_NVAPI`. Disable the `nvapiHack` in DXVK 1.10 and older with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf#L51).
 
 ## Tweaks, debugging and troubleshooting
 
