@@ -781,9 +781,83 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(strcmp(revision, version) == 0);
         }
 
-        SECTION("GetDynamicPstatesInfoEx returns OK") {
+        SECTION("GetBusType returns OK") {
+            struct Data {
+                nvmlBusType_t nvmlBusType;
+                NV_GPU_BUS_TYPE expectedBusType;
+            };
+            auto args = GENERATE(
+                Data{NVML_BUS_TYPE_PCI, NVAPI_GPU_BUS_TYPE_PCI},
+                Data{NVML_BUS_TYPE_PCIE, NVAPI_GPU_BUS_TYPE_PCI_EXPRESS},
+                Data{NVML_BUS_TYPE_FPCI, NVAPI_GPU_BUS_TYPE_FPCI},
+                Data{NVML_BUS_TYPE_AGP, NVAPI_GPU_BUS_TYPE_AGP},
+                Data{NVML_BUS_TYPE_UNKNOWN, NVAPI_GPU_BUS_TYPE_UNDEFINED});
+
+            ALLOW_CALL(*nvml, DeviceGetBusType(_, _)) // NOLINT(bugprone-use-after-move)
+                .LR_SIDE_EFFECT(*_2 = args.nvmlBusType)
+                .RETURN(NVML_SUCCESS);
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+            NV_GPU_BUS_TYPE type;
+            REQUIRE(NvAPI_GPU_GetBusType(handle, &type) == NVAPI_OK);
+            REQUIRE(type == args.expectedBusType);
+        }
+
+        SECTION("GetDynamicPstatesInfoEx returns OK when DeviceGetDynamicPstatesInfo is available") {
+            auto gpuUtilization = 32U;
+            auto fbUtilization = 56U;
+            auto vidUtilization = 8U;
+            auto busUtilization = 80U;
+            ALLOW_CALL(*nvml, DeviceGetDynamicPstatesInfo(_, _)) // NOLINT(bugprone-use-after-move)
+                .LR_SIDE_EFFECT({
+                    _2->flags = 0;
+                    _2->utilization[NVML_GPU_UTILIZATION_DOMAIN_GPU].percentage = gpuUtilization;
+                    _2->utilization[NVML_GPU_UTILIZATION_DOMAIN_FB].percentage = fbUtilization;
+                    _2->utilization[NVML_GPU_UTILIZATION_DOMAIN_VID].percentage = vidUtilization;
+                    _2->utilization[NVML_GPU_UTILIZATION_DOMAIN_BUS].percentage = busUtilization;
+                    for (auto i = 0U; i < NVAPI_MAX_GPU_UTILIZATIONS; i++)
+                        _2->utilization[i].bIsPresent = i < 4;
+                })
+                .RETURN(NVML_SUCCESS);
+            ALLOW_CALL(*nvml, DeviceGetUtilizationRates(_, _)) // NOLINT(bugprone-use-after-move)
+                .LR_SIDE_EFFECT({
+                    _2->gpu = gpuUtilization + 1;
+                    _2->memory = fbUtilization + 1;
+                })
+                .RETURN(NVML_SUCCESS);
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+            NV_GPU_DYNAMIC_PSTATES_INFO_EX info;
+            info.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;
+            REQUIRE(NvAPI_GPU_GetDynamicPstatesInfoEx(handle, &info) == NVAPI_OK);
+            REQUIRE(info.flags == 0);
+            REQUIRE(info.utilization[0].bIsPresent == 1);
+            REQUIRE(info.utilization[0].percentage == gpuUtilization);
+            REQUIRE(info.utilization[1].bIsPresent == 1);
+            REQUIRE(info.utilization[1].percentage == fbUtilization);
+            REQUIRE(info.utilization[2].bIsPresent == 1);
+            REQUIRE(info.utilization[2].percentage == vidUtilization);
+            REQUIRE(info.utilization[3].bIsPresent == 1);
+            REQUIRE(info.utilization[3].percentage == busUtilization);
+            for (auto i = 4U; i < NVAPI_MAX_GPU_UTILIZATIONS; i++)
+                REQUIRE(info.utilization[i].bIsPresent == 0);
+        }
+
+        SECTION("GetDynamicPstatesInfoEx returns OK when DeviceGetDynamicPstatesInfo is not available but DeviceGetUtilizationRates is") {
             auto gpuUtilization = 32U;
             auto memoryUtilization = 56U;
+            ALLOW_CALL(*nvml, DeviceGetDynamicPstatesInfo(_, _)) // NOLINT(bugprone-use-after-move)
+                .RETURN(NVML_ERROR_FUNCTION_NOT_FOUND);
             ALLOW_CALL(*nvml, DeviceGetUtilizationRates(_, _)) // NOLINT(bugprone-use-after-move)
                 .LR_SIDE_EFFECT({
                     _2->gpu = gpuUtilization;
@@ -813,8 +887,74 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 REQUIRE(info.utilization[i].bIsPresent == 0);
         }
 
-        SECTION("GetThermalSettings succeeds") {
+        SECTION("GetThermalSettings succeeds when DeviceGetThermalSettings is available") {
             auto temp = 65U;
+            auto maxTemp = 127U;
+            auto minTemp = 4294967256U;                          // -40 as unsigned int
+            ALLOW_CALL(*nvml, DeviceGetThermalSettings(_, _, _)) // NOLINT(bugprone-use-after-move)
+                .LR_SIDE_EFFECT({
+                    _3->count = 1;
+                    if (_2 == 0 || _2 == NVML_THERMAL_TARGET_ALL) {
+                        _3->sensor[0].controller = NVML_THERMAL_CONTROLLER_GPU_INTERNAL;
+                        _3->sensor[0].target = NVML_THERMAL_TARGET_GPU;
+                        _3->sensor[0].currentTemp = temp;
+                        _3->sensor[0].defaultMaxTemp = maxTemp;
+                        _3->sensor[0].defaultMinTemp = minTemp;
+                    }
+                })
+                .RETURN(NVML_SUCCESS);
+            ALLOW_CALL(*nvml, DeviceGetTemperature(_, _, _)) // NOLINT(bugprone-use-after-move)
+                .LR_SIDE_EFFECT(*_3 = temp + 1)
+                .RETURN(NVML_SUCCESS);
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+            SECTION("GetThermalSettings (V1) returns OK") {
+                NV_GPU_THERMAL_SETTINGS_V1 settings;
+                settings.version = NV_GPU_THERMAL_SETTINGS_VER_1;
+                REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, reinterpret_cast<NV_GPU_THERMAL_SETTINGS*>(&settings)) == NVAPI_OK);
+                REQUIRE(settings.count == 1);
+                REQUIRE(settings.sensor[0].controller == NVAPI_THERMAL_CONTROLLER_GPU_INTERNAL);
+                REQUIRE(settings.sensor[0].target == NVAPI_THERMAL_TARGET_GPU);
+                REQUIRE(settings.sensor[0].currentTemp == temp);
+                REQUIRE(settings.sensor[0].defaultMaxTemp == maxTemp);
+                REQUIRE(settings.sensor[0].defaultMinTemp == 0U);
+            }
+
+            SECTION("GetThermalSettings (V2) returns OK") {
+                NV_GPU_THERMAL_SETTINGS_V2 settings;
+                settings.version = NV_GPU_THERMAL_SETTINGS_VER_2;
+                REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_OK);
+                REQUIRE(settings.count == 1);
+                REQUIRE(settings.sensor[0].controller == NVAPI_THERMAL_CONTROLLER_GPU_INTERNAL);
+                REQUIRE(settings.sensor[0].target == NVAPI_THERMAL_TARGET_GPU);
+                REQUIRE(settings.sensor[0].currentTemp == static_cast<int>(temp));
+                REQUIRE(settings.sensor[0].defaultMaxTemp == static_cast<int>(maxTemp));
+                REQUIRE(settings.sensor[0].defaultMinTemp == -40);
+            }
+
+            SECTION("GetThermalSettings with unknown struct version returns incompatible-struct-version") {
+                NV_GPU_THERMAL_SETTINGS settings;
+                settings.version = NV_GPU_THERMAL_SETTINGS_VER_2 + 1;
+                REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("GetThermalSettings with current struct version returns not incompatible-struct-version") {
+                // This test should fail when a header update provides a newer not yet implemented struct version
+                NV_GPU_THERMAL_SETTINGS settings;
+                settings.version = NV_GPU_THERMAL_SETTINGS_VER;
+                REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+        }
+
+        SECTION("GetThermalSettings succeeds when DeviceGetThermalSettings is not available but DeviceGetTemperature is") {
+            auto temp = 65U;
+            ALLOW_CALL(*nvml, DeviceGetThermalSettings(_, _, _)) // NOLINT(bugprone-use-after-move)
+                .RETURN(NVML_ERROR_FUNCTION_NOT_FOUND);
             ALLOW_CALL(*nvml, DeviceGetTemperature(_, _, _)) // NOLINT(bugprone-use-after-move)
                 .LR_SIDE_EFFECT(*_3 = temp)
                 .RETURN(NVML_SUCCESS);
