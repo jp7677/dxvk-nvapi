@@ -1,3 +1,4 @@
+builddir
 .idea/**
 .vscode/**
 version.h
