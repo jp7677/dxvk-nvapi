@@ -88,6 +88,18 @@ The test executable also runs on Windows against NVIDIA's `nvapi64.dll`. Ensure 
 
 The actual unit tests can be run with `nvapi64-tests.exe [@unit-tests]` to validate DXVK-NVAPI's internal implementation.
 
+Producing a debug build and starting a debugging session with the test suite can be achieved with the following snippet:
+
+```bash
+meson --cross-file "./build-win64.txt" --buildtype "debug" -Denable_tests=True builddir && cd builddir
+meson compile
+
+ln -sr src/nvapi64.dll tests/nvapi64.dll # to ensure that nvapi64-tests.exe finds nvapi64.dll 
+DXVK_LOG_LEVEL=none DXVK_NVAPI_LOG_LEVEL=none WINEDEBUG=-all WINEDLLOVERRIDES=nvapi64=n winedbg --gdb tests/nvapi64-tests.exe [@all]
+```
+
+Once the debug session has started, use `c` to start/continue execution and a.o. `bt` to show a proper stacktrace after a segmentation fault.
+
 ## References and inspirations
 
 - [DXVK](https://github.com/doitsujin/dxvk)
