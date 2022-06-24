@@ -22,6 +22,10 @@ namespace dxvk {
         [[nodiscard]] virtual nvmlReturn_t DeviceGetBusType(nvmlDevice_t device, nvmlBusType_t* type) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetDynamicPstatesInfo(nvmlDevice_t device, nvmlGpuDynamicPstatesInfo_t* pDynamicPstatesInfo) const;
 
+        [[nodiscard]] static NV_THERMAL_TARGET ToNvThermalTarget(nvmlThermalTarget_t target);
+        [[nodiscard]] static NV_THERMAL_CONTROLLER ToNvThermalController(nvmlThermalController_t controller);
+        [[nodiscard]] static NV_GPU_BUS_TYPE ToNvGpuBusType(nvmlBusType_t type);
+
       private:
         typedef decltype(&nvmlInit_v2) PFN_nvmlInit_v2;
         typedef decltype(&nvmlShutdown) PFN_nvmlShutdown;
