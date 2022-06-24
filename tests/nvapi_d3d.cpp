@@ -44,7 +44,7 @@ TEST_CASE("D3D methods succeed", "[.d3d]") {
 
         SECTION("GetCurrentSLIState (V2) returns OK") {
             NV_GET_CURRENT_SLI_STATE_V2 state;
-            state.version = NV_GET_CURRENT_SLI_STATE_VER1;
+            state.version = NV_GET_CURRENT_SLI_STATE_VER2;
             REQUIRE(NvAPI_D3D_GetCurrentSLIState(&unknown, &state) == NVAPI_OK);
             REQUIRE(state.maxNumAFRGroups == 1);
             REQUIRE(state.numAFRGroups == 1);
