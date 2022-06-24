@@ -73,10 +73,10 @@ namespace dxvk {
         if (!allowOtherDrivers.empty())
             log::write(str::format(allowOtherDriversEnvName, " is set, reporting also GPUs with non-NVIDIA proprietary driver"));
 
-        if (GetDriverId() != VK_DRIVER_ID_NVIDIA_PROPRIETARY && allowOtherDrivers.empty())
+        if (!HasNvProprietaryDriver() && allowOtherDrivers.empty())
             return false;
 
-        if (GetDriverId() == VK_DRIVER_ID_NVIDIA_PROPRIETARY)
+        if (HasNvProprietaryDriver())
             // Handle NVIDIA version notation
             m_vkDriverVersion = VK_MAKE_VERSION(
                 VK_VERSION_MAJOR(m_deviceProperties.driverVersion),
@@ -143,8 +143,8 @@ namespace dxvk {
             : VK_VERSION_MAJOR(m_vkDriverVersion) * 100 + std::min(VK_VERSION_MINOR(m_vkDriverVersion), 99U);
     }
 
-    VkDriverIdKHR NvapiAdapter::GetDriverId() const {
-        return m_deviceDriverProperties.driverID;
+    bool NvapiAdapter::HasNvProprietaryDriver() const {
+        return m_deviceDriverProperties.driverID == VK_DRIVER_ID_NVIDIA_PROPRIETARY;
     }
 
     uint32_t NvapiAdapter::GetDeviceId() const {
