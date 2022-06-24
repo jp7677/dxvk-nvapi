@@ -3,10 +3,6 @@
 #include "util/util_string.h"
 #include "util/util_log.h"
 
-#define INSERT_AND_RETURN_WHEN_EQUALS(method) \
-    if (std::string(it->func) == #method)     \
-        return registry.insert({id, (void*)method}).first->second;
-
 extern "C" {
     using namespace dxvk;
 
@@ -26,6 +22,10 @@ extern "C" {
             log::write(str::format("NvAPI_QueryInterface (0x", std::hex, id, "): Unknown function ID"));
             return registry.insert({id, nullptr}).first->second;
         }
+
+#define INSERT_AND_RETURN_WHEN_EQUALS(method) \
+    if (std::string(it->func) == #method)     \
+        return registry.insert({id, (void*)method}).first->second;
 
         // This block will be validated for completeness when running package-release.sh. Do not remove the comments.
         /* Start NVAPI methods */
@@ -117,9 +117,9 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Initialize)
         /* End */
 
+#undef INSERT_AND_RETURN_WHEN_EQUALS
+
         log::write(str::format("NvAPI_QueryInterface ", it->func, ": Not implemented method"));
         return registry.insert({id, nullptr}).first->second;
     }
 }
-
-#undef INSERT_AND_RETURN_WHEN_EQUALS
