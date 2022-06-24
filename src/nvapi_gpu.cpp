@@ -19,7 +19,7 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        *pGpuType = (NV_GPU_TYPE)adapter->GetGpuType();
+        *pGpuType = adapter->GetGpuType();
 
         return Ok(n);
     }

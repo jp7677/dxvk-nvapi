@@ -164,12 +164,8 @@ namespace dxvk {
         return result == NVML_SUCCESS ? pciInfo.pciSubSystemId : 0;
     }
 
-    uint32_t NvapiAdapter::GetGpuType() const {
-        // The enum values for discrete, integrated and unknown GPU are the same for Vulkan and NvAPI
-        auto vkDeviceType = m_deviceProperties.deviceType;
-        return vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
-            ? vkDeviceType
-            : VK_PHYSICAL_DEVICE_TYPE_OTHER;
+    NV_GPU_TYPE NvapiAdapter::GetGpuType() const {
+        return Vulkan::ToNvGpuType(m_deviceProperties.deviceType);
     }
 
     uint32_t NvapiAdapter::GetPciBusId() const {

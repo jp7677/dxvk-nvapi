@@ -14,6 +14,8 @@ namespace dxvk {
         virtual void GetPhysicalDeviceProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceProperties2* deviceProperties2) const;
         virtual void GetPhysicalDeviceMemoryProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceMemoryProperties2* memoryProperties2) const;
 
+        static NV_GPU_TYPE ToNvGpuType(VkPhysicalDeviceType vkDeviceType);
+
       private:
         HMODULE m_vkModule{};
         PFN_vkGetInstanceProcAddr m_vkGetInstanceProcAddr{};

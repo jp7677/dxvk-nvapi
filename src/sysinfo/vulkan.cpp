@@ -64,6 +64,17 @@ namespace dxvk {
         vkGetPhysicalDeviceMemoryProperties2(vkDevice, memoryProperties2);
     }
 
+    NV_GPU_TYPE Vulkan::ToNvGpuType(VkPhysicalDeviceType vkDeviceType) {
+        // Assert enum value equality between Vulkan and NVAPI at compile time
+        static_assert(static_cast<int>(VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) == static_cast<int>(NV_SYSTEM_TYPE_DGPU));
+        static_assert(static_cast<int>(VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) == static_cast<int>(NV_SYSTEM_TYPE_IGPU));
+        static_assert(static_cast<int>(VK_PHYSICAL_DEVICE_TYPE_OTHER) == static_cast<int>(NV_SYSTEM_TYPE_GPU_UNKNOWN));
+
+        return vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
+            ? static_cast<NV_GPU_TYPE>(vkDeviceType)
+            : NV_SYSTEM_TYPE_GPU_UNKNOWN;
+    }
+
     template <typename T>
     T Vulkan::GetProcAddress(const char* name) const {
         return reinterpret_cast<T>(reinterpret_cast<void*>(::GetProcAddress(m_vkModule, name)));

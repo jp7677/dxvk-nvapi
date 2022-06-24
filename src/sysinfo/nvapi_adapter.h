@@ -20,7 +20,7 @@ namespace dxvk {
         [[nodiscard]] uint32_t GetDeviceId() const;
         [[nodiscard]] uint32_t GetExternalDeviceId() const;
         [[nodiscard]] uint32_t GetSubSystemId() const;
-        [[nodiscard]] uint32_t GetGpuType() const;
+        [[nodiscard]] NV_GPU_TYPE GetGpuType() const;
         [[nodiscard]] uint32_t GetPciBusId() const;
         [[nodiscard]] uint32_t GetPciDeviceId() const;
         [[nodiscard]] uint32_t GetBoardId() const;
