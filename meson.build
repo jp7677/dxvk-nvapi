@@ -9,6 +9,12 @@ project('dxvk-nvapi',
 
 dxvk_compiler = meson.get_compiler('cpp')
 add_project_arguments(dxvk_compiler.get_supported_arguments('-Wno-unused-parameter'), language : 'cpp')
+if get_option('buildtype') == 'debug'
+  add_project_arguments(dxvk_compiler.get_supported_arguments('-gstrict-dwarf'), language : 'cpp')
+  add_project_arguments(dxvk_compiler.get_supported_arguments('-gdwarf-2'), language : 'cpp')
+  add_project_arguments(dxvk_compiler.get_supported_arguments('-Wa,-mbig-obj'), language : 'cpp')
+endif
+
 add_project_link_arguments(dxvk_compiler.get_supported_link_arguments('-Wl,--file-alignment=4096'), language: 'cpp')
 
 dxvk_cpu_family = target_machine.cpu_family()
