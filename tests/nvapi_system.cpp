@@ -91,11 +91,13 @@ static std::string ToFormattedLuid(LUID& luid) {
 TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     const auto nvapiModuleName = "nvapi64.dll";
     auto nvapiModule = ::LoadLibraryA(nvapiModuleName);
-    REQUIRE(nvapiModule != nullptr);
+    REQUIRE(nvapiModule);
 
     auto nvAPI_QueryInterface = reinterpret_cast<PFN_NvAPI_QueryInterface>(
         reinterpret_cast<void*>(
             ::GetProcAddress(nvapiModule, "nvapi_QueryInterface")));
+
+    REQUIRE(nvAPI_QueryInterface);
 
     auto nvAPI_Initialize = GetNvAPIProcAddress<PFN_NvAPI_Initialize>(nvAPI_QueryInterface, "NvAPI_Initialize");
     auto nvAPI_Unload = GetNvAPIProcAddress<PFN_NvAPI_Unload>(nvAPI_QueryInterface, "NvAPI_Unload");
@@ -117,6 +119,27 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     auto nvAPI_GPU_GetThermalSettings = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetThermalSettings>(nvAPI_QueryInterface, "NvAPI_GPU_GetThermalSettings");
     auto nvAPI_GPU_GetCurrentPstate = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetCurrentPstate>(nvAPI_QueryInterface, "NvAPI_GPU_GetCurrentPstate");
     auto nvAPI_GPU_GetAllClockFrequencies = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetAllClockFrequencies>(nvAPI_QueryInterface, "NvAPI_GPU_GetAllClockFrequencies");
+
+    REQUIRE(nvAPI_Initialize);
+    REQUIRE(nvAPI_Unload);
+    REQUIRE(nvAPI_GetInterfaceVersionString);
+    REQUIRE(nvAPI_SYS_GetDriverAndBranchVersion);
+    REQUIRE(nvAPI_EnumPhysicalGPUs);
+    REQUIRE(nvAPI_GetGPUIDfromPhysicalGPU);
+    REQUIRE(nvAPI_GPU_GetGPUType);
+    REQUIRE(nvAPI_GPU_GetPCIIdentifiers);
+    REQUIRE(nvAPI_GPU_GetFullName);
+    REQUIRE(nvAPI_GPU_GetBusId);
+    REQUIRE(nvAPI_GPU_GetBusSlotId);
+    REQUIRE(nvAPI_GPU_GetPhysicalFrameBufferSize);
+    REQUIRE(nvAPI_GPU_GetAdapterIdFromPhysicalGpu);
+    REQUIRE(nvAPI_GPU_GetArchInfo);
+    REQUIRE(nvAPI_GPU_CudaEnumComputeCapableGpus);
+    REQUIRE(nvAPI_GPU_GetVbiosVersionString);
+    REQUIRE(nvAPI_GPU_GetDynamicPstatesInfoEx);
+    REQUIRE(nvAPI_GPU_GetThermalSettings);
+    REQUIRE(nvAPI_GPU_GetCurrentPstate);
+    REQUIRE(nvAPI_GPU_GetAllClockFrequencies);
 
     NvAPI_Status result;
     REQUIRE(nvAPI_Initialize() == NVAPI_OK);
