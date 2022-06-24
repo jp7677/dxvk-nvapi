@@ -124,6 +124,83 @@ namespace dxvk {
             : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
+    NV_THERMAL_TARGET Nvml::ToNvThermalTarget(nvmlThermalTarget_t target) {
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_NONE) == static_cast<int>(NVAPI_THERMAL_TARGET_NONE));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_GPU) == static_cast<int>(NVAPI_THERMAL_TARGET_GPU));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_MEMORY) == static_cast<int>(NVAPI_THERMAL_TARGET_MEMORY));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_POWER_SUPPLY) == static_cast<int>(NVAPI_THERMAL_TARGET_POWER_SUPPLY));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_BOARD) == static_cast<int>(NVAPI_THERMAL_TARGET_BOARD));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_VCD_BOARD) == static_cast<int>(NVAPI_THERMAL_TARGET_VCD_BOARD));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_VCD_INLET) == static_cast<int>(NVAPI_THERMAL_TARGET_VCD_INLET));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_VCD_OUTLET) == static_cast<int>(NVAPI_THERMAL_TARGET_VCD_OUTLET));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_ALL) == static_cast<int>(NVAPI_THERMAL_TARGET_ALL));
+        static_assert(static_cast<int>(NVML_THERMAL_TARGET_UNKNOWN) == static_cast<int>(NVAPI_THERMAL_TARGET_UNKNOWN));
+        return static_cast<NV_THERMAL_TARGET>(target);
+    }
+
+    NV_THERMAL_CONTROLLER Nvml::ToNvThermalController(nvmlThermalController_t controller) {
+        switch (controller) {
+            case NVML_THERMAL_CONTROLLER_NONE:
+                return NVAPI_THERMAL_CONTROLLER_NONE;
+            case NVML_THERMAL_CONTROLLER_GPU_INTERNAL:
+                return NVAPI_THERMAL_CONTROLLER_GPU_INTERNAL;
+            case NVML_THERMAL_CONTROLLER_ADM1032:
+                return NVAPI_THERMAL_CONTROLLER_ADM1032;
+            // case NVML_THERMAL_CONTROLLER_ADT7461:
+            //     return NVAPI_THERMAL_CONTROLLER_ADT7461;
+            case NVML_THERMAL_CONTROLLER_MAX6649:
+                return NVAPI_THERMAL_CONTROLLER_MAX6649;
+            case NVML_THERMAL_CONTROLLER_MAX1617:
+                return NVAPI_THERMAL_CONTROLLER_MAX1617;
+            case NVML_THERMAL_CONTROLLER_LM99:
+                return NVAPI_THERMAL_CONTROLLER_LM99;
+            case NVML_THERMAL_CONTROLLER_LM89:
+                return NVAPI_THERMAL_CONTROLLER_LM89;
+            case NVML_THERMAL_CONTROLLER_LM64:
+                return NVAPI_THERMAL_CONTROLLER_LM64;
+            // case NVML_THERMAL_CONTROLLER_G781:
+            //     return NVAPI_THERMAL_CONTROLLER_G781;
+            case NVML_THERMAL_CONTROLLER_ADT7473:
+                return NVAPI_THERMAL_CONTROLLER_ADT7473;
+            case NVML_THERMAL_CONTROLLER_SBMAX6649:
+                return NVAPI_THERMAL_CONTROLLER_SBMAX6649;
+            case NVML_THERMAL_CONTROLLER_VBIOSEVT:
+                return NVAPI_THERMAL_CONTROLLER_VBIOSEVT;
+            case NVML_THERMAL_CONTROLLER_OS:
+                return NVAPI_THERMAL_CONTROLLER_OS;
+            // case NVML_THERMAL_CONTROLLER_NVSYSCON_CANOAS:
+            //     return NVAPI_THERMAL_CONTROLLER_NVSYSCON_CANOAS;
+            // case NVML_THERMAL_CONTROLLER_NVSYSCON_E551:
+            //     return NVAPI_THERMAL_CONTROLLER_NVSYSCON_E551;
+            // case NVML_THERMAL_CONTROLLER_MAX6649R:
+            //     return NVAPI_THERMAL_CONTROLLER_MAX6649R;
+            // case NVML_THERMAL_CONTROLLER_ADT7473S:
+            //     return NVAPI_THERMAL_CONTROLLER_ADT7473S;
+            default:
+                return NVAPI_THERMAL_CONTROLLER_UNKNOWN;
+        }
+    }
+
+    NV_GPU_BUS_TYPE Nvml::ToNvGpuBusType(nvmlBusType_t type) {
+        switch (type) {
+            case NVML_BUS_TYPE_PCI:
+                return NVAPI_GPU_BUS_TYPE_PCI;
+                break;
+            case NVML_BUS_TYPE_PCIE:
+                return NVAPI_GPU_BUS_TYPE_PCI_EXPRESS;
+                break;
+            case NVML_BUS_TYPE_FPCI:
+                return NVAPI_GPU_BUS_TYPE_FPCI;
+                break;
+            case NVML_BUS_TYPE_AGP:
+                return NVAPI_GPU_BUS_TYPE_AGP;
+                break;
+            default:
+                return NVAPI_GPU_BUS_TYPE_UNDEFINED;
+                break;
+        }
+    }
+
     template <typename T>
     T Nvml::GetProcAddress(const char* name) {
         return reinterpret_cast<T>(reinterpret_cast<void*>(::GetProcAddress(m_nvmlModule, name)));
