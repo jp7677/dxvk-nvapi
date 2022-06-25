@@ -6,6 +6,45 @@
 extern "C" {
     using namespace dxvk;
 
+    NvAPI_Status __cdecl NvAPI_GPU_GetGpuCoreCount(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pCount) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedNoNvml = false;
+        static bool alreadyLoggedHandleInvalidated = false;
+        static bool alreadyLoggedOk = false;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pCount == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        if (!adapter->HasNvml())
+            return NoImplementation(n, alreadyLoggedNoNvml);
+
+        if (!adapter->HasNvmlDevice())
+            return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
+
+        unsigned int cores;
+        auto result = adapter->GetNvmlDeviceNumGpuCores(&cores);
+        switch (result) {
+            case NVML_SUCCESS:
+                *pCount = cores;
+                return Ok(n, alreadyLoggedOk);
+            case NVML_ERROR_FUNCTION_NOT_FOUND:
+                return NoImplementation(n, alreadyLoggedNoNvml);
+            case NVML_ERROR_NOT_SUPPORTED:
+                return NotSupported(n);
+            case NVML_ERROR_GPU_IS_LOST:
+                return HandleInvalidated(n);
+            default:
+                return Error(str::format(n, ": ", adapter->GetNvmlErrorString(result)));
+        }
+    }
+
     NvAPI_Status __cdecl NvAPI_GPU_GetGPUType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_TYPE* pGpuType) {
         constexpr auto n = __func__;
 
