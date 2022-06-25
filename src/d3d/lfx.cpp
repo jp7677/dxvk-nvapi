@@ -27,12 +27,10 @@ namespace dxvk {
             return;
         }
 
-        m_lfx_WaitAndBeginFrame = reinterpret_cast<PFN_lfx_WaitAndBeginFrame>(reinterpret_cast<void*>(
-            GetProcAddress(m_lfxModule,
-                !useFallbackEntrypoints ? "lfx_WaitAndBeginFrame" : "winelfx_WaitAndBeginFrame")));
-        m_lfx_SetTargetFrameTime = reinterpret_cast<PFN_lfx_SetTargetFrameTime>(reinterpret_cast<void*>(
-            GetProcAddress(m_lfxModule,
-                !useFallbackEntrypoints ? "lfx_SetTargetFrameTime" : "winelfx_SetTargetFrameTime")));
+        m_lfx_WaitAndBeginFrame = GetProcAddress<PFN_lfx_WaitAndBeginFrame>(
+            !useFallbackEntrypoints ? "lfx_WaitAndBeginFrame" : "winelfx_WaitAndBeginFrame");
+        m_lfx_SetTargetFrameTime = GetProcAddress<PFN_lfx_SetTargetFrameTime>(
+            !useFallbackEntrypoints ? "lfx_SetTargetFrameTime" : "winelfx_SetTargetFrameTime");
     }
 
     Lfx::~Lfx() {
@@ -55,5 +53,10 @@ namespace dxvk {
     void Lfx::SetTargetFrameTime(uint64_t frame_time_ns) {
         if (m_lfx_SetTargetFrameTime)
             m_lfx_SetTargetFrameTime(static_cast<__int64>(frame_time_ns));
+    }
+
+    template <typename T>
+    T Lfx::GetProcAddress(const char* name) {
+        return reinterpret_cast<T>(reinterpret_cast<void*>(::GetProcAddress(m_lfxModule, name)));
     }
 }

@@ -19,5 +19,8 @@ namespace dxvk {
         HMODULE m_lfxModule{};
         PFN_lfx_WaitAndBeginFrame m_lfx_WaitAndBeginFrame{};
         PFN_lfx_SetTargetFrameTime m_lfx_SetTargetFrameTime{};
+
+        template <typename T>
+        T GetProcAddress(const char* name);
     };
 }
