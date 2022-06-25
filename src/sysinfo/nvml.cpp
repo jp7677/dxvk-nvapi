@@ -27,6 +27,7 @@ namespace dxvk {
         GETPROCADDR(nvmlDeviceGetPerformanceState);
         GETPROCADDR(nvmlDeviceGetUtilizationRates);
         GETPROCADDR(nvmlDeviceGetVbiosVersion);
+        GETPROCADDR(nvmlDeviceGetNumGpuCores);
         GETPROCADDR(nvmlDeviceGetBusType);
         GETPROCADDR(nvmlDeviceGetDynamicPstatesInfo);
 
@@ -109,6 +110,12 @@ namespace dxvk {
     nvmlReturn_t Nvml::DeviceGetVbiosVersion(nvmlDevice_t device, char* version, unsigned int length) const {
         return m_nvmlDeviceGetVbiosVersion
             ? m_nvmlDeviceGetVbiosVersion(device, version, length)
+            : NVML_ERROR_FUNCTION_NOT_FOUND;
+    }
+
+    nvmlReturn_t Nvml::DeviceGetNumGpuCores(nvmlDevice_t device, unsigned int* numCores) const {
+        return m_nvmlDeviceGetNumGpuCores
+            ? m_nvmlDeviceGetNumGpuCores(device, numCores)
             : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
