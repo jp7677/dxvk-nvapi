@@ -29,7 +29,8 @@ namespace dxvk {
       private:
         HMODULE m_nvmlModule{};
 
-#define DECLARE_PFN(x) decltype(&x) m_##x{}
+#define DECLARE_PFN(x) \
+    decltype(&x) m_##x {}
 
         DECLARE_PFN(nvmlInit_v2);
         DECLARE_PFN(nvmlShutdown);
