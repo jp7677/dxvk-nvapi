@@ -91,7 +91,7 @@ The actual unit tests can be run with `nvapi64-tests.exe [@unit-tests]` to valid
 Producing a debug build and starting a debugging session with the test suite can be achieved with the following snippet:
 
 ```bash
-meson --cross-file "./build-win64.txt" --buildtype "debug" -Denable_tests=True builddir && cd builddir
+meson --cross-file "./build-win64.txt" --buildtype "debugoptimized" -Denable_tests=True builddir && cd builddir
 meson compile
 
 ln -sr src/nvapi64.dll tests/nvapi64.dll # to ensure that nvapi64-tests.exe finds nvapi64.dll 
