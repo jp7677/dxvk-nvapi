@@ -185,19 +185,14 @@ namespace dxvk {
         switch (type) {
             case NVML_BUS_TYPE_PCI:
                 return NVAPI_GPU_BUS_TYPE_PCI;
-                break;
             case NVML_BUS_TYPE_PCIE:
                 return NVAPI_GPU_BUS_TYPE_PCI_EXPRESS;
-                break;
             case NVML_BUS_TYPE_FPCI:
                 return NVAPI_GPU_BUS_TYPE_FPCI;
-                break;
             case NVML_BUS_TYPE_AGP:
                 return NVAPI_GPU_BUS_TYPE_AGP;
-                break;
             default:
                 return NVAPI_GPU_BUS_TYPE_UNDEFINED;
-                break;
         }
     }
 
