@@ -274,6 +274,10 @@ namespace dxvk {
         return m_nvml.DeviceGetVbiosVersion(m_nvmlDevice, version, length);
     }
 
+    nvmlReturn_t NvapiAdapter::GetNvmlDeviceNumGpuCores(unsigned int* numCores) const {
+        return m_nvml.DeviceGetNumGpuCores(m_nvmlDevice, numCores);
+    }
+
     nvmlReturn_t NvapiAdapter::GetNvmlDeviceBusType(nvmlBusType_t* type) const {
         return m_nvml.DeviceGetBusType(m_nvmlDevice, type);
     }
