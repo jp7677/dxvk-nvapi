@@ -95,6 +95,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     GETNVAPIPROCADDR(GPU_GetPhysicalFrameBufferSize);
     GETNVAPIPROCADDR(GPU_GetAdapterIdFromPhysicalGpu);
     GETNVAPIPROCADDR(GPU_GetArchInfo);
+    GETNVAPIPROCADDR(GPU_GetGpuCoreCount);
     GETNVAPIPROCADDR(GPU_CudaEnumComputeCapableGpus);
     GETNVAPIPROCADDR(GPU_GetVbiosVersionString);
     GETNVAPIPROCADDR(GPU_GetDynamicPstatesInfoEx);
@@ -118,6 +119,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     REQUIRE(nvAPI_GPU_GetPhysicalFrameBufferSize);
     REQUIRE(nvAPI_GPU_GetAdapterIdFromPhysicalGpu);
     REQUIRE(nvAPI_GPU_GetArchInfo);
+    REQUIRE(nvAPI_GPU_GetGpuCoreCount);
     REQUIRE(nvAPI_GPU_CudaEnumComputeCapableGpus);
     REQUIRE(nvAPI_GPU_GetVbiosVersionString);
     REQUIRE(nvAPI_GPU_GetDynamicPstatesInfoEx);
@@ -207,6 +209,14 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         std::cout << "    Implementation ID:          ";
         if (result == NVAPI_OK)
             std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << archInfo.implementation_id << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
+
+        NvU32 gpuCoreCount;
+        result = nvAPI_GPU_GetGpuCoreCount(handle, &gpuCoreCount);
+        std::cout << "    GPU core count:             ";
+        if (result == NVAPI_OK)
+            std::cout << std::dec << gpuCoreCount << std::endl;
         else
             std::cout << "N/A" << std::endl;
 
