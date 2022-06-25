@@ -6,26 +6,6 @@
 #include "../inc/catch.hpp"
 
 typedef void* (*PFN_NvAPI_QueryInterface)(uint32_t id);
-typedef decltype(&NvAPI_Initialize) PFN_NvAPI_Initialize;
-typedef decltype(&NvAPI_Unload) PFN_NvAPI_Unload;
-typedef decltype(&NvAPI_GetInterfaceVersionString) PFN_NvAPI_GetInterfaceVersionString;
-typedef decltype(&NvAPI_SYS_GetDriverAndBranchVersion) PFN_NvAPI_SYS_GetDriverAndBranchVersion;
-typedef decltype(&NvAPI_EnumPhysicalGPUs) PFN_NvAPI_EnumPhysicalGPUs;
-typedef decltype(&NvAPI_GetGPUIDfromPhysicalGPU) PFN_NvAPI_GetGPUIDfromPhysicalGPU;
-typedef decltype(&NvAPI_GPU_GetGPUType) PFN_NvAPI_GPU_GetGPUType;
-typedef decltype(&NvAPI_GPU_GetPCIIdentifiers) PFN_NvAPI_GPU_GetPCIIdentifiers;
-typedef decltype(&NvAPI_GPU_GetFullName) PFN_NvAPI_GPU_GetFullName;
-typedef decltype(&NvAPI_GPU_GetBusId) PFN_NvAPI_GPU_GetBusId;
-typedef decltype(&NvAPI_GPU_GetBusSlotId) PFN_NvAPI_GPU_GetBusSlotId;
-typedef decltype(&NvAPI_GPU_GetPhysicalFrameBufferSize) PFN_NvAPI_GPU_GetPhysicalFrameBufferSize;
-typedef decltype(&NvAPI_GPU_GetAdapterIdFromPhysicalGpu) PFN_NvAPI_GPU_GetAdapterIdFromPhysicalGpu;
-typedef decltype(&NvAPI_GPU_GetArchInfo) PFN_NvAPI_GPU_GetArchInfo;
-typedef decltype(&NvAPI_GPU_CudaEnumComputeCapableGpus) PFN_NvAPI_GPU_CudaEnumComputeCapableGpus;
-typedef decltype(&NvAPI_GPU_GetVbiosVersionString) PFN_NvAPI_GPU_GetVbiosVersionString;
-typedef decltype(&NvAPI_GPU_GetDynamicPstatesInfoEx) PFN_NvAPI_GPU_GetDynamicPstatesInfoEx;
-typedef decltype(&NvAPI_GPU_GetThermalSettings) PFN_NvAPI_GPU_GetThermalSettings;
-typedef decltype(&NvAPI_GPU_GetCurrentPstate) PFN_NvAPI_GPU_GetCurrentPstate;
-typedef decltype(&NvAPI_GPU_GetAllClockFrequencies) PFN_NvAPI_GPU_GetAllClockFrequencies;
 
 template <typename T>
 T GetNvAPIProcAddress(PFN_NvAPI_QueryInterface nvAPI_QueryInterface, const char* name) {
@@ -99,26 +79,30 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
 
     REQUIRE(nvAPI_QueryInterface);
 
-    auto nvAPI_Initialize = GetNvAPIProcAddress<PFN_NvAPI_Initialize>(nvAPI_QueryInterface, "NvAPI_Initialize");
-    auto nvAPI_Unload = GetNvAPIProcAddress<PFN_NvAPI_Unload>(nvAPI_QueryInterface, "NvAPI_Unload");
-    auto nvAPI_GetInterfaceVersionString = GetNvAPIProcAddress<PFN_NvAPI_GetInterfaceVersionString>(nvAPI_QueryInterface, "NvAPI_GetInterfaceVersionString");
-    auto nvAPI_SYS_GetDriverAndBranchVersion = GetNvAPIProcAddress<PFN_NvAPI_SYS_GetDriverAndBranchVersion>(nvAPI_QueryInterface, "NvAPI_SYS_GetDriverAndBranchVersion");
-    auto nvAPI_EnumPhysicalGPUs = GetNvAPIProcAddress<PFN_NvAPI_EnumPhysicalGPUs>(nvAPI_QueryInterface, "NvAPI_EnumPhysicalGPUs");
-    auto nvAPI_GetGPUIDfromPhysicalGPU = GetNvAPIProcAddress<PFN_NvAPI_GetGPUIDfromPhysicalGPU>(nvAPI_QueryInterface, "NvAPI_GetGPUIDfromPhysicalGPU");
-    auto nvAPI_GPU_GetGPUType = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetGPUType>(nvAPI_QueryInterface, "NvAPI_GPU_GetGPUType");
-    auto nvAPI_GPU_GetPCIIdentifiers = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetPCIIdentifiers>(nvAPI_QueryInterface, "NvAPI_GPU_GetPCIIdentifiers");
-    auto nvAPI_GPU_GetFullName = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetFullName>(nvAPI_QueryInterface, "NvAPI_GPU_GetFullName");
-    auto nvAPI_GPU_GetBusId = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetBusId>(nvAPI_QueryInterface, "NvAPI_GPU_GetBusId");
-    auto nvAPI_GPU_GetBusSlotId = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetBusSlotId>(nvAPI_QueryInterface, "NvAPI_GPU_GetBusSlotId");
-    auto nvAPI_GPU_GetPhysicalFrameBufferSize = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetPhysicalFrameBufferSize>(nvAPI_QueryInterface, "NvAPI_GPU_GetPhysicalFrameBufferSize");
-    auto nvAPI_GPU_GetAdapterIdFromPhysicalGpu = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetAdapterIdFromPhysicalGpu>(nvAPI_QueryInterface, "NvAPI_GPU_GetAdapterIdFromPhysicalGpu");
-    auto nvAPI_GPU_GetArchInfo = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetArchInfo>(nvAPI_QueryInterface, "NvAPI_GPU_GetArchInfo");
-    auto nvAPI_GPU_CudaEnumComputeCapableGpus = GetNvAPIProcAddress<PFN_NvAPI_GPU_CudaEnumComputeCapableGpus>(nvAPI_QueryInterface, "NvAPI_GPU_CudaEnumComputeCapableGpus");
-    auto nvAPI_GPU_GetVbiosVersionString = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetVbiosVersionString>(nvAPI_QueryInterface, "NvAPI_GPU_GetVbiosVersionString");
-    auto nvAPI_GPU_GetDynamicPstatesInfoEx = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetDynamicPstatesInfoEx>(nvAPI_QueryInterface, "NvAPI_GPU_GetDynamicPstatesInfoEx");
-    auto nvAPI_GPU_GetThermalSettings = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetThermalSettings>(nvAPI_QueryInterface, "NvAPI_GPU_GetThermalSettings");
-    auto nvAPI_GPU_GetCurrentPstate = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetCurrentPstate>(nvAPI_QueryInterface, "NvAPI_GPU_GetCurrentPstate");
-    auto nvAPI_GPU_GetAllClockFrequencies = GetNvAPIProcAddress<PFN_NvAPI_GPU_GetAllClockFrequencies>(nvAPI_QueryInterface, "NvAPI_GPU_GetAllClockFrequencies");
+#define GETNVAPIPROCADDR(x) auto nvAPI_##x = GetNvAPIProcAddress<decltype(&NvAPI_##x)>(nvAPI_QueryInterface, "NvAPI_" #x)
+
+    GETNVAPIPROCADDR(Initialize);
+    GETNVAPIPROCADDR(Unload);
+    GETNVAPIPROCADDR(GetInterfaceVersionString);
+    GETNVAPIPROCADDR(SYS_GetDriverAndBranchVersion);
+    GETNVAPIPROCADDR(EnumPhysicalGPUs);
+    GETNVAPIPROCADDR(GetGPUIDfromPhysicalGPU);
+    GETNVAPIPROCADDR(GPU_GetGPUType);
+    GETNVAPIPROCADDR(GPU_GetPCIIdentifiers);
+    GETNVAPIPROCADDR(GPU_GetFullName);
+    GETNVAPIPROCADDR(GPU_GetBusId);
+    GETNVAPIPROCADDR(GPU_GetBusSlotId);
+    GETNVAPIPROCADDR(GPU_GetPhysicalFrameBufferSize);
+    GETNVAPIPROCADDR(GPU_GetAdapterIdFromPhysicalGpu);
+    GETNVAPIPROCADDR(GPU_GetArchInfo);
+    GETNVAPIPROCADDR(GPU_CudaEnumComputeCapableGpus);
+    GETNVAPIPROCADDR(GPU_GetVbiosVersionString);
+    GETNVAPIPROCADDR(GPU_GetDynamicPstatesInfoEx);
+    GETNVAPIPROCADDR(GPU_GetThermalSettings);
+    GETNVAPIPROCADDR(GPU_GetCurrentPstate);
+    GETNVAPIPROCADDR(GPU_GetAllClockFrequencies);
+
+#undef GETNVAPIPROCADDR
 
     REQUIRE(nvAPI_Initialize);
     REQUIRE(nvAPI_Unload);
