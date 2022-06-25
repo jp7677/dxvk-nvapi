@@ -14,7 +14,7 @@ namespace dxvk {
             return;
         }
 
-#define GETPROCADDR(x) m_##x = GetProcAddress<PFN_##x>(#x)
+#define GETPROCADDR(x) m_##x = GetProcAddress<decltype(&x)>(#x)
 
         GETPROCADDR(nvmlInit_v2);
         GETPROCADDR(nvmlShutdown);

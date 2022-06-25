@@ -27,34 +27,25 @@ namespace dxvk {
         [[nodiscard]] static NV_GPU_BUS_TYPE ToNvGpuBusType(nvmlBusType_t type);
 
       private:
-        typedef decltype(&nvmlInit_v2) PFN_nvmlInit_v2;
-        typedef decltype(&nvmlShutdown) PFN_nvmlShutdown;
-        typedef decltype(&nvmlErrorString) PFN_nvmlErrorString;
-        typedef decltype(&nvmlDeviceGetHandleByPciBusId_v2) PFN_nvmlDeviceGetHandleByPciBusId_v2;
-        typedef decltype(&nvmlDeviceGetPciInfo_v3) PFN_nvmlDeviceGetPciInfo_v3;
-        typedef decltype(&nvmlDeviceGetClockInfo) PFN_nvmlDeviceGetClockInfo;
-        typedef decltype(&nvmlDeviceGetTemperature) PFN_nvmlDeviceGetTemperature;
-        typedef decltype(&nvmlDeviceGetThermalSettings) PFN_nvmlDeviceGetThermalSettings;
-        typedef decltype(&nvmlDeviceGetPerformanceState) PFN_nvmlDeviceGetPerformanceState;
-        typedef decltype(&nvmlDeviceGetUtilizationRates) PFN_nvmlDeviceGetUtilizationRates;
-        typedef decltype(&nvmlDeviceGetVbiosVersion) PFN_nvmlDeviceGetVbiosVersion;
-        typedef decltype(&nvmlDeviceGetBusType) PFN_nvmlDeviceGetBusType;
-        typedef decltype(&nvmlDeviceGetDynamicPstatesInfo) PFN_nvmlDeviceGetDynamicPstatesInfo;
-
         HMODULE m_nvmlModule{};
-        PFN_nvmlInit_v2 m_nvmlInit_v2{};
-        PFN_nvmlShutdown m_nvmlShutdown{};
-        PFN_nvmlErrorString m_nvmlErrorString{};
-        PFN_nvmlDeviceGetHandleByPciBusId_v2 m_nvmlDeviceGetHandleByPciBusId_v2{};
-        PFN_nvmlDeviceGetPciInfo_v3 m_nvmlDeviceGetPciInfo_v3{};
-        PFN_nvmlDeviceGetClockInfo m_nvmlDeviceGetClockInfo{};
-        PFN_nvmlDeviceGetTemperature m_nvmlDeviceGetTemperature{};
-        PFN_nvmlDeviceGetThermalSettings m_nvmlDeviceGetThermalSettings{};
-        PFN_nvmlDeviceGetPerformanceState m_nvmlDeviceGetPerformanceState{};
-        PFN_nvmlDeviceGetUtilizationRates m_nvmlDeviceGetUtilizationRates{};
-        PFN_nvmlDeviceGetVbiosVersion m_nvmlDeviceGetVbiosVersion{};
-        PFN_nvmlDeviceGetBusType m_nvmlDeviceGetBusType{};
-        PFN_nvmlDeviceGetDynamicPstatesInfo m_nvmlDeviceGetDynamicPstatesInfo{};
+
+#define DECLARE_PFN(x) decltype(&x) m_##x{}
+
+        DECLARE_PFN(nvmlInit_v2);
+        DECLARE_PFN(nvmlShutdown);
+        DECLARE_PFN(nvmlErrorString);
+        DECLARE_PFN(nvmlDeviceGetHandleByPciBusId_v2);
+        DECLARE_PFN(nvmlDeviceGetPciInfo_v3);
+        DECLARE_PFN(nvmlDeviceGetClockInfo);
+        DECLARE_PFN(nvmlDeviceGetTemperature);
+        DECLARE_PFN(nvmlDeviceGetThermalSettings);
+        DECLARE_PFN(nvmlDeviceGetPerformanceState);
+        DECLARE_PFN(nvmlDeviceGetUtilizationRates);
+        DECLARE_PFN(nvmlDeviceGetVbiosVersion);
+        DECLARE_PFN(nvmlDeviceGetBusType);
+        DECLARE_PFN(nvmlDeviceGetDynamicPstatesInfo);
+
+#undef DECLARE_PFN
 
         template <typename T>
         T GetProcAddress(const char* name);
