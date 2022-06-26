@@ -1,0 +1,4 @@
+external/*
+inc/*
+build/*
+builddir/*
