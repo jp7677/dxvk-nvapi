@@ -5,7 +5,7 @@ project('dxvk-nvapi',
     'warning_level=2'
   ],
   version : 'v0.0',
-  meson_version : '>= 0.49.0')
+  meson_version : '>= 0.58.0')
 
 dxvk_compiler = meson.get_compiler('cpp')
 add_project_arguments(dxvk_compiler.get_supported_arguments('-Wno-unused-parameter'), language : 'cpp')
