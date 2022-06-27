@@ -399,7 +399,7 @@ extern "C" {
                 // nvmlGpuDynamicPstatesInfo_t also has `flags` but they are reserved for future use
                 pDynamicPstatesInfoEx->flags = 0;
                 // order of the first four utilization domains in NVML matches NVAPI
-                // to consider: should be avoid blindly copying domains 4-7 in case they don't match once introduced?
+                // to consider: should we avoid blindly copying domains 4-7 in case they don't match once introduced?
                 static_assert(NVML_MAX_GPU_UTILIZATIONS == NVAPI_MAX_GPU_UTILIZATIONS);
                 for (auto i = 0U; i < NVAPI_MAX_GPU_UTILIZATIONS; i++) {
                     pDynamicPstatesInfoEx->utilization[i].bIsPresent = gpuDynamicPstatesInfo.utilization[i].bIsPresent ? 1 : 0;
@@ -663,7 +663,7 @@ extern "C" {
         if (pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_1 && pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_2 && pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_3)
             return IncompatibleStructVersion(n);
 
-        // Only check for CURRENT_FREQ, and not for the other types ie. BOOST or DEFAULT for now
+        // Only check for CURRENT_FREQ, and not for the other types i.e. BOOST or DEFAULT for now
         if ((pClkFreqs->version == NV_GPU_CLOCK_FREQUENCIES_VER_2 || pClkFreqs->version == NV_GPU_CLOCK_FREQUENCIES_VER_3)
             && pClkFreqs->ClockType != static_cast<NvU32>(NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ))
             return NotSupported(n, alreadyLoggedNotSupported);
