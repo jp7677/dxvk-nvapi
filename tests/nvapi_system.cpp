@@ -249,6 +249,12 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         else
             std::cout << "N/A" << std::endl;
 
+        std::cout << "    Current video utilization:  ";
+        if (result == NVAPI_OK)
+            std::cout << std::dec << info.utilization[2].percentage << "%" << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
+
         NV_GPU_THERMAL_SETTINGS settings;
         settings.version = NV_GPU_THERMAL_SETTINGS_VER;
         result = nvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings);
