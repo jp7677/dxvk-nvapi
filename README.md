@@ -94,11 +94,10 @@ Producing a debug build and starting a debugging session with the test suite can
 meson --cross-file "./build-win64.txt" --buildtype "debugoptimized" -Denable_tests=True build/dev
 meson compile -C build/dev
 
-ln -sr build/dev/src/nvapi64.dll build/dev/tests/nvapi64.dll # to ensure that nvapi64-tests.exe finds nvapi64.dll 
-DXVK_LOG_LEVEL=none DXVK_NVAPI_LOG_LEVEL=none WINEDEBUG=-all WINEDLLOVERRIDES=nvapi64=n winedbg --gdb build/dev/tests/nvapi64-tests.exe [@all]
+DXVK_LOG_LEVEL=none DXVK_NVAPI_LOG_LEVEL=none WINEDEBUG=-all WINEDLLOVERRIDES=nvapi64=n WINEPATH=build/dev/src winedbg --gdb build/dev/tests/nvapi64-tests.exe [@all]
 ```
 
-Once the debug session has started, use `c` to start/continue execution and a.o. `bt` to show a proper stacktrace after a segmentation fault.
+Once the debug session has started, use `c` to start/continue execution and a.o. `bt` to show a proper stacktrace after a segmentation fault. Ensure to have no other native `nvapi64.dll` in the Wine prefix, otherwise this one gets precedence over the one found in `WINEPATH`.
 
 ## References and inspirations
 
