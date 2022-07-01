@@ -745,6 +745,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*nvml, IsAvailable()) // NOLINT(bugprone-use-after-move)
             .RETURN(true);
         ALLOW_CALL(*nvml, DeviceGetHandleByPciBusId_v2(_, _))
+            .SIDE_EFFECT(*_2 = reinterpret_cast<nvmlDevice_t>(0x1234)) // Just a non-nullptr
             .RETURN(NVML_SUCCESS);
 
         SECTION("GetGpuCoreCount returns OK") {
