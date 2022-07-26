@@ -37,17 +37,16 @@ jobs:
       uses: Joshua-Ashton/gcc-problem-matcher@v1
 
     - name: Lint source code
-      uses: Joshua-Ashton/arch-mingw-github-action@v7
+      uses: Joshua-Ashton/arch-mingw-github-action@v8
       with:
         command: |
           meson --cross-file "./build-win64.txt" -Denable_tests=True build/lint
           ninja clang-format-check -C build/lint
 
     - name: Build and run tests
-      uses: Joshua-Ashton/arch-mingw-github-action@v7
+      uses: Joshua-Ashton/arch-mingw-github-action@v8
       with:
         command: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           ./package-release.sh "${{ env.VERSION }}" build --enable-tests
           mkdir "${HOME}/tests-prefix"
           WINEPREFIX="${HOME}/tests-prefix" WINEDEBUG=-all wine \
