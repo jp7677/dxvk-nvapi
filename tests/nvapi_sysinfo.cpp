@@ -748,6 +748,23 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             .SIDE_EFFECT(*_2 = reinterpret_cast<nvmlDevice_t>(0x1234)) // Just a non-nullptr
             .RETURN(NVML_SUCCESS);
 
+        SECTION("GetCurrentPCIEDownstreamWidth returns OK") {
+            auto linkWidth = 16U;
+            ALLOW_CALL(*nvml, DeviceGetCurrPcieLinkWidth(_, _)) // NOLINT(bugprone-use-after-move)
+                .LR_SIDE_EFFECT(*_2 = linkWidth)
+                .RETURN(NVML_SUCCESS);
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0, &handle) == NVAPI_OK);
+
+            NvU32 width;
+            REQUIRE(NvAPI_GPU_GetCurrentPCIEDownstreamWidth(handle, &width) == NVAPI_OK);
+            REQUIRE(width == linkWidth);
+        }
+
         SECTION("GetGpuCoreCount returns OK") {
             auto cores = 1536U;
             ALLOW_CALL(*nvml, DeviceGetNumGpuCores(_, _)) // NOLINT(bugprone-use-after-move)
@@ -1159,6 +1176,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         }
 
         SECTION("NVML depending methods return no-implementation when NVML is not available") {
+            NvU32 width;
+            REQUIRE(NvAPI_GPU_GetCurrentPCIEDownstreamWidth(handle, &width) == NVAPI_NO_IMPLEMENTATION);
             NvU32 cores;
             REQUIRE(NvAPI_GPU_GetGpuCoreCount(handle, &cores) == NVAPI_NO_IMPLEMENTATION);
             NV_GPU_DYNAMIC_PSTATES_INFO_EX info;
@@ -1197,6 +1216,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         }
 
         SECTION("NVML depending methods return handle-invalidated when NVML is available but without suitable adapter") {
+            NvU32 width;
+            REQUIRE(NvAPI_GPU_GetCurrentPCIEDownstreamWidth(handle, &width) == NVAPI_HANDLE_INVALIDATED);
             NvU32 cores;
             REQUIRE(NvAPI_GPU_GetGpuCoreCount(handle, &cores) == NVAPI_HANDLE_INVALIDATED);
             NV_GPU_DYNAMIC_PSTATES_INFO_EX info;

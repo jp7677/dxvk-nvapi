@@ -79,6 +79,7 @@ class NvmlMock : public trompeloeil::mock_interface<dxvk::Nvml> {
     IMPLEMENT_CONST_MOCK2(DeviceGetPerformanceState);
     IMPLEMENT_CONST_MOCK2(DeviceGetUtilizationRates);
     IMPLEMENT_CONST_MOCK3(DeviceGetVbiosVersion);
+    IMPLEMENT_CONST_MOCK2(DeviceGetCurrPcieLinkWidth);
     IMPLEMENT_CONST_MOCK2(DeviceGetNumGpuCores);
     IMPLEMENT_CONST_MOCK2(DeviceGetBusType);
     IMPLEMENT_CONST_MOCK2(DeviceGetDynamicPstatesInfo);
