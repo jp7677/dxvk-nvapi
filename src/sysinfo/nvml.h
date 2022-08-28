@@ -20,6 +20,7 @@ namespace dxvk {
         [[nodiscard]] virtual nvmlReturn_t DeviceGetUtilizationRates(nvmlDevice_t device, nvmlUtilization_t* utilization) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetVbiosVersion(nvmlDevice_t device, char* version, unsigned int length) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetCurrPcieLinkWidth(nvmlDevice_t device, unsigned int* width) const;
+        [[nodiscard]] virtual nvmlReturn_t DeviceGetIrqNum(nvmlDevice_t device, unsigned int* irqNum) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetNumGpuCores(nvmlDevice_t device, unsigned int* numCores) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetBusType(nvmlDevice_t device, nvmlBusType_t* type) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetDynamicPstatesInfo(nvmlDevice_t device, nvmlGpuDynamicPstatesInfo_t* pDynamicPstatesInfo) const;
@@ -46,6 +47,7 @@ namespace dxvk {
         DECLARE_PFN(nvmlDeviceGetUtilizationRates);
         DECLARE_PFN(nvmlDeviceGetVbiosVersion);
         DECLARE_PFN(nvmlDeviceGetCurrPcieLinkWidth);
+        DECLARE_PFN(nvmlDeviceGetIrqNum);
         DECLARE_PFN(nvmlDeviceGetNumGpuCores);
         DECLARE_PFN(nvmlDeviceGetBusType);
         DECLARE_PFN(nvmlDeviceGetDynamicPstatesInfo);
