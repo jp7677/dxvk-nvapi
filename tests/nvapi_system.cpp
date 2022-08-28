@@ -95,6 +95,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     GETNVAPIPROCADDR(GPU_GetPhysicalFrameBufferSize);
     GETNVAPIPROCADDR(GPU_GetAdapterIdFromPhysicalGpu);
     GETNVAPIPROCADDR(GPU_GetArchInfo);
+    GETNVAPIPROCADDR(GPU_GetCurrentPCIEDownstreamWidth);
     GETNVAPIPROCADDR(GPU_GetGpuCoreCount);
     GETNVAPIPROCADDR(GPU_CudaEnumComputeCapableGpus);
     GETNVAPIPROCADDR(GPU_GetVbiosVersionString);
@@ -119,6 +120,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     REQUIRE(nvAPI_GPU_GetPhysicalFrameBufferSize);
     REQUIRE(nvAPI_GPU_GetAdapterIdFromPhysicalGpu);
     REQUIRE(nvAPI_GPU_GetArchInfo);
+    REQUIRE(nvAPI_GPU_GetCurrentPCIEDownstreamWidth);
     REQUIRE(nvAPI_GPU_GetGpuCoreCount);
     REQUIRE(nvAPI_GPU_CudaEnumComputeCapableGpus);
     REQUIRE(nvAPI_GPU_GetVbiosVersionString);
@@ -217,6 +219,14 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         std::cout << "    GPU core count:             ";
         if (result == NVAPI_OK)
             std::cout << std::dec << gpuCoreCount << std::endl;
+        else
+            std::cout << "N/A" << std::endl;
+
+        NvU32 gpuPcieWidth;
+        result = nvAPI_GPU_GetCurrentPCIEDownstreamWidth(handle, &gpuPcieWidth);
+        std::cout << "    Current PCIe link width:    ";
+        if (result == NVAPI_OK)
+            std::cout << "x" << std::dec << gpuPcieWidth << std::endl;
         else
             std::cout << "N/A" << std::endl;
 
