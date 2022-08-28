@@ -28,6 +28,7 @@ namespace dxvk {
         GETPROCADDR(nvmlDeviceGetUtilizationRates);
         GETPROCADDR(nvmlDeviceGetVbiosVersion);
         GETPROCADDR(nvmlDeviceGetCurrPcieLinkWidth);
+        GETPROCADDR(nvmlDeviceGetIrqNum);
         GETPROCADDR(nvmlDeviceGetNumGpuCores);
         GETPROCADDR(nvmlDeviceGetBusType);
         GETPROCADDR(nvmlDeviceGetDynamicPstatesInfo);
@@ -117,6 +118,12 @@ namespace dxvk {
     nvmlReturn_t Nvml::DeviceGetCurrPcieLinkWidth(nvmlDevice_t device, unsigned int* width) const {
         return m_nvmlDeviceGetCurrPcieLinkWidth
             ? m_nvmlDeviceGetCurrPcieLinkWidth(device, width)
+            : NVML_ERROR_FUNCTION_NOT_FOUND;
+    }
+
+    nvmlReturn_t Nvml::DeviceGetIrqNum(nvmlDevice_t device, unsigned int* irqNum) const {
+        return m_nvmlDeviceGetIrqNum
+            ? m_nvmlDeviceGetIrqNum(device, irqNum)
             : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 

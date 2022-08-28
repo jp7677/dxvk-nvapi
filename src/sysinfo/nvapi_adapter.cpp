@@ -278,6 +278,10 @@ namespace dxvk {
         return m_nvml.DeviceGetCurrPcieLinkWidth(m_nvmlDevice, width);
     }
 
+    nvmlReturn_t NvapiAdapter::GetNvmlDeviceGetIrqNum(unsigned int* irq) const {
+        return m_nvml.DeviceGetIrqNum(m_nvmlDevice, irq);
+    }
+
     nvmlReturn_t NvapiAdapter::GetNvmlDeviceNumGpuCores(unsigned int* numCores) const {
         return m_nvml.DeviceGetNumGpuCores(m_nvmlDevice, numCores);
     }
