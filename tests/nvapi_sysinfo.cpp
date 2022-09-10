@@ -940,9 +940,9 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         }
 
         SECTION("GetThermalSettings succeeds when DeviceGetThermalSettings is available") {
-            auto temp = 65U;
-            auto maxTemp = 127U;
-            auto minTemp = 4294967256U;                          // -40 as unsigned int
+            auto temp = 65;
+            auto maxTemp = 127;
+            auto minTemp = -40;
             ALLOW_CALL(*nvml, DeviceGetThermalSettings(_, _, _)) // NOLINT(bugprone-use-after-move)
                 .LR_SIDE_EFFECT({
                     _3->count = 1;
@@ -972,8 +972,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 REQUIRE(settings.count == 1);
                 REQUIRE(settings.sensor[0].controller == NVAPI_THERMAL_CONTROLLER_GPU_INTERNAL);
                 REQUIRE(settings.sensor[0].target == NVAPI_THERMAL_TARGET_GPU);
-                REQUIRE(settings.sensor[0].currentTemp == temp);
-                REQUIRE(settings.sensor[0].defaultMaxTemp == maxTemp);
+                REQUIRE(settings.sensor[0].currentTemp == static_cast<NvU32>(temp));
+                REQUIRE(settings.sensor[0].defaultMaxTemp == static_cast<NvU32>(maxTemp));
                 REQUIRE(settings.sensor[0].defaultMinTemp == 0U);
             }
 
@@ -984,9 +984,9 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 REQUIRE(settings.count == 1);
                 REQUIRE(settings.sensor[0].controller == NVAPI_THERMAL_CONTROLLER_GPU_INTERNAL);
                 REQUIRE(settings.sensor[0].target == NVAPI_THERMAL_TARGET_GPU);
-                REQUIRE(settings.sensor[0].currentTemp == static_cast<int>(temp));
-                REQUIRE(settings.sensor[0].defaultMaxTemp == static_cast<int>(maxTemp));
-                REQUIRE(settings.sensor[0].defaultMinTemp == -40);
+                REQUIRE(settings.sensor[0].currentTemp == temp);
+                REQUIRE(settings.sensor[0].defaultMaxTemp == maxTemp);
+                REQUIRE(settings.sensor[0].defaultMinTemp == minTemp);
             }
 
             SECTION("GetThermalSettings with unknown struct version returns incompatible-struct-version") {

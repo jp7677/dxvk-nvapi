@@ -564,9 +564,6 @@ extern "C" {
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
         unsigned sensors;
-        // NVML claims that defaultMinTemp is unsigned int, but it can return values like uint32_t(4294967256)
-        // which would be equal to -40 if interpreted as signed, while NvAPI simply returns NvS32(-40) for the same device
-        signed int defaultMinTemp;
         nvmlGpuThermalSettings_t thermalSettings;
         auto result = adapter->GetNvmlDeviceThermalSettings(sensorIndex, &thermalSettings);
         switch (result) {
@@ -583,10 +580,9 @@ extern "C" {
                         for (auto i = 0U; i < sensors; i++) {
                             pThermalSettingsV1->sensor[i].controller = Nvml::ToNvThermalController(thermalSettings.sensor[i].controller);
                             pThermalSettingsV1->sensor[i].target = Nvml::ToNvThermalTarget(thermalSettings.sensor[i].target);
-                            pThermalSettingsV1->sensor[i].currentTemp = thermalSettings.sensor[i].currentTemp;
-                            pThermalSettingsV1->sensor[i].defaultMaxTemp = thermalSettings.sensor[i].defaultMaxTemp;
-                            memcpy(&defaultMinTemp, &thermalSettings.sensor[i].defaultMinTemp, sizeof(defaultMinTemp));
-                            pThermalSettingsV1->sensor[i].defaultMinTemp = static_cast<NvU32>(std::max(defaultMinTemp, 0));
+                            pThermalSettingsV1->sensor[i].currentTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].currentTemp, 0));
+                            pThermalSettingsV1->sensor[i].defaultMaxTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].defaultMaxTemp, 0));
+                            pThermalSettingsV1->sensor[i].defaultMinTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].defaultMinTemp, 0));
                         }
                         break;
                     }
@@ -597,8 +593,7 @@ extern "C" {
                             pThermalSettings->sensor[i].target = Nvml::ToNvThermalTarget(thermalSettings.sensor[i].target);
                             pThermalSettings->sensor[i].currentTemp = static_cast<NvS32>(thermalSettings.sensor[i].currentTemp);
                             pThermalSettings->sensor[i].defaultMaxTemp = static_cast<NvS32>(thermalSettings.sensor[i].defaultMaxTemp);
-                            memcpy(&defaultMinTemp, &thermalSettings.sensor[i].defaultMinTemp, sizeof(defaultMinTemp));
-                            pThermalSettings->sensor[i].defaultMinTemp = defaultMinTemp;
+                            pThermalSettings->sensor[i].defaultMinTemp = static_cast<NvS32>(thermalSettings.sensor[i].defaultMinTemp);
                         }
                         break;
                     default:
