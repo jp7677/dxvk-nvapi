@@ -625,9 +625,9 @@ typedef struct
     struct
     {
         nvmlThermalController_t controller;
-        unsigned int defaultMinTemp;
-        unsigned int defaultMaxTemp;
-        unsigned int currentTemp;
+        int defaultMinTemp;
+        int defaultMaxTemp;
+        int currentTemp;
         nvmlThermalTarget_t target;
     } sensor[NVML_MAX_THERMAL_SENSORS_PER_GPU];
 
