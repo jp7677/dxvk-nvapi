@@ -34,7 +34,7 @@ jobs:
         echo "ARTIFACT=dxvk-nvapi-${VERSION}.tar.gz" >> $GITHUB_ENV
 
     - name: Setup problem matcher
-      uses: Joshua-Ashton/gcc-problem-matcher@v1
+      uses: Joshua-Ashton/gcc-problem-matcher@v2
 
     - name: Lint source code
       uses: Joshua-Ashton/arch-mingw-github-action@v8
