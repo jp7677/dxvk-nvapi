@@ -207,6 +207,11 @@ namespace dxvk {
     }
 
     NV_GPU_ARCHITECTURE_ID NvapiAdapter::GetArchitectureId() const {
+        // In lieu of a more idiomatic Vulkan-based solution, check the PCI
+        // DeviceID to determine if an Ada card is present
+        if (m_deviceProperties.deviceID >= 0x2600)
+            return NV_GPU_ARCHITECTURE_AD100;
+
         // KHR_fragment_shading_rate's
         // primitiveFragmentShadingRateWithMultipleViewports is supported on
         // Ampere and newer
