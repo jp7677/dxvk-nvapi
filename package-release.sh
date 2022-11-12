@@ -45,16 +45,16 @@ done
 
 function prepare {
   python3 validate-methods.py \
-    src/nvapi.cpp \
-    src/nvapi_sys.cpp \
-    src/nvapi_disp.cpp \
-    src/nvapi_mosaic.cpp \
-    src/nvapi_drs.cpp \
-    src/nvapi_gpu.cpp \
-    src/nvapi_d3d.cpp \
-    src/nvapi_d3d11.cpp \
-    src/nvapi_d3d12.cpp \
-    src/nvapi_interface.cpp \
+    src/nvapi.cpp             \
+    src/nvapi_sys.cpp         \
+    src/nvapi_disp.cpp        \
+    src/nvapi_mosaic.cpp      \
+    src/nvapi_drs.cpp         \
+    src/nvapi_gpu.cpp         \
+    src/nvapi_d3d.cpp         \
+    src/nvapi_d3d11.cpp       \
+    src/nvapi_d3d12.cpp       \
+    src/nvapi_interface.cpp   \
     inc/nvapi_interface.h
 
   # remove existing version.h, because otherwise the existing one gets into the build instead of the generated one
@@ -66,14 +66,15 @@ function prepare {
 function build_arch {
   cd "$SRC_DIR"
 
-  meson --cross-file "$SRC_DIR/$crossfile$1.txt" \
-        --buildtype "release"                    \
-        --prefix "$BUILD_DIR"                    \
-        --strip                                  \
-        --bindir "x$1"                           \
-        --libdir "x$1"                           \
-        -Denable_tests=$opt_enabletests          \
-        "$BUILD_DIR/build.$1"
+  meson setup                                \
+    --cross-file "$SRC_DIR/$crossfile$1.txt" \
+    --buildtype "release"                    \
+    --prefix "$BUILD_DIR"                    \
+    --strip                                  \
+    --bindir "x$1"                           \
+    --libdir "x$1"                           \
+    -Denable_tests=$opt_enabletests          \
+    "$BUILD_DIR/build.$1"
 
   cd "$BUILD_DIR/build.$1"
   ninja install
