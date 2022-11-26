@@ -27,7 +27,19 @@ extern "C" {
                 // pHdrCapabilities->display_data
                 break;
             }
-            case NV_HDR_CAPABILITIES_VER2:
+            case NV_HDR_CAPABILITIES_VER2: {
+                auto pHdrCapabilitiesV2 = reinterpret_cast<NV_HDR_CAPABILITIES_V2*>(pHdrCapabilities);
+                pHdrCapabilitiesV2->isST2084EotfSupported = false;
+                pHdrCapabilitiesV2->isTraditionalHdrGammaSupported = false;
+                pHdrCapabilitiesV2->isEdrSupported = false;
+                pHdrCapabilitiesV2->driverExpandDefaultHdrParameters = false;
+                pHdrCapabilitiesV2->isTraditionalSdrGammaSupported = false;
+                // pHdrCapabilities->display_data
+                pHdrCapabilitiesV2->isDolbyVisionSupported = false;
+                // pHdrCapabilities->dv_static_metadata
+                break;
+            }
+            case NV_HDR_CAPABILITIES_VER3:
                 pHdrCapabilities->isST2084EotfSupported = false;
                 pHdrCapabilities->isTraditionalHdrGammaSupported = false;
                 pHdrCapabilities->isEdrSupported = false;

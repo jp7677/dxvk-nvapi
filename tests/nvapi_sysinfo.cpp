@@ -1273,6 +1273,17 @@ TEST_CASE("GetHdrCapabilities succeeds", "[.sysinfo]") {
     SECTION("GetHdrCapabilities (V2) returns OK") {
         NV_HDR_CAPABILITIES_V2 capabilities;
         capabilities.version = NV_HDR_CAPABILITIES_VER2;
+        REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, reinterpret_cast<NV_HDR_CAPABILITIES*>(&capabilities)) == NVAPI_OK);
+        REQUIRE(capabilities.isST2084EotfSupported == false);
+        REQUIRE(capabilities.isTraditionalHdrGammaSupported == false);
+        REQUIRE(capabilities.isEdrSupported == false);
+        REQUIRE(capabilities.driverExpandDefaultHdrParameters == false);
+        REQUIRE(capabilities.isTraditionalSdrGammaSupported == false);
+    }
+
+    SECTION("GetHdrCapabilities (V3) returns OK") {
+        NV_HDR_CAPABILITIES_V3 capabilities;
+        capabilities.version = NV_HDR_CAPABILITIES_VER3;
         REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, &capabilities) == NVAPI_OK);
         REQUIRE(capabilities.isST2084EotfSupported == false);
         REQUIRE(capabilities.isTraditionalHdrGammaSupported == false);
@@ -1284,7 +1295,7 @@ TEST_CASE("GetHdrCapabilities succeeds", "[.sysinfo]") {
 
     SECTION("GetHdrCapabilities with unknown struct version returns incompatible-struct-version") {
         NV_HDR_CAPABILITIES capabilities;
-        capabilities.version = NV_HDR_CAPABILITIES_VER2 + 1;
+        capabilities.version = NV_HDR_CAPABILITIES_VER3 + 1;
         REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, &capabilities) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
     }
 
