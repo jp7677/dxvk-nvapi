@@ -3,7 +3,7 @@
 #include <libloaderapi.h>
 #include "../inc/nvapi.h"
 #include "../inc/nvapi_interface.h"
-#include "../inc/catch.hpp"
+#include "../inc/catch_amalgamated.hpp"
 
 typedef void* (*PFN_NvAPI_QueryInterface)(uint32_t id);
 

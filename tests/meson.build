@@ -26,6 +26,8 @@ nvapi_src = files([
   '../src/nvapi_sys.cpp',
 ])
 
+catch2_src = files(['../inc/catch_amalgamated.cpp'])
+
 nvapi_tests_src = files([
   'main.cpp',
   'resource_factory_util.cpp',
@@ -37,7 +39,7 @@ nvapi_tests_src = files([
   'nvapi_system.cpp',
 ])
 
-nvapi_exe = executable('nvapi'+target_suffix+'-tests', [ nvapi_src, nvapi_tests_src, dxvk_nvapi_version ],
+nvapi_exe = executable('nvapi'+target_suffix+'-tests', [ nvapi_src, catch2_src, nvapi_tests_src, dxvk_nvapi_version ],
   dependencies        : [ lib_dxgi ],
   include_directories : [ vk_headers ],
   install             : true)
