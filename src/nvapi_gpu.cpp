@@ -290,6 +290,33 @@ extern "C" {
         return Ok(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_GPU_GetLogicalGpuInfo(NvLogicalGpuHandle hLogicalGpu, NV_LOGICAL_GPU_DATA* pLogicalGpuData) {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pLogicalGpuData == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hLogicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedLogicalGpuHandle(n);
+
+        if (pLogicalGpuData->version != NV_LOGICAL_GPU_DATA_VER1)
+            return IncompatibleStructVersion(n);
+
+        auto luid = adapter->GetLuid();
+        if (!luid.has_value())
+            return Error(n);
+
+        memcpy(pLogicalGpuData->pOSAdapterId, &luid.value(), sizeof(luid));
+        pLogicalGpuData->physicalGpuHandles[0] = reinterpret_cast<NvPhysicalGpuHandle>(adapter);
+        pLogicalGpuData->physicalGpuCount = 1;
+
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_GPU_GetArchInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_ARCH_INFO* pGpuArchInfo) {
         constexpr auto n = __func__;
         auto returnAddress = _ReturnAddress();
