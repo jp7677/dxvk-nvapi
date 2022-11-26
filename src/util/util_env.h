@@ -8,4 +8,6 @@ namespace dxvk::env {
     std::string getExecutableName();
 
     std::string getCurrentDateTime();
+
+    bool needsAmpereSpoofing(NV_GPU_ARCHITECTURE_ID architectureId, void* pReturnAddress);
 }

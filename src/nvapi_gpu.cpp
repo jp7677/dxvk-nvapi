@@ -2,6 +2,7 @@
 #include "nvapi_globals.h"
 #include "util/util_statuscode.h"
 #include "util/util_string.h"
+#include "util/util_env.h"
 
 extern "C" {
     using namespace dxvk;
@@ -289,80 +290,9 @@ extern "C" {
         return Ok(n);
     }
 
-    // Function to check for WAR to DLSS Bug 3634851 if an affected DLSS DLL is
-    // detected this function will return true; false will be returned for all
-    // non-affected DLLs.
-    static bool isDLSSBug3634851WARNeeded(void* pReturnAddress) {
-        // Get file path of caller DLL
-        char modulePath[MAX_PATH];
-        HMODULE hModule = NULL;
-        if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (const char*)pReturnAddress, &hModule)) {
-            // Failed to get the path, won't try to WAR.
-            return false;
-        }
-        uint32_t pathLen = GetModuleFileName(hModule, modulePath, MAX_PATH);
-
-        // Check if module name is either nvngx_dlss.dll, or matches the OTA
-        // hashing pattern app_???????.bin
-        if (strcasecmp("nvngx_dlss.dll", modulePath + pathLen - 14) == 0) {
-            // nvngx_dlss.dll detected
-        } else if (strncasecmp("app_", modulePath + pathLen - 15, 4) == 0 && strcasecmp(".bin", modulePath + pathLen - 4) == 0) {
-            // app_???????.bin matches OTA pattern
-        } else {
-            // Filename does not match known patterns
-            return false;
-        }
-
-        // Get the version metadata from the DLL
-        uint32_t infoSize = GetFileVersionInfoSizeA(modulePath, NULL);
-        if (infoSize == 0) {
-            return false;
-        }
-
-        uint8_t* verInfo = new uint8_t[infoSize];
-
-        if (!GetFileVersionInfoA(modulePath, 0, infoSize, verInfo)) {
-            delete[] verInfo;
-            return false;
-        }
-
-        VS_FIXEDFILEINFO* fixedInfo = nullptr;
-        uint32_t fixedSize = 0;
-
-        VerQueryValueA(verInfo, "\\", (void**)&fixedInfo, &fixedSize);
-
-        // Double-check that we are reading a VS_FIXEDFILEINFO structure
-        if (fixedInfo->dwSignature != 0xFEEF04BD) {
-            delete[] verInfo;
-            return false;
-        }
-
-        // Only DLSS 2.x versions prior to 2.4 are affected by this bug
-        uint32_t majorVersion = (fixedInfo->dwFileVersionMS & 0xFFFF0000) >> 16;
-        uint32_t minorVersion = fixedInfo->dwFileVersionMS & 0x0000FFFF;
-        if (majorVersion != 2 || minorVersion >= 4) {
-            delete[] verInfo;
-            return false;
-        }
-
-        // Lastly compare the product name to be absolutely certain we were
-        // called by DLSS
-        char* productName;
-        uint32_t productNameSize;
-        VerQueryValueA(verInfo, "\\StringFileInfo\\040904E4\\ProductName", (void**)&productName, &productNameSize);
-
-        if (strcmp(productName, "NVIDIA Deep Learning SuperSampling") == 0) {
-            // A DLSS version between 2.0 and 2.4 was detected, applying WAR
-            delete[] verInfo;
-            return true;
-        } else {
-            delete[] verInfo;
-            return false;
-        }
-    }
-
     NvAPI_Status __cdecl NvAPI_GPU_GetArchInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_ARCH_INFO* pGpuArchInfo) {
         constexpr auto n = __func__;
+        auto returnAddress = _ReturnAddress();
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -382,13 +312,8 @@ extern "C" {
 
         auto architectureId = adapter->GetArchitectureId();
 
-        if (architectureId > NV_GPU_ARCHITECTURE_GA100) {
-            void* returnAddress = _ReturnAddress();
-
-            // Check if we need to workaround NVIDIA Bug 3634851
-            if (isDLSSBug3634851WARNeeded(returnAddress))
-                architectureId = NV_GPU_ARCHITECTURE_GA100;
-        }
+        if (env::needsAmpereSpoofing(architectureId, returnAddress))
+            architectureId = NV_GPU_ARCHITECTURE_GA100;
 
         // Assume the implementation ID from the architecture ID. No simple way
         // to do a more fine-grained query at this time. Would need wine-nvml
