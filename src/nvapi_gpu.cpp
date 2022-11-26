@@ -3,10 +3,6 @@
 #include "util/util_statuscode.h"
 #include "util/util_string.h"
 
-#if defined(__GNUC__)
-#define _ReturnAddress() __builtin_return_address(0);
-#endif
-
 extern "C" {
     using namespace dxvk;
 

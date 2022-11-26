@@ -34,3 +34,7 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif // __GNUC__
+
+#if defined(__GNUC__)
+#define _ReturnAddress() __builtin_return_address(0);
+#endif
