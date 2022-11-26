@@ -147,6 +147,10 @@ extern "C" {
         // From https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
         // Note: One might think that SM here is D3D12 Shader Model, in fact it is the "Streaming Multiprocessor" architecture name
         switch (adapter->GetArchitectureId()) {
+            case NV_GPU_ARCHITECTURE_AD100:
+                pGraphicsCaps->majorSMVersion = 8;
+                pGraphicsCaps->minorSMVersion = 9;
+                break;
             case NV_GPU_ARCHITECTURE_GA100:
                 pGraphicsCaps->majorSMVersion = 8;
                 pGraphicsCaps->minorSMVersion = 6; // Take the risk that no one uses an NVIDIA A100 with this implementation
