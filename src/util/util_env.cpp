@@ -1,5 +1,6 @@
 #include "util_env.h"
 #include "util_string.h"
+#include "util_log.h"
 
 namespace dxvk::env {
     std::string getEnvVariable(const std::string& name) {
@@ -111,10 +112,12 @@ namespace dxvk::env {
     }
 
     bool needsAmpereSpoofing(NV_GPU_ARCHITECTURE_ID architectureId, void* pReturnAddress) {
-        if (architectureId < NV_GPU_ARCHITECTURE_AD100)
-            return false;
-
         // Check if we need to workaround NVIDIA Bug 3634851
-        return isDLSSVersion20To24(pReturnAddress);
+        if (architectureId >= NV_GPU_ARCHITECTURE_AD100 && isDLSSVersion20To24(pReturnAddress)) {
+            log::write("Spoofing Ampere for Ada and later due to DLSS version 2.0-2.4");
+            return true;
+        }
+
+        return false;
     }
 }
