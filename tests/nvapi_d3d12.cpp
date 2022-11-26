@@ -157,18 +157,20 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         SECTION("GetGraphicsCapabilities returns OK with valid SM") {
             struct Data {
                 VkDriverId driverId;
+                uint32_t deviceId;
                 std::string extensionName;
                 uint16_t expectedMajorSMVersion;
                 uint16_t expectedMinorSMVersion;
             };
             auto args = GENERATE(
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 6},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME, 7, 5},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME, 7, 0},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME, 6, 0},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, 5, 0},
-                Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 0, 0},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, "ext", 0, 0});
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2600, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 9},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 6},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME, 7, 5},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME, 7, 0},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME, 6, 0},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, 5, 0},
+                Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, 0x2000, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 0, 0},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, "ext", 0, 0});
 
             ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
 
@@ -185,6 +187,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                             memcpy(&idProps->deviceLUID, &luid, sizeof(luid));
                             idProps->deviceLUIDValid = VK_TRUE;
                             driverProps->driverID = args.driverId;
+                            props->deviceID = args.deviceId;
                             if (args.extensionName == VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
                                 fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
                         }));

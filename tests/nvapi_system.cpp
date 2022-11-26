@@ -31,6 +31,8 @@ static std::string ToGpuType(NV_GPU_TYPE type) {
 
 static std::string ToGpuArchitecture(NV_GPU_ARCHITECTURE_ID id) {
     switch (id) {
+        case NV_GPU_ARCHITECTURE_AD100:
+            return "Ada";
         case NV_GPU_ARCHITECTURE_GA100:
             return "Ampere";
         case NV_GPU_ARCHITECTURE_TU100:
@@ -51,7 +53,10 @@ static std::string ToGpuArchitecture(NV_GPU_ARCHITECTURE_ID id) {
         case NV_GPU_ARCHITECTURE_GF110:
             return "Fermi";
         default:
-            return "Pre-Fermi";
+            if (id > NV_GPU_ARCHITECTURE_AD100)
+                return "Post-Ada";
+            else
+                return "Pre-Fermi";
     }
 }
 
