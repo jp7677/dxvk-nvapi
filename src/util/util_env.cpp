@@ -120,4 +120,17 @@ namespace dxvk::env {
 
         return false;
     }
+
+    bool isMonsterHunterWorld() {
+        return getExecutableName() == std::string("MonsterHunterWorld.exe");
+    }
+
+    bool needsPascalSpoofing(NV_GPU_ARCHITECTURE_ID architectureId) {
+        if (architectureId >= NV_GPU_ARCHITECTURE_TU100 && isMonsterHunterWorld()) {
+            log::write("Spoofing Pascal for Turing and later due to detecting MonsterHunterWorld.exe");
+            return true;
+        }
+
+        return false;
+    }
 }

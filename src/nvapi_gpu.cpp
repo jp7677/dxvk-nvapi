@@ -315,6 +315,9 @@ extern "C" {
         if (env::needsAmpereSpoofing(architectureId, returnAddress))
             architectureId = NV_GPU_ARCHITECTURE_GA100;
 
+        if (env::needsPascalSpoofing(architectureId))
+            architectureId = NV_GPU_ARCHITECTURE_GP100;
+
         // Assume the implementation ID from the architecture ID. No simple way
         // to do a more fine-grained query at this time. Would need wine-nvml
         // usage.
