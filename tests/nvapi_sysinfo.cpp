@@ -3,17 +3,18 @@
 #include "nvapi_sysinfo_mocks.h"
 
 using namespace trompeloeil;
+using namespace Catch::Matchers;
 
 TEST_CASE("GetInterfaceVersionString returns OK", "[.sysinfo]") {
     NvAPI_ShortString desc;
     REQUIRE(NvAPI_GetInterfaceVersionString(desc) == NVAPI_OK);
-    REQUIRE(strcmp(desc, "DXVK_NVAPI") == 0);
+    REQUIRE_THAT(desc, Equals("DXVK_NVAPI"));
 }
 
 TEST_CASE("GetErrorMessage returns OK", "[.sysinfo]") {
     NvAPI_ShortString desc;
     REQUIRE(NvAPI_GetErrorMessage(NVAPI_NVIDIA_DEVICE_NOT_FOUND, desc) == NVAPI_OK);
-    REQUIRE(strcmp(desc, "NVAPI_NVIDIA_DEVICE_NOT_FOUND") == 0);
+    REQUIRE_THAT(desc, Equals("NVAPI_NVIDIA_DEVICE_NOT_FOUND"));
 }
 
 TEST_CASE("Initialize succeeds", "[.sysinfo]") {
@@ -83,11 +84,11 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
 
         NvAPI_ShortString name1;
         REQUIRE(NvAPI_GPU_GetFullName(reinterpret_cast<NvPhysicalGpuHandle>(handles[0]), name1) == NVAPI_OK);
-        REQUIRE(strcmp(name1, "Device1") == 0);
+        REQUIRE_THAT(name1, Equals("Device1"));
 
         NvAPI_ShortString name2;
         REQUIRE(NvAPI_GPU_GetFullName(reinterpret_cast<NvPhysicalGpuHandle>(handles[1]), name2) == NVAPI_OK);
-        REQUIRE(strcmp(name2, "Device2") == 0);
+        REQUIRE_THAT(name2, Equals("Device2"));
     }
 
     SECTION("EnumPhysicalGPUs succeeds") {
@@ -102,11 +103,11 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
 
         NvAPI_ShortString name1;
         REQUIRE(NvAPI_GPU_GetFullName(handles[0], name1) == NVAPI_OK);
-        REQUIRE(strcmp(name1, "Device1") == 0);
+        REQUIRE_THAT(name1, Equals("Device1"));
 
         NvAPI_ShortString name2;
         REQUIRE(NvAPI_GPU_GetFullName(handles[1], name2) == NVAPI_OK);
-        REQUIRE(strcmp(name2, "Device2") == 0);
+        REQUIRE_THAT(name2, Equals("Device2"));
     }
 
     SECTION("EnumEnumTCCPhysicalGPUs succeeds") {
@@ -175,7 +176,7 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
 
         NvAPI_ShortString name1;
         REQUIRE(NvAPI_GPU_GetFullName(handles1[0], name1) == NVAPI_OK);
-        REQUIRE(strcmp(name1, "Device1") == 0);
+        REQUIRE_THAT(name1, Equals("Device1"));
 
         NvPhysicalGpuHandle handles2[NVAPI_MAX_PHYSICAL_GPUS]{};
         NvU32 count2 = 0;
@@ -195,7 +196,7 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
 
         NvAPI_ShortString name3;
         REQUIRE(NvAPI_GPU_GetFullName(handles3[0], name3) == NVAPI_OK);
-        REQUIRE(strcmp(name3, "Device2") == 0);
+        REQUIRE_THAT(name3, Equals("Device2"));
     }
 
     SECTION("GetPhysicalGpuFromDisplayId succeeds") {
@@ -205,7 +206,7 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
 
         NvAPI_ShortString name1;
         REQUIRE(NvAPI_GPU_GetFullName(handle1, name1) == NVAPI_OK);
-        REQUIRE(strcmp(name1, "Device1") == 0);
+        REQUIRE_THAT(name1, Equals("Device1"));
 
         NvPhysicalGpuHandle handle2 = nullptr;
         REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(1U, &handle2) == NVAPI_OK);
@@ -218,7 +219,7 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
 
         NvAPI_ShortString name3;
         REQUIRE(NvAPI_GPU_GetFullName(handle3, name3) == NVAPI_OK);
-        REQUIRE(strcmp(name3, "Device2") == 0);
+        REQUIRE_THAT(name3, Equals("Device2"));
 
         NvPhysicalGpuHandle handle4 = nullptr;
         REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(3U, &handle4) == NVAPI_INVALID_ARGUMENT);
@@ -235,15 +236,15 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
 
         NvAPI_ShortString name1;
         REQUIRE(NvAPI_GetAssociatedNvidiaDisplayName(handle1, name1) == NVAPI_OK);
-        REQUIRE(strcmp(name1, "Output1") == 0);
+        REQUIRE_THAT(name1, Equals("Output1"));
 
         NvAPI_ShortString name2;
         REQUIRE(NvAPI_GetAssociatedNvidiaDisplayName(handle2, name2) == NVAPI_OK);
-        REQUIRE(strcmp(name2, "Output2") == 0);
+        REQUIRE_THAT(name2, Equals("Output2"));
 
         NvAPI_ShortString name3;
         REQUIRE(NvAPI_GetAssociatedNvidiaDisplayName(handle3, name3) == NVAPI_OK);
-        REQUIRE(strcmp(name3, "Output3") == 0);
+        REQUIRE_THAT(name3, Equals("Output3"));
 
         NvAPI_ShortString name4;
         NvDisplayHandle handle4 = nullptr;
@@ -285,7 +286,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         NvAPI_ShortString branch;
         REQUIRE(NvAPI_SYS_GetDriverAndBranchVersion(&version, branch) == NVAPI_OK);
         REQUIRE(version == 47035);
-        REQUIRE(std::string(branch).length() > 0);
+        REQUIRE_THAT(branch, StartsWith("r"));
     }
 
     SECTION("GetDisplayDriverVersion returns OK") {
@@ -325,8 +326,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         version.version = NV_DISPLAY_DRIVER_VERSION_VER;
         REQUIRE(NvAPI_GetDisplayDriverVersion(handle, &version) == NVAPI_OK);
         REQUIRE(version.drvVersion == args.expectedVersion);
-        REQUIRE(strcmp(version.szAdapterString, "GPU0") == 0);
-        REQUIRE(std::string(version.szBuildBranchString).length() > 0);
+        REQUIRE_THAT(version.szAdapterString, Equals("GPU0"));
+        REQUIRE_THAT(version.szBuildBranchString, StartsWith("r"));
 
         ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
     }
@@ -516,7 +517,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
         NvAPI_ShortString fullName;
         REQUIRE(NvAPI_GPU_GetFullName(handle, fullName) == NVAPI_OK);
-        REQUIRE(strcmp(fullName, name) == 0);
+        REQUIRE_THAT(fullName, Equals(name));
     }
 
     SECTION("GetBusId returns OK") {
@@ -830,7 +831,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
             NvAPI_ShortString revision;
             REQUIRE(NvAPI_GPU_GetVbiosVersionString(handle, revision) == NVAPI_OK);
-            REQUIRE(strcmp(revision, version) == 0);
+            REQUIRE_THAT(revision, Equals(version));
         }
 
         SECTION("GetBusType returns OK") {
@@ -1189,7 +1190,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         SECTION("GetVbiosVersionString returns OK when NVML is not available") {
             NvAPI_ShortString revision;
             REQUIRE(NvAPI_GPU_GetVbiosVersionString(handle, revision) == NVAPI_OK);
-            REQUIRE(strcmp(revision, "N/A") == 0);
+            REQUIRE_THAT(revision, Equals("N/A"));
         }
 
         SECTION("NVML depending methods return no-implementation when NVML is not available") {
@@ -1231,7 +1232,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         SECTION("GetVbiosVersionString returns OK when NVML is available but without suitable adapter") {
             NvAPI_ShortString revision;
             REQUIRE(NvAPI_GPU_GetVbiosVersionString(handle, revision) == NVAPI_OK);
-            REQUIRE(strcmp(revision, "N/A") == 0);
+            REQUIRE_THAT(revision, Equals("N/A"));
         }
 
         SECTION("NVML depending methods return handle-invalidated when NVML is available but without suitable adapter") {
