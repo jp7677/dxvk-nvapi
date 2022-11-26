@@ -1,4 +1,4 @@
 #pragma once
 
-#define NVAPI_VERSION "r515"
+#define NVAPI_VERSION "r525"
 #define DXVK_NVAPI_VERSION "@VCS_TAG@"
