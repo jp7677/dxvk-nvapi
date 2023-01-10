@@ -16,6 +16,12 @@ extern "C" {
             return InvalidArgument(n);
 
         // Report that HDR is not available
+        // Note that DXVK starts to support HDR at the time of writing, so we could report HDR capabilities
+        // somewhat correctly by looking at DXGI_OUTPUT_DESC1 (IDXGIOutput6->GetDesc1).
+        // Doing so would only make sense when also adding NvAPI_Disp_HdrColorControl to set HDR properties,
+        // but implementing that function correctly is not possible since DXVK/DX sets HDR properties on a
+        // SwapChain and not on a display/output.
+        // Reference (a.o.): https://www.asawicki.info/news_1703_programming_hdr_monitor_support_in_direct3d
         switch (pHdrCapabilities->version) {
             case NV_HDR_CAPABILITIES_VER1: {
                 auto pHdrCapabilitiesV1 = reinterpret_cast<NV_HDR_CAPABILITIES_V1*>(pHdrCapabilities);
