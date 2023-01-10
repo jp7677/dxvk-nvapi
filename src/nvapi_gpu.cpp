@@ -311,6 +311,9 @@ extern "C" {
             return Error(n);
 
         memcpy(pLogicalGpuData->pOSAdapterId, &luid.value(), sizeof(luid));
+        // We don't support Multi-Instance-GPU setups, thus we assume one logical GPU matches one physical GPU
+        // In that case index 0 should hold the handle. This also matches the Vulkan deviceNodeMask of 1 (1 << 0)
+        // like described in the API docs for `physicalGpuHandles`.
         pLogicalGpuData->physicalGpuHandles[0] = reinterpret_cast<NvPhysicalGpuHandle>(adapter);
         pLogicalGpuData->physicalGpuCount = 1;
 
