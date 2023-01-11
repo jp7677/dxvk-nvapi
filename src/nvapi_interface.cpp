@@ -49,6 +49,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_GetResourceGPUVirtualAddressEx)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D1x_GetGraphicsCapabilities)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_IsNvShaderExtnOpCodeSupported)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_EnumerateMetaCommands)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_CreateGraphicsPipelineState)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_SetDepthBoundsTestValues)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_CreateCubinComputeShaderWithName)

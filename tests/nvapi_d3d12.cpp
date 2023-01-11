@@ -117,6 +117,13 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(supported == false);
     }
 
+    SECTION("EnumerateMetaCommands returns OK") {
+        NvU32 count = 0U;
+        NVAPI_META_COMMAND_DESC descs{};
+        REQUIRE(NvAPI_D3D12_EnumerateMetaCommands(&device, &count, &descs) == NVAPI_OK);
+        REQUIRE(count == 0);
+    }
+
     SECTION("GetGraphicsCapabilities succeeds") {
         auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
         auto vulkan = std::make_unique<VulkanMock>();

@@ -21,6 +21,19 @@ extern "C" {
         return Ok(str::format(n, " (", opCode, "/", fromCode(opCode), ")"));
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D12_EnumerateMetaCommands(ID3D12Device* pDevice, NvU32* pNumMetaCommands, NVAPI_META_COMMAND_DESC* pDescs) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedOk = false;
+
+        if (pDevice == nullptr || pNumMetaCommands == nullptr)
+            return InvalidArgument(n);
+
+        // Let's do the same as VKD3D-Proton, https://github.com/HansKristian-Work/vkd3d-proton/pull/1371
+        *pNumMetaCommands = 0;
+
+        return Ok(n, alreadyLoggedOk);
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderWithName(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
