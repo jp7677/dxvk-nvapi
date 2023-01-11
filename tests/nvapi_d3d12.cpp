@@ -54,7 +54,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(NvAPI_D3D12_CreateGraphicsPipelineState(&device, &desc, 1, extensions, &pipelineState) == NVAPI_NOT_SUPPORTED);
     }
 
-    SECTION("D3D12 methods without vkd3d-proton return error") {
+    SECTION("D3D12 methods without VKD3D-Proton return error") {
         ALLOW_CALL(device, QueryInterface(ID3D12DeviceExt::guid, _))
             .RETURN(E_NOINTERFACE);
         ALLOW_CALL(commandList, QueryInterface(ID3D12GraphicsCommandListExt::guid, _))
@@ -111,7 +111,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
     // Test failing scenarios first because caches won't be reset between tests (we don't cache negatives)
 
-    SECTION("IsNvShaderExtnOpCodeSupported with device returns OK") {
+    SECTION("IsNvShaderExtnOpCodeSupported returns OK") {
         auto supported = true;
         REQUIRE(NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(&device, 1U, &supported) == NVAPI_OK);
         REQUIRE(supported == false);

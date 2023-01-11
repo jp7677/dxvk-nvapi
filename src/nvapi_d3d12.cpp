@@ -15,7 +15,7 @@ extern "C" {
         if (pDevice == nullptr || pSupported == nullptr)
             return InvalidArgument(n);
 
-        // VKD3D does not know any NVIDIA intrinsics
+        // VKD3D-Proton does not know any NVIDIA intrinsics
         *pSupported = false;
 
         return Ok(str::format(n, " (", opCode, "/", fromCode(opCode), ")"));
