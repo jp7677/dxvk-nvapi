@@ -252,8 +252,8 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetGDIPrimaryDisplayId succeeds") {
-        NvU32 primaryDisplayId;
-        REQUIRE(NvAPI_DISP_GetGDIPrimaryDisplayId(&primaryDisplayId) == NVAPI_NVIDIA_DEVICE_NOT_FOUND); // MONITORINFO.dwFlags isn't mocked
+        NvU32 displayId;
+        REQUIRE(NvAPI_DISP_GetGDIPrimaryDisplayId(&displayId) == NVAPI_NVIDIA_DEVICE_NOT_FOUND); // MONITORINFO.dwFlags isn't mocked
     }
 }
 
@@ -266,6 +266,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     DXGIOutputMock output;
 
     auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
+    auto primaryDisplayId = 0x00010001;
 
     ::SetEnvironmentVariableA("DXVK_NVAPI_DRIVER_VERSION", "");
 
@@ -391,7 +392,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         SECTION("GetGPUIDFromPhysicalGPU succeeds") {
             NvU32 gpuId;
@@ -434,7 +435,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         SECTION("CudaEnumComputeCapableGpus (V1) returns OK") {
             NV_COMPUTE_GPU_TOPOLOGY_V1 gpuTopology;
@@ -473,7 +474,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         NV_GPU_TYPE type;
         REQUIRE(NvAPI_GPU_GetGPUType(handle, &type) == NVAPI_OK);
@@ -494,7 +495,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         NvU32 deviceId, subSystemId, revisionId, extDeviceId;
         REQUIRE(NvAPI_GPU_GetPCIIdentifiers(handle, &deviceId, &subSystemId, &revisionId, &extDeviceId) == NVAPI_OK);
@@ -518,7 +519,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         NvAPI_ShortString fullName;
         REQUIRE(NvAPI_GPU_GetFullName(handle, fullName) == NVAPI_OK);
@@ -541,7 +542,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         NvU32 busId;
         REQUIRE(NvAPI_GPU_GetBusId(handle, &busId) == NVAPI_OK);
@@ -564,7 +565,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         NvU32 busSlotId;
         REQUIRE(NvAPI_GPU_GetBusSlotId(handle, &busSlotId) == NVAPI_OK);
@@ -595,7 +596,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         NV_GPU_BUS_TYPE type;
         REQUIRE(NvAPI_GPU_GetBusType(handle, &type) == NVAPI_OK);
@@ -614,7 +615,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         NvU32 size;
         REQUIRE(NvAPI_GPU_GetPhysicalFrameBufferSize(handle, &size) == NVAPI_OK);
@@ -636,7 +637,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         LUID luid;
         REQUIRE(NvAPI_GPU_GetAdapterIdFromPhysicalGpu(handle, static_cast<void*>(&luid)) == NVAPI_OK);
@@ -739,7 +740,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         SECTION("GetArchInfo (V1) returns OK") {
             NV_GPU_ARCH_INFO_V1 archInfo;
@@ -762,7 +763,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
     SECTION("GetArchInfo with unknown struct version returns incompatible-struct-version") {
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         NV_GPU_ARCH_INFO archInfo;
         archInfo.version = NV_GPU_ARCH_INFO_VER_2 + 1;
@@ -772,7 +773,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     SECTION("GetArchInfo with current struct version returns not incompatible-struct-version") {
         // This test should fail when a header update provides a newer not yet implemented struct version
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         NV_GPU_ARCH_INFO archInfo;
         archInfo.version = NV_GPU_ARCH_INFO_VER;
@@ -793,7 +794,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         NV_GPU_ARCH_INFO archInfo;
         archInfo.version = NV_GPU_ARCH_INFO_VER;
@@ -804,7 +805,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
     SECTION("GetPstates20 returns no-implementation") {
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         NV_GPU_PERF_PSTATES20_INFO params;
         params.version = NV_GPU_PERF_PSTATES_INFO_VER;
@@ -828,7 +829,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             NvU32 width;
             REQUIRE(NvAPI_GPU_GetCurrentPCIEDownstreamWidth(handle, &width) == NVAPI_OK);
@@ -845,7 +846,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             NvU32 irq;
             REQUIRE(NvAPI_GPU_GetIRQ(handle, &irq) == NVAPI_OK);
@@ -862,7 +863,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             NvU32 count;
             REQUIRE(NvAPI_GPU_GetGpuCoreCount(handle, &count) == NVAPI_OK);
@@ -879,7 +880,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             NvU32 deviceId, subSystemId, revisionId, extDeviceId;
             REQUIRE(NvAPI_GPU_GetPCIIdentifiers(handle, &deviceId, &subSystemId, &revisionId, &extDeviceId) == NVAPI_OK);
@@ -896,7 +897,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             NvAPI_ShortString revision;
             REQUIRE(NvAPI_GPU_GetVbiosVersionString(handle, revision) == NVAPI_OK);
@@ -923,7 +924,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             NV_GPU_BUS_TYPE type;
             REQUIRE(NvAPI_GPU_GetBusType(handle, &type) == NVAPI_OK);
@@ -957,7 +958,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             NV_GPU_DYNAMIC_PSTATES_INFO_EX info;
             info.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;
@@ -991,7 +992,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             NV_GPU_DYNAMIC_PSTATES_INFO_EX info;
             info.version = NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER;
@@ -1033,7 +1034,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             SECTION("GetThermalSettings (V1) returns OK") {
                 NV_GPU_THERMAL_SETTINGS_V1 settings;
@@ -1085,7 +1086,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             SECTION("GetThermalSettings (V1) returns OK") {
                 NV_GPU_THERMAL_SETTINGS_V1 settings;
@@ -1134,7 +1135,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             NV_GPU_PERF_PSTATE_ID pstate;
             REQUIRE(NvAPI_GPU_GetCurrentPstate(handle, &pstate) == NVAPI_OK);
@@ -1159,7 +1160,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             SECTION("GetAllClockFrequencies (V1) returns OK") {
                 NV_GPU_CLOCK_FREQUENCIES_V1 frequencies;
@@ -1202,7 +1203,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
         SECTION("GetAllClockFrequencies with unknown struct version returns incompatible-struct-version") {
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             NV_GPU_CLOCK_FREQUENCIES frequencies;
             frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_3 + 1;
@@ -1212,7 +1213,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         SECTION("GetAllClockFrequencies with current struct version returns not incompatible-struct-version") {
             // This test should fail when a header update provides a newer not yet implemented struct version
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             NV_GPU_CLOCK_FREQUENCIES frequencies;
             frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER;
@@ -1228,7 +1229,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 Data{NV_GPU_CLOCK_FREQUENCIES_BOOST_CLOCK});
 
             NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
             SECTION("GetAllClockFrequencies (V2) returns not-supported") {
                 NV_GPU_CLOCK_FREQUENCIES_V2 frequencies;
@@ -1254,7 +1255,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         SECTION("GetVbiosVersionString returns OK when NVML is not available") {
             NvAPI_ShortString revision;
@@ -1296,7 +1297,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
-        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00010001, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         SECTION("GetVbiosVersionString returns OK when NVML is available but without suitable adapter") {
             NvAPI_ShortString revision;
