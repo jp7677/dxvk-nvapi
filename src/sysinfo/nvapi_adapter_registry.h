@@ -16,16 +16,17 @@ namespace dxvk {
 
         bool Initialize();
 
-        [[nodiscard]] uint16_t GetAdapterCount() const;
-        [[nodiscard]] NvapiAdapter* GetAdapter() const;
-        [[nodiscard]] NvapiAdapter* GetAdapter(uint16_t index) const;
-        [[nodiscard]] NvapiAdapter* GetAdapter(const LUID& luid) const;
+        [[nodiscard]] uint32_t GetAdapterCount() const;
+        [[nodiscard]] NvapiAdapter* GetAdapter(uint32_t index) const;
+        [[nodiscard]] NvapiAdapter* GetFirstAdapter() const;
+        [[nodiscard]] NvapiAdapter* FindAdapter(const LUID& luid) const;
         [[nodiscard]] bool IsAdapter(NvapiAdapter* handle) const;
 
-        [[nodiscard]] NvapiOutput* GetOutput(uint16_t index) const;
+        [[nodiscard]] NvapiOutput* GetOutput(uint32_t index) const;
+        [[nodiscard]] NvapiOutput* FindOutput(const std::string& displayName) const;
+        [[nodiscard]] NvapiOutput* FindOutput(uint32_t id) const;
+        [[nodiscard]] NvapiOutput* FindPrimaryOutput() const;
         [[nodiscard]] bool IsOutput(NvapiOutput* handle) const;
-        [[nodiscard]] int16_t GetPrimaryOutputId() const;
-        [[nodiscard]] int16_t GetOutputId(const std::string& displayName) const;
 
       private:
         ResourceFactory& m_resourceFactory;

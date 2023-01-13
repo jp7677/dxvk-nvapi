@@ -3,8 +3,9 @@
 #include "../util/util_log.h"
 
 namespace dxvk {
-    NvapiOutput::NvapiOutput(const uintptr_t parent) {
+    NvapiOutput::NvapiOutput(const uintptr_t parent, const uint32_t adapterIndex, const uint32_t outputIndex) {
         m_parent = parent;
+        m_id = ((adapterIndex + 1) << 16) + (outputIndex + 1);
     }
 
     NvapiOutput::~NvapiOutput() = default;
@@ -25,6 +26,10 @@ namespace dxvk {
 
     uintptr_t NvapiOutput::GetParent() const {
         return m_parent;
+    }
+
+    uint32_t NvapiOutput::GetId() const {
+        return m_id;
     }
 
     std::string NvapiOutput::GetDeviceName() const {

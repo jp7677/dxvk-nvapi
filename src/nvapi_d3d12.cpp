@@ -152,7 +152,7 @@ extern "C" {
         NvapiAdapter* adapter = nullptr;
         auto luid = NvapiD3d12Device::GetLuid(pDevice);
         if (luid.has_value())
-            adapter = nvapiAdapterRegistry->GetAdapter(luid.value());
+            adapter = nvapiAdapterRegistry->FindAdapter(luid.value());
 
         if (adapter == nullptr || !adapter->HasNvProprietaryDriver())
             return Ok(str::format(n, " (sm_0)"));

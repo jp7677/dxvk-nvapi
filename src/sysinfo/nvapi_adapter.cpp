@@ -10,7 +10,7 @@ namespace dxvk {
 
     NvapiAdapter::~NvapiAdapter() = default;
 
-    bool NvapiAdapter::Initialize(Com<IDXGIAdapter1>& dxgiAdapter, std::vector<NvapiOutput*>& outputs) {
+    bool NvapiAdapter::Initialize(Com<IDXGIAdapter1>& dxgiAdapter, uint32_t index, std::vector<NvapiOutput*>& outputs) {
         constexpr auto driverVersionEnvName = "DXVK_NVAPI_DRIVER_VERSION";
         constexpr auto allowOtherDriversEnvName = "DXVK_NVAPI_ALLOW_OTHER_DRIVERS";
 
@@ -94,7 +94,7 @@ namespace dxvk {
         // Mosaic setup is not supported, thus one display output refers to one GPU
         Com<IDXGIOutput> dxgiOutput;
         for (auto i = 0U; dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
-            auto nvapiOutput = new NvapiOutput((uintptr_t)this);
+            auto nvapiOutput = new NvapiOutput((uintptr_t)this, index, i);
             nvapiOutput->Initialize(dxgiOutput);
             outputs.push_back(nvapiOutput);
         }

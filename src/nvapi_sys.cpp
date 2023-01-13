@@ -12,7 +12,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        auto output = nvapiAdapterRegistry->GetOutput(displayId);
+        auto output = nvapiAdapterRegistry->FindOutput(displayId);
         if (output == nullptr)
             return InvalidArgument(n);
 
@@ -30,7 +30,7 @@ extern "C" {
         if (pDriverVersion == nullptr || szBuildBranchString == nullptr)
             return InvalidArgument(n);
 
-        *pDriverVersion = nvapiAdapterRegistry->GetAdapter()->GetDriverVersion();
+        *pDriverVersion = nvapiAdapterRegistry->GetFirstAdapter()->GetDriverVersion();
         str::tonvss(szBuildBranchString, str::format(NVAPI_VERSION, "_", DXVK_NVAPI_VERSION));
 
         return Ok(n);

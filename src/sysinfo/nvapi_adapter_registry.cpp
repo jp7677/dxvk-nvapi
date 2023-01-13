@@ -34,7 +34,7 @@ namespace dxvk {
         Com<IDXGIAdapter1> dxgiAdapter;
         for (auto i = 0U; dxgiFactory->EnumAdapters1(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; i++) {
             auto nvapiAdapter = new NvapiAdapter(*m_vulkan, *m_nvml);
-            if (nvapiAdapter->Initialize(dxgiAdapter, m_nvapiOutputs))
+            if (nvapiAdapter->Initialize(dxgiAdapter, i, m_nvapiOutputs))
                 m_nvapiAdapters.push_back(nvapiAdapter);
             else
                 delete nvapiAdapter;
@@ -43,19 +43,19 @@ namespace dxvk {
         return !m_nvapiAdapters.empty();
     }
 
-    uint16_t NvapiAdapterRegistry::GetAdapterCount() const {
+    uint32_t NvapiAdapterRegistry::GetAdapterCount() const {
         return m_nvapiAdapters.size();
     }
 
-    NvapiAdapter* NvapiAdapterRegistry::GetAdapter() const {
-        return m_nvapiAdapters.front();
-    }
-
-    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(const uint16_t index) const {
+    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(const uint32_t index) const {
         return index < m_nvapiAdapters.size() ? m_nvapiAdapters[index] : nullptr;
     }
 
-    NvapiAdapter* NvapiAdapterRegistry::GetAdapter(const LUID& luid) const {
+    NvapiAdapter* NvapiAdapterRegistry::GetFirstAdapter() const {
+        return m_nvapiAdapters.front();
+    }
+
+    NvapiAdapter* NvapiAdapterRegistry::FindAdapter(const LUID& luid) const {
         auto it = std::find_if(m_nvapiAdapters.begin(), m_nvapiAdapters.end(),
             [luid](const auto& adapter) {
                 auto adapterLuid = adapter->GetLuid();
@@ -71,29 +71,38 @@ namespace dxvk {
         return std::find(m_nvapiAdapters.begin(), m_nvapiAdapters.end(), handle) != m_nvapiAdapters.end();
     }
 
-    NvapiOutput* NvapiAdapterRegistry::GetOutput(const uint16_t index) const {
+    NvapiOutput* NvapiAdapterRegistry::GetOutput(const uint32_t index) const {
         return index < m_nvapiOutputs.size() ? m_nvapiOutputs[index] : nullptr;
     }
 
-    bool NvapiAdapterRegistry::IsOutput(NvapiOutput* handle) const {
-        return std::find(m_nvapiOutputs.begin(), m_nvapiOutputs.end(), handle) != m_nvapiOutputs.end();
-    }
-
-    int16_t NvapiAdapterRegistry::GetPrimaryOutputId() const {
-        auto it = std::find_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(),
-            [](const auto& output) {
-                return output->IsPrimary();
-            });
-
-        return static_cast<int16_t>(it != m_nvapiOutputs.end() ? std::distance(m_nvapiOutputs.begin(), it) : -1);
-    }
-
-    int16_t NvapiAdapterRegistry::GetOutputId(const std::string& displayName) const {
+    NvapiOutput* NvapiAdapterRegistry::FindOutput(const std::string& displayName) const {
         auto it = std::find_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(),
             [&displayName](const auto& output) {
                 return output->GetDeviceName() == displayName;
             });
 
-        return static_cast<int16_t>(it != m_nvapiOutputs.end() ? std::distance(m_nvapiOutputs.begin(), it) : -1);
+        return it != m_nvapiOutputs.end() ? *it : nullptr;
+    }
+
+    NvapiOutput* NvapiAdapterRegistry::FindOutput(uint32_t id) const {
+        auto it = std::find_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(),
+            [id](const auto& output) {
+                return output->GetId() == id;
+            });
+
+        return it != m_nvapiOutputs.end() ? *it : nullptr;
+    }
+
+    NvapiOutput* NvapiAdapterRegistry::FindPrimaryOutput() const {
+        auto it = std::find_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(),
+            [](const auto& output) {
+                return output->IsPrimary();
+            });
+
+        return it != m_nvapiOutputs.end() ? *it : nullptr;
+    }
+
+    bool NvapiAdapterRegistry::IsOutput(NvapiOutput* handle) const {
+        return std::find(m_nvapiOutputs.begin(), m_nvapiOutputs.end(), handle) != m_nvapiOutputs.end();
     }
 }

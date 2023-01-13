@@ -71,11 +71,11 @@ extern "C" {
         if (displayName == nullptr || displayId == nullptr)
             return InvalidArgument(n);
 
-        auto id = nvapiAdapterRegistry->GetOutputId(std::string(displayName));
-        if (id == -1)
+        auto output = nvapiAdapterRegistry->FindOutput(std::string(displayName));
+        if (output == nullptr)
             return InvalidArgument(str::format(n, " (", displayName, ")"));
 
-        *displayId = id;
+        *displayId = output->GetId();
 
         return Ok(str::format(n, " (", displayName, ")"));
     }
@@ -89,11 +89,11 @@ extern "C" {
         if (displayId == nullptr)
             return InvalidArgument(n);
 
-        auto id = nvapiAdapterRegistry->GetPrimaryOutputId();
-        if (id == -1)
+        auto output = nvapiAdapterRegistry->FindPrimaryOutput();
+        if (output == nullptr)
             return NvidiaDeviceNotFound(n);
 
-        *displayId = id;
+        *displayId = output->GetId();
 
         return Ok(n);
     }
