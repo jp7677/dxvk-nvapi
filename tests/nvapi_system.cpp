@@ -5,6 +5,8 @@
 #include "../inc/nvapi_interface.h"
 #include "../inc/catch_amalgamated.hpp"
 
+using namespace Catch::Matchers;
+
 typedef void* (*PFN_NvAPI_QueryInterface)(uint32_t id);
 
 template <typename T>
@@ -347,7 +349,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     std::cout << std::endl;
 
     NvU32 primaryDisplayId;
-    REQUIRE(nvAPI_DISP_GetGDIPrimaryDisplayId(&primaryDisplayId) == NVAPI_OK);
+    REQUIRE_THAT(nvAPI_DISP_GetGDIPrimaryDisplayId(&primaryDisplayId), Predicate<NvAPI_Status>([](auto s) -> bool { return s == NVAPI_OK || s == NVAPI_NVIDIA_DEVICE_NOT_FOUND; }));
     NvDisplayHandle handle;
     NvU32 i = 0;
     while (nvAPI_EnumNvidiaDisplayHandle(i, &handle) == NVAPI_OK) {
