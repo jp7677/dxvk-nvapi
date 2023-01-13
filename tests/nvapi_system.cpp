@@ -92,9 +92,9 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     GETNVAPIPROCADDR(SYS_GetDriverAndBranchVersion);
     GETNVAPIPROCADDR(EnumPhysicalGPUs);
     GETNVAPIPROCADDR(GetGPUIDfromPhysicalGPU);
+    GETNVAPIPROCADDR(GPU_GetFullName);
     GETNVAPIPROCADDR(GPU_GetGPUType);
     GETNVAPIPROCADDR(GPU_GetPCIIdentifiers);
-    GETNVAPIPROCADDR(GPU_GetFullName);
     GETNVAPIPROCADDR(GPU_GetBusId);
     GETNVAPIPROCADDR(GPU_GetBusSlotId);
     GETNVAPIPROCADDR(GPU_GetPhysicalFrameBufferSize);
@@ -109,6 +109,12 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     GETNVAPIPROCADDR(GPU_GetThermalSettings);
     GETNVAPIPROCADDR(GPU_GetCurrentPstate);
     GETNVAPIPROCADDR(GPU_GetAllClockFrequencies);
+    GETNVAPIPROCADDR(DISP_GetGDIPrimaryDisplayId);
+    GETNVAPIPROCADDR(EnumNvidiaDisplayHandle);
+    GETNVAPIPROCADDR(SYS_GetPhysicalGpuFromDisplayId);
+    GETNVAPIPROCADDR(GetAssociatedNvidiaDisplayName);
+    GETNVAPIPROCADDR(DISP_GetDisplayIdByDisplayName);
+    GETNVAPIPROCADDR(Disp_GetHdrCapabilities);
 
 #undef GETNVAPIPROCADDR
 
@@ -118,9 +124,9 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     REQUIRE(nvAPI_SYS_GetDriverAndBranchVersion);
     REQUIRE(nvAPI_EnumPhysicalGPUs);
     REQUIRE(nvAPI_GetGPUIDfromPhysicalGPU);
+    REQUIRE(nvAPI_GPU_GetFullName);
     REQUIRE(nvAPI_GPU_GetGPUType);
     REQUIRE(nvAPI_GPU_GetPCIIdentifiers);
-    REQUIRE(nvAPI_GPU_GetFullName);
     REQUIRE(nvAPI_GPU_GetBusId);
     REQUIRE(nvAPI_GPU_GetBusSlotId);
     REQUIRE(nvAPI_GPU_GetPhysicalFrameBufferSize);
@@ -135,6 +141,12 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     REQUIRE(nvAPI_GPU_GetThermalSettings);
     REQUIRE(nvAPI_GPU_GetCurrentPstate);
     REQUIRE(nvAPI_GPU_GetAllClockFrequencies);
+    REQUIRE(nvAPI_DISP_GetGDIPrimaryDisplayId);
+    REQUIRE(nvAPI_EnumNvidiaDisplayHandle);
+    REQUIRE(nvAPI_SYS_GetPhysicalGpuFromDisplayId);
+    REQUIRE(nvAPI_GetAssociatedNvidiaDisplayName);
+    REQUIRE(nvAPI_DISP_GetDisplayIdByDisplayName);
+    REQUIRE(nvAPI_Disp_GetHdrCapabilities);
 
     NvAPI_Status result;
     REQUIRE(nvAPI_Initialize() == NVAPI_OK);
@@ -160,10 +172,20 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     NvPhysicalGpuHandle handles[NVAPI_MAX_PHYSICAL_GPUS];
     NvU32 count;
     REQUIRE(nvAPI_EnumPhysicalGPUs(handles, &count) == NVAPI_OK);
-    for (auto i = 0U; i < count; i++) {
+
+    std::vector<NvPhysicalGpuHandle> gpuHandles;
+    for (auto i = 0U; i < count; i++)
+        gpuHandles.push_back(handles[i]);
+
+    for (const auto handle : gpuHandles) {
         std::cout << "    ----------------------------" << std::endl;
-        std::cout << "    GPU " << i << std::endl;
-        auto handle = handles[i];
+        std::cout << "    GPU "
+                  << std::distance(gpuHandles.begin(), std::find(gpuHandles.begin(), gpuHandles.end(), handle))
+                  << std::endl;
+
+        NvAPI_ShortString fullName;
+        REQUIRE(nvAPI_GPU_GetFullName(handle, fullName) == NVAPI_OK);
+        std::cout << "    GPU name:                   " << fullName << std::endl;
 
         NV_GPU_TYPE type;
         REQUIRE(nvAPI_GPU_GetGPUType(handle, &type) == NVAPI_OK);
@@ -177,10 +199,6 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
             std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << subSystemId << std::endl;
         else
             std::cout << "N/A" << std::endl;
-
-        NvAPI_ShortString fullName;
-        REQUIRE(nvAPI_GPU_GetFullName(handle, fullName) == NVAPI_OK);
-        std::cout << "    Full name:                  " << fullName << std::endl;
 
         NvU32 busId;
         REQUIRE(nvAPI_GPU_GetBusId(handle, &busId) == NVAPI_OK);
@@ -211,7 +229,10 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         result = nvAPI_GPU_GetArchInfo(handle, &archInfo);
         std::cout << "    Architecture ID:            ";
         if (result == NVAPI_OK)
-            std::cout << "0x" << std::setfill('0') << std::setw(8) << std::hex << archInfo.architecture_id << " (" << ToGpuArchitecture(archInfo.architecture_id) << ")" << std::endl;
+            std::cout << "0x" << std::setfill('0') << std::setw(8)
+                      << std::hex << archInfo.architecture_id << " ("
+                      << ToGpuArchitecture(archInfo.architecture_id) << ")"
+                      << std::endl;
         else
             std::cout << "N/A" << std::endl;
 
@@ -251,7 +272,9 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
             [handle](const auto& cudaGpu) { return cudaGpu.hPhysicalGpu == handle; });
         std::cout << "    Compute capable:            ";
         if (computeGpusIt != std::end(computeGpus))
-            std::cout << "Yes (Compute GPU topology flags: 0x" << std::setfill('0') << std::setw(2) << std::hex << (computeGpusIt->flags) << ")" << std::endl; // TODO: print other info if available
+            std::cout << "Yes (Compute GPU topology flags: 0x" << std::setfill('0') << std::setw(2)
+                      << std::hex << (computeGpusIt->flags) << ")"
+                      << std::endl; // TODO: print other info if available
         else
             std::cout << "-" << std::endl;
 
@@ -319,6 +342,48 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
             std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency / 1000 << "MHz" << std::endl;
         else
             std::cout << "N/A" << std::endl;
+    }
+
+    std::cout << std::endl;
+
+    NvU32 primaryDisplayId;
+    REQUIRE(nvAPI_DISP_GetGDIPrimaryDisplayId(&primaryDisplayId) == NVAPI_OK);
+    NvDisplayHandle handle;
+    NvU32 i = 0;
+    while (nvAPI_EnumNvidiaDisplayHandle(i, &handle) == NVAPI_OK) {
+        std::cout << "    ----------------------------" << std::endl;
+        std::cout << "    Display " << i << std::endl;
+        NvAPI_ShortString displayName;
+        REQUIRE(nvAPI_GetAssociatedNvidiaDisplayName(handle, displayName) == NVAPI_OK);
+        NvU32 displayId;
+        REQUIRE(nvAPI_DISP_GetDisplayIdByDisplayName(displayName, &displayId) == NVAPI_OK);
+        std::cout << "    Display name:               " << displayName;
+        if (displayId == primaryDisplayId)
+            std::cout << " (Primary)" << std::endl;
+        else
+            std::cout << std::endl;
+
+        std::cout << "    Display ID:                 0x" << std::setfill('0') << std::setw(8)
+                  << std::hex << displayId
+                  << std::endl;
+
+        NvPhysicalGpuHandle connectedGpuHandle;
+        REQUIRE(nvAPI_SYS_GetPhysicalGpuFromDisplayId(displayId, &connectedGpuHandle) == NVAPI_OK);
+        std::cout << "    Connected to:               GPU "
+                  << std::distance(gpuHandles.begin(), std::find(gpuHandles.begin(), gpuHandles.end(), connectedGpuHandle))
+                  << std::endl;
+
+        NV_HDR_CAPABILITIES hdrCapabilities;
+        hdrCapabilities.version = NV_HDR_CAPABILITIES_VER2; // Support drivers older than 520
+        REQUIRE(nvAPI_Disp_GetHdrCapabilities(displayId, &hdrCapabilities) == NVAPI_OK);
+        std::cout << "    ST2084/HDR support:         ";
+        if (hdrCapabilities.isST2084EotfSupported)
+            std::cout << "Yes" << std::endl;
+        else
+            std::cout << "No" << std::endl;
+
+        std::cout << std::endl;
+        i++;
     }
 
     REQUIRE(nvAPI_Unload() == NVAPI_OK);
