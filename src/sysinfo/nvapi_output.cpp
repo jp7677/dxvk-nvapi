@@ -3,7 +3,7 @@
 #include "../util/util_log.h"
 
 namespace dxvk {
-    NvapiOutput::NvapiOutput(const uintptr_t parent, const uint32_t adapterIndex, const uint32_t outputIndex) {
+    NvapiOutput::NvapiOutput(NvapiAdapter* parent, const uint32_t adapterIndex, const uint32_t outputIndex) {
         m_parent = parent;
         m_id = ((adapterIndex + 1) << 16) + (outputIndex + 1);
     }
@@ -24,7 +24,7 @@ namespace dxvk {
         m_isPrimary = (info.dwFlags & MONITORINFOF_PRIMARY);
     }
 
-    uintptr_t NvapiOutput::GetParent() const {
+    NvapiAdapter* NvapiOutput::GetParent() const {
         return m_parent;
     }
 

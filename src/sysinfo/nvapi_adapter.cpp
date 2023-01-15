@@ -94,7 +94,7 @@ namespace dxvk {
         // Mosaic setup is not supported, thus one display output refers to one GPU
         Com<IDXGIOutput> dxgiOutput;
         for (auto i = 0U; dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
-            auto nvapiOutput = new NvapiOutput((uintptr_t)this, index, i);
+            auto nvapiOutput = new NvapiOutput(this, index, i);
             nvapiOutput->Initialize(dxgiOutput);
             outputs.push_back(nvapiOutput);
         }
