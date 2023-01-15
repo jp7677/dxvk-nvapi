@@ -13,6 +13,8 @@ This implementation currently offers entry points for supporting the following f
 - NVIDIA PhysX, by supporting entry points for querying PhysX capabilities.
 - Several GPU topology related methods for adapter and display information, by querying from DXVK and Vulkan.
 
+Note that DXVK-NVAPI does not implement DLSS, Reflex or PhysX. It mostly forwards the relevant calls.
+
 While originally being developed for usage with Unreal Engine 4, most notably for `Assetto Corsa Competizione`, more entry points have been added over time for enabling other NVIDIA related technologies. DXVK-NVAPI does not and will never cover the complete surface of NVIDIA's NVAPI. It is not meant as a full replacement, but rather as an addition to DXVK and VKD3D-Proton to enable several GPU features.
 
 ## Requirements
