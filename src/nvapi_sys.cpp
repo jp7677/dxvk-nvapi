@@ -16,7 +16,7 @@ extern "C" {
         if (output == nullptr)
             return InvalidArgument(n);
 
-        *hPhysicalGpu = (NvPhysicalGpuHandle)output->GetParent();
+        *hPhysicalGpu = reinterpret_cast<NvPhysicalGpuHandle>(output->GetParent());
 
         return Ok(n);
     }
