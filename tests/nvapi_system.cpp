@@ -399,7 +399,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
             std::cout << ", Max = " << std::dec << hdrCapabilities.display_data.desired_content_max_luminance;
             std::cout << ", Average = " << std::dec << hdrCapabilities.display_data.desired_content_max_frame_average_luminance << std::endl;
         } else
-            std::cout << "No" << std::endl;
+            std::cout << "-" << std::endl;
 
         std::cout << std::endl;
         i++;
