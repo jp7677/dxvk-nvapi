@@ -171,7 +171,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     for (auto i = 0U; i < computeGpuTopology.gpuCount; i++)
         computeGpus.push_back(NV_COMPUTE_GPU{computeGpuTopology.computeGpus[i].hPhysicalGpu, computeGpuTopology.computeGpus[i].flags});
 
-    NvPhysicalGpuHandle handles[NVAPI_MAX_PHYSICAL_GPUS];
+    NvPhysicalGpuHandle handles[NVAPI_MAX_PHYSICAL_GPUS]{};
     NvU32 count;
     REQUIRE(nvAPI_EnumPhysicalGPUs(handles, &count) == NVAPI_OK);
 

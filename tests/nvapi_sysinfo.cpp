@@ -111,7 +111,7 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
     }
 
     SECTION("EnumEnumTCCPhysicalGPUs succeeds") {
-        NvPhysicalGpuHandle handles[NVAPI_MAX_PHYSICAL_GPUS];
+        NvPhysicalGpuHandle handles[NVAPI_MAX_PHYSICAL_GPUS]{};
         NvU32 count = -1U;
         REQUIRE(NvAPI_EnumTCCPhysicalGPUs(handles, &count) == NVAPI_OK);
         REQUIRE(count == 0);
@@ -145,11 +145,11 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetPhysicalGPUsFromLogicalGPU succeeds") {
-        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
+        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS]{};
         NvU32 count;
         REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
 
-        NvPhysicalGpuHandle physicalHandles[NVAPI_MAX_PHYSICAL_GPUS];
+        NvPhysicalGpuHandle physicalHandles[NVAPI_MAX_PHYSICAL_GPUS]{};
         REQUIRE(NvAPI_GetPhysicalGPUsFromLogicalGPU(handles[0], physicalHandles, &count) == NVAPI_OK);
         REQUIRE(count == 1);
         REQUIRE(physicalHandles[0] == reinterpret_cast<NvPhysicalGpuHandle>(handles[0]));
@@ -660,11 +660,11 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvU32 count;
-        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
+        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS]{};
         REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
         REQUIRE(count == 1);
 
-        NvPhysicalGpuHandle physicalHandles[NVAPI_MAX_PHYSICAL_GPUS];
+        NvPhysicalGpuHandle physicalHandles[NVAPI_MAX_PHYSICAL_GPUS]{};
         REQUIRE(NvAPI_GetPhysicalGPUsFromLogicalGPU(handles[0], physicalHandles, &count) == NVAPI_OK);
         REQUIRE(count == 1);
 
@@ -681,7 +681,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
     SECTION("GetLogicalGpuInfo with unknown struct version returns incompatible-struct-version") {
         NvU32 count;
-        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
+        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS]{};
         REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
         REQUIRE(count == 1);
 
@@ -695,7 +695,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     SECTION("GetLogicalGpuInfo with current struct version returns not incompatible-struct-version") {
         // This test should fail when a header update provides a newer not yet implemented struct version
         NvU32 count;
-        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS];
+        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS]{};
         REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
         REQUIRE(count == 1);
 
@@ -1412,6 +1412,6 @@ TEST_CASE("GetHdrCapabilities succeeds", "[.sysinfo]") {
 
 TEST_CASE("GetDisplayViewportsByResolution returns mosaic-not-active", "[.sysinfo]") {
     NvU8 corrected;
-    NV_RECT rect[NV_MOSAIC_MAX_DISPLAYS];
+    NV_RECT rect[NV_MOSAIC_MAX_DISPLAYS]{};
     REQUIRE(NvAPI_Mosaic_GetDisplayViewportsByResolution(0, 0, 0, rect, &corrected) == NVAPI_MOSAIC_NOT_ACTIVE);
 }
