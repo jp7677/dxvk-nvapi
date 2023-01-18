@@ -420,9 +420,10 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         } else
             std::cout << "-" << std::endl;
 
-        std::cout << std::endl;
         i++;
     }
+
+    std::cout << std::endl;
 
     REQUIRE(nvAPI_Unload() == NVAPI_OK);
     ::FreeLibrary(nvapiModule);
