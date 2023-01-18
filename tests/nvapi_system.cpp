@@ -111,6 +111,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     GETNVAPIPROCADDR(GPU_GetThermalSettings);
     GETNVAPIPROCADDR(GPU_GetCurrentPstate);
     GETNVAPIPROCADDR(GPU_GetAllClockFrequencies);
+    GETNVAPIPROCADDR(GPU_GetConnectedDisplayIds);
     GETNVAPIPROCADDR(DISP_GetGDIPrimaryDisplayId);
     GETNVAPIPROCADDR(EnumNvidiaDisplayHandle);
     GETNVAPIPROCADDR(SYS_GetPhysicalGpuFromDisplayId);
@@ -143,6 +144,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     REQUIRE(nvAPI_GPU_GetThermalSettings);
     REQUIRE(nvAPI_GPU_GetCurrentPstate);
     REQUIRE(nvAPI_GPU_GetAllClockFrequencies);
+    REQUIRE(nvAPI_GPU_GetConnectedDisplayIds);
     REQUIRE(nvAPI_DISP_GetGDIPrimaryDisplayId);
     REQUIRE(nvAPI_EnumNvidiaDisplayHandle);
     REQUIRE(nvAPI_SYS_GetPhysicalGpuFromDisplayId);
@@ -344,6 +346,23 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
             std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency / 1000 << "MHz" << std::endl;
         else
             std::cout << "N/A" << std::endl;
+
+        NvU32 displayIdCount = 0U;
+        REQUIRE(nvAPI_GPU_GetConnectedDisplayIds(handle, nullptr, &displayIdCount, 0) == NVAPI_OK);
+        std::cout << "    Connected display ID(s):    ";
+        if (displayIdCount != 0) {
+            NV_GPU_DISPLAYIDS displayIds[displayIdCount];
+            memset(&displayIds, 0, sizeof(displayIds));
+            displayIds->version = NV_GPU_DISPLAYIDS_VER;
+            REQUIRE(nvAPI_GPU_GetConnectedDisplayIds(handle, displayIds, &displayIdCount, 0) == NVAPI_OK);
+            for (auto i = 0U; i < displayIdCount; ++i) {
+                auto displayId = displayIds[i];
+                std::cout << (i == 0 ? "0x" : "                                0x") << std::setfill('0') << std::setw(8)
+                          << std::hex << displayId.displayId
+                          << std::endl;
+            }
+        } else
+            std::cout << "-" << std::endl;
     }
 
     std::cout << std::endl;
