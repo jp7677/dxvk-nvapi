@@ -255,6 +255,85 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
         NvU32 displayId;
         REQUIRE(NvAPI_DISP_GetGDIPrimaryDisplayId(&displayId) == NVAPI_NVIDIA_DEVICE_NOT_FOUND); // MONITORINFO.dwFlags isn't mocked
     }
+
+    SECTION("GetConnectedDisplayIds succeeds") {
+        NvPhysicalGpuHandle gpuHandles[NVAPI_MAX_PHYSICAL_GPUS]{};
+        NvU32 gpuCount = 0U;
+        REQUIRE(NvAPI_EnumPhysicalGPUs(gpuHandles, &gpuCount) == NVAPI_OK);
+        REQUIRE(gpuCount == 2);
+
+        SECTION("GetConnectedDisplayIds with nullptr returns OK") {
+            NvU32 gpu0DisplayIdCount = 0U;
+            REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], nullptr, &gpu0DisplayIdCount, 0) == NVAPI_OK);
+            REQUIRE(gpu0DisplayIdCount == 2);
+
+            NvU32 gpu1DisplayIdCount = 0U;
+            REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[1U], nullptr, &gpu1DisplayIdCount, 0) == NVAPI_OK);
+            REQUIRE(gpu1DisplayIdCount == 1);
+        }
+
+        SECTION("GetConnectedDisplayIds with wrong display ID count returns insufficient-buffer") {
+            NvU32 gpu0DisplayIdCount = 1U;
+            NV_GPU_DISPLAYIDS gpu0DisplayIds[gpu0DisplayIdCount];
+            memset(&gpu0DisplayIds, 0, sizeof(gpu0DisplayIds));
+            gpu0DisplayIds->version = NV_GPU_DISPLAYIDS_VER;
+            REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], gpu0DisplayIds, &gpu0DisplayIdCount, 0) == NVAPI_INSUFFICIENT_BUFFER);
+            REQUIRE(gpu0DisplayIdCount == 2);
+        }
+
+        SECTION("GetConnectedDisplayIds with correct display ID count returns OK") {
+            NvU32 gpu0DisplayIdCount = 2U;
+            NV_GPU_DISPLAYIDS gpu0DisplayIds[gpu0DisplayIdCount];
+            memset(&gpu0DisplayIds, 0, sizeof(gpu0DisplayIds));
+            gpu0DisplayIds->version = NV_GPU_DISPLAYIDS_VER;
+            REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], gpu0DisplayIds, &gpu0DisplayIdCount, 0) == NVAPI_OK);
+            REQUIRE(gpu0DisplayIds[0].displayId == 0x00010001);
+            REQUIRE(gpu0DisplayIds[0].isConnected == true);
+            REQUIRE(gpu0DisplayIds[1].displayId == 0x00010002);
+            REQUIRE(gpu0DisplayIds[1].isConnected == true);
+
+            NvU32 gpu1DisplayIdCount = 1U;
+            NV_GPU_DISPLAYIDS gpu1DisplayIds[gpu1DisplayIdCount];
+            memset(&gpu1DisplayIds, 0, sizeof(gpu1DisplayIds));
+            gpu1DisplayIds->version = NV_GPU_DISPLAYIDS_VER;
+            REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[1U], gpu1DisplayIds, &gpu1DisplayIdCount, 0) == NVAPI_OK);
+            REQUIRE(gpu1DisplayIds[0].displayId == 0x00020001);
+            REQUIRE(gpu0DisplayIds[0].isConnected == true);
+        }
+
+        SECTION("GetConnectedDisplayIds (V1) returns OK") {
+            NvU32 gpu0DisplayIdCount = 2U;
+            NV_GPU_DISPLAYIDS gpu0DisplayIds[gpu0DisplayIdCount];
+            memset(&gpu0DisplayIds, 0, sizeof(gpu0DisplayIds));
+            gpu0DisplayIds->version = NV_GPU_DISPLAYIDS_VER1;
+            REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], gpu0DisplayIds, &gpu0DisplayIdCount, 0) == NVAPI_OK);
+        }
+
+        SECTION("GetConnectedDisplayIds (V2) returns OK") {
+            NvU32 gpu0DisplayIdCount = 2U;
+            NV_GPU_DISPLAYIDS gpu0DisplayIds[gpu0DisplayIdCount];
+            memset(&gpu0DisplayIds, 0, sizeof(gpu0DisplayIds));
+            gpu0DisplayIds->version = NV_GPU_DISPLAYIDS_VER2;
+            REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], gpu0DisplayIds, &gpu0DisplayIdCount, 0) == NVAPI_OK);
+        }
+
+        SECTION("GetConnectedDisplayIds with unknown struct version returns incompatible-struct-version") {
+            NvU32 gpu0DisplayIdCount = 2U;
+            NV_GPU_DISPLAYIDS gpu0DisplayIds[gpu0DisplayIdCount];
+            memset(&gpu0DisplayIds, 0, sizeof(gpu0DisplayIds));
+            gpu0DisplayIds->version = NV_GPU_DISPLAYIDS_VER2 + 1;
+            REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], gpu0DisplayIds, &gpu0DisplayIdCount, 0) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetConnectedDisplayIds with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            NvU32 gpu0DisplayIdCount = 2U;
+            NV_GPU_DISPLAYIDS gpu0DisplayIds[gpu0DisplayIdCount];
+            memset(&gpu0DisplayIds, 0, sizeof(gpu0DisplayIds));
+            gpu0DisplayIds->version = NV_GPU_DISPLAYIDS_VER;
+            REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], gpu0DisplayIds, &gpu0DisplayIdCount, 0) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
 }
 
 TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {

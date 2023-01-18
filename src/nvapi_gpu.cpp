@@ -7,6 +7,48 @@
 extern "C" {
     using namespace dxvk;
 
+    NvAPI_Status __cdecl NvAPI_GPU_GetConnectedDisplayIds(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_DISPLAYIDS* pDisplayIds, NvU32* pDisplayIdCount, NvU32 flags) {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        // TODO: return 0 when flags contain NV_GPU_CONNECTED_IDS_FLAG_SLI
+        auto count = nvapiAdapterRegistry->GetOutputCount(adapter);
+
+        if (pDisplayIds == nullptr) {
+            *pDisplayIdCount = count;
+            return Ok(n);
+        }
+
+        if (*pDisplayIdCount != count) {
+            *pDisplayIdCount = count;
+            return InsufficientBuffer(n);
+        }
+
+        switch (pDisplayIds->version) {
+            case NV_GPU_DISPLAYIDS_VER1:
+            case NV_GPU_DISPLAYIDS_VER2: {
+                memset(pDisplayIds, 0, sizeof(NV_GPU_DISPLAYIDS));
+                for (auto i = 0U; i < count; i++) {
+                    auto output = nvapiAdapterRegistry->GetOutput(adapter, i);
+                    pDisplayIds[i].displayId = output->GetId();
+                    pDisplayIds[i].isConnected = true;
+                    pDisplayIds[i].connectorType = NV_MONITOR_CONN_TYPE_UNKNOWN;
+                }
+                break;
+            }
+            default:
+                return IncompatibleStructVersion(n);
+        }
+
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_GPU_GetCurrentPCIEDownstreamWidth(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pWidth) {
         constexpr auto n = __func__;
         static bool alreadyLoggedNoNvml = false;

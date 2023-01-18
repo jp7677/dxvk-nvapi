@@ -146,4 +146,9 @@ namespace dxvk {
         log::write(str::format(logMessage, ": Setting not found"));
         return NVAPI_SETTING_NOT_FOUND;
     }
+
+    inline NvAPI_Status InsufficientBuffer(const std::string& logMessage) {
+        log::write(str::format(logMessage, ": Insufficient Buffer"));
+        return NVAPI_INSUFFICIENT_BUFFER;
+    }
 }

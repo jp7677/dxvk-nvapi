@@ -22,7 +22,9 @@ namespace dxvk {
         [[nodiscard]] NvapiAdapter* FindAdapter(const LUID& luid) const;
         [[nodiscard]] bool IsAdapter(NvapiAdapter* handle) const;
 
+        [[nodiscard]] uint32_t GetOutputCount(NvapiAdapter* handle) const;
         [[nodiscard]] NvapiOutput* GetOutput(uint32_t index) const;
+        [[nodiscard]] NvapiOutput* GetOutput(NvapiAdapter* handle, uint32_t index) const;
         [[nodiscard]] NvapiOutput* FindOutput(const std::string& displayName) const;
         [[nodiscard]] NvapiOutput* FindOutput(uint32_t id) const;
         [[nodiscard]] NvapiOutput* FindPrimaryOutput() const;

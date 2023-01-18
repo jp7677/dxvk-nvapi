@@ -71,8 +71,25 @@ namespace dxvk {
         return std::find(m_nvapiAdapters.begin(), m_nvapiAdapters.end(), handle) != m_nvapiAdapters.end();
     }
 
+    uint32_t NvapiAdapterRegistry::GetOutputCount(NvapiAdapter* handle) const {
+        return std::count_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(),
+            [&handle](const auto& output) {
+                return output->GetParent() == handle;
+            });
+    }
+
     NvapiOutput* NvapiAdapterRegistry::GetOutput(const uint32_t index) const {
         return index < m_nvapiOutputs.size() ? m_nvapiOutputs[index] : nullptr;
+    }
+
+    NvapiOutput* NvapiAdapterRegistry::GetOutput(NvapiAdapter* handle, const uint32_t index) const {
+        std::vector<NvapiOutput*> filtered;
+        std::copy_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(), std::back_inserter(filtered),
+            [&handle](const auto& output) {
+                return output->GetParent() == handle;
+            });
+
+        return index < filtered.size() ? filtered[index] : nullptr;
     }
 
     NvapiOutput* NvapiAdapterRegistry::FindOutput(const std::string& displayName) const {
