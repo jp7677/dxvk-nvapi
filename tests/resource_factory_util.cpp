@@ -58,6 +58,7 @@ void SetupResourceFactory(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         strcpy(props->deviceName, "Device1");
+                        props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
                         driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
         NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)),
@@ -148,6 +149,7 @@ void SetupResourceFactory(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         strcpy(props->deviceName, "Device1");
+                        props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
                         driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
         NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceProperties2(_, reinterpret_cast<VkPhysicalDevice>(0x02), _))
@@ -155,6 +157,89 @@ void SetupResourceFactory(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         strcpy(props->deviceName, "Device2");
+                        props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                    })),
+        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)),
+
+        NAMED_ALLOW_CALL(nvml, IsAvailable())
+            .RETURN(false),
+        NAMED_ALLOW_CALL(lfx, IsAvailable())
+            .RETURN(false)};
+}
+
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 24> ConfigureIntegratedAndDiscreteGpuTestEnvironment(
+    DXGIFactory1Mock& dxgiFactory,
+    VulkanMock& vulkan,
+    NvmlMock& nvml,
+    LfxMock& lfx,
+    DXGIDxvkAdapterMock& adapter1,
+    DXGIDxvkAdapterMock& adapter2,
+    DXGIOutputMock& output1) {
+    return {
+        NAMED_ALLOW_CALL(dxgiFactory, AddRef())
+            .RETURN(1),
+        NAMED_ALLOW_CALL(dxgiFactory, Release())
+            .RETURN(0),
+        NAMED_ALLOW_CALL(dxgiFactory, EnumAdapters1(0U, _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter1*>(&adapter1))
+            .RETURN(S_OK),
+        NAMED_ALLOW_CALL(dxgiFactory, EnumAdapters1(1U, _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter1*>(&adapter2))
+            .RETURN(S_OK),
+        NAMED_ALLOW_CALL(dxgiFactory, EnumAdapters1(2U, _))
+            .RETURN(DXGI_ERROR_NOT_FOUND),
+
+        NAMED_ALLOW_CALL(adapter1, QueryInterface(IDXGIVkInteropAdapter::guid, _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter1))
+            .RETURN(S_OK),
+        NAMED_ALLOW_CALL(adapter1, Release())
+            .RETURN(0),
+        NAMED_ALLOW_CALL(adapter1, EnumOutputs(0U, _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
+            .RETURN(S_OK),
+        NAMED_ALLOW_CALL(adapter1, EnumOutputs(1U, _))
+            .RETURN(DXGI_ERROR_NOT_FOUND),
+        NAMED_ALLOW_CALL(adapter1, GetVulkanHandles(_, _))
+            .LR_SIDE_EFFECT(*_2 = reinterpret_cast<VkPhysicalDevice>(0x01)),
+
+        NAMED_ALLOW_CALL(adapter2, QueryInterface(IDXGIVkInteropAdapter::guid, _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter2))
+            .RETURN(S_OK),
+        NAMED_ALLOW_CALL(adapter2, Release())
+            .RETURN(0),
+        NAMED_ALLOW_CALL(adapter2, EnumOutputs(0U, _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
+            .RETURN(S_OK),
+        NAMED_ALLOW_CALL(adapter2, EnumOutputs(1U, _))
+            .RETURN(DXGI_ERROR_NOT_FOUND),
+        NAMED_ALLOW_CALL(adapter2, GetVulkanHandles(_, _))
+            .LR_SIDE_EFFECT(*_2 = reinterpret_cast<VkPhysicalDevice>(0x02)),
+
+        NAMED_ALLOW_CALL(output1, Release())
+            .RETURN(0),
+        NAMED_ALLOW_CALL(output1, GetDesc(_))
+            .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0, 0, 0, 0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
+            .RETURN(S_OK),
+
+        NAMED_ALLOW_CALL(vulkan, IsAvailable())
+            .RETURN(true),
+        NAMED_ALLOW_CALL(vulkan, GetDeviceExtensions(_, _))
+            .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME}),
+        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceProperties2(_, reinterpret_cast<VkPhysicalDevice>(0x01), _))
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        strcpy(props->deviceName, "Device1");
+                        props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                    })),
+        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceProperties2(_, reinterpret_cast<VkPhysicalDevice>(0x02), _))
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        strcpy(props->deviceName, "Device2");
+                        props->deviceType = VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU;
                         driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
         NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)),
