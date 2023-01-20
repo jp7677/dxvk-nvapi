@@ -15,6 +15,10 @@ extern "C" {
         if (pHdrCapabilities == nullptr)
             return InvalidArgument(n);
 
+        auto output = nvapiAdapterRegistry->FindOutput(displayId);
+        if (output == nullptr)
+            return InvalidArgument(n);
+
         // Report that HDR is not available
         // Note that DXVK starts to support HDR at the time of writing, so we could report HDR capabilities
         // somewhat correctly by looking at DXGI_OUTPUT_DESC1 (IDXGIOutput6->GetDesc1).

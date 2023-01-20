@@ -1440,13 +1440,11 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_HANDLE_INVALIDATED);
         }
     }
-}
 
-TEST_CASE("GetHdrCapabilities succeeds", "[.sysinfo]") {
     SECTION("GetHdrCapabilities (V1) returns OK") {
         NV_HDR_CAPABILITIES_V1 capabilities;
         capabilities.version = NV_HDR_CAPABILITIES_VER1;
-        REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, reinterpret_cast<NV_HDR_CAPABILITIES*>(&capabilities)) == NVAPI_OK);
+        REQUIRE(NvAPI_Disp_GetHdrCapabilities(primaryDisplayId, reinterpret_cast<NV_HDR_CAPABILITIES*>(&capabilities)) == NVAPI_OK);
         REQUIRE(capabilities.isST2084EotfSupported == false);
         REQUIRE(capabilities.isTraditionalHdrGammaSupported == false);
         REQUIRE(capabilities.isEdrSupported == false);
@@ -1468,7 +1466,7 @@ TEST_CASE("GetHdrCapabilities succeeds", "[.sysinfo]") {
     SECTION("GetHdrCapabilities (V2) returns OK") {
         NV_HDR_CAPABILITIES_V2 capabilities;
         capabilities.version = NV_HDR_CAPABILITIES_VER2;
-        REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, reinterpret_cast<NV_HDR_CAPABILITIES*>(&capabilities)) == NVAPI_OK);
+        REQUIRE(NvAPI_Disp_GetHdrCapabilities(primaryDisplayId, reinterpret_cast<NV_HDR_CAPABILITIES*>(&capabilities)) == NVAPI_OK);
         REQUIRE(capabilities.isST2084EotfSupported == false);
         REQUIRE(capabilities.isTraditionalHdrGammaSupported == false);
         REQUIRE(capabilities.isEdrSupported == false);
@@ -1490,7 +1488,7 @@ TEST_CASE("GetHdrCapabilities succeeds", "[.sysinfo]") {
     SECTION("GetHdrCapabilities (V3) returns OK") {
         NV_HDR_CAPABILITIES_V3 capabilities;
         capabilities.version = NV_HDR_CAPABILITIES_VER3;
-        REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, &capabilities) == NVAPI_OK);
+        REQUIRE(NvAPI_Disp_GetHdrCapabilities(primaryDisplayId, &capabilities) == NVAPI_OK);
         REQUIRE(capabilities.isST2084EotfSupported == false);
         REQUIRE(capabilities.isTraditionalHdrGammaSupported == false);
         REQUIRE(capabilities.isEdrSupported == false);
@@ -1513,14 +1511,14 @@ TEST_CASE("GetHdrCapabilities succeeds", "[.sysinfo]") {
     SECTION("GetHdrCapabilities with unknown struct version returns incompatible-struct-version") {
         NV_HDR_CAPABILITIES capabilities;
         capabilities.version = NV_HDR_CAPABILITIES_VER3 + 1;
-        REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, &capabilities) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        REQUIRE(NvAPI_Disp_GetHdrCapabilities(primaryDisplayId, &capabilities) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
     }
 
     SECTION("GetHdrCapabilities with current struct version returns not incompatible-struct-version") {
         // This test should fail when a header update provides a newer not yet implemented struct version
         NV_HDR_CAPABILITIES capabilities;
         capabilities.version = NV_HDR_CAPABILITIES_VER;
-        REQUIRE(NvAPI_Disp_GetHdrCapabilities(0, &capabilities) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        REQUIRE(NvAPI_Disp_GetHdrCapabilities(primaryDisplayId, &capabilities) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
     }
 }
 
