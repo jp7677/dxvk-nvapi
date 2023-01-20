@@ -11,7 +11,7 @@ namespace dxvk {
     NvapiOutput::~NvapiOutput() = default;
 
     void NvapiOutput::Initialize(Com<IDXGIOutput>& dxgiOutput) {
-        DXGI_OUTPUT_DESC desc;
+        DXGI_OUTPUT_DESC desc{};
         dxgiOutput->GetDesc(&desc);
 
         m_deviceName = str::fromws(desc.DeviceName);
