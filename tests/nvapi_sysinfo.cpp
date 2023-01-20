@@ -350,21 +350,25 @@ TEST_CASE("Topology methods for discrete/integrated environment succeed", "[.sys
     SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
     REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-    NvDisplayHandle displayHandle = nullptr;
-    REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0U, &displayHandle) == NVAPI_OK);
-    REQUIRE(NvAPI_EnumNvidiaDisplayHandle(1U, &displayHandle) == NVAPI_END_ENUMERATION);
+    SECTION("EnumNvidiaDisplayHandle returns OK") {
+        NvDisplayHandle displayHandle = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0U, &displayHandle) == NVAPI_OK);
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(1U, &displayHandle) == NVAPI_END_ENUMERATION);
+    }
 
-    NvPhysicalGpuHandle gpuHandles[NVAPI_MAX_PHYSICAL_GPUS]{};
-    NvU32 gpuCount = 0U;
-    REQUIRE(NvAPI_EnumPhysicalGPUs(gpuHandles, &gpuCount) == NVAPI_OK);
-    REQUIRE(gpuCount == 2);
+    SECTION("GetConnectedDisplayIds returns OK") {
+        NvPhysicalGpuHandle gpuHandles[NVAPI_MAX_PHYSICAL_GPUS]{};
+        NvU32 gpuCount = 0U;
+        REQUIRE(NvAPI_EnumPhysicalGPUs(gpuHandles, &gpuCount) == NVAPI_OK);
+        REQUIRE(gpuCount == 2);
 
-    NvU32 displayIdCount = 0U;
-    REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], nullptr, &displayIdCount, 0) == NVAPI_OK);
-    REQUIRE(displayIdCount == 1);
+        NvU32 displayIdCount = 0U;
+        REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], nullptr, &displayIdCount, 0) == NVAPI_OK);
+        REQUIRE(displayIdCount == 1);
 
-    REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[1U], nullptr, &displayIdCount, 0) == NVAPI_OK);
-    REQUIRE(displayIdCount == 0);
+        REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[1U], nullptr, &displayIdCount, 0) == NVAPI_OK);
+        REQUIRE(displayIdCount == 0);
+    }
 }
 
 TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
