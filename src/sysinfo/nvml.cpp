@@ -6,6 +6,9 @@ namespace dxvk {
     Nvml::Nvml() {
         const auto nvmlModuleName = "nvml.dll";
         m_nvmlModule = ::LoadLibraryA(nvmlModuleName);
+        if (m_nvmlModule != nullptr)
+            log::write(str::format("Successfully loaded ", nvmlModuleName));
+
         if (m_nvmlModule == nullptr) {
             auto lastError = ::GetLastError();
             if (lastError != ERROR_MOD_NOT_FOUND) // Ignore library not found
