@@ -4,8 +4,19 @@
 
 namespace dxvk {
     Vulkan::Vulkan() {
-        const auto vkModuleName = "vulkan-1.dll";
+        const auto vkModuleName = "winevulkan.dll";
+        const auto vkModuleNameFallback = "vulkan-1.dll";
+
         m_vkModule = ::LoadLibraryA(vkModuleName);
+        if (m_vkModule != nullptr)
+            log::write(str::format("Successfully loaded ", vkModuleName));
+
+        if (m_vkModule == nullptr && ::GetLastError() == ERROR_MOD_NOT_FOUND) {
+            m_vkModule = ::LoadLibraryA(vkModuleNameFallback);
+            if (m_vkModule != nullptr)
+                log::write(str::format("Successfully loaded ", vkModuleNameFallback));
+        }
+
         if (m_vkModule == nullptr) {
             log::write(str::format("Loading ", vkModuleName, " failed with error code: ", ::GetLastError()));
             return;
