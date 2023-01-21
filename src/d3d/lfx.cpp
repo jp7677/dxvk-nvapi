@@ -10,11 +10,17 @@ namespace dxvk {
         auto useFallbackEntrypoints = false;
 
         m_lfxModule = ::LoadLibraryA(lfxModuleName);
+        if (m_lfxModule != nullptr)
+            log::write(str::format("Successfully loaded ", lfxModuleName));
+
         if (m_lfxModule == nullptr && ::GetLastError() == ERROR_MOD_NOT_FOUND) {
             // Try fallback entrypoints. These were used by versions prior to [9c2836f].
             // The fallback logic can be removed once enough time has passed since the release.
             // [9c2836f]: https://github.com/ishitatsuyuki/LatencyFleX/commit/9c2836faf14196190a915064b53c27e675e47960
             m_lfxModule = ::LoadLibraryA(lfxModuleNameFallback);
+            if (m_lfxModule != nullptr)
+                log::write(str::format("Successfully loaded ", lfxModuleNameFallback));
+
             useFallbackEntrypoints = true;
         }
 
