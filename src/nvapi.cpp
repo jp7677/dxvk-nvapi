@@ -176,7 +176,7 @@ extern "C" {
 
         auto output = nvapiAdapterRegistry->GetOutput(thisEnum);
         if (output == nullptr)
-            return EndEnumeration(str::format(n, " ", thisEnum));
+            return EndEnumeration(str::format(n, " (", thisEnum, ")"));
 
         *pNvDispHandle = reinterpret_cast<NvDisplayHandle>(output);
 
