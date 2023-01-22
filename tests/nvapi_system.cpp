@@ -398,27 +398,27 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         hdrCapabilities.version = NV_HDR_CAPABILITIES_VER2; // Support drivers older than 520
         REQUIRE(nvAPI_Disp_GetHdrCapabilities(displayId, &hdrCapabilities) == NVAPI_OK);
         std::cout << "    ST2084/HDR support:         ";
-        if (hdrCapabilities.isST2084EotfSupported) {
+        if (hdrCapabilities.isST2084EotfSupported)
             std::cout << "Yes" << std::endl;
-
-            std::cout << "    Primary 0/red:              ";
-            std::cout << "X = " << std::dec << hdrCapabilities.display_data.displayPrimary_x0;
-            std::cout << ", Y = " << std::dec << hdrCapabilities.display_data.displayPrimary_y0 << std::endl;
-            std::cout << "    Primary 1/green:            ";
-            std::cout << "X = " << std::dec << hdrCapabilities.display_data.displayPrimary_x1;
-            std::cout << ", Y = " << std::dec << hdrCapabilities.display_data.displayPrimary_y1 << std::endl;
-            std::cout << "    Primary 2/blue:             ";
-            std::cout << "X = " << std::dec << hdrCapabilities.display_data.displayPrimary_x2;
-            std::cout << ", Y = " << std::dec << hdrCapabilities.display_data.displayPrimary_y2 << std::endl;
-            std::cout << "    White point:                ";
-            std::cout << "X = " << std::dec << hdrCapabilities.display_data.displayWhitePoint_x;
-            std::cout << ", Y = " << std::dec << hdrCapabilities.display_data.displayWhitePoint_y << std::endl;
-            std::cout << "    Desired luminance:          ";
-            std::cout << "Min = " << std::dec << hdrCapabilities.display_data.desired_content_min_luminance;
-            std::cout << ", Max = " << std::dec << hdrCapabilities.display_data.desired_content_max_luminance;
-            std::cout << ", Average = " << std::dec << hdrCapabilities.display_data.desired_content_max_frame_average_luminance << std::endl;
-        } else
+        else
             std::cout << "-" << std::endl;
+
+        std::cout << "    Primary 0/red:              ";
+        std::cout << "X = " << std::dec << hdrCapabilities.display_data.displayPrimary_x0;
+        std::cout << ", Y = " << std::dec << hdrCapabilities.display_data.displayPrimary_y0 << std::endl;
+        std::cout << "    Primary 1/green:            ";
+        std::cout << "X = " << std::dec << hdrCapabilities.display_data.displayPrimary_x1;
+        std::cout << ", Y = " << std::dec << hdrCapabilities.display_data.displayPrimary_y1 << std::endl;
+        std::cout << "    Primary 2/blue:             ";
+        std::cout << "X = " << std::dec << hdrCapabilities.display_data.displayPrimary_x2;
+        std::cout << ", Y = " << std::dec << hdrCapabilities.display_data.displayPrimary_y2 << std::endl;
+        std::cout << "    White point:                ";
+        std::cout << "X = " << std::dec << hdrCapabilities.display_data.displayWhitePoint_x;
+        std::cout << ", Y = " << std::dec << hdrCapabilities.display_data.displayWhitePoint_y << std::endl;
+        std::cout << "    Desired luminance:          ";
+        std::cout << "Min = " << std::dec << hdrCapabilities.display_data.desired_content_min_luminance;
+        std::cout << ", Max = " << std::dec << hdrCapabilities.display_data.desired_content_max_luminance;
+        std::cout << ", Max frame avg = " << std::dec << hdrCapabilities.display_data.desired_content_max_frame_average_luminance << std::endl;
 
         i++;
     }
