@@ -11,7 +11,7 @@ TEST_CASE("HDR related Sysinfo methods succeed", "[.sysinfo-hdr]") {
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
     DXGIDxvkAdapterMock adapter;
-    DXGIOutputMock output;
+    DXGIOutput6Mock output;
 
     auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
     auto primaryDisplayId = 0x00010001;

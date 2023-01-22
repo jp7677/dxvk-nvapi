@@ -39,7 +39,7 @@ class DXGIDxvkAdapterMock : public trompeloeil::mock_interface<IDXGIDxvkAdapter>
     IMPLEMENT_MOCK2(GetVulkanHandles);
 };
 
-class DXGIOutputMock : public trompeloeil::mock_interface<IDXGIOutput> {
+class DXGIOutput6Mock : public trompeloeil::mock_interface<IDXGIOutput6> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -59,6 +59,16 @@ class DXGIOutputMock : public trompeloeil::mock_interface<IDXGIOutput> {
     IMPLEMENT_MOCK1(SetDisplaySurface);
     IMPLEMENT_MOCK1(GetDisplaySurfaceData);
     IMPLEMENT_MOCK1(GetFrameStatistics);
+    IMPLEMENT_MOCK4(GetDisplayModeList1);
+    IMPLEMENT_MOCK3(FindClosestMatchingMode1);
+    IMPLEMENT_MOCK1(GetDisplaySurfaceData1);
+    IMPLEMENT_MOCK2(DuplicateOutput);
+    IMPLEMENT_MOCK0(SupportsOverlays);
+    IMPLEMENT_MOCK3(CheckOverlaySupport);
+    IMPLEMENT_MOCK4(CheckOverlayColorSpaceSupport);
+    IMPLEMENT_MOCK5(DuplicateOutput1);
+    IMPLEMENT_MOCK1(GetDesc1);
+    IMPLEMENT_MOCK1(CheckHardwareCompositionSupport);
 };
 
 class VulkanMock : public trompeloeil::mock_interface<dxvk::Vulkan> {

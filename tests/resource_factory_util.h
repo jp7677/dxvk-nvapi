@@ -17,7 +17,7 @@ void SetupResourceFactory(
     NvmlMock& nvml,
     LfxMock& lfx,
     DXGIDxvkAdapterMock& adapter,
-    DXGIOutputMock& output);
+    DXGIOutput6Mock& output);
 
 [[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 32> ConfigureExtendedTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
@@ -26,9 +26,9 @@ void SetupResourceFactory(
     LfxMock& lfx,
     DXGIDxvkAdapterMock& adapter1,
     DXGIDxvkAdapterMock& adapter2,
-    DXGIOutputMock& output1,
-    DXGIOutputMock& output2,
-    DXGIOutputMock& output3);
+    DXGIOutput6Mock& output1,
+    DXGIOutput6Mock& output2,
+    DXGIOutput6Mock& output3);
 
 [[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 25> ConfigureIntegratedAndDiscreteGpuTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
@@ -37,7 +37,7 @@ void SetupResourceFactory(
     LfxMock& lfx,
     DXGIDxvkAdapterMock& adapter1,
     DXGIDxvkAdapterMock& adapter2,
-    DXGIOutputMock& output1);
+    DXGIOutput6Mock& output1);
 
 void ConfigureGetPhysicalDeviceProperties2(
     VkPhysicalDeviceProperties2* props,

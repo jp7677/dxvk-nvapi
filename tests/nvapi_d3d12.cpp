@@ -130,7 +130,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto nvml = std::make_unique<NvmlMock>();
         auto lfx = std::make_unique<LfxMock>();
         DXGIDxvkAdapterMock adapter;
-        DXGIOutputMock output;
+        DXGIOutput6Mock output;
         auto luid = new LUID{};
 
         auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);

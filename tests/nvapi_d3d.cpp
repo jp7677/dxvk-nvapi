@@ -117,7 +117,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
     DXGIDxvkAdapterMock adapter;
-    DXGIOutputMock output;
+    DXGIOutput6Mock output;
 
     auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
 

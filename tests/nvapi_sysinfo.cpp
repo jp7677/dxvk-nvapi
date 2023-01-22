@@ -23,7 +23,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
     DXGIDxvkAdapterMock adapter;
-    DXGIOutputMock output;
+    DXGIOutput6Mock output;
 
     auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
 
@@ -63,9 +63,9 @@ TEST_CASE("Topology methods succeed", "[.sysinfo]") {
     auto lfx = std::make_unique<LfxMock>();
     DXGIDxvkAdapterMock adapter1;
     DXGIDxvkAdapterMock adapter2;
-    DXGIOutputMock output1;
-    DXGIOutputMock output2;
-    DXGIOutputMock output3;
+    DXGIOutput6Mock output1;
+    DXGIOutput6Mock output2;
+    DXGIOutput6Mock output3;
 
     auto e = ConfigureExtendedTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter1, adapter2, output1, output2, output3);
 
@@ -343,7 +343,7 @@ TEST_CASE("Topology methods for discrete/integrated environment succeed", "[.sys
     auto lfx = std::make_unique<LfxMock>();
     DXGIDxvkAdapterMock adapter1;
     DXGIDxvkAdapterMock adapter2;
-    DXGIOutputMock output1;
+    DXGIOutput6Mock output1;
 
     auto e = ConfigureIntegratedAndDiscreteGpuTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter1, adapter2, output1);
 
@@ -377,7 +377,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
     DXGIDxvkAdapterMock adapter;
-    DXGIOutputMock output;
+    DXGIOutput6Mock output;
 
     auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
     auto primaryDisplayId = 0x00010001;
