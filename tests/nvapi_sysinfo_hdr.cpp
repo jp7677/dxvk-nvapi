@@ -5,7 +5,7 @@
 using namespace trompeloeil;
 using namespace Catch::Matchers;
 
-TEST_CASE("HDR related Sysinfo methods succeed", "[.sysinfo-hdr]") {
+TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
     auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
