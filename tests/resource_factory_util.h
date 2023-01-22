@@ -11,7 +11,7 @@ void SetupResourceFactory(
     std::unique_ptr<dxvk::Nvml> nvml,
     std::unique_ptr<dxvk::Lfx> lfx);
 
-[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 17> ConfigureDefaultTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 18> ConfigureDefaultTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -19,7 +19,7 @@ void SetupResourceFactory(
     DXGIDxvkAdapterMock& adapter,
     DXGIOutputMock& output);
 
-[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 29> ConfigureExtendedTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 32> ConfigureExtendedTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -30,7 +30,7 @@ void SetupResourceFactory(
     DXGIOutputMock& output2,
     DXGIOutputMock& output3);
 
-[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 24> ConfigureIntegratedAndDiscreteGpuTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 25> ConfigureIntegratedAndDiscreteGpuTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,

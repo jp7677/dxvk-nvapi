@@ -22,6 +22,24 @@ namespace dxvk {
         ::GetMonitorInfo(desc.Monitor, &info);
 
         m_isPrimary = (info.dwFlags & MONITORINFOF_PRIMARY);
+
+        Com<IDXGIOutput6> dxgiOutput6;
+        if (SUCCEEDED(dxgiOutput->QueryInterface(IID_PPV_ARGS(&dxgiOutput6)))) {
+            DXGI_OUTPUT_DESC1 desc1{};
+            dxgiOutput6->GetDesc1(&desc1);
+            const auto m = 50000.0f;
+            m_colorData.RedPrimaryX = static_cast<uint16_t>(desc1.RedPrimary[0] * m);
+            m_colorData.RedPrimaryY = static_cast<uint16_t>(desc1.RedPrimary[1] * m);
+            m_colorData.GreenPrimaryX = static_cast<uint16_t>(desc1.GreenPrimary[0] * m);
+            m_colorData.GreenPrimaryY = static_cast<uint16_t>(desc1.GreenPrimary[1] * m);
+            m_colorData.BluePrimaryX = static_cast<uint16_t>(desc1.BluePrimary[0] * m);
+            m_colorData.BluePrimaryY = static_cast<uint16_t>(desc1.BluePrimary[1] * m);
+            m_colorData.WhitePointX = static_cast<uint16_t>(desc1.WhitePoint[0] * m);
+            m_colorData.WhitePointY = static_cast<uint16_t>(desc1.WhitePoint[1] * m);
+            m_colorData.MinLuminance = static_cast<uint16_t>(desc1.MinLuminance * 0.0001f);
+            m_colorData.MaxLuminance = static_cast<uint16_t>(desc1.MaxLuminance);
+            m_colorData.MaxFullFrameLuminance = static_cast<uint16_t>(desc1.MaxFullFrameLuminance);
+        }
     }
 
     NvapiAdapter* NvapiOutput::GetParent() const {
@@ -38,5 +56,9 @@ namespace dxvk {
 
     bool NvapiOutput::IsPrimary() const {
         return m_isPrimary;
+    }
+
+    NvapiOutput::ColorData NvapiOutput::GetColorData() const {
+        return m_colorData;
     }
 }

@@ -13,7 +13,7 @@ void SetupResourceFactory(
     initializationCount = 0ULL;
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 17> ConfigureDefaultTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 18> ConfigureDefaultTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -48,6 +48,8 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(output, GetDesc(_))
             .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0, 0, 0, 0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
             .RETURN(S_OK),
+        NAMED_ALLOW_CALL(output, QueryInterface(__uuidof(IDXGIOutput6), _))
+            .RETURN(E_FAIL),
 
         NAMED_ALLOW_CALL(vulkan, IsAvailable())
             .RETURN(true),
@@ -69,7 +71,7 @@ void SetupResourceFactory(
             .RETURN(false)};
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 29> ConfigureExtendedTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 32> ConfigureExtendedTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -127,18 +129,24 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(output1, GetDesc(_))
             .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0, 0, 0, 0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
             .RETURN(S_OK),
+        NAMED_ALLOW_CALL(output1, QueryInterface(__uuidof(IDXGIOutput6), _))
+            .RETURN(E_FAIL),
 
         NAMED_ALLOW_CALL(output2, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(output2, GetDesc(_))
             .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output2", {0, 0, 0, 0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
             .RETURN(S_OK),
+        NAMED_ALLOW_CALL(output2, QueryInterface(__uuidof(IDXGIOutput6), _))
+            .RETURN(E_FAIL),
 
         NAMED_ALLOW_CALL(output3, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(output3, GetDesc(_))
             .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output3", {0, 0, 0, 0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
             .RETURN(S_OK),
+        NAMED_ALLOW_CALL(output3, QueryInterface(__uuidof(IDXGIOutput6), _))
+            .RETURN(E_FAIL),
 
         NAMED_ALLOW_CALL(vulkan, IsAvailable())
             .RETURN(true),
@@ -168,7 +176,7 @@ void SetupResourceFactory(
             .RETURN(false)};
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 24> ConfigureIntegratedAndDiscreteGpuTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 25> ConfigureIntegratedAndDiscreteGpuTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -221,6 +229,8 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(output1, GetDesc(_))
             .SIDE_EFFECT(*_1 = DXGI_OUTPUT_DESC{L"Output1", {0, 0, 0, 0}, 1, DXGI_MODE_ROTATION_UNSPECIFIED, nullptr})
             .RETURN(S_OK),
+        NAMED_ALLOW_CALL(output1, QueryInterface(__uuidof(IDXGIOutput6), _))
+            .RETURN(E_FAIL),
 
         NAMED_ALLOW_CALL(vulkan, IsAvailable())
             .RETURN(true),
