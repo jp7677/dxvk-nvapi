@@ -100,4 +100,29 @@ TEST_CASE("HDR related Sysinfo methods succeed", "[.sysinfo-hdr]") {
         capabilities.version = NV_HDR_CAPABILITIES_VER;
         REQUIRE(NvAPI_Disp_GetHdrCapabilities(primaryDisplayId, &capabilities) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
     }
+
+    SECTION("HdrColorControl (V1) returns no-implementation") {
+        NV_HDR_COLOR_DATA colorData;
+        colorData.version = NV_HDR_COLOR_DATA_VER1;
+        REQUIRE(NvAPI_Disp_HdrColorControl(primaryDisplayId, &colorData) == NVAPI_NO_IMPLEMENTATION);
+    }
+
+    SECTION("HdrColorControl (V2) returns no-implementation") {
+        NV_HDR_COLOR_DATA colorData;
+        colorData.version = NV_HDR_COLOR_DATA_VER2;
+        REQUIRE(NvAPI_Disp_HdrColorControl(primaryDisplayId, &colorData) == NVAPI_NO_IMPLEMENTATION);
+    }
+
+    SECTION("GetHdrCapabilities with unknown struct version returns incompatible-struct-version") {
+        NV_HDR_COLOR_DATA colorData;
+        colorData.version = NV_HDR_COLOR_DATA_VER2 + 1;
+        REQUIRE(NvAPI_Disp_HdrColorControl(primaryDisplayId, &colorData) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
+
+    SECTION("GetHdrCapabilities with current struct version returns not incompatible-struct-version") {
+        // This test should fail when a header update provides a newer not yet implemented struct version
+        NV_HDR_COLOR_DATA colorData;
+        colorData.version = NV_HDR_COLOR_DATA_VER;
+        REQUIRE(NvAPI_Disp_HdrColorControl(primaryDisplayId, &colorData) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
 }

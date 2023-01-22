@@ -101,6 +101,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DRS_DestroySession)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DRS_CreateSession)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Disp_GetHdrCapabilities)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Disp_HdrColorControl)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DISP_GetDisplayIdByDisplayName)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_DISP_GetGDIPrimaryDisplayId)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Mosaic_GetDisplayViewportsByResolution)
