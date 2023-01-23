@@ -36,7 +36,7 @@ namespace dxvk {
         dxgiVkFactory->GetVulkanInstance(&vkInstance, &vkGetInstanceProcAddr);
 
         log::write(str::format("Successfully acquired Vulkan vkGetInstanceProcAddr @ 0x", std::hex, reinterpret_cast<uintptr_t>(vkGetInstanceProcAddr)));
-        return std::make_unique<Vulkan>(vkGetInstanceProcAddr);
+        return std::make_unique<Vulkan>(dxgiFactory, vkGetInstanceProcAddr);
     }
 
     std::unique_ptr<Nvml> ResourceFactory::CreateNvml() {

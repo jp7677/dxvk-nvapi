@@ -2,8 +2,8 @@
 
 namespace dxvk {
     Vulkan::Vulkan() = default;
-    Vulkan::Vulkan(PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr)
-        : m_vkGetInstanceProcAddr(vkGetInstanceProcAddr) {}
+    Vulkan::Vulkan(Com<IDXGIFactory1> dxgiFactory, PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr)
+        : m_dxgiFactory(std::move(dxgiFactory)), m_vkGetInstanceProcAddr(vkGetInstanceProcAddr) {}
 
     Vulkan::~Vulkan() = default;
 

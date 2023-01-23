@@ -1,13 +1,14 @@
 #pragma once
 
 #include "../nvapi_private.h"
+#include "../util/com_pointer.h"
 
 namespace dxvk {
     class Vulkan {
 
       public:
         Vulkan();
-        explicit Vulkan(PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr);
+        explicit Vulkan(Com<IDXGIFactory1> dxgiFactory, PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr);
         virtual ~Vulkan();
 
         [[nodiscard]] virtual bool IsAvailable() const;
@@ -18,6 +19,7 @@ namespace dxvk {
         [[nodiscard]] static NV_GPU_TYPE ToNvGpuType(VkPhysicalDeviceType vkDeviceType);
 
       private:
+        Com<IDXGIFactory1> m_dxgiFactory;
         PFN_vkGetInstanceProcAddr m_vkGetInstanceProcAddr{};
 
         template <typename T>
