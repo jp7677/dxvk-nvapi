@@ -7,6 +7,7 @@ namespace dxvk {
 
       public:
         Vulkan();
+        explicit Vulkan(PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr);
         virtual ~Vulkan();
 
         [[nodiscard]] virtual bool IsAvailable() const;
@@ -17,11 +18,8 @@ namespace dxvk {
         [[nodiscard]] static NV_GPU_TYPE ToNvGpuType(VkPhysicalDeviceType vkDeviceType);
 
       private:
-        HMODULE m_vkModule{};
         PFN_vkGetInstanceProcAddr m_vkGetInstanceProcAddr{};
 
-        template <typename T>
-        T GetProcAddress(const char* name) const;
         template <typename T>
         T GetInstanceProcAddress(VkInstance vkInstance, const char* name) const;
     };

@@ -23,7 +23,7 @@ namespace dxvk {
             return false;
 
         m_vulkan = m_resourceFactory.CreateVulkan();
-        if (!m_vulkan->IsAvailable())
+        if (m_vulkan == nullptr || !m_vulkan->IsAvailable())
             return false;
 
         m_nvml = m_resourceFactory.CreateNvml();

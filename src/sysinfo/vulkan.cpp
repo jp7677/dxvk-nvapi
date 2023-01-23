@@ -1,40 +1,14 @@
 #include "vulkan.h"
-#include "../util/util_string.h"
-#include "../util/util_log.h"
 
 namespace dxvk {
-    Vulkan::Vulkan() {
-        const auto vkModuleName = "winevulkan.dll";
-        const auto vkModuleNameFallback = "vulkan-1.dll";
+    Vulkan::Vulkan() = default;
+    Vulkan::Vulkan(PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr)
+        : m_vkGetInstanceProcAddr(vkGetInstanceProcAddr) {}
 
-        m_vkModule = ::LoadLibraryA(vkModuleName);
-        if (m_vkModule != nullptr)
-            log::write(str::format("Successfully loaded ", vkModuleName));
-
-        if (m_vkModule == nullptr && ::GetLastError() == ERROR_MOD_NOT_FOUND) {
-            m_vkModule = ::LoadLibraryA(vkModuleNameFallback);
-            if (m_vkModule != nullptr)
-                log::write(str::format("Successfully loaded ", vkModuleNameFallback));
-        }
-
-        if (m_vkModule == nullptr) {
-            log::write(str::format("Loading ", vkModuleName, " failed with error code: ", ::GetLastError()));
-            return;
-        }
-
-        m_vkGetInstanceProcAddr = GetProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
-    }
-
-    Vulkan::~Vulkan() {
-        if (m_vkModule == nullptr)
-            return;
-
-        ::FreeLibrary(m_vkModule);
-        m_vkModule = nullptr;
-    }
+    Vulkan::~Vulkan() = default;
 
     bool Vulkan::IsAvailable() const {
-        return m_vkModule != nullptr;
+        return m_vkGetInstanceProcAddr != nullptr;
     }
 
     std::set<std::string> Vulkan::GetDeviceExtensions(VkInstance vkInstance, VkPhysicalDevice vkDevice) const {
@@ -84,11 +58,6 @@ namespace dxvk {
         return vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || vkDeviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
             ? static_cast<NV_GPU_TYPE>(vkDeviceType)
             : NV_SYSTEM_TYPE_GPU_UNKNOWN;
-    }
-
-    template <typename T>
-    T Vulkan::GetProcAddress(const char* name) const {
-        return reinterpret_cast<T>(reinterpret_cast<void*>(::GetProcAddress(m_vkModule, name)));
     }
 
     template <typename T>
