@@ -24,6 +24,24 @@ enum D3D11_VK_BARRIER_CONTROL : uint32_t {
 };
 
 /**
+ * \brief DXGI factory interface for Vulkan interop
+ */
+MIDL_INTERFACE("4c5e1b0d-b0c8-4131-bfd8-9b2476f7f408")
+IDXGIVkInteropFactory : public IUnknown {
+    static const GUID guid;
+
+    /**
+     * \brief Queries Vulkan instance used by DXVK
+     *
+     * \param [out] pInstance The Vulkan instance
+     * \param [out] ppfnVkGetInstanceProcAddr Vulkan entry point
+     */
+    virtual void STDMETHODCALLTYPE GetVulkanInstance(
+        VkInstance * pInstance,
+        PFN_vkGetInstanceProcAddr * ppfnVkGetInstanceProcAddr) = 0;
+};
+
+/**
 ￼ * \brief DXGI adapter interface for Vulkan interop
 ￼ *
 ￼ * Provides access to the physical device and
@@ -157,6 +175,7 @@ ID3D11VkExtContext1 : public ID3D11VkExtContext {
         uint32_t numWriteResources) = 0;
 };
 
+DXVK_DEFINE_GUID(IDXGIVkInteropFactory)
 DXVK_DEFINE_GUID(IDXGIVkInteropAdapter)
 DXVK_DEFINE_GUID(ID3D11VkExtDevice)
 DXVK_DEFINE_GUID(ID3D11VkExtDevice1)
