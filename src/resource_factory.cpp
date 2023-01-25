@@ -27,7 +27,7 @@ namespace dxvk {
 
         Com<IDXGIVkInteropFactory> dxgiVkFactory;
         if (FAILED(dxgiFactory->QueryInterface(IID_PPV_ARGS(&dxgiVkFactory)))) {
-            log::write("Querying Vulkan entry point from DXGI factory failed, please ensure that DXVK's dxgi.dll is present and newer than gd414342");
+            log::write("Querying Vulkan entry point from DXGI factory failed, please ensure that DXVK's dxgi.dll (version 2.1 or newer) is present");
             return nullptr;
         }
 
