@@ -78,7 +78,7 @@ extern "C" {
                 return IncompatibleStructVersion(n);
         }
 
-        return Ok(str::format(n, " (", displayId, ")"));
+        return Ok(str::format(n, " (0x", std::hex, displayId, ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_Disp_HdrColorControl(NvU32 displayId, NV_HDR_COLOR_DATA* pHdrColorData) {
@@ -102,7 +102,7 @@ extern "C" {
                 return IncompatibleStructVersion(n);
         }
 
-        return NoImplementation(n); // See comment in NvAPI_Disp_GetHdrCapabilities
+        return NoImplementation(str::format(n, " (0x", std::hex, displayId, ")")); // See comment in NvAPI_Disp_GetHdrCapabilities
     }
 
     NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char* displayName, NvU32* displayId) {
