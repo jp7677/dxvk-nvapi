@@ -13,6 +13,7 @@ namespace dxvk {
         ~NvapiOutput();
 
         struct ColorData {
+            bool HasST2084Support;
             uint16_t RedPrimaryX;
             uint16_t RedPrimaryY;
             uint16_t GreenPrimaryX;

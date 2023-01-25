@@ -29,7 +29,7 @@ extern "C" {
         switch (pHdrCapabilities->version) {
             case NV_HDR_CAPABILITIES_VER1: {
                 memset(pHdrCapabilities, 0, sizeof(NV_HDR_CAPABILITIES_V1));
-                pHdrCapabilities->isST2084EotfSupported = false;
+                pHdrCapabilities->isST2084EotfSupported = false; // output->GetColorData().HasST2084Support;
                 pHdrCapabilities->display_data.displayPrimary_x0 = output->GetColorData().RedPrimaryX;
                 pHdrCapabilities->display_data.displayPrimary_y0 = output->GetColorData().RedPrimaryY;
                 pHdrCapabilities->display_data.displayPrimary_x1 = output->GetColorData().GreenPrimaryX;
@@ -45,7 +45,7 @@ extern "C" {
             }
             case NV_HDR_CAPABILITIES_VER2: {
                 memset(pHdrCapabilities, 0, sizeof(NV_HDR_CAPABILITIES_V2));
-                pHdrCapabilities->isST2084EotfSupported = false;
+                pHdrCapabilities->isST2084EotfSupported = false; // output->GetColorData().HasST2084Support;
                 pHdrCapabilities->display_data.displayPrimary_x0 = output->GetColorData().RedPrimaryX;
                 pHdrCapabilities->display_data.displayPrimary_y0 = output->GetColorData().RedPrimaryY;
                 pHdrCapabilities->display_data.displayPrimary_x1 = output->GetColorData().GreenPrimaryX;
@@ -61,7 +61,7 @@ extern "C" {
             }
             case NV_HDR_CAPABILITIES_VER3:
                 memset(pHdrCapabilities, 0, sizeof(NV_HDR_CAPABILITIES_V3));
-                pHdrCapabilities->isST2084EotfSupported = false;
+                pHdrCapabilities->isST2084EotfSupported = false; // output->GetColorData().HasST2084Support;
                 pHdrCapabilities->display_data.displayPrimary_x0 = output->GetColorData().RedPrimaryX;
                 pHdrCapabilities->display_data.displayPrimary_y0 = output->GetColorData().RedPrimaryY;
                 pHdrCapabilities->display_data.displayPrimary_x1 = output->GetColorData().GreenPrimaryX;

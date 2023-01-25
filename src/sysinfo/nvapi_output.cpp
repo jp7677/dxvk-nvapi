@@ -28,6 +28,7 @@ namespace dxvk {
             DXGI_OUTPUT_DESC1 desc1{};
             dxgiOutput6->GetDesc1(&desc1);
             const auto m = 50000.0f;
+            m_colorData.HasST2084Support = desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
             m_colorData.RedPrimaryX = static_cast<uint16_t>(desc1.RedPrimary[0] * m);
             m_colorData.RedPrimaryY = static_cast<uint16_t>(desc1.RedPrimary[1] * m);
             m_colorData.GreenPrimaryX = static_cast<uint16_t>(desc1.GreenPrimary[0] * m);
