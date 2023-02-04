@@ -31,7 +31,7 @@ extern "C" {
         }
 
         switch (pDisplayIds->version) {
-            case NV_GPU_DISPLAYIDS_VER1:
+            case NV_GPU_DISPLAYIDS_VER1: // Both versions use the same NV_GPU_DISPLAYIDS struct
             case NV_GPU_DISPLAYIDS_VER2: {
                 *pDisplayIds = {};
                 for (auto i = 0U; i < count; i++) {
@@ -853,7 +853,7 @@ extern "C" {
                         pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency = (clock * 1000);
                         break;
                     }
-                    case NV_GPU_CLOCK_FREQUENCIES_VER_2:
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_2: // Both versions use the same NV_GPU_CLOCK_FREQUENCIES_V2 struct
                     case NV_GPU_CLOCK_FREQUENCIES_VER_3:
                         pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent = 1;
                         pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency = (clock * 1000);
@@ -882,7 +882,7 @@ extern "C" {
                         pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency = (clock * 1000);
                         break;
                     }
-                    case NV_GPU_CLOCK_FREQUENCIES_VER_2:
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_2: // Both versions use the same NV_GPU_CLOCK_FREQUENCIES_V2 struct
                     case NV_GPU_CLOCK_FREQUENCIES_VER_3:
                         pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent = 1;
                         pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency = (clock * 1000);
@@ -909,7 +909,7 @@ extern "C" {
                         pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency = (clock * 1000);
                         break;
                     }
-                    case NV_GPU_CLOCK_FREQUENCIES_VER_2:
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_2: // Both versions use the same NV_GPU_CLOCK_FREQUENCIES_V2 struct
                     case NV_GPU_CLOCK_FREQUENCIES_VER_3:
                         pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent = 1;
                         pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency = (clock * 1000);
