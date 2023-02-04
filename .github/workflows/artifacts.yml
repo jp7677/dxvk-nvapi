@@ -49,12 +49,13 @@ jobs:
         command: |
           ./package-release.sh "${{ env.VERSION }}" build --enable-tests
           mkdir "${HOME}/tests-prefix"
-          WINEPREFIX="${HOME}/tests-prefix" WINEDEBUG=-all wine \
-            "./build/dxvk-nvapi-${{ env.VERSION }}/x64/nvapi64-tests.exe" [@unit-tests] -o tests.log
+          # Temporary disabled due to borked Wine installation
+          # WINEPREFIX="${HOME}/tests-prefix" WINEDEBUG=-all wine \
+          #  "./build/dxvk-nvapi-${{ env.VERSION }}/x64/nvapi64-tests.exe" [@unit-tests] -o tests.log
 
     - name: Present tests results
       if: success() || failure()
-      run: cat tests.log
+      run: if [ -e tests.log ]; then cat tests.log; fi
 
     - name: Create tarball
       if: github.ref_type == 'tag'
