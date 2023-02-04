@@ -508,24 +508,24 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         NvPhysicalGpuHandle handle;
         REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
-        SECTION("GetGPUIDFromPhysicalGPU succeeds") {
+        SECTION("GetGPUIDFromPhysicalGPU return OK") {
             NvU32 gpuId;
             REQUIRE(NvAPI_GetGPUIDfromPhysicalGPU(handle, &gpuId) == NVAPI_OK);
             REQUIRE(gpuId == 0x10203);
         }
 
-        SECTION("GetPhysicalGPUFromGPUID succeeds") {
+        SECTION("GetPhysicalGPUFromGPUID return OK") {
             NvPhysicalGpuHandle handleFromGpuId;
             REQUIRE(NvAPI_GetPhysicalGPUFromGPUID(0x10203, &handleFromGpuId) == NVAPI_OK);
             REQUIRE(handleFromGpuId == handle);
         }
     }
 
-    SECTION("CudaEnumComputeCapableGpus returns OK") {
+    SECTION("CudaEnumComputeCapableGpus succeeds") {
         struct Data {
             VkDriverId driverId;
             std::string extensionName;
-            uint32_t gpuCount;
+            uint32_t cudaGpuCount;
         };
         auto args = GENERATE(
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, 1},
@@ -555,7 +555,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             NV_COMPUTE_GPU_TOPOLOGY_V1 gpuTopology;
             gpuTopology.version = NV_COMPUTE_GPU_TOPOLOGY_VER1;
             REQUIRE(NvAPI_GPU_CudaEnumComputeCapableGpus(reinterpret_cast<NV_COMPUTE_GPU_TOPOLOGY*>(&gpuTopology)) == NVAPI_OK);
-            REQUIRE(gpuTopology.gpuCount == args.gpuCount);
+            REQUIRE(gpuTopology.gpuCount == args.cudaGpuCount);
             if (gpuTopology.gpuCount == 1) {
                 REQUIRE(gpuTopology.computeGpus[0].hPhysicalGpu == handle);
                 REQUIRE(gpuTopology.computeGpus[0].flags == 0x0b);
@@ -565,13 +565,20 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         SECTION("CudaEnumComputeCapableGpus (V2) returns OK") {
             NV_COMPUTE_GPU_TOPOLOGY_V2 gpuTopology;
             gpuTopology.version = NV_COMPUTE_GPU_TOPOLOGY_VER;
+            gpuTopology.computeGpus = new NV_COMPUTE_GPU[1];
             REQUIRE(NvAPI_GPU_CudaEnumComputeCapableGpus(&gpuTopology) == NVAPI_OK);
-            REQUIRE(gpuTopology.gpuCount == args.gpuCount);
+            REQUIRE(gpuTopology.gpuCount == args.cudaGpuCount);
             if (gpuTopology.gpuCount == 1) {
                 REQUIRE(gpuTopology.computeGpus[0].hPhysicalGpu == handle);
                 REQUIRE(gpuTopology.computeGpus[0].flags == 0x0b);
             }
             delete gpuTopology.computeGpus;
+        }
+
+        SECTION("CudaEnumComputeCapableGpus (V2) without set compute-gpus returns invalid-argument") {
+            NV_COMPUTE_GPU_TOPOLOGY_V2 gpuTopology{};
+            gpuTopology.version = NV_COMPUTE_GPU_TOPOLOGY_VER;
+            REQUIRE(NvAPI_GPU_CudaEnumComputeCapableGpus(&gpuTopology) == NVAPI_INVALID_ARGUMENT);
         }
     }
 
