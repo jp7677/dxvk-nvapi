@@ -474,53 +474,38 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_GetPhysicalGPUsFromLogicalGPU(handles[0], physicalHandles, &count) == NVAPI_OK);
         REQUIRE(count == 1);
 
-        LUID luid;
-        NV_LOGICAL_GPU_DATA data;
-        data.pOSAdapterId = static_cast<void*>(&luid);
-        data.version = NV_LOGICAL_GPU_DATA_VER1;
-        REQUIRE(NvAPI_GPU_GetLogicalGpuInfo(handles[0], &data) == NVAPI_OK);
-        REQUIRE(data.physicalGpuCount == 1);
-        REQUIRE(data.physicalGpuHandles[0] == physicalHandles[0]);
-        REQUIRE(luid.HighPart == 0x08070655);
-        REQUIRE(luid.LowPart == 0x04030211);
-    }
+        SECTION("GetLogicalGpuInfo succeeds") {
+            LUID luid;
+            NV_LOGICAL_GPU_DATA data;
+            data.pOSAdapterId = static_cast<void*>(&luid);
+            data.version = NV_LOGICAL_GPU_DATA_VER1;
+            REQUIRE(NvAPI_GPU_GetLogicalGpuInfo(handles[0], &data) == NVAPI_OK);
+            REQUIRE(data.physicalGpuCount == 1);
+            REQUIRE(data.physicalGpuHandles[0] == physicalHandles[0]);
+            REQUIRE(luid.HighPart == 0x08070655);
+            REQUIRE(luid.LowPart == 0x04030211);
+        }
 
-    SECTION("GetLogicalGpuInfo without set os-adapter-id returns invalid-argument") {
-        NvU32 count;
-        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS]{};
-        REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
-        REQUIRE(count == 1);
+        SECTION("GetLogicalGpuInfo without set os-adapter-id returns invalid-argument") {
+            NV_LOGICAL_GPU_DATA data{};
+            data.version = NV_LOGICAL_GPU_DATA_VER1;
+            REQUIRE(NvAPI_GPU_GetLogicalGpuInfo(handles[0], &data) == NVAPI_INVALID_ARGUMENT);
+        }
 
-        NV_LOGICAL_GPU_DATA data{};
-        data.version = NV_LOGICAL_GPU_DATA_VER;
-        REQUIRE(NvAPI_GPU_GetLogicalGpuInfo(handles[0], &data) == NVAPI_INVALID_ARGUMENT);
-    }
+        SECTION("GetLogicalGpuInfo with unknown struct version returns incompatible-struct-version") {
+            NV_LOGICAL_GPU_DATA data;
+            data.version = NV_LOGICAL_GPU_DATA_VER1 + 1;
+            REQUIRE(NvAPI_GPU_GetLogicalGpuInfo(handles[0], &data) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
 
-    SECTION("GetLogicalGpuInfo with unknown struct version returns incompatible-struct-version") {
-        NvU32 count;
-        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS]{};
-        REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
-        REQUIRE(count == 1);
-
-        LUID luid;
-        NV_LOGICAL_GPU_DATA data;
-        data.pOSAdapterId = static_cast<void*>(&luid);
-        data.version = NV_LOGICAL_GPU_DATA_VER1 + 1;
-        REQUIRE(NvAPI_GPU_GetLogicalGpuInfo(handles[0], &data) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-    }
-
-    SECTION("GetLogicalGpuInfo with current struct version returns not incompatible-struct-version") {
-        // This test should fail when a header update provides a newer not yet implemented struct version
-        NvU32 count;
-        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS]{};
-        REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
-        REQUIRE(count == 1);
-
-        LUID luid;
-        NV_LOGICAL_GPU_DATA data;
-        data.pOSAdapterId = static_cast<void*>(&luid);
-        data.version = NV_LOGICAL_GPU_DATA_VER;
-        REQUIRE(NvAPI_GPU_GetLogicalGpuInfo(handles[0], &data) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        SECTION("GetLogicalGpuInfo with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            LUID luid;
+            NV_LOGICAL_GPU_DATA data;
+            data.pOSAdapterId = static_cast<void*>(&luid);
+            data.version = NV_LOGICAL_GPU_DATA_VER;
+            REQUIRE(NvAPI_GPU_GetLogicalGpuInfo(handles[0], &data) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
     }
 
     SECTION("GetArchInfo returns OK") {
