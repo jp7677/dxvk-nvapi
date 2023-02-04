@@ -80,14 +80,14 @@ extern "C" {
 
         switch (structVersion) {
             case NV_D3D1x_GRAPHICS_CAPS_VER1: {
-                memset(pGraphicsCaps, 0, sizeof(NV_D3D1x_GRAPHICS_CAPS_V1));
                 auto pGraphicsCapsV1 = reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V1*>(pGraphicsCaps);
+                *pGraphicsCapsV1 = {};
                 pGraphicsCapsV1->bExclusiveScissorRectsSupported = 0;
                 pGraphicsCapsV1->bVariablePixelRateShadingSupported = 0;
                 break;
             }
             case NV_D3D1x_GRAPHICS_CAPS_VER2:
-                memset(pGraphicsCaps, 0, sizeof(NV_D3D1x_GRAPHICS_CAPS_V2));
+                *pGraphicsCaps = {};
                 // bFastUAVClearSupported is reported mostly for the sake of DLSS.
                 // All NVIDIA Vulkan drivers support this.
                 pGraphicsCaps->bFastUAVClearSupported = 1;
