@@ -47,11 +47,11 @@ jobs:
       uses: Joshua-Ashton/arch-mingw-github-action@v8
       with:
         command: |
+          pacman -S --noconfirm libunwind # This package is currently not a Wine dependency in Arch Linux, but still needed :(
           ./package-release.sh "${{ env.VERSION }}" build --enable-tests
           mkdir "${HOME}/tests-prefix"
-          # Temporary disabled due to borked Wine installation
-          # WINEPREFIX="${HOME}/tests-prefix" WINEDEBUG=-all wine \
-          #  "./build/dxvk-nvapi-${{ env.VERSION }}/x64/nvapi64-tests.exe" [@unit-tests] -o tests.log
+          WINEPREFIX="${HOME}/tests-prefix" WINEDEBUG=-all wine \
+            "./build/dxvk-nvapi-${{ env.VERSION }}/x64/nvapi64-tests.exe" [@unit-tests] -o tests.log
 
     - name: Present tests results
       if: success() || failure()
