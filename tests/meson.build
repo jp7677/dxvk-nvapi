@@ -36,6 +36,8 @@ nvapi_tests_src = files([
   'nvapi_d3d12.cpp',
   'nvapi_drs.cpp',
   'nvapi_sysinfo.cpp',
+  'nvapi_sysinfo_topo.cpp',
+  'nvapi_sysinfo_nvml.cpp',
   'nvapi_sysinfo_hdr.cpp',
   'nvapi_system.cpp',
 ])
