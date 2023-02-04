@@ -420,8 +420,7 @@ extern "C" {
                 return Error(n);
         }
 
-        // Assume first revision, no way to query currently.
-        auto revisionId = NV_GPU_CHIP_REV_A01;
+        auto revisionId = NV_GPU_CHIP_REV_UNKNOWN;
 
         switch (pGpuArchInfo->version) {
             case NV_GPU_ARCH_INFO_VER_1: {

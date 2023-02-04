@@ -880,7 +880,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_GPU_GetArchInfo(handle, reinterpret_cast<NV_GPU_ARCH_INFO*>(&archInfo)) == NVAPI_OK);
             REQUIRE(archInfo.architecture == args.expectedArchId);
             REQUIRE(archInfo.implementation == args.expectedImplId);
-            REQUIRE(archInfo.revision == NV_GPU_CHIP_REV_A01);
+            REQUIRE(archInfo.revision == NV_GPU_CHIP_REV_UNKNOWN);
         }
 
         SECTION("GetArchInfo (V2) returns OK") {
@@ -889,7 +889,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_OK);
             REQUIRE(archInfo.architecture_id == args.expectedArchId);
             REQUIRE(archInfo.implementation_id == args.expectedImplId);
-            REQUIRE(archInfo.revision_id == NV_GPU_CHIP_REV_A01);
+            REQUIRE(archInfo.revision_id == NV_GPU_CHIP_REV_UNKNOWN);
         }
     }
 
