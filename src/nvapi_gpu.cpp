@@ -338,7 +338,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (pLogicalGpuData == nullptr)
+        if (pLogicalGpuData == nullptr || pLogicalGpuData->pOSAdapterId == nullptr)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hLogicalGpu);

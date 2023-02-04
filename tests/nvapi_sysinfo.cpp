@@ -800,6 +800,17 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(luid.LowPart == 0x04030211);
     }
 
+    SECTION("GetLogicalGpuInfo without set os-adapter-id returns invalid-argument") {
+        NvU32 count;
+        NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS]{};
+        REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
+        REQUIRE(count == 1);
+
+        NV_LOGICAL_GPU_DATA data{};
+        data.version = NV_LOGICAL_GPU_DATA_VER;
+        REQUIRE(NvAPI_GPU_GetLogicalGpuInfo(handles[0], &data) == NVAPI_INVALID_ARGUMENT);
+    }
+
     SECTION("GetLogicalGpuInfo with unknown struct version returns incompatible-struct-version") {
         NvU32 count;
         NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS]{};
