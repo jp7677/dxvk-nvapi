@@ -33,7 +33,7 @@ extern "C" {
         switch (pDisplayIds->version) {
             case NV_GPU_DISPLAYIDS_VER1:
             case NV_GPU_DISPLAYIDS_VER2: {
-                memset(pDisplayIds, 0, sizeof(NV_GPU_DISPLAYIDS));
+                *pDisplayIds = {};
                 for (auto i = 0U; i < count; i++) {
                     auto output = nvapiAdapterRegistry->GetOutput(adapter, i);
                     pDisplayIds[i].displayId = output->GetId();
