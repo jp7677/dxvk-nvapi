@@ -7,6 +7,34 @@
 extern "C" {
     using namespace dxvk;
 
+    NvAPI_Status __cdecl NvAPI_D3D11_CreateDevice(IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverType, HMODULE Software, UINT Flags, CONST D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, ID3D11Device** ppDevice, D3D_FEATURE_LEVEL* pFeatureLevel, ID3D11DeviceContext** ppImmediateContext, NVAPI_DEVICE_FEATURE_LEVEL* pSupportedLevel) {
+        constexpr auto n = __func__;
+
+        if (pSupportedLevel == nullptr)
+            return InvalidArgument(n);
+
+        if (FAILED(::D3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext)))
+            return Error(n);
+
+        *pSupportedLevel = NVAPI_DEVICE_FEATURE_LEVEL_11_0; // We are safe to always return 11_0 since our minimum required DXVK version needs Maxwell or newer
+
+        return Ok(n);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_CreateDeviceAndSwapChain(IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverType, HMODULE Software, UINT Flags, CONST D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, CONST DXGI_SWAP_CHAIN_DESC* pSwapChainDesc, IDXGISwapChain** ppSwapChain, ID3D11Device** ppDevice, D3D_FEATURE_LEVEL* pFeatureLevel, ID3D11DeviceContext** ppImmediateContext, NVAPI_DEVICE_FEATURE_LEVEL* pSupportedLevel) {
+        constexpr auto n = __func__;
+
+        if (pSupportedLevel == nullptr)
+            return InvalidArgument(n);
+
+        if (FAILED(::D3D11CreateDeviceAndSwapChain(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, pSwapChainDesc, ppSwapChain, ppDevice, pFeatureLevel, ppImmediateContext)))
+            return Error(n);
+
+        *pSupportedLevel = NVAPI_DEVICE_FEATURE_LEVEL_11_0; // We are safe to always return 11_0 since our minimum required DXVK version needs Maxwell or newer
+
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported) {
         constexpr auto n = __func__;
 

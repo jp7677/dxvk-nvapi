@@ -47,6 +47,8 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_GetResourceHandle)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_GetResourceGPUVirtualAddress)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_GetResourceGPUVirtualAddressEx)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_CreateDevice)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D11_CreateDeviceAndSwapChain)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D1x_GetGraphicsCapabilities)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_IsNvShaderExtnOpCodeSupported)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_EnumerateMetaCommands)

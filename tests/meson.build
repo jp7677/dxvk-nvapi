@@ -43,6 +43,6 @@ nvapi_tests_src = files([
 ])
 
 nvapi_exe = executable('nvapi'+target_suffix+'-tests', [ nvapi_src, catch2_src, nvapi_tests_src, dxvk_nvapi_version ],
-  dependencies        : [ lib_dxgi, lib_version ],
+  dependencies        : [ lib_dxgi, lib_d3d11, lib_version ],
   include_directories : [ vk_headers ],
   install             : true)
