@@ -511,7 +511,7 @@ extern "C" {
             return Ok(n);
         }
 
-        char version[NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE];
+        char version[NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE]{};
         auto result = adapter->GetNvmlDeviceVbiosVersion(version, NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE);
         switch (result) {
             case NVML_SUCCESS:
@@ -554,7 +554,7 @@ extern "C" {
         if (!adapter->HasNvmlDevice())
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
-        nvmlGpuDynamicPstatesInfo_t gpuDynamicPstatesInfo;
+        nvmlGpuDynamicPstatesInfo_t gpuDynamicPstatesInfo{};
         auto result = adapter->GetNvmlDeviceDynamicPstatesInfo(&gpuDynamicPstatesInfo);
         switch (result) {
             case NVML_SUCCESS:
@@ -585,7 +585,7 @@ extern "C" {
                 return Error(str::format(n, ": ", adapter->GetNvmlErrorString(result)));
         }
 
-        nvmlUtilization_t utilization;
+        nvmlUtilization_t utilization{};
         result = adapter->GetNvmlDeviceUtilizationRates(&utilization);
         switch (result) {
             case NVML_SUCCESS:
@@ -647,8 +647,8 @@ extern "C" {
         if (!adapter->HasNvmlDevice())
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
-        unsigned sensors;
-        nvmlGpuThermalSettings_t thermalSettings;
+        unsigned int sensors;
+        nvmlGpuThermalSettings_t thermalSettings{};
         auto result = adapter->GetNvmlDeviceThermalSettings(sensorIndex, &thermalSettings);
         switch (result) {
             case NVML_SUCCESS:
@@ -715,7 +715,7 @@ extern "C" {
             return Ok(n, alreadyLoggedOk);
         }
 
-        unsigned int temp;
+        unsigned int temp{};
         result = adapter->GetNvmlDeviceTemperature(NVML_TEMPERATURE_GPU, &temp);
         switch (result) {
             case NVML_SUCCESS:
@@ -787,7 +787,7 @@ extern "C" {
         if (!adapter->HasNvmlDevice())
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
-        nvmlPstates_t pState;
+        nvmlPstates_t pState{};
         auto result = adapter->GetNvmlDevicePerformanceState(&pState);
         switch (result) {
             case NVML_SUCCESS:
@@ -841,7 +841,7 @@ extern "C" {
             domain.frequency = 0;
         }
 
-        unsigned int clock;
+        unsigned int clock{};
         // Seemingly we need to do nvml call on a "per clock unit" to get the clock
         // Set the availability of the clock to TRUE and the nvml read clock in the nvapi struct
         auto resultGpu = adapter->GetNvmlDeviceClockInfo(NVML_CLOCK_GRAPHICS, &clock);

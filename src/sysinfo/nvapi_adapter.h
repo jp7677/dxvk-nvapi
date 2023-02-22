@@ -47,6 +47,7 @@ namespace dxvk {
         Vulkan& m_vulkan;
         Nvml& m_nvml;
 
+        std::set<std::string> m_deviceExtensions;
         VkPhysicalDeviceProperties m_deviceProperties{};
         VkPhysicalDeviceIDProperties m_deviceIdProperties{};
         VkPhysicalDevicePCIBusInfoPropertiesEXT m_devicePciBusProperties{};
@@ -54,11 +55,10 @@ namespace dxvk {
         VkPhysicalDeviceDriverPropertiesKHR m_deviceDriverProperties{};
         VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_deviceFragmentShadingRateProperties{};
         uint32_t m_vkDriverVersion{};
-        std::set<std::string> m_deviceExtensions{};
 
         nvmlDevice_t m_nvmlDevice{};
 
-        uint32_t m_driverVersionOverride{};
+        uint32_t m_driverVersionOverride = 0;
 
         [[nodiscard]] bool IsVkDeviceExtensionSupported(std::string name) const;
     };

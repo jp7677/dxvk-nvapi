@@ -33,7 +33,7 @@ namespace dxvk {
         // 1.2.177 Specification, we must first query that a device extension is
         // supported before requesting information on its physical-device-level
         // functionality (ie: Properties).
-        VkPhysicalDeviceProperties2 deviceProperties2;
+        VkPhysicalDeviceProperties2 deviceProperties2{};
         deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
         deviceProperties2.pNext = nullptr;
 
@@ -62,7 +62,7 @@ namespace dxvk {
         m_vulkan.GetPhysicalDeviceProperties2(vkInstance, vkDevice, &deviceProperties2);
         m_deviceProperties = deviceProperties2.properties;
 
-        VkPhysicalDeviceMemoryProperties2 memoryProperties2;
+        VkPhysicalDeviceMemoryProperties2 memoryProperties2{};
         memoryProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
         memoryProperties2.pNext = nullptr;
 
@@ -107,7 +107,7 @@ namespace dxvk {
                 m_devicePciBusProperties.pciBus,
                 m_devicePciBusProperties.pciDevice);
 
-            nvmlDevice_t nvmlDevice;
+            nvmlDevice_t nvmlDevice{};
             auto result = m_nvml.DeviceGetHandleByPciBusId_v2(pciId, &nvmlDevice);
             if (result == NVML_SUCCESS)
                 m_nvmlDevice = nvmlDevice;
@@ -117,7 +117,7 @@ namespace dxvk {
 
         auto driverVersion = env::getEnvVariable(driverVersionEnvName);
         if (!driverVersion.empty()) {
-            char* end;
+            char* end{};
             auto driverVersionOverride = std::strtol(driverVersion.c_str(), &end, 10);
             if (std::string(end).empty() && driverVersionOverride >= 100 && driverVersionOverride <= 99999) {
                 std::stringstream stream;
@@ -159,7 +159,7 @@ namespace dxvk {
         if (!this->HasNvmlDevice())
             return 0;
 
-        nvmlPciInfo_t pciInfo;
+        nvmlPciInfo_t pciInfo{};
         auto result = this->m_nvml.DeviceGetPciInfo_v3(this->m_nvmlDevice, &pciInfo);
         return result == NVML_SUCCESS ? pciInfo.pciSubSystemId : 0;
     }
