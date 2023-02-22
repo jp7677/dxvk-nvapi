@@ -13,7 +13,7 @@ namespace dxvk {
     class Com {
 
       public:
-        Com() {}
+        Com() = default;
         Com(std::nullptr_t) {}
         Com(T* object) : m_ptr(object) {
             this->incRef();
