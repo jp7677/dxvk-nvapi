@@ -51,10 +51,10 @@ namespace dxvk {
         VkPhysicalDeviceProperties m_deviceProperties{};
         VkPhysicalDeviceIDProperties m_deviceIdProperties{};
         VkPhysicalDevicePCIBusInfoPropertiesEXT m_devicePciBusProperties{};
-        VkPhysicalDeviceMemoryProperties m_memoryProperties{};
         VkPhysicalDeviceDriverPropertiesKHR m_deviceDriverProperties{};
         VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_deviceFragmentShadingRateProperties{};
         uint32_t m_vkDriverVersion{};
+        uint32_t m_dedicatedVideoMemory{};
 
         nvmlDevice_t m_nvmlDevice{};
 

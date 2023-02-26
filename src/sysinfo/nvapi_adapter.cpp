@@ -14,6 +14,11 @@ namespace dxvk {
         constexpr auto driverVersionEnvName = "DXVK_NVAPI_DRIVER_VERSION";
         constexpr auto allowOtherDriversEnvName = "DXVK_NVAPI_ALLOW_OTHER_DRIVERS";
 
+        // Get vram size from DXVK to honor memory overrides
+        DXGI_ADAPTER_DESC1 desc1{};
+        if (SUCCEEDED(dxgiAdapter->GetDesc1(&desc1)))
+            m_dedicatedVideoMemory = desc1.DedicatedVideoMemory / 1024;
+
         // Get the Vulkan handle from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
         if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter)))) {
@@ -61,13 +66,6 @@ namespace dxvk {
 
         m_vulkan.GetPhysicalDeviceProperties2(vkInstance, vkDevice, &deviceProperties2);
         m_deviceProperties = deviceProperties2.properties;
-
-        VkPhysicalDeviceMemoryProperties2 memoryProperties2{};
-        memoryProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
-        memoryProperties2.pNext = nullptr;
-
-        m_vulkan.GetPhysicalDeviceMemoryProperties2(vkInstance, vkDevice, &memoryProperties2);
-        m_memoryProperties = memoryProperties2.memoryProperties;
 
         auto allowOtherDrivers = env::getEnvVariable(allowOtherDriversEnvName);
         if (!allowOtherDrivers.empty())
@@ -185,16 +183,7 @@ namespace dxvk {
     }
 
     uint32_t NvapiAdapter::GetVRamSize() const {
-        // The total size of all device-local heaps sometimes do not match what other tools are reporting,
-        // though this is best we have.
-        auto size = 0U;
-        for (auto i = 0U; i < m_memoryProperties.memoryHeapCount; i++) {
-            auto heap = m_memoryProperties.memoryHeaps[i];
-            if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
-                size += heap.size / 1024;
-        }
-
-        return size;
+        return m_dedicatedVideoMemory;
     }
 
     std::optional<LUID> NvapiAdapter::GetLuid() const {

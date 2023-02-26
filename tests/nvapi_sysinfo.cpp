@@ -410,12 +410,11 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetPhysicalFrameBufferSize returns OK") {
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
-            .SIDE_EFFECT({
-                _3->memoryProperties.memoryHeapCount = 1;
-                _3->memoryProperties.memoryHeaps[0].flags = VK_MEMORY_HEAP_DEVICE_LOCAL_BIT;
-                _3->memoryProperties.memoryHeaps[0].size = 8191 * 1024;
-            });
+        DXGI_ADAPTER_DESC1 desc{};
+        desc.DedicatedVideoMemory = 8191 * 1024;
+        ALLOW_CALL(adapter, GetDesc1(_))
+            .LR_SIDE_EFFECT(*_1 = desc)
+            .RETURN(S_OK);
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);

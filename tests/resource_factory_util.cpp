@@ -13,7 +13,7 @@ void SetupResourceFactory(
     initializationCount = 0ULL;
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 18> ConfigureDefaultTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 19> ConfigureDefaultTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -36,6 +36,8 @@ void SetupResourceFactory(
             .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter, Release())
             .RETURN(0),
+        NAMED_ALLOW_CALL(adapter, GetDesc1(_))
+            .RETURN(E_FAIL),
         NAMED_ALLOW_CALL(adapter, EnumOutputs(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output))
             .RETURN(S_OK),
@@ -71,7 +73,7 @@ void SetupResourceFactory(
             .RETURN(false)};
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 32> ConfigureExtendedTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 34> ConfigureExtendedTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -100,6 +102,8 @@ void SetupResourceFactory(
             .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter1, Release())
             .RETURN(0),
+        NAMED_ALLOW_CALL(adapter1, GetDesc1(_))
+            .RETURN(E_FAIL),
         NAMED_ALLOW_CALL(adapter1, EnumOutputs(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
             .RETURN(S_OK),
@@ -116,6 +120,8 @@ void SetupResourceFactory(
             .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter2, Release())
             .RETURN(0),
+        NAMED_ALLOW_CALL(adapter2, GetDesc1(_))
+            .RETURN(E_FAIL),
         NAMED_ALLOW_CALL(adapter2, EnumOutputs(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output3))
             .RETURN(S_OK),
@@ -176,7 +182,7 @@ void SetupResourceFactory(
             .RETURN(false)};
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 25> ConfigureIntegratedAndDiscreteGpuTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 27> ConfigureIntegratedAndDiscreteGpuTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -203,6 +209,8 @@ void SetupResourceFactory(
             .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter1, Release())
             .RETURN(0),
+        NAMED_ALLOW_CALL(adapter1, GetDesc1(_))
+            .RETURN(E_FAIL),
         NAMED_ALLOW_CALL(adapter1, EnumOutputs(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
             .RETURN(S_OK),
@@ -216,6 +224,8 @@ void SetupResourceFactory(
             .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter2, Release())
             .RETURN(0),
+        NAMED_ALLOW_CALL(adapter2, GetDesc1(_))
+            .RETURN(E_FAIL),
         NAMED_ALLOW_CALL(adapter2, EnumOutputs(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
             .RETURN(S_OK),
