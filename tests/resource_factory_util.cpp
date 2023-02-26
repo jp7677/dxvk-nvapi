@@ -13,7 +13,7 @@ void SetupResourceFactory(
     initializationCount = 0ULL;
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 19> ConfigureDefaultTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 18> ConfigureDefaultTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -65,7 +65,6 @@ void SetupResourceFactory(
                         props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
                         driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
-        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)),
 
         NAMED_ALLOW_CALL(nvml, IsAvailable())
             .RETURN(false),
@@ -73,7 +72,7 @@ void SetupResourceFactory(
             .RETURN(false)};
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 34> ConfigureExtendedTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 33> ConfigureExtendedTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -174,7 +173,6 @@ void SetupResourceFactory(
                         props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
                         driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
-        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)),
 
         NAMED_ALLOW_CALL(nvml, IsAvailable())
             .RETURN(false),
@@ -182,7 +180,7 @@ void SetupResourceFactory(
             .RETURN(false)};
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 27> ConfigureIntegratedAndDiscreteGpuTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 26> ConfigureIntegratedAndDiscreteGpuTestEnvironment(
     DXGIFactory1Mock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -262,7 +260,6 @@ void SetupResourceFactory(
                         props->deviceType = VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU;
                         driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
-        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceMemoryProperties2(_, _, _)),
 
         NAMED_ALLOW_CALL(nvml, IsAvailable())
             .RETURN(false),

@@ -75,7 +75,6 @@ class VulkanMock : public trompeloeil::mock_interface<dxvk::Vulkan> {
     IMPLEMENT_CONST_MOCK0(IsAvailable);
     IMPLEMENT_CONST_MOCK2(GetDeviceExtensions);
     IMPLEMENT_CONST_MOCK3(GetPhysicalDeviceProperties2);
-    IMPLEMENT_CONST_MOCK3(GetPhysicalDeviceMemoryProperties2);
 };
 
 class NvmlMock : public trompeloeil::mock_interface<dxvk::Nvml> {

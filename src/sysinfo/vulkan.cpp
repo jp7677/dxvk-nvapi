@@ -41,14 +41,6 @@ namespace dxvk {
         vkGetPhysicalDeviceProperties2(vkDevice, deviceProperties2);
     }
 
-    void Vulkan::GetPhysicalDeviceMemoryProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceMemoryProperties2* memoryProperties2) const {
-        auto vkGetPhysicalDeviceMemoryProperties2 =
-            GetInstanceProcAddress<PFN_vkGetPhysicalDeviceMemoryProperties2>(
-                vkInstance, "vkGetPhysicalDeviceMemoryProperties2");
-
-        vkGetPhysicalDeviceMemoryProperties2(vkDevice, memoryProperties2);
-    }
-
     NV_GPU_TYPE Vulkan::ToNvGpuType(VkPhysicalDeviceType vkDeviceType) {
         // Assert enum value equality between Vulkan and NVAPI at compile time
         static_assert(static_cast<int>(VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) == static_cast<int>(NV_SYSTEM_TYPE_DGPU));
