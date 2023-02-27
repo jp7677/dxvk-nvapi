@@ -16,7 +16,7 @@ class MockFactory : public dxvk::ResourceFactory {
         return dxgiFactory;
     };
 
-    std::unique_ptr<dxvk::Vulkan> CreateVulkan() override {
+    std::unique_ptr<dxvk::Vulkan> CreateVulkan(dxvk::Com<IDXGIFactory1>& dxgiFactory) override {
         return std::move(m_vulkanMock);
     }
 

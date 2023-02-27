@@ -32,7 +32,6 @@ namespace dxvk {
 
       private:
         ResourceFactory& m_resourceFactory;
-        std::unique_ptr<Vulkan> m_vulkan;
         std::unique_ptr<Nvml> m_nvml;
         std::vector<NvapiAdapter*> m_nvapiAdapters;
         std::vector<NvapiOutput*> m_nvapiOutputs;

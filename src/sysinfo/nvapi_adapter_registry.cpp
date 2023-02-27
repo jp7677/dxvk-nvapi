@@ -22,8 +22,8 @@ namespace dxvk {
         if (dxgiFactory == nullptr)
             return false;
 
-        m_vulkan = m_resourceFactory.CreateVulkan();
-        if (m_vulkan == nullptr || !m_vulkan->IsAvailable())
+        auto vulkan = m_resourceFactory.CreateVulkan(dxgiFactory);
+        if (vulkan == nullptr || !vulkan->IsAvailable())
             return false;
 
         m_nvml = m_resourceFactory.CreateNvml();
@@ -33,8 +33,8 @@ namespace dxvk {
         // Query all D3D11 adapter from DXVK to honor any DXVK device filtering
         Com<IDXGIAdapter1> dxgiAdapter;
         for (auto i = 0U; dxgiFactory->EnumAdapters1(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; i++) {
-            auto nvapiAdapter = new NvapiAdapter(*m_vulkan, *m_nvml);
-            if (nvapiAdapter->Initialize(dxgiAdapter, i, m_nvapiOutputs))
+            auto nvapiAdapter = new NvapiAdapter(*m_nvml);
+            if (nvapiAdapter->Initialize(dxgiAdapter, i, *vulkan, m_nvapiOutputs))
                 m_nvapiAdapters.push_back(nvapiAdapter);
             else
                 delete nvapiAdapter;

@@ -5,12 +5,12 @@
 #include "../util/util_log.h"
 
 namespace dxvk {
-    NvapiAdapter::NvapiAdapter(Vulkan& vulkan, Nvml& nvml)
-        : m_vulkan(vulkan), m_nvml(nvml) {}
+    NvapiAdapter::NvapiAdapter(Nvml& nvml)
+        : m_nvml(nvml) {}
 
     NvapiAdapter::~NvapiAdapter() = default;
 
-    bool NvapiAdapter::Initialize(Com<IDXGIAdapter1>& dxgiAdapter, uint32_t index, std::vector<NvapiOutput*>& outputs) {
+    bool NvapiAdapter::Initialize(Com<IDXGIAdapter1>& dxgiAdapter, uint32_t index, Vulkan& vulkan, std::vector<NvapiOutput*>& outputs) {
         constexpr auto driverVersionEnvName = "DXVK_NVAPI_DRIVER_VERSION";
         constexpr auto allowOtherDriversEnvName = "DXVK_NVAPI_ALLOW_OTHER_DRIVERS";
 
@@ -30,7 +30,7 @@ namespace dxvk {
         VkPhysicalDevice vkDevice = VK_NULL_HANDLE;
         dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &vkDevice);
 
-        m_deviceExtensions = m_vulkan.GetDeviceExtensions(vkInstance, vkDevice);
+        m_deviceExtensions = vulkan.GetDeviceExtensions(vkInstance, vkDevice);
         if (m_deviceExtensions.empty())
             return false;
 
@@ -64,7 +64,7 @@ namespace dxvk {
         m_deviceIdProperties.pNext = deviceProperties2.pNext;
         deviceProperties2.pNext = &m_deviceIdProperties;
 
-        m_vulkan.GetPhysicalDeviceProperties2(vkInstance, vkDevice, &deviceProperties2);
+        vulkan.GetPhysicalDeviceProperties2(vkInstance, vkDevice, &deviceProperties2);
         m_deviceProperties = deviceProperties2.properties;
 
         auto allowOtherDrivers = env::getEnvVariable(allowOtherDriversEnvName);

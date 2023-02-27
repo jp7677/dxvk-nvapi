@@ -18,13 +18,7 @@ namespace dxvk {
         return dxgiFactory;
     }
 
-    std::unique_ptr<Vulkan> ResourceFactory::CreateVulkan() {
-        Com<IDXGIFactory1> dxgiFactory;
-        if (FAILED(::CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgiFactory))) {
-            log::write("Creating DXGI Factory (IDXGIFactory1) failed, please ensure that DXVK's dxgi.dll is present");
-            return nullptr;
-        }
-
+    std::unique_ptr<Vulkan> ResourceFactory::CreateVulkan(Com<IDXGIFactory1>& dxgiFactory) {
         Com<IDXGIVkInteropFactory> dxgiVkFactory;
         if (FAILED(dxgiFactory->QueryInterface(IID_PPV_ARGS(&dxgiVkFactory)))) {
             log::write("Querying Vulkan entry point from DXGI factory failed, please ensure that DXVK's dxgi.dll (version 2.1 or newer) is present");
