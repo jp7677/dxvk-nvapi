@@ -37,17 +37,16 @@ jobs:
       uses: Joshua-Ashton/gcc-problem-matcher@v2
 
     - name: Lint source code
-      uses: Joshua-Ashton/arch-mingw-github-action@v8
+      uses: Joshua-Ashton/arch-mingw-github-action@9cdb815264bce7a6346927521b176f578982679d
       with:
         command: |
           meson setup --cross-file "./build-win64.txt" -Denable_tests=True build/lint
           ninja clang-format-check -C build/lint
 
     - name: Build and run tests
-      uses: Joshua-Ashton/arch-mingw-github-action@v8
+      uses: Joshua-Ashton/arch-mingw-github-action@9cdb815264bce7a6346927521b176f578982679d
       with:
         command: |
-          pacman -S --noconfirm libunwind # This package is currently not a Wine dependency in Arch Linux, but still needed :(
           ./package-release.sh "${{ env.VERSION }}" build --enable-tests
           mkdir "${HOME}/tests-prefix"
           WINEPREFIX="${HOME}/tests-prefix" WINEDEBUG=-all wine \
