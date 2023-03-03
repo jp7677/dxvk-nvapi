@@ -51,6 +51,8 @@ Proton 6.3-6 and newer includes DXVK-NVAPI but it is disabled by default.
 
 Proton 7.0-1 and older does not disable the `nvapiHack` in DXVK automatically when `PROTON_ENABLE_NVAPI=1` is set. Additionally disable the `nvapiHack` in DXVK bundled with those Proton versions with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf).
 
+Proton Experimental enables DXVK-NVAPI by default for a lot of games. Proton Bleeding Edge additionally always contains the latest DXVK-NVAPI development (master) version.
+
 ### Lutris
 
 DXVK-NVAPI is enabled by default since Lutris 0.5.9. It's updated automatically.
