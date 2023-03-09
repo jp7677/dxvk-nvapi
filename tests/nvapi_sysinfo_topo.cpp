@@ -296,6 +296,8 @@ TEST_CASE("Topology methods for discrete/integrated environment succeed", "[.sys
 
     auto e = ConfigureIntegratedAndDiscreteGpuTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter1, adapter2, output1);
 
+    ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
+
     SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
     REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
@@ -318,4 +320,6 @@ TEST_CASE("Topology methods for discrete/integrated environment succeed", "[.sys
         REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[1U], nullptr, &displayIdCount, 0) == NVAPI_OK);
         REQUIRE(displayIdCount == 0);
     }
+
+    ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "");
 }
