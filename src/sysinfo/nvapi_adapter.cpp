@@ -72,6 +72,9 @@ namespace dxvk {
         if (!HasNvProprietaryDriver() && allowOtherDrivers.empty())
             return false;
 
+        if (HasNvProprietaryDriver() && m_dxgiDesc.VendorId != NvidiaPciVendorId)
+            return false; // DXVK NVAPI-hack is enabled, skip this adapter
+
         if (HasNvProprietaryDriver())
             // Handle NVIDIA version notation
             m_vkDriverVersion = VK_MAKE_VERSION(

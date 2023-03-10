@@ -42,6 +42,16 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
         REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
     }
 
+    SECTION("Initialize returns device-not-found when DXVK NVAPI hack is enabled") {
+        ALLOW_CALL(adapter, GetDesc1(_))
+            .SIDE_EFFECT(_1->VendorId = 0x1002)
+            .RETURN(S_OK);
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        REQUIRE(NvAPI_Initialize() == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
+        REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
+    }
+
     SECTION("Initialize returns device-not-found when adapter with non NVIDIA driver ID has been found") {
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(

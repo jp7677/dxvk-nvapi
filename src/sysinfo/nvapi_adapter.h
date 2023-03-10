@@ -60,5 +60,7 @@ namespace dxvk {
         uint32_t m_driverVersionOverride = 0;
 
         [[nodiscard]] bool IsVkDeviceExtensionSupported(std::string name) const;
+
+        constexpr static uint16_t NvidiaPciVendorId = 0x10de;
     };
 }
