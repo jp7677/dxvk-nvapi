@@ -293,14 +293,12 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetPCIIdentifiers returns OK") {
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
-            .SIDE_EFFECT(
-                ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
-                        props->vendorID = 0x10de;
-                        props->deviceID = 0x1234;
-                    }));
+        ALLOW_CALL(adapter, GetDesc1(_))
+            .SIDE_EFFECT({
+                _1->VendorId = 0x10de;
+                _1->DeviceId = 0x1234;
+            })
+            .RETURN(S_OK);
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -415,10 +413,11 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetPhysicalFrameBufferSize returns OK") {
-        DXGI_ADAPTER_DESC1 desc{};
-        desc.DedicatedVideoMemory = 8191 * 1024;
         ALLOW_CALL(adapter, GetDesc1(_))
-            .LR_SIDE_EFFECT(*_1 = desc)
+            .SIDE_EFFECT({
+                _1->VendorId = 0x10de;
+                _1->DedicatedVideoMemory = 8191 * 1024;
+            })
             .RETURN(S_OK);
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));

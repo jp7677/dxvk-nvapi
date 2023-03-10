@@ -14,10 +14,8 @@ namespace dxvk {
         constexpr auto driverVersionEnvName = "DXVK_NVAPI_DRIVER_VERSION";
         constexpr auto allowOtherDriversEnvName = "DXVK_NVAPI_ALLOW_OTHER_DRIVERS";
 
-        // Get vram size from DXVK to honor memory overrides
-        DXGI_ADAPTER_DESC1 desc1{};
-        if (SUCCEEDED(dxgiAdapter->GetDesc1(&desc1)))
-            m_dedicatedVideoMemory = desc1.DedicatedVideoMemory / 1024;
+        if (FAILED(dxgiAdapter->GetDesc1(&m_dxgiDesc)))
+            return false; // Should never happen since we already know that we are dealing with a recent DXVK version
 
         // Get the Vulkan handle from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
@@ -146,11 +144,13 @@ namespace dxvk {
     }
 
     uint32_t NvapiAdapter::GetDeviceId() const {
-        return (m_deviceProperties.deviceID << 16) | m_deviceProperties.vendorID;
+        // Report vendor / device IDs from DXVK to honor ID overrides
+        return (m_dxgiDesc.DeviceId << 16) | m_dxgiDesc.VendorId;
     }
 
     uint32_t NvapiAdapter::GetExternalDeviceId() const {
-        return m_deviceProperties.deviceID;
+        // Report device ID from DXVK to honor ID overrides
+        return m_dxgiDesc.DeviceId;
     }
 
     uint32_t NvapiAdapter::GetSubSystemId() const {
@@ -183,7 +183,8 @@ namespace dxvk {
     }
 
     uint32_t NvapiAdapter::GetVRamSize() const {
-        return m_dedicatedVideoMemory;
+        // Report VRAM size from DXVK to honor memory overrides
+        return m_dxgiDesc.DedicatedVideoMemory / 1024;
     }
 
     std::optional<LUID> NvapiAdapter::GetLuid() const {

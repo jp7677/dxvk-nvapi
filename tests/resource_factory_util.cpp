@@ -37,7 +37,8 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(adapter, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(adapter, GetDesc1(_))
-            .RETURN(E_FAIL),
+            .SIDE_EFFECT(_1->VendorId = 0x10de)
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter, EnumOutputs(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output))
             .RETURN(S_OK),
@@ -102,7 +103,8 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(adapter1, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(adapter1, GetDesc1(_))
-            .RETURN(E_FAIL),
+            .SIDE_EFFECT(_1->VendorId = 0x10de)
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter1, EnumOutputs(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
             .RETURN(S_OK),
@@ -120,7 +122,8 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(adapter2, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(adapter2, GetDesc1(_))
-            .RETURN(E_FAIL),
+            .SIDE_EFFECT(_1->VendorId = 0x10de)
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter2, EnumOutputs(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output3))
             .RETURN(S_OK),
@@ -208,7 +211,8 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(adapter1, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(adapter1, GetDesc1(_))
-            .RETURN(E_FAIL),
+            .SIDE_EFFECT(_1->VendorId = 0x10de)
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter1, EnumOutputs(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
             .RETURN(S_OK),
@@ -223,7 +227,8 @@ void SetupResourceFactory(
         NAMED_ALLOW_CALL(adapter2, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(adapter2, GetDesc1(_))
-            .RETURN(E_FAIL),
+            .SIDE_EFFECT(_1->VendorId = 0x8086)
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter2, EnumOutputs(0U, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput*>(&output1))
             .RETURN(S_OK),
@@ -258,7 +263,7 @@ void SetupResourceFactory(
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                         strcpy(props->deviceName, "Device2");
                         props->deviceType = VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU;
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        driverProps->driverID = VK_DRIVER_ID_INTEL_OPEN_SOURCE_MESA;
                     })),
 
         NAMED_ALLOW_CALL(nvml, IsAvailable())

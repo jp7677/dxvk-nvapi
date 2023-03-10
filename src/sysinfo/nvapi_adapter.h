@@ -53,7 +53,7 @@ namespace dxvk {
         VkPhysicalDeviceDriverPropertiesKHR m_deviceDriverProperties{};
         VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_deviceFragmentShadingRateProperties{};
         uint32_t m_vkDriverVersion{};
-        uint32_t m_dedicatedVideoMemory{};
+        DXGI_ADAPTER_DESC1 m_dxgiDesc{};
 
         nvmlDevice_t m_nvmlDevice{};
 
