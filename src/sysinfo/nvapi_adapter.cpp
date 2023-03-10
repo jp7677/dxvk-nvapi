@@ -28,8 +28,8 @@ namespace dxvk {
         VkPhysicalDevice vkDevice = VK_NULL_HANDLE;
         dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &vkDevice);
 
-        m_deviceExtensions = vulkan.GetDeviceExtensions(vkInstance, vkDevice);
-        if (m_deviceExtensions.empty())
+        m_vkExtensions = vulkan.GetDeviceExtensions(vkInstance, vkDevice);
+        if (m_vkExtensions.empty())
             return false;
 
         // Query Properties for this device. Per section 4.1.2. Extending Physical Device From Device Extensions of the Vulkan
@@ -41,29 +41,29 @@ namespace dxvk {
         deviceProperties2.pNext = nullptr;
 
         if (IsVkDeviceExtensionSupported(VK_EXT_PCI_BUS_INFO_EXTENSION_NAME)) {
-            m_devicePciBusProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT;
-            m_devicePciBusProperties.pNext = deviceProperties2.pNext;
-            deviceProperties2.pNext = &m_devicePciBusProperties;
+            m_vkPciBusProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT;
+            m_vkPciBusProperties.pNext = deviceProperties2.pNext;
+            deviceProperties2.pNext = &m_vkPciBusProperties;
         }
 
         if (IsVkDeviceExtensionSupported(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME)) {
-            m_deviceDriverProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR;
-            m_deviceDriverProperties.pNext = deviceProperties2.pNext;
-            deviceProperties2.pNext = &m_deviceDriverProperties;
+            m_vkDriverProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR;
+            m_vkDriverProperties.pNext = deviceProperties2.pNext;
+            deviceProperties2.pNext = &m_vkDriverProperties;
         }
 
         if (IsVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
-            m_deviceFragmentShadingRateProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
-            m_deviceFragmentShadingRateProperties.pNext = deviceProperties2.pNext;
-            deviceProperties2.pNext = &m_deviceFragmentShadingRateProperties;
+            m_vkFragmentShadingRateProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
+            m_vkFragmentShadingRateProperties.pNext = deviceProperties2.pNext;
+            deviceProperties2.pNext = &m_vkFragmentShadingRateProperties;
         }
 
-        m_deviceIdProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
-        m_deviceIdProperties.pNext = deviceProperties2.pNext;
-        deviceProperties2.pNext = &m_deviceIdProperties;
+        m_vkIdProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
+        m_vkIdProperties.pNext = deviceProperties2.pNext;
+        deviceProperties2.pNext = &m_vkIdProperties;
 
         vulkan.GetPhysicalDeviceProperties2(vkInstance, vkDevice, &deviceProperties2);
-        m_deviceProperties = deviceProperties2.properties;
+        m_vkProperties = deviceProperties2.properties;
 
         auto allowOtherDrivers = env::getEnvVariable(allowOtherDriversEnvName);
         if (!allowOtherDrivers.empty())
@@ -78,13 +78,13 @@ namespace dxvk {
         if (HasNvProprietaryDriver())
             // Handle NVIDIA version notation
             m_vkDriverVersion = VK_MAKE_VERSION(
-                VK_VERSION_MAJOR(m_deviceProperties.driverVersion),
-                VK_VERSION_MINOR(m_deviceProperties.driverVersion >> 0) >> 2,
-                VK_VERSION_PATCH(m_deviceProperties.driverVersion >> 2) >> 4);
+                VK_VERSION_MAJOR(m_vkProperties.driverVersion),
+                VK_VERSION_MINOR(m_vkProperties.driverVersion >> 0) >> 2,
+                VK_VERSION_PATCH(m_vkProperties.driverVersion >> 2) >> 4);
         else
-            m_vkDriverVersion = m_deviceProperties.driverVersion;
+            m_vkDriverVersion = m_vkProperties.driverVersion;
 
-        log::write(str::format("NvAPI Device: ", m_deviceProperties.deviceName, " (",
+        log::write(str::format("NvAPI Device: ", m_vkProperties.deviceName, " (",
             VK_VERSION_MAJOR(m_vkDriverVersion), ".",
             VK_VERSION_MINOR(m_vkDriverVersion), ".",
             VK_VERSION_PATCH(m_vkDriverVersion), ")"));
@@ -102,9 +102,9 @@ namespace dxvk {
             char pciId[NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE];
 
             snprintf(pciId, NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE, NVML_DEVICE_PCI_BUS_ID_FMT,
-                m_devicePciBusProperties.pciDomain,
-                m_devicePciBusProperties.pciBus,
-                m_devicePciBusProperties.pciDevice);
+                m_vkPciBusProperties.pciDomain,
+                m_vkPciBusProperties.pciBus,
+                m_vkPciBusProperties.pciDevice);
 
             nvmlDevice_t nvmlDevice{};
             auto result = m_nvml.DeviceGetHandleByPciBusId_v2(pciId, &nvmlDevice);
@@ -131,7 +131,7 @@ namespace dxvk {
     }
 
     std::string NvapiAdapter::GetDeviceName() const {
-        return {m_deviceProperties.deviceName};
+        return {m_vkProperties.deviceName};
     }
 
     uint32_t NvapiAdapter::GetDriverVersion() const {
@@ -143,7 +143,7 @@ namespace dxvk {
     }
 
     bool NvapiAdapter::HasNvProprietaryDriver() const {
-        return m_deviceDriverProperties.driverID == VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+        return m_vkDriverProperties.driverID == VK_DRIVER_ID_NVIDIA_PROPRIETARY;
     }
 
     uint32_t NvapiAdapter::GetDeviceId() const {
@@ -166,23 +166,23 @@ namespace dxvk {
     }
 
     NV_GPU_TYPE NvapiAdapter::GetGpuType() const {
-        return Vulkan::ToNvGpuType(m_deviceProperties.deviceType);
+        return Vulkan::ToNvGpuType(m_vkProperties.deviceType);
     }
 
     uint32_t NvapiAdapter::GetPciBusId() const {
-        return m_devicePciBusProperties.pciBus;
+        return m_vkPciBusProperties.pciBus;
     }
 
     uint32_t NvapiAdapter::GetPciDeviceId() const {
-        return m_devicePciBusProperties.pciDevice;
+        return m_vkPciBusProperties.pciDevice;
     }
 
     uint32_t NvapiAdapter::GetBoardId() const {
         // There is also https://docs.nvidia.com/deploy/nvml-api/group__nvmlDeviceQueries.html#group__nvmlDeviceQueries_1gbf4a80f14b6093ce98e4c2dd511275c5
         // But since we don't have NVML everywhere, we will create a board ID derived from PCI Domain/BUS/Device ID
-        return m_devicePciBusProperties.pciDomain << 16
-            | m_devicePciBusProperties.pciBus << 8
-            | m_devicePciBusProperties.pciDevice;
+        return m_vkPciBusProperties.pciDomain << 16
+            | m_vkPciBusProperties.pciBus << 8
+            | m_vkPciBusProperties.pciDevice;
     }
 
     uint32_t NvapiAdapter::GetVRamSize() const {
@@ -191,25 +191,25 @@ namespace dxvk {
     }
 
     std::optional<LUID> NvapiAdapter::GetLuid() const {
-        if (!m_deviceIdProperties.deviceLUIDValid)
+        if (!m_vkIdProperties.deviceLUIDValid)
             return {};
 
         LUID luid{};
-        memcpy(&luid, &m_deviceIdProperties.deviceLUID, sizeof(luid));
+        memcpy(&luid, &m_vkIdProperties.deviceLUID, sizeof(luid));
         return std::make_optional(luid);
     }
 
     NV_GPU_ARCHITECTURE_ID NvapiAdapter::GetArchitectureId() const {
         // In lieu of a more idiomatic Vulkan-based solution, check the PCI
         // DeviceID to determine if an Ada card is present
-        if (m_deviceProperties.deviceID >= 0x2600)
+        if (m_vkProperties.deviceID >= 0x2600)
             return NV_GPU_ARCHITECTURE_AD100;
 
         // KHR_fragment_shading_rate's
         // primitiveFragmentShadingRateWithMultipleViewports is supported on
         // Ampere and newer
         if (IsVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
-            && m_deviceFragmentShadingRateProperties.primitiveFragmentShadingRateWithMultipleViewports)
+            && m_vkFragmentShadingRateProperties.primitiveFragmentShadingRateWithMultipleViewports)
             return NV_GPU_ARCHITECTURE_GA100;
 
         // Variable rate shading is supported on Turing and newer
@@ -233,7 +233,7 @@ namespace dxvk {
     }
 
     bool NvapiAdapter::IsVkDeviceExtensionSupported(std::string name) const { // NOLINT(performance-unnecessary-value-param)
-        return m_deviceExtensions.find(name) != m_deviceExtensions.end();
+        return m_vkExtensions.find(name) != m_vkExtensions.end();
     }
 
     bool NvapiAdapter::HasNvml() const {

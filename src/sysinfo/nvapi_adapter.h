@@ -46,12 +46,12 @@ namespace dxvk {
       private:
         Nvml& m_nvml;
 
-        std::set<std::string> m_deviceExtensions;
-        VkPhysicalDeviceProperties m_deviceProperties{};
-        VkPhysicalDeviceIDProperties m_deviceIdProperties{};
-        VkPhysicalDevicePCIBusInfoPropertiesEXT m_devicePciBusProperties{};
-        VkPhysicalDeviceDriverPropertiesKHR m_deviceDriverProperties{};
-        VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_deviceFragmentShadingRateProperties{};
+        std::set<std::string> m_vkExtensions;
+        VkPhysicalDeviceProperties m_vkProperties{};
+        VkPhysicalDeviceIDProperties m_vkIdProperties{};
+        VkPhysicalDevicePCIBusInfoPropertiesEXT m_vkPciBusProperties{};
+        VkPhysicalDeviceDriverPropertiesKHR m_vkDriverProperties{};
+        VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_vkFragmentShadingRateProperties{};
         uint32_t m_vkDriverVersion{};
         DXGI_ADAPTER_DESC1 m_dxgiDesc{};
 
