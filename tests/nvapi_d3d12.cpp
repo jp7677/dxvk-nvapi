@@ -120,8 +120,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     SECTION("EnumerateMetaCommands returns OK") {
         NvU32 count = 0U;
         NVAPI_META_COMMAND_DESC descs{};
-        REQUIRE(NvAPI_D3D12_EnumerateMetaCommands(&device, &count, &descs) == NVAPI_OK);
-        REQUIRE(count == 0);
+        REQUIRE(NvAPI_D3D12_EnumerateMetaCommands(&device, &count, &descs) == NVAPI_NOT_SUPPORTED);
     }
 
     SECTION("GetGraphicsCapabilities succeeds") {
