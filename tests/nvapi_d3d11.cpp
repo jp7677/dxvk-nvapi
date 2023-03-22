@@ -475,4 +475,8 @@ TEST_CASE("D3D11 MultiGPU methods succeed", "[.d3d11]") {
         multiGPUCaps.version = NV_MULTIGPU_CAPS_VER;
         REQUIRE(NvAPI_D3D11_MultiGPU_GetCaps(&multiGPUCaps) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
     }
+
+    SECTION("MultiGPU_Init returns OK") {
+        REQUIRE(NvAPI_D3D11_MultiGPU_Init(true) == NVAPI_OK);
+    }
 }

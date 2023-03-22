@@ -81,6 +81,11 @@ extern "C" {
         return Ok(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D11_MultiGPU_Init(bool bEnable) {
+        // Just acknowledge the request since there is nothing to do here
+        return Ok(__func__);
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth) {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
