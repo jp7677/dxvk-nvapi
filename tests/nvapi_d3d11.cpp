@@ -1,4 +1,6 @@
 #include "nvapi_tests_private.h"
+#include "resource_factory_util.h"
+#include "nvapi_sysinfo_mocks.h"
 #include "nvapi_d3d_mocks.h"
 #include "nvapi_d3d11_mocks.h"
 
@@ -431,5 +433,46 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         REQUIRE(NvAPI_D3D11_GetCudaTextureObject(static_cast<ID3D11Device*>(&device), 0x1U, 0x2U, &handle) == NVAPI_OK);
         REQUIRE(deviceRefCount == 0);
         REQUIRE(contextRefCount == 0);
+    }
+}
+
+TEST_CASE("D3D11 MultiGPU methods succeed", "[.d3d11]") {
+    auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
+    auto vulkan = std::make_unique<VulkanMock>();
+    auto nvml = std::make_unique<NvmlMock>();
+    auto lfx = std::make_unique<LfxMock>();
+    DXGIDxvkAdapterMock adapter;
+    DXGIOutput6Mock output;
+
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
+
+    SECTION("MultiGPU_GetCaps (V1) returns OK") {
+        NV_MULTIGPU_CAPS_V1 multiGPUCaps{};
+
+        REQUIRE(NvAPI_D3D11_MultiGPU_GetCaps(reinterpret_cast<PNV_MULTIGPU_CAPS>(&multiGPUCaps)) == NVAPI_OK);
+        REQUIRE(multiGPUCaps.nTotalGPUs == 1);
+        REQUIRE(multiGPUCaps.nSLIGPUs == 0);
+    }
+
+    SECTION("MultiGPU_GetCaps (V2) returns OK") {
+        NV_MULTIGPU_CAPS multiGPUCaps{};
+        multiGPUCaps.version = NV_MULTIGPU_CAPS_VER2;
+
+        REQUIRE(NvAPI_D3D11_MultiGPU_GetCaps(&multiGPUCaps) == NVAPI_OK);
+        REQUIRE(multiGPUCaps.nTotalGPUs == 1);
+        REQUIRE(multiGPUCaps.nSLIGPUs == 0);
+    }
+
+    SECTION("MultiGPU_GetCaps with unknown struct version returns incompatible-struct-version") {
+        NV_MULTIGPU_CAPS multiGPUCaps{};
+        multiGPUCaps.version = NV_MULTIGPU_CAPS_VER2 + 1;
+        REQUIRE(NvAPI_D3D11_MultiGPU_GetCaps(&multiGPUCaps) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
+
+    SECTION("MultiGPU_GetCaps with current struct version returns not incompatible-struct-version") {
+        // This test fails when a header update provides a newer not yet implemented struct version
+        NV_MULTIGPU_CAPS multiGPUCaps{};
+        multiGPUCaps.version = NV_MULTIGPU_CAPS_VER;
+        REQUIRE(NvAPI_D3D11_MultiGPU_GetCaps(&multiGPUCaps) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
     }
 }

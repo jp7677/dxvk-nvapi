@@ -1,4 +1,5 @@
 #include "nvapi_private.h"
+#include "nvapi_globals.h"
 #include "d3d11/nvapi_d3d11_device.h"
 #include "util/util_statuscode.h"
 #include "util/util_op_code.h"
@@ -45,6 +46,39 @@ extern "C" {
         *supported = false;
 
         return Ok(str::format(n, " (", code, "/", fromCode(code), ")"));
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D11_MultiGPU_GetCaps(PNV_MULTIGPU_CAPS pMultiGPUCaps) {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pMultiGPUCaps == nullptr)
+            return InvalidArgument(n);
+
+        switch (pMultiGPUCaps->version) {
+            case 0: // NV_MULTIGPU_CAPS_V1 has no version field
+            case NV_MULTIGPU_CAPS_VER1: {
+                auto pMultiGPUCapsV1 = reinterpret_cast<NV_MULTIGPU_CAPS_V1*>(pMultiGPUCaps);
+                *pMultiGPUCapsV1 = {};
+                // Report that SLI is not available
+                pMultiGPUCapsV1->nTotalGPUs = nvapiAdapterRegistry->GetAdapterCount();
+                pMultiGPUCapsV1->nSLIGPUs = 0;
+                break;
+            }
+            case NV_MULTIGPU_CAPS_VER2: {
+                *pMultiGPUCaps = {};
+                // Report that SLI is not available
+                pMultiGPUCaps->nTotalGPUs = nvapiAdapterRegistry->GetAdapterCount();
+                pMultiGPUCaps->nSLIGPUs = 0;
+                break;
+            }
+            default:
+                return IncompatibleStructVersion(n);
+        }
+
+        return Ok(n);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth) {
