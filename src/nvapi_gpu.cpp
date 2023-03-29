@@ -143,7 +143,7 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        if (!adapter->HasNvml() && env::needsNvmlSuccess()) {
+        if (!adapter->HasNvml() && env::needsSucceededGpuQuery()) {
             *pCount = 0;
 
             return Ok(n, alreadyLoggedOk);
@@ -835,7 +835,7 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        if (!adapter->HasNvml() && env::needsNvmlSuccess()) {
+        if (!adapter->HasNvml() && env::needsSucceededGpuQuery()) {
             switch (pClkFreqs->version) {
                 case NV_GPU_CLOCK_FREQUENCIES_VER_1: {
                     auto pClkFreqsV1 = reinterpret_cast<NV_GPU_CLOCK_FREQUENCIES_V1*>(pClkFreqs);
@@ -972,7 +972,7 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        if (env::needsNvmlSuccess()) {
+        if (env::needsSucceededGpuQuery()) {
             switch (pPstatesInfo->version) {
                 case NV_GPU_PERF_PSTATES20_INFO_VER1: {
                     auto pPstatesInfoV1 = reinterpret_cast<NV_GPU_PERF_PSTATES20_INFO_V1*>(pPstatesInfo);

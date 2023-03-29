@@ -139,9 +139,9 @@ namespace dxvk::env {
         return name == std::string("tlou-i.exe") || name == std::string("tlou-i-l.exe");
     }
 
-    bool needsNvmlSuccess() {
+    bool needsSucceededGpuQuery() {
         if (isTheLastOfUsPartOne()) {
-            log::write("Faking NVML related method due to detecting tlou-i.exe/tlou-i-l.exe");
+            log::write("Faking GPU query success due to detecting tlou-i.exe/tlou-i-l.exe");
             return true;
         }
 

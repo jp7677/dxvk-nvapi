@@ -13,5 +13,5 @@ namespace dxvk::env {
 
     bool needsPascalSpoofing(NV_GPU_ARCHITECTURE_ID architectureId);
 
-    bool needsNvmlSuccess();
+    bool needsSucceededGpuQuery();
 }
