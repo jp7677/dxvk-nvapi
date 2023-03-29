@@ -12,4 +12,6 @@ namespace dxvk::env {
     bool needsAmpereSpoofing(NV_GPU_ARCHITECTURE_ID architectureId, void* pReturnAddress);
 
     bool needsPascalSpoofing(NV_GPU_ARCHITECTURE_ID architectureId);
+
+    bool needsNvmlSuccess();
 }

@@ -133,4 +133,18 @@ namespace dxvk::env {
 
         return false;
     }
+
+    bool isTheLastOfUsPartOne() {
+        auto name = getExecutableName();
+        return name == std::string("tlou-i.exe") || name == std::string("tlou-i-l.exe");
+    }
+
+    bool needsNvmlSuccess() {
+        if (isTheLastOfUsPartOne()) {
+            log::write("Faking NVML related method due to detecting tlou-i.exe/tlou-i-l.exe");
+            return true;
+        }
+
+        return false;
+    }
 }

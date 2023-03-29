@@ -623,7 +623,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
         NV_GPU_PERF_PSTATES20_INFO params;
-        params.version = NV_GPU_PERF_PSTATES_INFO_VER;
+        params.version = NV_GPU_PERF_PSTATES20_INFO_VER;
         REQUIRE(NvAPI_GPU_GetPstates20(handle, &params) == NVAPI_NO_IMPLEMENTATION);
     }
 }
