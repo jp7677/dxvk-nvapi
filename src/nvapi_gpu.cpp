@@ -143,11 +143,8 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        if (!adapter->HasNvml() && env::needsSucceededGpuQuery()) {
-            *pCount = 0;
-
+        if (!adapter->HasNvml() && env::needsSucceededGpuQuery())
             return Ok(n, alreadyLoggedOk);
-        }
 
         if (!adapter->HasNvml())
             return NoImplementation(n, alreadyLoggedNoNvml);
@@ -835,23 +832,8 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        if (!adapter->HasNvml() && env::needsSucceededGpuQuery()) {
-            switch (pClkFreqs->version) {
-                case NV_GPU_CLOCK_FREQUENCIES_VER_1: {
-                    auto pClkFreqsV1 = reinterpret_cast<NV_GPU_CLOCK_FREQUENCIES_V1*>(pClkFreqs);
-                    *pClkFreqsV1 = {};
-                    break;
-                }
-                case NV_GPU_CLOCK_FREQUENCIES_VER_2: // Both versions use the same NV_GPU_CLOCK_FREQUENCIES_V2 struct
-                case NV_GPU_CLOCK_FREQUENCIES_VER_3:
-                    *pClkFreqs = {};
-                    break;
-                default:
-                    return Error(n); // Unreachable, but just to be sure
-            }
-
+        if (!adapter->HasNvml() && env::needsSucceededGpuQuery())
             return Ok(n, alreadyLoggedOk);
-        }
 
         if (!adapter->HasNvml())
             return NoImplementation(n, alreadyLoggedNoNvml);
@@ -972,27 +954,8 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        if (env::needsSucceededGpuQuery()) {
-            switch (pPstatesInfo->version) {
-                case NV_GPU_PERF_PSTATES20_INFO_VER1: {
-                    auto pPstatesInfoV1 = reinterpret_cast<NV_GPU_PERF_PSTATES20_INFO_V1*>(pPstatesInfo);
-                    *pPstatesInfoV1 = {};
-                    break;
-                }
-                case NV_GPU_PERF_PSTATES20_INFO_VER2: {
-                    auto pPstatesInfoV2 = reinterpret_cast<NV_GPU_PERF_PSTATES20_INFO_V2*>(pPstatesInfo);
-                    *pPstatesInfoV2 = {};
-                    break;
-                }
-                case NV_GPU_PERF_PSTATES20_INFO_VER3:
-                    *pPstatesInfo = {};
-                    break;
-                default:
-                    return IncompatibleStructVersion(n);
-            }
-
+        if (env::needsSucceededGpuQuery())
             return Ok(n);
-        }
 
         return NoImplementation(n);
     }
