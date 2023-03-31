@@ -24,12 +24,18 @@ namespace dxvk::env {
     }
 
     std::string getExecutableName() {
+        static std::string executableName{};
+
+        if (!executableName.empty())
+            return executableName;
+
         auto path = getExecutablePath();
         auto name = path.find_last_of('\\');
-
-        return (name != std::string::npos)
+        executableName = (name != std::string::npos)
             ? path.substr(name + 1)
             : path;
+
+        return executableName;
     }
 
     std::string getCurrentDateTime() {
@@ -135,8 +141,8 @@ namespace dxvk::env {
     }
 
     bool isTheLastOfUsPartOne() {
-        auto name = getExecutableName();
-        return name == std::string("tlou-i.exe") || name == std::string("tlou-i-l.exe");
+        return getExecutableName() == std::string("tlou-i.exe")
+            || getExecutableName() == std::string("tlou-i-l.exe");
     }
 
     bool needsSucceededGpuQuery() {
