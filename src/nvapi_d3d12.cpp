@@ -240,4 +240,34 @@ extern "C" {
 
         return Ok(n, alreadyLoggedOk);
     }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingCaps(ID3D12Device* pDevice, NVAPI_D3D12_RAYTRACING_CAPS_TYPE type, void* pData, size_t dataSize) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedOk = false;
+
+        if (pDevice == nullptr || pData == nullptr)
+            return InvalidPointer(n);
+
+        switch (type) {
+            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING:
+                if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS))
+                    return InvalidArgument(n);
+
+                // let's hope that NvAPI_D3D12_IsNvShaderExtnOpCodeSupported returning false is enough to discourage games from attempting to use Shader Execution Reordering
+                *(NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS*)pData = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
+                break;
+
+            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP:
+                if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS))
+                    return InvalidArgument(n);
+
+                *(NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS*)pData = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE;
+                break;
+
+            default:
+                return InvalidArgument(n);
+        }
+
+        return Ok(n, alreadyLoggedOk);
+    }
 }
