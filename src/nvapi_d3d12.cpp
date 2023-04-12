@@ -337,4 +337,33 @@ extern "C" {
 
         return Ok(n, alreadyLoggedOk);
     }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedOk = false;
+
+        if (pCommandList == nullptr || pParams == nullptr)
+            return InvalidArgument(n);
+
+        if (pParams->version != NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER1)
+            return IncompatibleStructVersion(n);
+
+        if (pParams->pDesc == nullptr || (pParams->numPostbuildInfoDescs != 0 && pParams->pPostbuildInfoDescs == nullptr))
+            return InvalidArgument(n);
+
+        std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs{};
+        D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC desc = {
+            .DestAccelerationStructureData = pParams->pDesc->destAccelerationStructureData,
+            .Inputs = {},
+            .SourceAccelerationStructureData = pParams->pDesc->sourceAccelerationStructureData,
+            .ScratchAccelerationStructureData = pParams->pDesc->scratchAccelerationStructureData,
+        };
+
+        if (!ConvertBuildRaytracingAccelerationStructureInputs(&pParams->pDesc->inputs, geometryDescs, &desc.Inputs))
+            return InvalidArgument(n);
+
+        pCommandList->BuildRaytracingAccelerationStructure(&desc, pParams->numPostbuildInfoDescs, pParams->pPostbuildInfoDescs);
+
+        return Ok(n, alreadyLoggedOk);
+    }
 }
