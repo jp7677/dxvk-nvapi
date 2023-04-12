@@ -381,4 +381,16 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(deviceRefCount == 0);
         REQUIRE(commandListRefCount == 0);
     }
+
+    SECTION("GetRaytracingCaps returns OK and claims that thread reordering is not supported") {
+        NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS caps;
+        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING, &caps, sizeof(caps)) == NVAPI_OK);
+        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE);
+    }
+
+    SECTION("GetRaytracingCaps returns OK and claims that Opacity Micromap is not supported") {
+        NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS caps;
+        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
+        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE);
+    }
 }
