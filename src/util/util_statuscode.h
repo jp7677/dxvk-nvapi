@@ -66,6 +66,11 @@ namespace dxvk {
         return NVAPI_API_NOT_INTIALIZED;
     }
 
+    inline NvAPI_Status InvalidPointer(const std::string& logMessage) {
+        log::write(str::format(logMessage, ": Invalid pointer"));
+        return NVAPI_INVALID_POINTER;
+    }
+
     inline NvAPI_Status InvalidArgument(const std::string& logMessage) {
         log::write(str::format(logMessage, ": Invalid argument"));
         return NVAPI_INVALID_ARGUMENT;
