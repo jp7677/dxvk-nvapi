@@ -19,7 +19,7 @@
 
 #include <dxgi1_6.h>
 #include <d3d11_1.h>
-#include <d3d12.h>
+#include "../inc/d3d12.h"
 #include <vulkan/vulkan.h>
 #include "../inc/nvml.h"
 
