@@ -3,7 +3,7 @@
 #include "nvapi_tests_private.h"
 #include "../src/vkd3d-proton/vkd3d-proton_interfaces.h"
 
-class ID3D12Vkd3dDevice : public ID3D12Device, public ID3D12DeviceExt {};
+class ID3D12Vkd3dDevice : public ID3D12Device5, public ID3D12DeviceExt {};
 
 class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3dDevice> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -50,6 +50,27 @@ class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3
     IMPLEMENT_MOCK4(CreateCommandSignature);
     IMPLEMENT_MOCK7(GetResourceTiling);
     MAKE_MOCK1(GetAdapterLuid, LUID*(LUID*), override);
+    IMPLEMENT_MOCK4(CreatePipelineLibrary);
+    IMPLEMENT_MOCK5(SetEventOnMultipleFenceCompletion);
+    IMPLEMENT_MOCK3(SetResidencyPriority);
+    IMPLEMENT_MOCK3(CreatePipelineState);
+    IMPLEMENT_MOCK3(OpenExistingHeapFromAddress);
+    IMPLEMENT_MOCK3(OpenExistingHeapFromFileMapping);
+    IMPLEMENT_MOCK5(EnqueueMakeResident);
+    IMPLEMENT_MOCK5(CreateCommandList1);
+    IMPLEMENT_MOCK3(CreateProtectedResourceSession);
+    IMPLEMENT_MOCK8(CreateCommittedResource1);
+    IMPLEMENT_MOCK4(CreateHeap1);
+    IMPLEMENT_MOCK6(CreateReservedResource1);
+    MAKE_MOCK5(GetResourceAllocationInfo1, D3D12_RESOURCE_ALLOCATION_INFO*(D3D12_RESOURCE_ALLOCATION_INFO*, UINT, UINT, const D3D12_RESOURCE_DESC*, D3D12_RESOURCE_ALLOCATION_INFO1*), override);
+    IMPLEMENT_MOCK3(CreateLifetimeTracker);
+    IMPLEMENT_MOCK0(RemoveDevice);
+    IMPLEMENT_MOCK2(EnumerateMetaCommands);
+    IMPLEMENT_MOCK5(EnumerateMetaCommandParameters);
+    IMPLEMENT_MOCK6(CreateMetaCommand);
+    IMPLEMENT_MOCK3(CreateStateObject);
+    IMPLEMENT_MOCK2(GetRaytracingAccelerationStructurePrebuildInfo);
+    IMPLEMENT_MOCK2(CheckDriverMatchingIdentifier);
     IMPLEMENT_MOCK3(GetVulkanHandles);
     IMPLEMENT_MOCK1(GetExtensionSupport);
     IMPLEMENT_MOCK7(CreateCubinComputeShaderWithName);
@@ -59,7 +80,7 @@ class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3
     IMPLEMENT_MOCK1(CaptureUAVInfo);
 };
 
-class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList1, public ID3D12GraphicsCommandListExt {};
+class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList4, public ID3D12GraphicsCommandListExt {};
 
 class D3D12Vkd3dGraphicsCommandListMock final : public trompeloeil::mock_interface<ID3D12Vkd3dGraphicsCommandList> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -128,6 +149,17 @@ class D3D12Vkd3dGraphicsCommandListMock final : public trompeloeil::mock_interfa
     IMPLEMENT_MOCK9(ResolveSubresourceRegion);
     IMPLEMENT_MOCK3(SetSamplePositions);
     IMPLEMENT_MOCK1(SetViewInstanceMask);
+    IMPLEMENT_MOCK3(WriteBufferImmediate);
+    IMPLEMENT_MOCK1(SetProtectedResourceSession);
+    IMPLEMENT_MOCK4(BeginRenderPass);
+    IMPLEMENT_MOCK0(EndRenderPass);
+    IMPLEMENT_MOCK3(InitializeMetaCommand);
+    IMPLEMENT_MOCK3(ExecuteMetaCommand);
+    IMPLEMENT_MOCK3(BuildRaytracingAccelerationStructure);
+    IMPLEMENT_MOCK3(EmitRaytracingAccelerationStructurePostbuildInfo);
+    IMPLEMENT_MOCK3(CopyRaytracingAccelerationStructure);
+    IMPLEMENT_MOCK1(SetPipelineState1);
+    IMPLEMENT_MOCK1(DispatchRays);
     IMPLEMENT_MOCK1(GetVulkanHandle);
     IMPLEMENT_MOCK6(LaunchCubinShader);
 };
