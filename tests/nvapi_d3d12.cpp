@@ -393,4 +393,168 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
         REQUIRE(caps == NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE);
     }
+
+    SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx succeeds") {
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx returns OK") {
+            NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx{};
+            NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX desc{};
+            D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info{};
+            NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS params{};
+            params.version = NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS_VER1;
+            params.pDesc = &desc;
+            params.pInfo = &info;
+
+            D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS d3d12Desc{};
+            ALLOW_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, &info))
+                .LR_SIDE_EFFECT(d3d12Desc = *_1);
+
+            SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with TLAS") {
+                desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+                desc.instanceDescs = D3D12_GPU_VIRTUAL_ADDRESS{};
+
+                REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                REQUIRE(d3d12Desc.InstanceDescs == desc.instanceDescs);
+            }
+
+            SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with BLAS for pointer array") {
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX* geometryDescExArray[] = {};
+                desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+                desc.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY_OF_POINTERS;
+                desc.ppGeometryDescs = geometryDescExArray;
+
+                REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                REQUIRE(d3d12Desc.ppGeometryDescs == reinterpret_cast<const D3D12_RAYTRACING_GEOMETRY_DESC* const*>(desc.ppGeometryDescs));
+            }
+
+            SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with BLAS for array") {
+                desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+                desc.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+                desc.numDescs = 1;
+                desc.pGeometryDescs = &geometryDescEx;
+                desc.geometryDescStrideInBytes = sizeof(geometryDescEx);
+
+                SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx for triangles geometry") {
+                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                    geometryDescEx.triangles.IndexBuffer = D3D12_GPU_VIRTUAL_ADDRESS{};
+
+                    REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                    REQUIRE(d3d12Desc.NumDescs == desc.numDescs);
+                    REQUIRE(d3d12Desc.DescsLayout == desc.descsLayout);
+                    REQUIRE(d3d12Desc.pGeometryDescs->Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                    REQUIRE(d3d12Desc.pGeometryDescs->Triangles.IndexBuffer == geometryDescEx.triangles.IndexBuffer);
+                }
+
+                SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with AABBs geometry") {
+                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
+                    geometryDescEx.aabbs.AABBCount = 3;
+
+                    REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                    REQUIRE(d3d12Desc.NumDescs == desc.numDescs);
+                    REQUIRE(d3d12Desc.DescsLayout == desc.descsLayout);
+                    REQUIRE(d3d12Desc.pGeometryDescs->Type == D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS);
+                    REQUIRE(d3d12Desc.pGeometryDescs->AABBs.AABBCount == geometryDescEx.aabbs.AABBCount);
+                }
+            }
+        }
+
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with unknown struct version returns incompatible-struct-version") {
+            NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS params{};
+            params.version = NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS params{};
+            params.version = NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS_VER;
+            REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
+
+    SECTION("BuildRaytracingAccelerationStructureEx succeeds") {
+        SECTION("BuildRaytracingAccelerationStructureEx returns OK") {
+            NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx{};
+            NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC_EX desc{};
+            NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS params{};
+            params.version = NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER1;
+            params.pDesc = &desc;
+
+            D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC d3d12Desc{};
+            ALLOW_CALL(commandList, BuildRaytracingAccelerationStructure(_, params.numPostbuildInfoDescs, params.pPostbuildInfoDescs))
+                .LR_SIDE_EFFECT(d3d12Desc = *_1);
+
+            SECTION("BuildRaytracingAccelerationStructureEx with TLAS") {
+                desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+                desc.inputs.instanceDescs = D3D12_GPU_VIRTUAL_ADDRESS{};
+
+                REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+                REQUIRE(d3d12Desc.DestAccelerationStructureData == desc.destAccelerationStructureData);
+                REQUIRE(d3d12Desc.Inputs.InstanceDescs == desc.inputs.instanceDescs);
+                REQUIRE(d3d12Desc.SourceAccelerationStructureData == desc.sourceAccelerationStructureData);
+                REQUIRE(d3d12Desc.ScratchAccelerationStructureData == desc.scratchAccelerationStructureData);
+            }
+
+            SECTION("BuildRaytracingAccelerationStructureEx with BLAS for pointer array") {
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX* geometryDescExArray[] = {};
+                desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+                desc.inputs.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY_OF_POINTERS;
+                desc.inputs.ppGeometryDescs = geometryDescExArray;
+
+                REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+                REQUIRE(d3d12Desc.DestAccelerationStructureData == desc.destAccelerationStructureData);
+                REQUIRE(d3d12Desc.Inputs.ppGeometryDescs == reinterpret_cast<const D3D12_RAYTRACING_GEOMETRY_DESC* const*>(desc.inputs.ppGeometryDescs));
+                REQUIRE(d3d12Desc.SourceAccelerationStructureData == desc.sourceAccelerationStructureData);
+                REQUIRE(d3d12Desc.ScratchAccelerationStructureData == desc.scratchAccelerationStructureData);
+            }
+
+            SECTION("BuildRaytracingAccelerationStructureEx with BLAS for array") {
+                desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+                desc.inputs.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+                desc.inputs.numDescs = 1;
+                desc.inputs.pGeometryDescs = &geometryDescEx;
+                desc.inputs.geometryDescStrideInBytes = sizeof(geometryDescEx);
+
+                SECTION("BuildRaytracingAccelerationStructureEx for triangles geometry") {
+                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                    geometryDescEx.triangles.IndexBuffer = D3D12_GPU_VIRTUAL_ADDRESS{};
+
+                    REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+                    REQUIRE(d3d12Desc.DestAccelerationStructureData == desc.destAccelerationStructureData);
+                    REQUIRE(d3d12Desc.Inputs.NumDescs == desc.inputs.numDescs);
+                    REQUIRE(d3d12Desc.Inputs.DescsLayout == desc.inputs.descsLayout);
+                    REQUIRE(d3d12Desc.Inputs.pGeometryDescs->Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                    REQUIRE(d3d12Desc.Inputs.pGeometryDescs->Triangles.IndexBuffer == geometryDescEx.triangles.IndexBuffer);
+                    REQUIRE(d3d12Desc.SourceAccelerationStructureData == desc.sourceAccelerationStructureData);
+                    REQUIRE(d3d12Desc.ScratchAccelerationStructureData == desc.scratchAccelerationStructureData);
+                }
+
+                SECTION("BuildRaytracingAccelerationStructureEx for AABBs geometry") {
+                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
+                    geometryDescEx.aabbs.AABBCount = 3;
+
+                    REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+                    REQUIRE(d3d12Desc.DestAccelerationStructureData == desc.destAccelerationStructureData);
+                    REQUIRE(d3d12Desc.Inputs.NumDescs == desc.inputs.numDescs);
+                    REQUIRE(d3d12Desc.Inputs.DescsLayout == desc.inputs.descsLayout);
+                    REQUIRE(d3d12Desc.Inputs.pGeometryDescs->Type == D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS);
+                    REQUIRE(d3d12Desc.Inputs.pGeometryDescs->AABBs.AABBCount == geometryDescEx.aabbs.AABBCount);
+                    REQUIRE(d3d12Desc.SourceAccelerationStructureData == desc.sourceAccelerationStructureData);
+                    REQUIRE(d3d12Desc.ScratchAccelerationStructureData == desc.scratchAccelerationStructureData);
+                }
+            }
+        }
+
+        SECTION("BuildRaytracingAccelerationStructureEx with unknown struct version returns incompatible-struct-version") {
+            NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS params{};
+            params.version = NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("BuildRaytracingAccelerationStructureEx with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS params{};
+            params.version = NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER;
+            REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
 }
