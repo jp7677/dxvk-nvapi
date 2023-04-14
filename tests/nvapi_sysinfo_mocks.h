@@ -5,7 +5,7 @@
 #include "../src/sysinfo/vulkan.h"
 #include "../src/sysinfo/nvml.h"
 
-class DXGIFactory1Mock : public trompeloeil::mock_interface<IDXGIFactory1> {
+class DXGIFactory1Mock final : public trompeloeil::mock_interface<IDXGIFactory1> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -24,7 +24,7 @@ class DXGIFactory1Mock : public trompeloeil::mock_interface<IDXGIFactory1> {
 
 class IDXGIDxvkAdapter : public IDXGIAdapter1, public IDXGIVkInteropAdapter {};
 
-class DXGIDxvkAdapterMock : public trompeloeil::mock_interface<IDXGIDxvkAdapter> {
+class DXGIDxvkAdapterMock final : public trompeloeil::mock_interface<IDXGIDxvkAdapter> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -39,7 +39,7 @@ class DXGIDxvkAdapterMock : public trompeloeil::mock_interface<IDXGIDxvkAdapter>
     IMPLEMENT_MOCK2(GetVulkanHandles);
 };
 
-class DXGIOutput6Mock : public trompeloeil::mock_interface<IDXGIOutput6> {
+class DXGIOutput6Mock final : public trompeloeil::mock_interface<IDXGIOutput6> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -71,13 +71,13 @@ class DXGIOutput6Mock : public trompeloeil::mock_interface<IDXGIOutput6> {
     IMPLEMENT_MOCK1(CheckHardwareCompositionSupport);
 };
 
-class VulkanMock : public trompeloeil::mock_interface<dxvk::Vulkan> {
+class VulkanMock final : public trompeloeil::mock_interface<dxvk::Vulkan> {
     IMPLEMENT_CONST_MOCK0(IsAvailable);
     IMPLEMENT_CONST_MOCK2(GetDeviceExtensions);
     IMPLEMENT_CONST_MOCK3(GetPhysicalDeviceProperties2);
 };
 
-class NvmlMock : public trompeloeil::mock_interface<dxvk::Nvml> {
+class NvmlMock final : public trompeloeil::mock_interface<dxvk::Nvml> {
     IMPLEMENT_CONST_MOCK0(IsAvailable);
     IMPLEMENT_CONST_MOCK1(ErrorString);
     IMPLEMENT_CONST_MOCK2(DeviceGetHandleByPciBusId_v2);

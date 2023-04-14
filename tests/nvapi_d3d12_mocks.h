@@ -5,7 +5,7 @@
 
 class ID3D12Vkd3dDevice : public ID3D12Device, public ID3D12DeviceExt {};
 
-class D3D12Vkd3dDeviceMock : public trompeloeil::mock_interface<ID3D12Vkd3dDevice> {
+class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3dDevice> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -61,7 +61,7 @@ class D3D12Vkd3dDeviceMock : public trompeloeil::mock_interface<ID3D12Vkd3dDevic
 
 class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList1, public ID3D12GraphicsCommandListExt {};
 
-class D3D12Vkd3dGraphicsCommandListMock : public trompeloeil::mock_interface<ID3D12Vkd3dGraphicsCommandList> {
+class D3D12Vkd3dGraphicsCommandListMock final : public trompeloeil::mock_interface<ID3D12Vkd3dGraphicsCommandList> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
