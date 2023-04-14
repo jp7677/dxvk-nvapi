@@ -127,6 +127,24 @@ extern "C" {
         return Ok(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_GetLogicalGPUFromPhysicalGPU(NvPhysicalGpuHandle hPhysicalGPU, NvLogicalGpuHandle* pLogicalGPU) {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (hPhysicalGPU == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGPU);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        *pLogicalGPU = reinterpret_cast<NvLogicalGpuHandle>(adapter);
+
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_GetPhysicalGPUsFromLogicalGPU(NvLogicalGpuHandle hLogicalGPU, NvPhysicalGpuHandle hPhysicalGPU[NVAPI_MAX_PHYSICAL_GPUS], NvU32* pGpuCount) {
         constexpr auto n = __func__;
 
