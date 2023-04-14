@@ -272,14 +272,21 @@ extern "C" {
     }
 
     static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
-        *d3dDesc = {
-            .Type = nvDesc->type,
-            // assume that OMM via VK_EXT_opacity_micromap is not supported, allow only standard flags to be passed
-            .Flags = static_cast<D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS>(nvDesc->flags & 0x3f),
-            .NumDescs = nvDesc->numDescs,
-            .DescsLayout = nvDesc->descsLayout,
-            .InstanceDescs = nvDesc->instanceDescs,
-        };
+        d3dDesc->Type = nvDesc->type;
+        // assume that OMM via VK_EXT_opacity_micromap is not supported, allow only standard flags to be passed
+        d3dDesc->Flags = static_cast<D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS>(nvDesc->flags & 0x3f);
+        d3dDesc->NumDescs = nvDesc->numDescs;
+        d3dDesc->DescsLayout = nvDesc->descsLayout;
+
+        if (d3dDesc->Type == D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL) {
+            d3dDesc->InstanceDescs = nvDesc->instanceDescs;
+            return true;
+        }
+
+        if (d3dDesc->Type == D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL && d3dDesc->DescsLayout == D3D12_ELEMENTS_LAYOUT_ARRAY_OF_POINTERS) {
+            d3dDesc->ppGeometryDescs = reinterpret_cast<const D3D12_RAYTRACING_GEOMETRY_DESC* const*>(nvDesc->ppGeometryDescs);
+            return true;
+        }
 
         if (d3dDesc->Type == D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL && d3dDesc->DescsLayout == D3D12_ELEMENTS_LAYOUT_ARRAY) {
             if (nvDesc->geometryDescStrideInBytes != sizeof(NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX))
@@ -302,16 +309,17 @@ extern "C" {
                         d3dGeoDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS;
                         d3dGeoDesc.AABBs = nvGeoDesc.aabbs;
                         break;
-                    case NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX:
+                    case NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX: // GetRaytracingCaps reports no OMM caps, we shouldn't reach this
                     default:
                         return false;
                 }
             }
 
             d3dDesc->pGeometryDescs = geometryDescs.data();
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D12Device5* pDevice, NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* pParams) {
