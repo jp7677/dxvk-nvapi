@@ -243,7 +243,6 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingCaps(ID3D12Device* pDevice, NVAPI_D3D12_RAYTRACING_CAPS_TYPE type, void* pData, size_t dataSize) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedOk = false;
 
         if (pDevice == nullptr || pData == nullptr)
             return InvalidPointer(n);
@@ -268,7 +267,7 @@ extern "C" {
                 return InvalidArgument(n);
         }
 
-        return Ok(n, alreadyLoggedOk);
+        return Ok(str::format(n, " (", type, ")"));
     }
 
     static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
