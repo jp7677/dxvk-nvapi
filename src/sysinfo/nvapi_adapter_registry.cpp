@@ -40,8 +40,6 @@ namespace dxvk {
                 delete nvapiAdapter;
         }
 
-        sanitizeOutputs();
-
         return !m_nvapiAdapters.empty();
     }
 
@@ -123,28 +121,5 @@ namespace dxvk {
 
     bool NvapiAdapterRegistry::IsOutput(NvapiOutput* handle) const {
         return std::find(m_nvapiOutputs.begin(), m_nvapiOutputs.end(), handle) != m_nvapiOutputs.end();
-    }
-
-    void NvapiAdapterRegistry::sanitizeOutputs() {
-        auto end = std::remove_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(),
-            [this](const auto output) {
-                auto it = std::find_if(m_nvapiOutputs.begin(), m_nvapiOutputs.end(),
-                    [&output](const auto& other) {
-                        return other != output && other->GetDeviceName() == output->GetDeviceName();
-                    });
-
-                // Remove output when it belongs to an integrated adapter and
-                // another output with the same name belongs to a discrete adapter
-                return it != m_nvapiOutputs.end()
-                    && output->GetParent()->GetGpuType() == NV_SYSTEM_TYPE_IGPU
-                    && (*it)->GetParent()->GetGpuType() == NV_SYSTEM_TYPE_DGPU;
-            });
-
-        std::for_each(end, m_nvapiOutputs.end(),
-            [](const auto& duplicate) {
-                delete duplicate;
-            });
-
-        m_nvapiOutputs.erase(end, m_nvapiOutputs.end());
     }
 }

@@ -35,7 +35,5 @@ namespace dxvk {
         std::unique_ptr<Nvml> m_nvml;
         std::vector<NvapiAdapter*> m_nvapiAdapters;
         std::vector<NvapiOutput*> m_nvapiOutputs;
-
-        void sanitizeOutputs();
     };
 }
