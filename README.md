@@ -44,14 +44,14 @@ Using DXVK-NVAPI in Proton, Lutris or Wine requires DXVK to see the GPU as an NV
 
 ### Proton
 
-Proton 6.3-6 and newer includes DXVK-NVAPI, but it is disabled by default.
+Proton 8.0 includes DXVK-NVAPI and enables it by default for a lot of titles.
 
-- Use `PROTON_ENABLE_NVAPI=1` as game launch argument in Steam to enable DXVK-NVAPI. Use additionally `PROTON_HIDE_NVIDIA_GPU=0` for certain titles that don't rely on D3D for obtaining the current GPU type and have this Proton setting applied.
-- Copy and replace `nvapi.dll`/`nvapi64.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 7.0/` if you want to manually update the included version.
+- Use `PROTON_ENABLE_NVAPI=1` as game launch argument in Steam to enable DXVK-NVAPI for other titles.
+- Copy and replace `nvapi.dll`/`nvapi64.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 8.0/` if you want to manually update the included version.
 
-Proton 7.0-1 and older does not disable the `nvapiHack` in DXVK automatically when `PROTON_ENABLE_NVAPI=1` is set. Additionally disable the `nvapiHack` in DXVK bundled with those Proton versions with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf).
+Proton Experimental Bleeding Edge additionally always contains the latest DXVK-NVAPI development (master) version.
 
-Proton Experimental enables DXVK-NVAPI by default for a lot of titles. Proton Bleeding Edge additionally always contains the latest DXVK-NVAPI development (master) version.
+Proton 7.0 includes DXVK-NVAPI, but it is disabled by default. This version also needs `PROTON_HIDE_NVIDIA_GPU=0` for certain titles that don't rely on D3D for obtaining the current GPU type and have this Proton setting applied.
 
 ### Lutris
 
