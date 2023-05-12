@@ -737,11 +737,20 @@ namespace trompeloeil
 
 # endif
 
+  template <typename T>
+  class mini_span
+  {
+  public:
+    mini_span(T* address, size_t size) noexcept : begin_(address), end_(address + size) {}
+    T* begin() const noexcept { return begin_; }
+    T* end() const noexcept { return end_; }
+  private:
+    T* begin_;
+    T* end_;
+  };
+
   class specialized;
 
-  template <typename T>
-  using aligned_storage_for =
-    typename std::aligned_storage<sizeof(T), alignof(T)>::type;
 
 #ifndef TROMPELOEIL_CUSTOM_RECURSIVE_MUTEX
 
@@ -754,7 +763,9 @@ namespace trompeloeil
     // the destructor of a global object in a translation unit
     // without #include <trompeloeil.hpp>
 
-    static aligned_storage_for<std::recursive_mutex> buffer;
+    alignas(std::recursive_mutex)
+    static char buffer[sizeof(std::recursive_mutex)];
+
     static auto mutex = new (&buffer) std::recursive_mutex;
     return unique_lock<std::recursive_mutex>{*mutex};
   }
@@ -1080,21 +1091,38 @@ namespace trompeloeil
 
   struct wildcard : public matcher
   {
-    template <typename T
-#if TROMPELOEIL_GCC && TROMPELOEIL_GCC_VERSION >= 50000
-              ,detail::enable_if_t<!std::is_convertible<wildcard&, T>{}>* = nullptr
-#endif
-              >
-    operator T&&()
-    const;
+    template <typename T>
+    struct wrapper {
+      operator T() {
+        static_assert(std::is_same<T, void>{},
+                      "Getting a value from wildcard is not allowed.\n"
+                      "See https://github.com/rollbear/trompeloeil/issues/270\n"
+                      "and https://github.com/rollbear/trompeloeil/issues/290");
+        return *this;
+      }
+    };
+    template <typename T, typename std::enable_if<!std::is_convertible<wildcard&, T>{}>::type* = nullptr>
+    operator T()
+    {
+      return wrapper<T>{};
+    }
 
-    template <typename T
-#if TROMPELOEIL_GCC && TROMPELOEIL_GCC_VERSION >= 50000
-              ,detail::enable_if_t<!std::is_convertible<wildcard&, T>{}>* = nullptr
+    template <typename T>
+    operator T&&() const
+    {
+#if (!TROMPELOEIL_GCC  || TROMPELOEIL_GCC_VERSION < 60000 || TROMPELOEIL_GCC_VERSION >= 90000) \
+      && (!TROMPELOEIL_CLANG || TROMPELOEIL_CLANG_VERSION >= 40000 || !defined(_LIBCPP_STD_VER) || _LIBCPP_STD_VER != 14)
+      return wrapper<T &&>{};
+#else
+      return *this;
 #endif
-              >
-    operator T&()
-    volatile const; // less preferred than T&& above
+    }
+
+    template <typename T>
+    operator T&() const volatile
+    {
+      return wrapper<T&>{};
+    }
 
     template <typename T>
     constexpr
@@ -1119,21 +1147,50 @@ template <typename T>
   template <typename T>
   struct typed_matcher : matcher
   {
-    operator T() const { return {}; }
+    template <bool b = false>
+    operator T() const {
+        static_assert(b,
+                      "Getting a value from a typed matcher is not allowed.\n"
+                      "See https://github.com/rollbear/trompeloeil/issues/270\n"
+                      "and https://github.com/rollbear/trompeloeil/issues/290");
+        return {};
+    }
   };
 
   template <>
   struct typed_matcher<std::nullptr_t> : matcher
   {
-    template <typename T, typename = decltype(std::declval<T>() == nullptr)>
-    operator T&&() const;
+    template <typename T,
+              typename = decltype(std::declval<T>() == nullptr)>
+    operator T&&() const
+    {
+      static_assert(std::is_same<T, void>{},
+                    "Getting a value from a typed matcher is not allowed.\n"
+                    "See https://github.com/rollbear/trompeloeil/issues/270\n"
+                    "https://github.com/rollbear/trompeloeil/issues/290");
+      return *this;
+    }
 
     template <typename T,
               typename = decltype(std::declval<T>() == nullptr)>
-    operator T&()const volatile;
+    operator T&()const volatile
+    {
+      static_assert(std::is_same<T, void>{},
+                    "Getting a value from a typed matcher is not allowed.\n"
+                    "See https://github.com/rollbear/trompeloeil/issues/270\n"
+                    "and https://github.com/rollbear/trompeloeil/issues/290");
+      return *this;
+    }
 
     template <typename T, typename C>
-    operator T C::*() const;
+    operator T C::*() const
+    {
+      static_assert(std::is_same<C, void>{},
+          "Getting a value from a typed matcher is not allowed.\n"
+          "See https://github.com/rollbear/trompeloeil/issues/270\n"
+          "and https://github.com/rollbear/trompeloeil/issues/290");
+      return *this;
+    }
   };
 
   template <typename Pred, typename ... T>
@@ -1153,9 +1210,9 @@ template <typename T>
       // clang 3.x instantiates the function even when it's only used
       // for compile time signature checks and never actually called.
       static_assert(std::is_same<V, void>{},
-                    "Conversion function must only be used in unevaluated context for SFINAE expressions.\n"
-                    "The matcher conversion is used in a runtime context.\n"
-                    "See https://github.com/rollbear/trompeloeil/issues/270");
+                    "Getting a value from a duck typed matcher is not allowed.\n"
+                    "See https://github.com/rollbear/trompeloeil/issues/270\n"
+                    "and https://github.com/rollbear/trompeloeil/issues/290");
 #endif
       return *this;
     }
@@ -1165,7 +1222,15 @@ template <typename T>
     template <typename V,
               typename = detail::enable_if_t<!is_matcher<V>{}>,
               typename = invoke_result_type<Pred, V&, T...>>
-    operator V&() const volatile;
+    operator V&() const volatile
+    {
+      static_assert(std::is_same<V, void>{},
+                    "Getting a value from a duck typed matcher is not allowed.\n"
+                    "See https://github.com/rollbear/trompeloeil/issues/270\n"
+                    "and https://github.com/rollbear/trompeloeil/issues/290");
+
+      return *this;
+    }
   };
 
   template <typename T>
@@ -1385,16 +1450,35 @@ template <typename T>
     {
       os << "{ ";
       const char* sep = "";
-      auto const end = std::end(t);
-      for (auto i = std::begin(t); i != end; ++i)
-      {
-        os << sep;
-        ::trompeloeil::print(os, *i);
-        sep = ", ";
-      }
+      using element_type = decltype(*std::begin(t));
+      std::for_each(std::begin(t), std::end(t),
+                    [&os, &sep](element_type element) {
+                      os << sep;
+                      ::trompeloeil::print(os, element);
+                      sep = ", ";
+                    });
       os << " }";
     }
   };
+
+  inline void hexdump(const void* begin, size_t size, std::ostream& os)
+  {
+    stream_sentry s(os);
+    os << size << "-byte object={";
+    if (size > 8)
+    {
+      os << '\n';
+    }
+    os << std::setfill('0') << std::hex;
+    mini_span<uint8_t const> bytes(static_cast<uint8_t const*>(begin), size);
+    size_t byte_number = 0;
+    std::for_each(bytes.begin(), bytes.end(),  [&os, &byte_number](unsigned byte) {
+      os << " 0x" << std::setw(2) << std::right << byte;
+      if ((byte_number & 0xf) == 0xf) os << '\n';
+      ++byte_number;
+    });
+    os << " }";
+  }
 
   template <typename T>
   struct streamer<T, false, false>
@@ -1405,18 +1489,7 @@ template <typename T>
       std::ostream& os,
       T const &t)
     {
-      stream_sentry s(os);
-      static const char *linebreak = "\n";
-      os << sizeof(T) << "-byte object={";
-      os << (linebreak + (sizeof(T) <= 8)); // stupid construction silences VS2015 warning
-      os << std::setfill('0') << std::hex;
-      auto p = reinterpret_cast<uint8_t const*>(&t);
-      for (size_t i = 0; i < sizeof(T); ++i)
-      {
-        os << " 0x" << std::setw(2) << std::right << unsigned(p[i]);
-        if ((i & 0xf) == 0xf) os << '\n';
-      }
-      os << " }";
+      hexdump(&t, sizeof(T), os);
     }
   };
 
@@ -1439,8 +1512,8 @@ template <typename T>
     static
     void
     print(
-	  std::ostream& os,
-	  wildcard const&)
+    std::ostream& os,
+    wildcard const&)
     {
       os << " matching _";
     }
@@ -1908,6 +1981,11 @@ template <typename T>
       const
       noexcept;
 
+    bool
+    is_optional()
+      const
+      noexcept;
+
     void
     retire()
     noexcept
@@ -2025,17 +2103,37 @@ template <typename T>
          << "\" has no more pending expectations\n";
       send_report<specialized>(s, loc, os.str());
     }
+    bool first = true;
+    std::ostringstream os;
+    os << "Sequence mismatch for sequence \"" << seq_name
+       << "\" with matching call of " << match_name
+       << " at " << loc << ".\n";
     for (auto const& m : matchers)
     {
-      std::ostringstream os;
-      os << "Sequence mismatch for sequence \"" << seq_name
-         << "\" with matching call of " << match_name
-         << " at " << loc
-         << ". Sequence \"" << seq_name << "\" has ";
-      m.print_expectation(os);
-      os << " first in line\n";
-      send_report<specialized>(s, loc, os.str());
+      if (first || !m.is_optional())
+      {
+        if (first)
+        {
+          os << "Sequence \"" << seq_name << "\" has ";
+        }
+        else
+        {
+          os << "and has ";
+        }
+        m.print_expectation(os);
+        if (m.is_optional())
+        {
+          os << " first in line\n";
+        }
+        else
+        {
+          os << " as first required expectation\n";
+          break;
+        }
+      }
+      first = false;
     }
+    send_report<specialized>(s, loc, os.str());
   }
 
   inline
@@ -2257,7 +2355,7 @@ template <typename T>
     // since it doesn't respect the trailing return type declaration on
     // the lambdas of template deduction context
 
-    #define TROMPELOEIL_MK_PRED_BINOP(name, op)                         \
+#define TROMPELOEIL_MK_PRED_BINOP(name, op)                         \
     struct name {                                                       \
       template <typename X, typename Y>                                 \
       auto operator()(X const& x, Y const& y) const -> decltype(x op y) \
@@ -2272,7 +2370,7 @@ template <typename T>
     TROMPELOEIL_MK_PRED_BINOP(less_equal, <=);
     TROMPELOEIL_MK_PRED_BINOP(greater, >);
     TROMPELOEIL_MK_PRED_BINOP(greater_equal, >=);
-    #undef TROMPELOEIL_MK_PRED_BINOP
+#undef TROMPELOEIL_MK_PRED_BINOP
 
     // Define `struct` with `operator()` to replace generic lambdas.
 
@@ -2298,7 +2396,7 @@ template <typename T>
 
     // These structures replace the `op` printer lambdas.
 
-    #define TROMPELOEIL_MK_OP_PRINTER(name, op_string)                  \
+#define TROMPELOEIL_MK_OP_PRINTER(name, op_string)                  \
     struct name ## _printer                                             \
     {                                                                   \
       template <typename T>                                             \
@@ -2318,7 +2416,7 @@ template <typename T>
     TROMPELOEIL_MK_OP_PRINTER(less_equal, " <= ");
     TROMPELOEIL_MK_OP_PRINTER(greater, " > ");
     TROMPELOEIL_MK_OP_PRINTER(greater_equal, " >= ");
-    #undef TROMPELOEIL_MK_OP_PRINTER
+#undef TROMPELOEIL_MK_OP_PRINTER
 
   }
 
@@ -2755,6 +2853,15 @@ template <typename T>
   noexcept
   {
     return sequence_handler.is_satisfied();
+  }
+
+  inline
+  bool
+  sequence_matcher::is_optional()
+  const
+  noexcept
+  {
+    return sequence_handler.get_min_calls() == 0;
   }
 
   template <size_t N>
@@ -3913,6 +4020,10 @@ template <typename T>
     using call_matcher_base<Sig>::name;
     using call_matcher_base<Sig>::loc;
 
+#if TROMPELOEIL_GCC && TROMPELOEIL_GCC_VERSION >= 70000 && TROMPEOLEIL_GCC_VERSION < 80000
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic push
+#endif
     template <typename ... U>
     call_matcher(
       char const *file,
@@ -3922,6 +4033,9 @@ template <typename T>
     : call_matcher_base<Sig>(location{file, line}, call_string)
     , val(std::forward<U>(u)...)
     {}
+#if TROMPELOEIL_GCC && TROMPELOEIL_GCC_VERSION >= 70000 && TROMPEOLEIL_GCC_VERSION < 80000
+#pragma GCC diagnostic pop
+#endif
 
     call_matcher(call_matcher &&r) = delete;
 
@@ -4751,8 +4865,8 @@ template <typename T>
     return ::trompeloeil::mock_func<trompeloeil_movable_mock, TROMPELOEIL_REMOVE_PAREN(sig)>( \
                                     TROMPELOEIL_LINE_ID(cardinality_match){},  \
                                     TROMPELOEIL_LINE_ID(expectations),         \
-                                    #name,                                     \
-                                    #sig                                       \
+#name,                                     \
+#sig                                       \
                                     TROMPELOEIL_PARAMS(num));                  \
   }                                                                            \
                                                                                \
@@ -4800,7 +4914,14 @@ template <typename T>
   auto TROMPELOEIL_COUNT_ID(call_obj) =                                        \
     TROMPELOEIL_REQUIRE_CALL_V_LAMBDA(obj, func, #obj, #func, __VA_ARGS__)
 
-
+#if TROMPELOEIL_GCC
+// This is highly unfortunate. Conversion warnings are desired here, but there
+// are situations when the wildcard _ uses conversion when creating an
+// expectation. It would be much better if the warning could be suppressed only
+// for that type. See https://github.com/rollbear/trompeloeil/issues/293
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic push
+#endif
 #define TROMPELOEIL_REQUIRE_CALL_V_LAMBDA(obj, func, obj_s, func_s, ...)       \
   [&]                                                                          \
   {                                                                            \
@@ -4813,15 +4934,15 @@ template <typename T>
       __VA_ARGS__                                                              \
       ;                                                                        \
   }()
-
-
+#if TROMPELOEIL_GCC
+#pragma GCC diagnostic pop
+#endif
 #define TROMPELOEIL_REQUIRE_CALL_LAMBDA_OBJ(obj, func, obj_s, func_s)          \
   ::trompeloeil::call_validator_t<trompeloeil_s_t>{(obj)} +                    \
       ::trompeloeil::detail::conditional_t<false,                              \
                                            decltype((obj).func),               \
                                            trompeloeil_e_t>                    \
     {__FILE__, static_cast<unsigned long>(__LINE__), obj_s "." func_s}.func
-
 
 #define TROMPELOEIL_NAMED_REQUIRE_CALL_V(...)                                  \
   TROMPELOEIL_IDENTITY(TROMPELOEIL_NAMED_REQUIRE_CALL_IMPL TROMPELOEIL_LPAREN  \
