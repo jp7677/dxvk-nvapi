@@ -37,7 +37,7 @@ namespace dxvk {
             m_colorData.BluePrimaryY = static_cast<uint16_t>(desc1.BluePrimary[1] * m);
             m_colorData.WhitePointX = static_cast<uint16_t>(desc1.WhitePoint[0] * m);
             m_colorData.WhitePointY = static_cast<uint16_t>(desc1.WhitePoint[1] * m);
-            m_colorData.MinLuminance = static_cast<uint16_t>(desc1.MinLuminance * 0.0001f);
+            m_colorData.MinLuminance = static_cast<uint16_t>(desc1.MinLuminance / 0.0001f);
             m_colorData.MaxLuminance = static_cast<uint16_t>(desc1.MaxLuminance);
             m_colorData.MaxFullFrameLuminance = static_cast<uint16_t>(desc1.MaxFullFrameLuminance);
         }

@@ -22,8 +22,14 @@ namespace dxvk {
             uint16_t BluePrimaryY;
             uint16_t WhitePointX;
             uint16_t WhitePointY;
+
+            // in units of 0.0001 cd/m^2 (aka nit)
             uint16_t MinLuminance;
+
+            // in units of 1 cd/m^2 (aka nit)
             uint16_t MaxLuminance;
+
+            // in units of 1 cd/m^2 (aka nit)
             uint16_t MaxFullFrameLuminance;
         };
 

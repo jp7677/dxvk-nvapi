@@ -59,7 +59,7 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
         REQUIRE(capabilities.display_data.displayPrimary_y2 == 3000);
         REQUIRE(capabilities.display_data.displayWhitePoint_x == 15635);
         REQUIRE(capabilities.display_data.displayWhitePoint_y == 16450);
-        REQUIRE(capabilities.display_data.desired_content_min_luminance == 0);
+        REQUIRE(capabilities.display_data.desired_content_min_luminance == 100);
         REQUIRE(capabilities.display_data.desired_content_max_luminance == 1499);
         REQUIRE(capabilities.display_data.desired_content_max_frame_average_luminance == 799);
     }
@@ -81,7 +81,7 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
         REQUIRE(capabilities.display_data.displayPrimary_y2 == 3000);
         REQUIRE(capabilities.display_data.displayWhitePoint_x == 15635);
         REQUIRE(capabilities.display_data.displayWhitePoint_y == 16450);
-        REQUIRE(capabilities.display_data.desired_content_min_luminance == 0);
+        REQUIRE(capabilities.display_data.desired_content_min_luminance == 100);
         REQUIRE(capabilities.display_data.desired_content_max_luminance == 1499);
         REQUIRE(capabilities.display_data.desired_content_max_frame_average_luminance == 799);
     }
@@ -104,7 +104,7 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
         REQUIRE(capabilities.display_data.displayPrimary_y2 == 3000);
         REQUIRE(capabilities.display_data.displayWhitePoint_x == 15635);
         REQUIRE(capabilities.display_data.displayWhitePoint_y == 16450);
-        REQUIRE(capabilities.display_data.desired_content_min_luminance == 0);
+        REQUIRE(capabilities.display_data.desired_content_min_luminance == 100);
         REQUIRE(capabilities.display_data.desired_content_max_luminance == 1499);
         REQUIRE(capabilities.display_data.desired_content_max_frame_average_luminance == 799);
     }

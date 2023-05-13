@@ -416,7 +416,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         std::cout << "X = " << std::dec << hdrCapabilities.display_data.displayWhitePoint_x;
         std::cout << ", Y = " << std::dec << hdrCapabilities.display_data.displayWhitePoint_y << std::endl;
         std::cout << "    Desired luminance:          ";
-        std::cout << "Min = " << std::dec << hdrCapabilities.display_data.desired_content_min_luminance;
+        std::cout << "Min = " << static_cast<float>(hdrCapabilities.display_data.desired_content_min_luminance) * 0.0001f;
         std::cout << ", Max = " << std::dec << hdrCapabilities.display_data.desired_content_max_luminance;
         std::cout << ", Max frame avg = " << std::dec << hdrCapabilities.display_data.desired_content_max_frame_average_luminance << std::endl;
 
