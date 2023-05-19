@@ -128,6 +128,14 @@ namespace dxvk {
         return cubinDevice != nullptr;
     }
 
+    std::optional<NvAPI_Status> NvapiD3d12Device::SetCreatePipelineStateOptions(ID3D12Device5* device, const NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS* params) {
+        auto ommDevice = GetOmmDevice(device);
+        if (ommDevice == nullptr)
+            return std::nullopt;
+
+        return static_cast<NvAPI_Status>(ommDevice->SetCreatePipelineStateOptions(params));
+    }
+
     std::optional<NvAPI_Status> NvapiD3d12Device::GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D12Device5* device, NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* params) {
         auto ommDevice = GetOmmDevice(device);
         if (ommDevice == nullptr)

@@ -110,6 +110,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_IsFatbinPTXSupported)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_GetRaytracingCaps)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_SetCreatePipelineStateOptions)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_NotifyOutOfBandCommandQueue)
