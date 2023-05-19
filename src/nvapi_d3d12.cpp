@@ -344,6 +344,29 @@ extern "C" {
         return Ok(str::format(n, " (", type, ")"));
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo(ID3D12Device5* pDevice, NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
+
+        if (pDevice == nullptr || pParams == nullptr)
+            return InvalidArgument(n);
+
+        if (auto result = NvapiD3d12Device::GetRaytracingOpacityMicromapArrayPrebuildInfo(pDevice, pParams); result.has_value()) {
+            auto value = result.value();
+            if (value == NVAPI_OK) {
+                return Ok(n, alreadyLoggedOk);
+            } else {
+                log::info(str::format("<-", n, ": ", value));
+                return value;
+            }
+        }
+
+        return NotSupported(n);
+    }
+
     static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
         // assume that micromaps are not supported, allow only standard stuff to be passed
         if ((nvDesc->flags & ~0x3f) != 0) {
