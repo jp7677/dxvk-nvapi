@@ -196,6 +196,18 @@ namespace dxvk {
         return static_cast<NvAPI_Status>(commandListVer.CommandListExt->RelocateRaytracingOpacityMicromapArray(params));
     }
 
+    std::optional<NvAPI_Status> NvapiD3d12Device::EmitRaytracingOpacityMicromapArrayPostbuildInfo(ID3D12GraphicsCommandList4* commandList, const NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS* params) {
+        auto commandListExt = GetCommandListExt(commandList);
+        if (!commandListExt.has_value())
+            return std::nullopt;
+
+        auto commandListVer = commandListExt.value();
+        if (commandListVer.InterfaceVersion < 2)
+            return std::nullopt;
+
+        return static_cast<NvAPI_Status>(commandListVer.CommandListExt->EmitRaytracingOpacityMicromapArrayPostbuildInfo(params));
+    }
+
     // We are going to have single map for storing devices with extensions D3D12_VK_NVX_BINARY_IMPORT & D3D12_VK_NVX_IMAGE_VIEW_HANDLE.
     // These are specific to NVIDIA and both of these extensions goes together.
     Com<ID3D12DeviceExt> NvapiD3d12Device::GetCubinDevice(ID3D12Device* device) {
