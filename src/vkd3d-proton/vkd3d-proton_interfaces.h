@@ -28,6 +28,7 @@
     inline GUID const& __mingw_uuidof<iface>() { return iface::guid; }
 
 enum D3D12_VK_EXTENSION : uint32_t {
+    D3D12_VK_EXT_OPACITY_MICROMAP = 0x0,
     D3D12_VK_NVX_BINARY_IMPORT = 0x1,
     D3D12_VK_NVX_IMAGE_VIEW_HANDLE = 0x2
 };
@@ -83,6 +84,22 @@ ID3D12DeviceExt : public IUnknown {
         D3D12_UAV_INFO * uav_info) = 0;
 };
 
+MIDL_INTERFACE("11ea7a1a-0f6a-49bf-b612-3e30f8e201de")
+ID3D12DeviceExt1 : public ID3D12DeviceExt {
+    static const GUID guid;
+    virtual HRESULT STDMETHODCALLTYPE GetRaytracingOpacityMicromapArrayPrebuildInfo(
+        void* params) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE SetCreatePipelineStateOptions(
+        const void* params) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE CheckDriverMatchingIdentifierEx(
+        void* params) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE GetRaytracingAccelerationStructurePrebuildInfoEx(
+        void* params) = 0;
+};
+
 MIDL_INTERFACE("77a86b09-2bea-4801-b89a-37648e104af1")
 ID3D12GraphicsCommandListExt : public IUnknown {
     static const GUID guid;
@@ -98,5 +115,23 @@ ID3D12GraphicsCommandListExt : public IUnknown {
         UINT32 param_size) = 0;
 };
 
+MIDL_INTERFACE("77a86b09-2bea-4801-b89a-37648e104af2")
+ID3D12GraphicsCommandListExt1 : public ID3D12GraphicsCommandListExt {
+    static const GUID guid;
+    virtual HRESULT STDMETHODCALLTYPE BuildRaytracingOpacityMicromapArray(
+        void* params) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE RelocateRaytracingOpacityMicromapArray(
+        const void* params) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE EmitRaytracingOpacityMicromapArrayPostbuildInfo(
+        const void* params) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE BuildRaytracingAccelerationStructureEx(
+        const void* params) = 0;
+};
+
 VKD3D_PROTON_GUID(ID3D12DeviceExt)
+VKD3D_PROTON_GUID(ID3D12DeviceExt1)
 VKD3D_PROTON_GUID(ID3D12GraphicsCommandListExt)
+VKD3D_PROTON_GUID(ID3D12GraphicsCommandListExt1)
