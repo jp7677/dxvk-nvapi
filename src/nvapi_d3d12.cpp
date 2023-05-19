@@ -349,9 +349,14 @@ extern "C" {
     }
 
     static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
+        // assume that micromaps are not supported, allow only standard stuff to be passed
+        if ((nvDesc->flags & ~0x3f) != 0) {
+            log::info(str::format("Nonstandard flags passed to acceleration structure build: ", nvDesc->flags));
+            return false;
+        }
+
         d3dDesc->Type = nvDesc->type;
-        // assume that OMM via VK_EXT_opacity_micromap and DMM via VK_NV_displacement_micromap are not supported, allow only standard flags to be passed
-        d3dDesc->Flags = static_cast<D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS>(nvDesc->flags & 0x3f);
+        d3dDesc->Flags = static_cast<D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS>(nvDesc->flags);
         d3dDesc->NumDescs = nvDesc->numDescs;
         d3dDesc->DescsLayout = nvDesc->descsLayout;
 
@@ -361,6 +366,13 @@ extern "C" {
         }
 
         if (d3dDesc->Type == D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL && d3dDesc->DescsLayout == D3D12_ELEMENTS_LAYOUT_ARRAY_OF_POINTERS) {
+            for (unsigned i = 0; i < nvDesc->numDescs; ++i) {
+                if (auto desc = nvDesc->ppGeometryDescs[i]; desc->type != NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX && desc->type != NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX) {
+                    log::info("Triangles with micromap attachment passed to acceleration structure build when micromaps are not supported");
+                    return false;
+                }
+            }
+
             d3dDesc->ppGeometryDescs = reinterpret_cast<const D3D12_RAYTRACING_GEOMETRY_DESC* const*>(nvDesc->ppGeometryDescs);
             return true;
         }
@@ -422,7 +434,7 @@ extern "C" {
         D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS desc{};
 
         if (!ConvertBuildRaytracingAccelerationStructureInputs(pParams->pDesc, geometryDescs, &desc))
-            return InvalidArgument(n);
+            return NotSupported(n);
 
         pDevice->GetRaytracingAccelerationStructurePrebuildInfo(&desc, pParams->pInfo);
 
@@ -454,7 +466,7 @@ extern "C" {
         };
 
         if (!ConvertBuildRaytracingAccelerationStructureInputs(&pParams->pDesc->inputs, geometryDescs, &desc.Inputs))
-            return InvalidArgument(n);
+            return NotSupported(n);
 
         pCommandList->BuildRaytracingAccelerationStructure(&desc, pParams->numPostbuildInfoDescs, pParams->pPostbuildInfoDescs);
 
