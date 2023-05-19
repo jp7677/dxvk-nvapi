@@ -339,6 +339,28 @@ extern "C" {
         return NoImplementation(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D12_CheckDriverMatchingIdentifierEx(ID3D12Device5* pDevice, NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedOk = false;
+
+        if (pDevice == nullptr || pParams == nullptr)
+            return InvalidArgument(n);
+
+        Com<ID3D12DeviceExt1> pDeviceExt;
+        if (!FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&pDeviceExt)))) {
+            auto result = static_cast<NvAPI_Status>(pDeviceExt->CheckDriverMatchingIdentifierEx(pParams));
+
+            if (result == NVAPI_OK) {
+                return Ok(n, alreadyLoggedOk);
+            } else {
+                log::write(str::format(n, ": ", result));
+                return result;
+            }
+        }
+
+        return NoImplementation(n);
+    }
+
     static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
         // assume that micromaps are not supported, allow only standard stuff to be passed
         if ((nvDesc->flags & ~0x3f) != 0) {
