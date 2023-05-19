@@ -24,6 +24,7 @@
 #endif // defined(__GNUC__) || defined(__clang__)
 
 enum D3D12_VK_EXTENSION : uint32_t {
+    D3D12_VK_EXT_OPACITY_MICROMAP = 0x0,
     D3D12_VK_NVX_BINARY_IMPORT = 0x1,
     D3D12_VK_NVX_IMAGE_VIEW_HANDLE = 0x2,
     D3D12_VK_NV_LOW_LATENCY_2 = 0x3,
@@ -83,6 +84,36 @@ ID3D12DeviceExt : public IUnknown {
 
     virtual HRESULT STDMETHODCALLTYPE CaptureUAVInfo(
         D3D12_UAV_INFO * uav_info) = 0;
+};
+
+MIDL_INTERFACE("099a73fd-2199-4f45-bf48-0eb86f6fdb65")
+ID3D12DeviceExt1 : public ID3D12DeviceExt {
+    virtual HRESULT STDMETHODCALLTYPE CreateResourceFromBorrowedHandle(
+        const D3D12_RESOURCE_DESC1* desc,
+        UINT64 vk_handle,
+        ID3D12Resource** resource) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE GetVulkanQueueInfoEx(
+        ID3D12CommandQueue * queue,
+        VkQueue * vk_queue,
+        UINT32 * vk_queue_index,
+        UINT32 * vk_queue_flags,
+        UINT32 * vk_queue_family) = 0;
+};
+
+MIDL_INTERFACE("099a73fd-2199-4f45-bf48-0eb86f6fdb66")
+ID3D12DeviceExt2 : public ID3D12DeviceExt1 {
+    virtual HRESULT STDMETHODCALLTYPE SetCreatePipelineStateOptions(
+        const void* params) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE CheckDriverMatchingIdentifierEx(
+        void* params) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE GetRaytracingAccelerationStructurePrebuildInfoEx(
+        void* params) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE GetRaytracingOpacityMicromapArrayPrebuildInfo(
+        void* params) = 0;
 };
 
 MIDL_INTERFACE("39da4e09-bd1c-4198-9fae-86bbe3be41fd")
@@ -165,6 +196,21 @@ ID3D12GraphicsCommandListExt1 : public ID3D12GraphicsCommandListExt {
         UINT32 raw_params_count) = 0;
 };
 
+MIDL_INTERFACE("d53b0028-afb4-4b65-a4f1-7b0daaa65b50")
+ID3D12GraphicsCommandListExt2 : public ID3D12GraphicsCommandListExt1 {
+    virtual HRESULT STDMETHODCALLTYPE BuildRaytracingAccelerationStructureEx(
+        const void* params) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE BuildRaytracingOpacityMicromapArray(
+        void* params) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE RelocateRaytracingOpacityMicromapArray(
+        const void* params) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE EmitRaytracingOpacityMicromapArrayPostbuildInfo(
+        const void* params) = 0;
+};
+
 MIDL_INTERFACE("40ed3f96-e773-e9bc-fc0c-e95560c99ad6")
 ID3D12CommandQueueExt : public IUnknown {
     virtual HRESULT STDMETHODCALLTYPE NotifyOutOfBandCommandQueue(
@@ -173,9 +219,12 @@ ID3D12CommandQueueExt : public IUnknown {
 
 #ifndef _MSC_VER
 __CRT_UUID_DECL(ID3D12DeviceExt, 0x11ea7a1a, 0x0f6a, 0x49bf, 0xb6, 0x12, 0x3e, 0x30, 0xf8, 0xe2, 0x01, 0xdd);
+__CRT_UUID_DECL(ID3D12DeviceExt1, 0x099a73fd, 0x2199, 0x4f45, 0xbf, 0x48, 0x0e, 0xb8, 0x6f, 0x6f, 0xdb, 0x65);
+__CRT_UUID_DECL(ID3D12DeviceExt2, 0x099a73fd, 0x2199, 0x4f45, 0xbf, 0x48, 0x0e, 0xb8, 0x6f, 0x6f, 0xdb, 0x66);
 __CRT_UUID_DECL(ID3D12DXVKInteropDevice, 0x39da4e09, 0xbd1c, 0x4198, 0x9f, 0xae, 0x86, 0xbb, 0xe3, 0xbe, 0x41, 0xfd);
 __CRT_UUID_DECL(ID3D12DXVKInteropDevice1, 0x902d8115, 0x59eb, 0x4406, 0x95, 0x18, 0xfe, 0x00, 0xf9, 0x91, 0xee, 0x65);
 __CRT_UUID_DECL(ID3D12GraphicsCommandListExt, 0x77a86b09, 0x2bea, 0x4801, 0xb8, 0x9a, 0x37, 0x64, 0x8e, 0x10, 0x4a, 0xf1);
 __CRT_UUID_DECL(ID3D12GraphicsCommandListExt1, 0xd53b0028, 0xafb4, 0x4b65, 0xa4, 0xf1, 0x7b, 0x0d, 0xaa, 0xa6, 0x5b, 0x4f);
+__CRT_UUID_DECL(ID3D12GraphicsCommandListExt2, 0xd53b0028, 0xafb4, 0x4b65, 0xa4, 0xf1, 0x7b, 0x0d, 0xaa, 0xa6, 0x5b, 0x50);
 __CRT_UUID_DECL(ID3D12CommandQueueExt, 0x40ed3f96, 0xe773, 0xe9bc, 0xfc, 0x0c, 0xe9, 0x55, 0x60, 0xc9, 0x9a, 0xd6);
 #endif
