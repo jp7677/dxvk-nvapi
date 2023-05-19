@@ -29,6 +29,8 @@ namespace dxvk {
         static bool CaptureUAVInfo(ID3D12Device* device, NVAPI_UAV_INFO* uavInfo);
         static bool IsFatbinPTXSupported(ID3D12Device* device);
 
+        static std::optional<NvAPI_Status> GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D12Device5* device, NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* params);
+
         static void ClearCacheMaps();
 
       private:
