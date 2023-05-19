@@ -128,6 +128,11 @@ namespace dxvk {
         return cubinDevice != nullptr;
     }
 
+    bool NvapiD3d12Device::IsOpacityMicromapSupported(ID3D12Device* device) {
+        auto ommDevice = GetOmmDevice(device);
+        return ommDevice != nullptr;
+    }
+
     std::optional<NvAPI_Status> NvapiD3d12Device::SetCreatePipelineStateOptions(ID3D12Device5* device, const NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS* params) {
         auto ommDevice = GetOmmDevice(device);
         if (ommDevice == nullptr)
