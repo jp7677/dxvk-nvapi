@@ -457,6 +457,16 @@ extern "C" {
         if (pCommandList == nullptr || pParams == nullptr)
             return InvalidArgument(n);
 
+        if (auto result = NvapiD3d12Device::BuildRaytracingAccelerationStructureEx(pCommandList, pParams); result.has_value()) {
+            auto value = result.value();
+            if (value == NVAPI_OK) {
+                return Ok(n, alreadyLoggedOk);
+            } else {
+                log::info(str::format("<-", n, ": ", value));
+                return value;
+            }
+        }
+
         if (pParams->version != NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER1)
             return IncompatibleStructVersion(n);
 
