@@ -271,12 +271,21 @@ extern "C" {
                 *(NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS*)pData = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
                 break;
 
-            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP:
+            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP: {
                 if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS))
                     return InvalidArgument(n);
 
-                *(NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS*)pData = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE;
+                auto ommCaps = reinterpret_cast<NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS*>(pData);
+                // even though we can check extension support with DeviceExt(0) interface, DeviceExt1 is needed for actual OMM functions
+                Com<ID3D12DeviceExt1> deviceExt;
+
+                if (!FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&deviceExt))) && deviceExt->GetExtensionSupport(D3D12_VK_EXT_OPACITY_MICROMAP))
+                    *ommCaps = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_STANDARD;
+                else
+                    *ommCaps = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE;
+
                 break;
+            }
 
             case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_DISPLACEMENT_MICROMAP:
                 if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS))
