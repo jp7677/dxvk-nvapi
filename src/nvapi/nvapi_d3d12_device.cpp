@@ -136,6 +136,14 @@ namespace dxvk {
         return static_cast<NvAPI_Status>(ommDevice->GetRaytracingAccelerationStructurePrebuildInfoEx(params));
     }
 
+    std::optional<NvAPI_Status> NvapiD3d12Device::GetRaytracingOpacityMicromapArrayPrebuildInfo(ID3D12Device5* device, NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS* params) {
+        auto ommDevice = GetOmmDevice(device);
+        if (ommDevice == nullptr)
+            return std::nullopt;
+
+        return static_cast<NvAPI_Status>(ommDevice->GetRaytracingOpacityMicromapArrayPrebuildInfo(params));
+    }
+
     std::optional<NvAPI_Status> NvapiD3d12Device::BuildRaytracingAccelerationStructureEx(ID3D12GraphicsCommandList4* commandList, const NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS* params) {
         auto commandListExt = GetCommandListExt(commandList);
         if (!commandListExt.has_value())
