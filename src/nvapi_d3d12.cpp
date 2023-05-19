@@ -440,6 +440,28 @@ extern "C" {
         return Ok(n, alreadyLoggedOk);
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D12_BuildRaytracingOpacityMicromapArray(ID3D12GraphicsCommandList4* pCommandList, NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedOk = false;
+
+        if (pCommandList == nullptr || pParams == nullptr)
+            return InvalidArgument(n);
+
+        Com<ID3D12GraphicsCommandListExt1> pCommandListExt;
+        if (!FAILED(pCommandList->QueryInterface(IID_PPV_ARGS(&pCommandListExt)))) {
+            auto result = static_cast<NvAPI_Status>(pCommandListExt->BuildRaytracingOpacityMicromapArray(pParams));
+
+            if (result == NVAPI_OK) {
+                return Ok(n, alreadyLoggedOk);
+            } else {
+                log::write(str::format(n, ": ", result));
+                return result;
+            }
+        }
+
+        return NoImplementation(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS* pParams) {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
