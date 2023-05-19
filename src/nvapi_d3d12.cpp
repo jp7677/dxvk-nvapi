@@ -365,6 +365,18 @@ extern "C" {
         if (pDevice == nullptr || pParams == nullptr)
             return InvalidArgument(n);
 
+        Com<ID3D12DeviceExt1> pDeviceExt;
+        if (!FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&pDeviceExt)))) {
+            auto result = static_cast<NvAPI_Status>(pDeviceExt->GetRaytracingAccelerationStructurePrebuildInfoEx(pParams));
+
+            if (result == NVAPI_OK) {
+                return Ok(n, alreadyLoggedOk);
+            } else {
+                log::write(str::format(n, ": ", result));
+                return result;
+            }
+        }
+
         if (pParams->version != NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS_VER1)
             return IncompatibleStructVersion(n);
 
