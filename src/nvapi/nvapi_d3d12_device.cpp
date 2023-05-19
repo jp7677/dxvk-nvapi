@@ -128,6 +128,14 @@ namespace dxvk {
         return cubinDevice != nullptr;
     }
 
+    std::optional<NvAPI_Status> NvapiD3d12Device::GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D12Device5* device, NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* params) {
+        auto ommDevice = GetOmmDevice(device);
+        if (ommDevice == nullptr)
+            return std::nullopt;
+
+        return static_cast<NvAPI_Status>(ommDevice->GetRaytracingAccelerationStructurePrebuildInfoEx(params));
+    }
+
     // We are going to have single map for storing devices with extensions D3D12_VK_NVX_BINARY_IMPORT & D3D12_VK_NVX_IMAGE_VIEW_HANDLE.
     // These are specific to NVIDIA and both of these extensions goes together.
     Com<ID3D12DeviceExt> NvapiD3d12Device::GetCubinDevice(ID3D12Device* device) {
