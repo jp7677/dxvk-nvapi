@@ -400,6 +400,40 @@ extern "C" {
         return NotSupported(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D12_CheckDriverMatchingIdentifierEx(ID3D12Device5* pDevice, NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
+
+        if (pDevice == nullptr || pParams == nullptr)
+            return InvalidArgument(n);
+
+        if (auto result = NvapiD3d12Device::CheckDriverMatchingIdentifierEx(pDevice, pParams); result.has_value()) {
+            auto value = result.value();
+            switch (value) {
+                case NVAPI_OK:
+                    return Ok(n, alreadyLoggedOk);
+                case NVAPI_INCOMPATIBLE_STRUCT_VERSION:
+                    return IncompatibleStructVersion(n, pParams->version);
+                default:
+                    log::info(str::format("<-", n, ": ", value));
+                    return value;
+            }
+        }
+
+        if (pParams->version != NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS_VER1)
+            return IncompatibleStructVersion(n, pParams->version);
+
+        if (pParams->serializedDataType == NVAPI_D3D12_SERIALIZED_DATA_RAYTRACING_ACCELERATION_STRUCTURE_EX) {
+            pParams->checkStatus = pDevice->CheckDriverMatchingIdentifier(D3D12_SERIALIZED_DATA_RAYTRACING_ACCELERATION_STRUCTURE, pParams->pIdentifierToCheck);
+            return Ok(n, alreadyLoggedOk);
+        }
+
+        return NotSupported(n);
+    }
+
     static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
         // assume that micromaps are not supported, allow only standard stuff to be passed
         if ((nvDesc->flags & ~0x3f) != 0) {
