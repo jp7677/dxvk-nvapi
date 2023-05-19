@@ -29,6 +29,7 @@ namespace dxvk {
         static bool CaptureUAVInfo(ID3D12Device* device, NVAPI_UAV_INFO* uavInfo);
         static bool IsFatbinPTXSupported(ID3D12Device* device);
 
+        static bool IsOpacityMicromapSupported(ID3D12Device* device);
         static std::optional<NvAPI_Status> SetCreatePipelineStateOptions(ID3D12Device5* device, const NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS* params);
         static std::optional<NvAPI_Status> CheckDriverMatchingIdentifierEx(ID3D12Device5* device, NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS* params);
         static std::optional<NvAPI_Status> GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D12Device5* device, NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* params);
