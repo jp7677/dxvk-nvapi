@@ -401,6 +401,18 @@ extern "C" {
         if (pCommandList == nullptr || pParams == nullptr)
             return InvalidArgument(n);
 
+        Com<ID3D12GraphicsCommandListExt1> pCommandListExt;
+        if (!FAILED(pCommandList->QueryInterface(IID_PPV_ARGS(&pCommandListExt)))) {
+            auto result = static_cast<NvAPI_Status>(pCommandListExt->BuildRaytracingAccelerationStructureEx(pParams));
+
+            if (result == NVAPI_OK) {
+                return Ok(n, alreadyLoggedOk);
+            } else {
+                log::write(str::format(n, ": ", result));
+                return result;
+            }
+        }
+
         if (pParams->version != NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER1)
             return IncompatibleStructVersion(n);
 
