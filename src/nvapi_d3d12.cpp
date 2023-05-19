@@ -374,6 +374,32 @@ extern "C" {
         return NotSupported(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D12_SetCreatePipelineStateOptions(ID3D12Device5* pDevice, const NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS* pState) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pState));
+
+        if (pDevice == nullptr || pState == nullptr)
+            return InvalidArgument(n);
+
+        if (auto result = NvapiD3d12Device::SetCreatePipelineStateOptions(pDevice, pState); result.has_value()) {
+            auto value = result.value();
+            switch (value) {
+                case NVAPI_OK:
+                    return Ok(str::format(n, "(", pState->flags, ")"), alreadyLoggedOk);
+                case NVAPI_INCOMPATIBLE_STRUCT_VERSION:
+                    return IncompatibleStructVersion(n, pState->version);
+                default:
+                    log::info(str::format("<-", n, "(", pState->flags, "): ", value));
+                    return value;
+            }
+        }
+
+        return NotSupported(n);
+    }
+
     static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
         // assume that micromaps are not supported, allow only standard stuff to be passed
         if ((nvDesc->flags & ~0x3f) != 0) {
