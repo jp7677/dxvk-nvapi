@@ -9,7 +9,7 @@ namespace dxvk {
     class NvapiD3d12Device {
 
         struct CommandListExtWithVersion {
-            ID3D12GraphicsCommandListExt1* CommandListExt;
+            ID3D12GraphicsCommandListExt2* CommandListExt;
             uint32_t InterfaceVersion;
         };
 
@@ -32,6 +32,7 @@ namespace dxvk {
         static void ClearCacheMaps();
 
       private:
+        inline static std::unordered_map<ID3D12Device*, ID3D12DeviceExt2*> m_ommDeviceMap;
         inline static std::unordered_map<ID3D12Device*, ID3D12DeviceExt*> m_cubinDeviceMap;
         inline static std::unordered_map<ID3D12CommandQueue*, ID3D12CommandQueueExt*> m_commandQueueMap;
         inline static std::unordered_map<ID3D12GraphicsCommandList*, CommandListExtWithVersion> m_commandListMap;
@@ -39,12 +40,16 @@ namespace dxvk {
 
         inline static std::mutex m_commandListMutex;
         inline static std::mutex m_commandQueueMutex;
+        inline static std::mutex m_ommDeviceMutex;
         inline static std::mutex m_cubinDeviceMutex;
         inline static std::mutex m_cubinSmemMutex;
 
+        [[nodiscard]] static Com<ID3D12DeviceExt2> GetOmmDevice(ID3D12Device* device);
         [[nodiscard]] static Com<ID3D12DeviceExt> GetCubinDevice(ID3D12Device* device);
-        [[nodiscard]] static Com<ID3D12DeviceExt> GetDeviceExt(ID3D12Device* device, D3D12_VK_EXTENSION extension);
         [[nodiscard]] static Com<ID3D12CommandQueueExt> GetCommandQueueExt(ID3D12CommandQueue* commandQueue);
         [[nodiscard]] static std::optional<CommandListExtWithVersion> GetCommandListExt(ID3D12GraphicsCommandList* commandList);
+
+        template <typename T>
+        [[nodiscard]] static Com<T> GetDeviceExt(ID3D12Device* device, D3D12_VK_EXTENSION extension);
     };
 }
