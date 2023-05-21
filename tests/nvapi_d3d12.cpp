@@ -34,6 +34,14 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt*>(&device))
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
+    ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt1), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt1*>(&device))
+        .LR_SIDE_EFFECT(deviceRefCount++)
+        .RETURN(S_OK);
+    ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt2), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt2*>(&device))
+        .LR_SIDE_EFFECT(deviceRefCount++)
+        .RETURN(S_OK);
     ALLOW_CALL(device, AddRef())
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(deviceRefCount);
@@ -56,7 +64,11 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(commandListRefCount++)
         .RETURN(S_OK);
     ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt1), _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt*>(&commandList))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt1*>(&commandList))
+        .LR_SIDE_EFFECT(commandListRefCount++)
+        .RETURN(S_OK);
+    ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt2), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt2*>(&commandList))
         .LR_SIDE_EFFECT(commandListRefCount++)
         .RETURN(S_OK);
     ALLOW_CALL(commandList, AddRef())
@@ -102,9 +114,15 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     SECTION("D3D12 methods without VKD3D-Proton return error") {
         ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt), _))
             .RETURN(E_NOINTERFACE);
+        ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt1), _))
+            .RETURN(E_NOINTERFACE);
+        ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt2), _))
+            .RETURN(E_NOINTERFACE);
         ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt), _))
             .RETURN(E_NOINTERFACE);
         ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt1), _))
+            .RETURN(E_NOINTERFACE);
+        ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt2), _))
             .RETURN(E_NOINTERFACE);
 
         FORBID_CALL(device, CreateCubinComputeShaderWithName(_, _, _, _, _, _, _));
@@ -112,8 +130,18 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         FORBID_CALL(device, GetCudaTextureObject(_, _, _));
         FORBID_CALL(device, GetCudaSurfaceObject(_, _));
         FORBID_CALL(device, CaptureUAVInfo(_));
+        FORBID_CALL(device, CreateResourceFromBorrowedHandle(_, _, _));
+        FORBID_CALL(device, GetVulkanQueueInfoEx(_, _, _, _, _));
+        FORBID_CALL(device, SetCreatePipelineStateOptions(_));
+        FORBID_CALL(device, CheckDriverMatchingIdentifierEx(_));
+        FORBID_CALL(device, GetRaytracingAccelerationStructurePrebuildInfoEx(_));
+        FORBID_CALL(device, GetRaytracingOpacityMicromapArrayPrebuildInfo(_));
         FORBID_CALL(commandList, LaunchCubinShader(_, _, _, _, _, _));
         FORBID_CALL(commandList, LaunchCubinShaderEx(_, _, _, _, _, _, _, _, _));
+        FORBID_CALL(commandList, BuildRaytracingAccelerationStructureEx(_));
+        FORBID_CALL(commandList, BuildRaytracingOpacityMicromapArray(_));
+        FORBID_CALL(commandList, RelocateRaytracingOpacityMicromapArray(_));
+        FORBID_CALL(commandList, EmitRaytracingOpacityMicromapArrayPostbuildInfo(_));
 
         const void* cubinData = nullptr;
         NVDX_ObjectHandle handle{};
@@ -134,11 +162,46 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(NvAPI_D3D12_IsFatbinPTXSupported(static_cast<ID3D12Device*>(&device), &isPTXSupported) == NVAPI_ERROR);
 
         REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), handle, 0, 0, 0, nullptr, 0) == NVAPI_ERROR);
+
+        {
+            NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS caps = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_STANDARD;
+            REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
+            REQUIRE(caps == NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE);
+        }
+        {
+            NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS params{};
+            REQUIRE(NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_OK);
+        }
+        {
+            NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS params{};
+            params.version = NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS_VER1;
+            params.flags = NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT;
+            REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_OK);
+        }
+        {
+            NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS params{};
+            params.version = NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS_VER1;
+            params.serializedDataType = NVAPI_D3D12_SERIALIZED_DATA_RAYTRACING_OPACITY_MICROMAP_ARRAY_EX;
+            REQUIRE(NvAPI_D3D12_CheckDriverMatchingIdentifierEx(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_OK);
+        }
+        {
+            NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS params{};
+            REQUIRE(NvAPI_D3D12_BuildRaytracingOpacityMicromapArray(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_OK);
+        }
+        {
+            NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS params{};
+            REQUIRE(NvAPI_D3D12_RelocateRaytracingOpacityMicromapArray(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_OK);
+        }
+        {
+            NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS params{};
+            REQUIRE(NvAPI_D3D12_EmitRaytracingOpacityMicromapArrayPostbuildInfo(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_OK);
+        }
+
         REQUIRE(deviceRefCount == 0);
         REQUIRE(commandListRefCount == 0);
     }
 
-    SECTION("D3D12 methods without cubin extension return error") {
+    SECTION("D3D12 cubin methods without cubin extension return error") {
         ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_NVX_BINARY_IMPORT))
             .RETURN(false);
 
@@ -165,6 +228,36 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(NvAPI_D3D12_CaptureUAVInfo(static_cast<ID3D12Device*>(&device), &info) == NVAPI_ERROR);
         bool isPTXSupported;
         REQUIRE(NvAPI_D3D12_IsFatbinPTXSupported(static_cast<ID3D12Device*>(&device), &isPTXSupported) == NVAPI_ERROR);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
+    }
+
+    SECTION("D3D12 OMM methods without OMM extension return not-supported") {
+        ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_EXT_OPACITY_MICROMAP))
+            .RETURN(false);
+
+        FORBID_CALL(device, SetCreatePipelineStateOptions(_));
+        FORBID_CALL(device, CheckDriverMatchingIdentifierEx(_));
+        FORBID_CALL(device, GetRaytracingAccelerationStructurePrebuildInfoEx(_));
+        FORBID_CALL(device, GetRaytracingOpacityMicromapArrayPrebuildInfo(_));
+
+        {
+            NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS params{};
+            REQUIRE(NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_OK);
+        }
+        {
+            NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS params{};
+            params.version = NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS_VER1;
+            params.flags = NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT;
+            REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_OK);
+        }
+        {
+            NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS params{};
+            params.version = NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS_VER1;
+            params.serializedDataType = NVAPI_D3D12_SERIALIZED_DATA_RAYTRACING_OPACITY_MICROMAP_ARRAY_EX;
+            REQUIRE(NvAPI_D3D12_CheckDriverMatchingIdentifierEx(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_OK);
+        }
+
         REQUIRE(deviceRefCount == 0);
         REQUIRE(commandListRefCount == 0);
     }
@@ -482,6 +575,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     SECTION("Launch CuBIN without ID3D12GraphicsCommandListExt1 returns OK") {
         ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt1), _))
             .RETURN(E_NOINTERFACE);
+        ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt2), _))
+            .RETURN(E_NOINTERFACE);
 
         auto shaderHandle = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0xbadcf00d);
         auto blockX = 1U;
@@ -505,8 +600,20 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(caps == NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE);
     }
 
-    SECTION("GetRaytracingCaps returns OK and claims that Opacity Micromap is not supported") {
-        NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS caps;
+    SECTION("GetRaytracingCaps returns OK and claims that Opacity Micromaps are not supported if ID3D12DeviceExt2 interface can't be found") {
+        ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt2), _))
+            .RETURN(E_NOINTERFACE);
+
+        NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS caps = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_STANDARD;
+        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
+        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE);
+    }
+
+    SECTION("GetRaytracingCaps returns OK and claims that Opacity Micromaps are not supported if OMM extension is not supported") {
+        ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_EXT_OPACITY_MICROMAP))
+            .RETURN(false);
+
+        NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS caps = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_STANDARD;
         REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
         REQUIRE(caps == NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE);
     }
@@ -517,7 +624,10 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(caps == NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_NONE);
     }
 
-    SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx succeeds") {
+    SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx succeeds when Opacity Micromaps are not supported") {
+        ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_EXT_OPACITY_MICROMAP))
+            .RETURN(false);
+
         SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx returns OK") {
             NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX desc{};
             D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info{};
@@ -649,7 +759,182 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         }
     }
 
-    SECTION("BuildRaytracingAccelerationStructureEx succeeds") {
+    SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx fails when Opacity Micromaps are used but they are not supported") {
+        ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_EXT_OPACITY_MICROMAP))
+            .RETURN(false);
+
+        FORBID_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, _));
+        FORBID_CALL(device, GetRaytracingAccelerationStructurePrebuildInfoEx(_));
+
+        NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx{};
+        NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX desc{};
+        D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info{};
+        NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS params{};
+        params.version = NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS_VER1;
+        params.pDesc = &desc;
+        params.pInfo = &info;
+
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with allow OMM update flag") {
+            desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+            desc.flags = NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_OMM_UPDATE_EX;
+
+            REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_OK);
+        }
+
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with allow disable OMMs flag") {
+            desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+            desc.flags = NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_DISABLE_OMMS_EX;
+
+            REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_OK);
+        }
+
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with allow OMM opacity states update flag") {
+            desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+            desc.flags = NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_OMM_OPACITY_STATES_UPDATE_EX;
+
+            REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_OK);
+        }
+
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with BLAS for array and OMM triangles") {
+            desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+            desc.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+            desc.numDescs = 1;
+            desc.pGeometryDescs = &geometryDescEx;
+            desc.geometryDescStrideInBytes = sizeof(geometryDescEx);
+            geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX;
+
+            REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_OK);
+        }
+
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with BLAS for pointer array and OMM triangles") {
+            NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX* geometryDescExArray[] = {&geometryDescEx};
+            desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+            desc.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY_OF_POINTERS;
+            desc.numDescs = 1;
+            desc.ppGeometryDescs = geometryDescExArray;
+            desc.geometryDescStrideInBytes = sizeof(geometryDescEx);
+            geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX;
+
+            REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_OK);
+        }
+    }
+
+    SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx succeeds when Opacity Micromaps are supported") {
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx returns OK and calls to ID3D12DeviceExt2") {
+            NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx{};
+            NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX desc{};
+            D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info{};
+            NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS params{};
+            params.version = NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS_VER1;
+            params.pDesc = &desc;
+            params.pInfo = &info;
+
+            REQUIRE_CALL(device, GetRaytracingAccelerationStructurePrebuildInfoEx(&params))
+                .RETURN(NVAPI_OK)
+                .TIMES(1);
+
+            SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with TLAS") {
+                desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+                desc.instanceDescs = D3D12_GPU_VIRTUAL_ADDRESS{};
+                desc.flags = NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_OMM_UPDATE_EX;
+
+                REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+            }
+
+            SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with BLAS for pointer array") {
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX* geometryDescExArray[] = {&geometryDescEx};
+                desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+                desc.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY_OF_POINTERS;
+                desc.ppGeometryDescs = geometryDescExArray;
+                desc.geometryDescStrideInBytes = sizeof(geometryDescEx);
+                desc.flags = NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_DISABLE_OMMS_EX;
+
+                REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+            }
+
+            SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with BLAS for array") {
+                desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+                desc.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+                desc.numDescs = 1;
+                desc.pGeometryDescs = &geometryDescEx;
+                desc.geometryDescStrideInBytes = sizeof(geometryDescEx);
+                desc.flags = NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_OMM_OPACITY_STATES_UPDATE_EX;
+
+                SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx for OMM triangles geometry") {
+                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX;
+                    geometryDescEx.ommTriangles.triangles.IndexBuffer = D3D12_GPU_VIRTUAL_ADDRESS{};
+                    geometryDescEx.ommTriangles.ommAttachment.opacityMicromapArray = D3D12_GPU_VIRTUAL_ADDRESS{};
+
+                    REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                }
+
+                SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx for triangles geometry") {
+                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                    geometryDescEx.triangles.IndexBuffer = D3D12_GPU_VIRTUAL_ADDRESS{};
+
+                    REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                }
+
+                SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with AABBs geometry") {
+                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
+                    geometryDescEx.aabbs.AABBCount = 3;
+
+                    REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                }
+            }
+        }
+    }
+
+    SECTION("GetRaytracingOpacityMicromapArrayPrebuildInfo returns OK") {
+        NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS params{};
+
+        REQUIRE_CALL(device, GetRaytracingOpacityMicromapArrayPrebuildInfo(&params))
+            .RETURN(NVAPI_OK)
+            .TIMES(1);
+
+        REQUIRE(NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
+    }
+
+    SECTION("SetCreatePipelineStateOptions returns OK") {
+        NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS params{};
+        params.version = NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS_VER1;
+        params.flags = NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT;
+
+        REQUIRE_CALL(device, SetCreatePipelineStateOptions(&params))
+            .RETURN(NVAPI_OK)
+            .TIMES(1);
+
+        REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
+    }
+
+    SECTION("CheckDriverMatchingIdentifierEx returns OK") {
+        NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS params{};
+        params.version = NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS_VER1;
+        params.serializedDataType = NVAPI_D3D12_SERIALIZED_DATA_RAYTRACING_OPACITY_MICROMAP_ARRAY_EX;
+
+        REQUIRE_CALL(device, CheckDriverMatchingIdentifierEx(&params))
+            .RETURN(NVAPI_OK)
+            .TIMES(1);
+
+        REQUIRE(NvAPI_D3D12_CheckDriverMatchingIdentifierEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
+    }
+
+    SECTION("GetRaytracingCaps returns OK and claims that Opacity Micromaps are supported") {
+        NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS caps = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE;
+        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
+        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_STANDARD);
+    }
+
+    SECTION("BuildRaytracingAccelerationStructureEx succeeds when ID3D12GraphicsCommandListExt2 interface can't be found") {
+        ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt2), _))
+            .RETURN(E_NOINTERFACE);
+
         SECTION("BuildRaytracingAccelerationStructureEx returns OK") {
             NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC_EX desc{};
             NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS params{};
@@ -795,6 +1080,164 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             params.version = NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER;
             REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
+    }
+
+    SECTION("BuildRaytracingAccelerationStructureEx fails when Opacity Micromaps are used but ID3D12GraphicsCommandListExt2 interface can't be found") {
+        ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt2), _))
+            .RETURN(E_NOINTERFACE);
+
+        FORBID_CALL(commandList, BuildRaytracingAccelerationStructure(_, _, _));
+        FORBID_CALL(commandList, BuildRaytracingAccelerationStructureEx(_));
+
+        NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx{};
+        NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC_EX desc{};
+        NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS params{};
+        params.version = NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER1;
+        params.pDesc = &desc;
+
+        SECTION("BuildRaytracingAccelerationStructureEx with allow OMM update flag") {
+            desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+            desc.inputs.flags = NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_OMM_UPDATE_EX;
+
+            REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_OK);
+        }
+
+        SECTION("BuildRaytracingAccelerationStructureEx with allow disable OMMs flag") {
+            desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+            desc.inputs.flags = NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_DISABLE_OMMS_EX;
+
+            REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_OK);
+        }
+
+        SECTION("BuildRaytracingAccelerationStructureEx with allow OMM opacity states update flag") {
+            desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+            desc.inputs.flags = NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_OMM_OPACITY_STATES_UPDATE_EX;
+
+            REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_OK);
+        }
+
+        SECTION("BuildRaytracingAccelerationStructureEx with BLAS for array and OMM triangles") {
+            desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+            desc.inputs.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+            desc.inputs.numDescs = 1;
+            desc.inputs.pGeometryDescs = &geometryDescEx;
+            desc.inputs.geometryDescStrideInBytes = sizeof(geometryDescEx);
+            geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX;
+
+            REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_OK);
+        }
+
+        SECTION("BuildRaytracingAccelerationStructureEx with BLAS for pointer array and OMM triangles") {
+            NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX* geometryDescExArray[] = {&geometryDescEx};
+            desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+            desc.inputs.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY_OF_POINTERS;
+            desc.inputs.numDescs = 1;
+            desc.inputs.ppGeometryDescs = geometryDescExArray;
+            desc.inputs.geometryDescStrideInBytes = sizeof(geometryDescEx);
+            geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX;
+
+            REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_OK);
+        }
+    }
+
+    SECTION("BuildRaytracingAccelerationStructureEx succeeds when ID3D12GraphicsCommandListExt2 interface can be found") {
+        SECTION("BuildRaytracingAccelerationStructureEx returns OK and calls to ID3D12GraphicsCommandListExt2") {
+            NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx{};
+            NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC_EX desc{};
+            NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS params{};
+            params.version = NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER1;
+            params.pDesc = &desc;
+
+            REQUIRE_CALL(commandList, BuildRaytracingAccelerationStructureEx(&params))
+                .RETURN(NVAPI_OK)
+                .TIMES(1);
+
+            SECTION("BuildRaytracingAccelerationStructureEx with TLAS") {
+                desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+                desc.inputs.instanceDescs = D3D12_GPU_VIRTUAL_ADDRESS{};
+                desc.inputs.flags = NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_OMM_UPDATE_EX;
+
+                REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+            }
+
+            SECTION("BuildRaytracingAccelerationStructureEx with BLAS for pointer array") {
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX* geometryDescExArray[] = {&geometryDescEx};
+                desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+                desc.inputs.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY_OF_POINTERS;
+                desc.inputs.ppGeometryDescs = geometryDescExArray;
+                desc.inputs.geometryDescStrideInBytes = sizeof(geometryDescEx);
+                desc.inputs.flags = NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_DISABLE_OMMS_EX;
+
+                REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+            }
+
+            SECTION("BuildRaytracingAccelerationStructureEx with BLAS for array") {
+                desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+                desc.inputs.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+                desc.inputs.numDescs = 1;
+                desc.inputs.pGeometryDescs = &geometryDescEx;
+                desc.inputs.geometryDescStrideInBytes = sizeof(geometryDescEx);
+                desc.inputs.flags = NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_OMM_OPACITY_STATES_UPDATE_EX;
+
+                SECTION("BuildRaytracingAccelerationStructureEx for OMM triangles geometry") {
+                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX;
+                    geometryDescEx.ommTriangles.triangles.IndexBuffer = D3D12_GPU_VIRTUAL_ADDRESS{};
+                    geometryDescEx.ommTriangles.ommAttachment.opacityMicromapArray = D3D12_GPU_VIRTUAL_ADDRESS{};
+
+                    REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+                }
+
+                SECTION("BuildRaytracingAccelerationStructureEx for triangles geometry") {
+                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                    geometryDescEx.triangles.IndexBuffer = D3D12_GPU_VIRTUAL_ADDRESS{};
+
+                    REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+                }
+
+                SECTION("BuildRaytracingAccelerationStructureEx for AABBs geometry") {
+                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
+                    geometryDescEx.aabbs.AABBCount = 3;
+
+                    REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+                }
+            }
+        }
+    }
+
+    SECTION("BuildRaytracingOpacityMicromapArray returns OK") {
+        NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS params{};
+
+        REQUIRE_CALL(commandList, BuildRaytracingOpacityMicromapArray(&params))
+            .RETURN(NVAPI_OK)
+            .TIMES(1);
+
+        REQUIRE(NvAPI_D3D12_BuildRaytracingOpacityMicromapArray(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
+    }
+
+    SECTION("RelocateRaytracingOpacityMicromapArray returns OK") {
+        NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS params{};
+
+        REQUIRE_CALL(commandList, RelocateRaytracingOpacityMicromapArray(&params))
+            .RETURN(NVAPI_OK)
+            .TIMES(1);
+
+        REQUIRE(NvAPI_D3D12_RelocateRaytracingOpacityMicromapArray(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
+    }
+
+    SECTION("EmitRaytracingOpacityMicromapArrayPostbuildInfo returns OK") {
+        NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS params{};
+
+        REQUIRE_CALL(commandList, EmitRaytracingOpacityMicromapArrayPostbuildInfo(&params))
+            .RETURN(NVAPI_OK)
+            .TIMES(1);
+
+        REQUIRE(NvAPI_D3D12_EmitRaytracingOpacityMicromapArrayPostbuildInfo(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("D3DLowLatencyDevice methods succeed") {
