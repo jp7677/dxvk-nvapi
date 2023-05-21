@@ -345,7 +345,15 @@ extern "C" {
             }
         }
 
-        return NoImplementation(n);
+        if (pParams->version != NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS_VER1)
+            return IncompatibleStructVersion(n);
+
+        if (pParams->serializedDataType == NVAPI_D3D12_SERIALIZED_DATA_RAYTRACING_ACCELERATION_STRUCTURE_EX) {
+            pParams->checkStatus = pDevice->CheckDriverMatchingIdentifier(D3D12_SERIALIZED_DATA_RAYTRACING_ACCELERATION_STRUCTURE, pParams->pIdentifierToCheck);
+            return Ok(n, alreadyLoggedOk);
+        }
+
+        return NotSupported(n);
     }
 
     static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
