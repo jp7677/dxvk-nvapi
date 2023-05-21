@@ -136,15 +136,29 @@ namespace dxvk {
         if (it != m_cubinDeviceMap.end())
             return it->second;
 
-        auto cubinDevice = GetDeviceExt(device, D3D12_VK_NVX_BINARY_IMPORT);
+        auto cubinDevice = GetDeviceExt<ID3D12DeviceExt>(device, D3D12_VK_NVX_BINARY_IMPORT);
         if (cubinDevice != nullptr)
             m_cubinDeviceMap.emplace(device, cubinDevice.ptr());
 
         return cubinDevice;
     }
 
-    Com<ID3D12DeviceExt> NvapiD3d12Device::GetDeviceExt(ID3D12Device* device, D3D12_VK_EXTENSION extension) {
-        Com<ID3D12DeviceExt> deviceExt;
+    Com<ID3D12DeviceExt2> NvapiD3d12Device::GetOmmDevice(ID3D12Device* device) {
+        std::scoped_lock lock(m_ommDeviceMutex);
+        auto it = m_ommDeviceMap.find(device);
+        if (it != m_ommDeviceMap.end())
+            return it->second;
+
+        auto ommDevice = GetDeviceExt<ID3D12DeviceExt2>(device, D3D12_VK_EXT_OPACITY_MICROMAP);
+        if (ommDevice != nullptr)
+            m_ommDeviceMap.emplace(device, ommDevice.ptr());
+
+        return ommDevice;
+    }
+
+    template <typename T>
+    Com<T> NvapiD3d12Device::GetDeviceExt(ID3D12Device* device, D3D12_VK_EXTENSION extension) {
+        Com<T> deviceExt;
         if (FAILED(device->QueryInterface(IID_PPV_ARGS(&deviceExt))))
             return nullptr;
 
@@ -176,15 +190,21 @@ namespace dxvk {
         if (it != m_commandListMap.end())
             return it->second;
 
+        Com<ID3D12GraphicsCommandListExt2> commandListExt2 = nullptr;
+        if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt2)))) {
+            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{commandListExt2.ptr(), 2};
+            return std::make_optional(m_commandListMap.emplace(commandList, cmdListVer).first->second);
+        }
+
         Com<ID3D12GraphicsCommandListExt1> commandListExt1 = nullptr;
         if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt1)))) {
-            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{commandListExt1.ptr(), 1};
+            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{reinterpret_cast<ID3D12GraphicsCommandListExt2*>(commandListExt1.ptr()), 1};
             return std::make_optional(m_commandListMap.emplace(commandList, cmdListVer).first->second);
         }
 
         Com<ID3D12GraphicsCommandListExt> commandListExt = nullptr;
         if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt)))) {
-            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{reinterpret_cast<ID3D12GraphicsCommandListExt1*>(commandListExt.ptr()), 0};
+            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{reinterpret_cast<ID3D12GraphicsCommandListExt2*>(commandListExt.ptr()), 0};
             return std::make_optional(m_commandListMap.emplace(commandList, cmdListVer).first->second);
         }
 
