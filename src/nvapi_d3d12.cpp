@@ -260,14 +260,9 @@ extern "C" {
                 if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS))
                     return InvalidArgument(n);
 
-                auto ommCaps = reinterpret_cast<NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS*>(pData);
-                // even though we can check extension support with DeviceExt(0) interface, DeviceExt1 is needed for actual OMM functions
-                Com<ID3D12DeviceExt1> deviceExt;
-
-                if (!FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&deviceExt))) && deviceExt->GetExtensionSupport(D3D12_VK_EXT_OPACITY_MICROMAP))
-                    *ommCaps = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_STANDARD;
-                else
-                    *ommCaps = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE;
+                *(NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS*)pData = NvapiD3d12Device::AreOpacityMicromapsSupported(pDevice)
+                    ? NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_STANDARD
+                    : NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE;
 
                 break;
             }
@@ -286,19 +281,17 @@ extern "C" {
         if (pDevice == nullptr || pParams == nullptr)
             return InvalidArgument(n);
 
-        Com<ID3D12DeviceExt1> pDeviceExt;
-        if (!FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&pDeviceExt)))) {
-            auto result = static_cast<NvAPI_Status>(pDeviceExt->GetRaytracingOpacityMicromapArrayPrebuildInfo(pParams));
-
-            if (result == NVAPI_OK) {
+        if (auto result = NvapiD3d12Device::GetRaytracingOpacityMicromapArrayPrebuildInfo(pDevice, pParams); result.has_value()) {
+            auto value = result.value();
+            if (value == NVAPI_OK) {
                 return Ok(n, alreadyLoggedOk);
             } else {
-                log::write(str::format(n, ": ", result));
-                return result;
+                log::write(str::format(n, ": ", value));
+                return value;
             }
         }
 
-        return NoImplementation(n);
+        return NotSupported(n);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_SetCreatePipelineStateOptions(ID3D12Device5* pDevice, const NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS* pState) {
@@ -311,19 +304,17 @@ extern "C" {
         if (pState->version != NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS_VER1)
             return IncompatibleStructVersion(n);
 
-        Com<ID3D12DeviceExt1> pDeviceExt;
-        if (!FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&pDeviceExt)))) {
-            auto result = static_cast<NvAPI_Status>(pDeviceExt->SetCreatePipelineStateOptions(pState));
-
-            if (result == NVAPI_OK) {
+        if (auto result = NvapiD3d12Device::SetCreatePipelineStateOptions(pDevice, pState); result.has_value()) {
+            auto value = result.value();
+            if (value == NVAPI_OK) {
                 return Ok(str::format(n, "(", pState->flags, ")"), alreadyLoggedOk);
             } else {
-                log::write(str::format(n, "(", pState->flags, "): ", result));
-                return result;
+                log::write(str::format(n, "(", pState->flags, "): ", value));
+                return value;
             }
         }
 
-        return NoImplementation(n);
+        return NotSupported(str::format(n, "(", pState->flags, ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_CheckDriverMatchingIdentifierEx(ID3D12Device5* pDevice, NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS* pParams) {
@@ -333,15 +324,13 @@ extern "C" {
         if (pDevice == nullptr || pParams == nullptr)
             return InvalidArgument(n);
 
-        Com<ID3D12DeviceExt1> pDeviceExt;
-        if (!FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&pDeviceExt)))) {
-            auto result = static_cast<NvAPI_Status>(pDeviceExt->CheckDriverMatchingIdentifierEx(pParams));
-
-            if (result == NVAPI_OK) {
+        if (auto result = NvapiD3d12Device::CheckDriverMatchingIdentifierEx(pDevice, pParams); result.has_value()) {
+            auto value = result.value();
+            if (value == NVAPI_OK) {
                 return Ok(n, alreadyLoggedOk);
             } else {
-                log::write(str::format(n, ": ", result));
-                return result;
+                log::write(str::format(n, ": ", value));
+                return value;
             }
         }
 
@@ -428,15 +417,13 @@ extern "C" {
         if (pDevice == nullptr || pParams == nullptr)
             return InvalidArgument(n);
 
-        Com<ID3D12DeviceExt1> pDeviceExt;
-        if (!FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&pDeviceExt)))) {
-            auto result = static_cast<NvAPI_Status>(pDeviceExt->GetRaytracingAccelerationStructurePrebuildInfoEx(pParams));
-
-            if (result == NVAPI_OK) {
+        if (auto result = NvapiD3d12Device::GetRaytracingAccelerationStructurePrebuildInfoEx(pDevice, pParams); result.has_value()) {
+            auto value = result.value();
+            if (value == NVAPI_OK) {
                 return Ok(n, alreadyLoggedOk);
             } else {
-                log::write(str::format(n, ": ", result));
-                return result;
+                log::write(str::format(n, ": ", value));
+                return value;
             }
         }
 
@@ -464,19 +451,17 @@ extern "C" {
         if (pCommandList == nullptr || pParams == nullptr)
             return InvalidArgument(n);
 
-        Com<ID3D12GraphicsCommandListExt1> pCommandListExt;
-        if (!FAILED(pCommandList->QueryInterface(IID_PPV_ARGS(&pCommandListExt)))) {
-            auto result = static_cast<NvAPI_Status>(pCommandListExt->BuildRaytracingOpacityMicromapArray(pParams));
-
-            if (result == NVAPI_OK) {
+        if (auto result = NvapiD3d12Device::BuildRaytracingOpacityMicromapArray(pCommandList, pParams); result.has_value()) {
+            auto value = result.value();
+            if (value == NVAPI_OK) {
                 return Ok(n, alreadyLoggedOk);
             } else {
-                log::write(str::format(n, ": ", result));
-                return result;
+                log::write(str::format(n, ": ", value));
+                return value;
             }
         }
 
-        return NoImplementation(n);
+        return NotSupported(n);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_RelocateRaytracingOpacityMicromapArray(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS* pParams) {
@@ -486,19 +471,17 @@ extern "C" {
         if (pCommandList == nullptr || pParams == nullptr)
             return InvalidArgument(n);
 
-        Com<ID3D12GraphicsCommandListExt1> pCommandListExt;
-        if (!FAILED(pCommandList->QueryInterface(IID_PPV_ARGS(&pCommandListExt)))) {
-            auto result = static_cast<NvAPI_Status>(pCommandListExt->RelocateRaytracingOpacityMicromapArray(pParams));
-
-            if (result == NVAPI_OK) {
+        if (auto result = NvapiD3d12Device::RelocateRaytracingOpacityMicromapArray(pCommandList, pParams); result.has_value()) {
+            auto value = result.value();
+            if (value == NVAPI_OK) {
                 return Ok(n, alreadyLoggedOk);
             } else {
-                log::write(str::format(n, ": ", result));
-                return result;
+                log::write(str::format(n, ": ", value));
+                return value;
             }
         }
 
-        return NoImplementation(n);
+        return NotSupported(n);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_EmitRaytracingOpacityMicromapArrayPostbuildInfo(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS* pParams) {
@@ -508,19 +491,17 @@ extern "C" {
         if (pCommandList == nullptr || pParams == nullptr)
             return InvalidArgument(n);
 
-        Com<ID3D12GraphicsCommandListExt1> pCommandListExt;
-        if (!FAILED(pCommandList->QueryInterface(IID_PPV_ARGS(&pCommandListExt)))) {
-            auto result = static_cast<NvAPI_Status>(pCommandListExt->EmitRaytracingOpacityMicromapArrayPostbuildInfo(pParams));
-
-            if (result == NVAPI_OK) {
+        if (auto result = NvapiD3d12Device::EmitRaytracingOpacityMicromapArrayPostbuildInfo(pCommandList, pParams); result.has_value()) {
+            auto value = result.value();
+            if (value == NVAPI_OK) {
                 return Ok(n, alreadyLoggedOk);
             } else {
-                log::write(str::format(n, ": ", result));
-                return result;
+                log::write(str::format(n, ": ", value));
+                return value;
             }
         }
 
-        return NoImplementation(n);
+        return NotSupported(n);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS* pParams) {
@@ -530,15 +511,13 @@ extern "C" {
         if (pCommandList == nullptr || pParams == nullptr)
             return InvalidArgument(n);
 
-        Com<ID3D12GraphicsCommandListExt1> pCommandListExt;
-        if (!FAILED(pCommandList->QueryInterface(IID_PPV_ARGS(&pCommandListExt)))) {
-            auto result = static_cast<NvAPI_Status>(pCommandListExt->BuildRaytracingAccelerationStructureEx(pParams));
-
-            if (result == NVAPI_OK) {
+        if (auto result = NvapiD3d12Device::BuildRaytracingAccelerationStructureEx(pCommandList, pParams); result.has_value()) {
+            auto value = result.value();
+            if (value == NVAPI_OK) {
                 return Ok(n, alreadyLoggedOk);
             } else {
-                log::write(str::format(n, ": ", result));
-                return result;
+                log::write(str::format(n, ": ", value));
+                return value;
             }
         }
 
