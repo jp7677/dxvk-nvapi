@@ -89,9 +89,6 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == nullptr)
-            return InvalidArgument(n);
-
         NvapiAdapter* adapter = nullptr;
         for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++)
             if (nvapiAdapterRegistry->GetAdapter(i)->GetBoardId() == gpuId)
