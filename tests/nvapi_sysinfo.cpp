@@ -260,23 +260,10 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             }
         }
 
-        SECTION("CudaEnumComputeCapableGpus (V2) returns OK") {
+        SECTION("CudaEnumComputeCapableGpus (V2) returns incompatible-struct-version") {
             NV_COMPUTE_GPU_TOPOLOGY_V2 gpuTopology;
             gpuTopology.version = NV_COMPUTE_GPU_TOPOLOGY_VER;
-            gpuTopology.computeGpus = new NV_COMPUTE_GPU[1];
-            REQUIRE(NvAPI_GPU_CudaEnumComputeCapableGpus(&gpuTopology) == NVAPI_OK);
-            REQUIRE(gpuTopology.gpuCount == args.cudaGpuCount);
-            if (gpuTopology.gpuCount == 1) {
-                REQUIRE(gpuTopology.computeGpus[0].hPhysicalGpu == handle);
-                REQUIRE(gpuTopology.computeGpus[0].flags == 0x0b);
-            }
-            delete gpuTopology.computeGpus;
-        }
-
-        SECTION("CudaEnumComputeCapableGpus (V2) without set compute-gpus returns invalid-argument") {
-            NV_COMPUTE_GPU_TOPOLOGY_V2 gpuTopology{};
-            gpuTopology.version = NV_COMPUTE_GPU_TOPOLOGY_VER;
-            REQUIRE(NvAPI_GPU_CudaEnumComputeCapableGpus(&gpuTopology) == NVAPI_INVALID_ARGUMENT);
+            REQUIRE(NvAPI_GPU_CudaEnumComputeCapableGpus(&gpuTopology) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
 
         ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "");
