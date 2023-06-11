@@ -43,6 +43,8 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
     }
 
     SECTION("Initialize returns device-not-found when DXVK NVAPI hack is enabled") {
+        ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "");
+
         ALLOW_CALL(adapter, GetDesc1(_))
             .SIDE_EFFECT(_1->VendorId = 0x1002)
             .RETURN(S_OK);
@@ -50,6 +52,21 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
         REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
+    }
+
+    SECTION("Initialize returns OK when DXVK reports other vendor but DXVK_ENABLE_NVAPI is set") {
+        ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "1");
+
+        ALLOW_CALL(adapter, GetDesc1(_))
+            .SIDE_EFFECT(_1->VendorId = 0x1002)
+            .RETURN(S_OK);
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+        REQUIRE(NvAPI_Unload() == NVAPI_OK);
+
+        ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "");
     }
 
     SECTION("Initialize returns device-not-found when adapter with non NVIDIA driver ID has been found") {
