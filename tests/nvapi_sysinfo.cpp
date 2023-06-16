@@ -43,7 +43,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
     }
 
     SECTION("Initialize returns device-not-found when DXVK NVAPI hack is enabled") {
-        ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "");
+        ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "0");
 
         ALLOW_CALL(adapter, GetDesc1(_))
             .SIDE_EFFECT(_1->VendorId = 0x1002)
@@ -66,7 +66,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
         REQUIRE(NvAPI_Unload() == NVAPI_OK);
 
-        ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "");
+        ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "0");
     }
 
     SECTION("Initialize returns device-not-found when adapter with non NVIDIA driver ID has been found") {

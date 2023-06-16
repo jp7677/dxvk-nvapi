@@ -72,8 +72,7 @@ namespace dxvk {
         if (!HasNvProprietaryDriver() && allowOtherDrivers.empty())
             return false;
 
-        auto dxvkEnableNvapi = env::getEnvVariable("DXVK_ENABLE_NVAPI");
-        if (HasNvProprietaryDriver() && m_dxgiDesc.VendorId != NvidiaPciVendorId && dxvkEnableNvapi.empty())
+        if (HasNvProprietaryDriver() && m_dxgiDesc.VendorId != NvidiaPciVendorId && env::getEnvVariable("DXVK_ENABLE_NVAPI") != "1")
             return false; // DXVK NVAPI-hack is enabled, skip this adapter
 
         if (HasNvProprietaryDriver())
