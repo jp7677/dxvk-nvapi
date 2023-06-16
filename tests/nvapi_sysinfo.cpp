@@ -161,7 +161,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE_THAT(version.szAdapterString, Equals("GPU0"));
         REQUIRE_THAT(version.szBuildBranchString, StartsWith("r"));
 
-        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "");
+        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
     }
 
     SECTION("GetDisplayDriverVersion with version override returns OK") {
@@ -283,7 +283,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(NvAPI_GPU_CudaEnumComputeCapableGpus(&gpuTopology) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
 
-        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "");
+        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
     }
 
     SECTION("GetGPUType returns OK") {
@@ -619,7 +619,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         archInfo.version = NV_GPU_ARCH_INFO_VER;
         REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
 
-        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "");
+        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
     }
 
     SECTION("GetPstates20 returns no-implementation") {

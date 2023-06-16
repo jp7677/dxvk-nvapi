@@ -66,10 +66,10 @@ namespace dxvk {
         m_vkProperties = deviceProperties2.properties;
 
         auto allowOtherDrivers = env::getEnvVariable(allowOtherDriversEnvName);
-        if (!allowOtherDrivers.empty())
+        if (allowOtherDrivers == "1")
             log::write(str::format(allowOtherDriversEnvName, " is set, reporting also GPUs with non-NVIDIA proprietary driver"));
 
-        if (!HasNvProprietaryDriver() && allowOtherDrivers.empty())
+        if (!HasNvProprietaryDriver() && allowOtherDrivers != "1")
             return false;
 
         if (HasNvProprietaryDriver() && m_dxgiDesc.VendorId != NvidiaPciVendorId && env::getEnvVariable("DXVK_ENABLE_NVAPI") != "1")
