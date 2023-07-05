@@ -1,6 +1,6 @@
 /*****************************************************************************\
 |*                                                                             *|
-|* Copyright (c) 2019-2022, NVIDIA CORPORATION. All rights reserved.           *|
+|* Copyright (c) 2019-2023, NVIDIA CORPORATION. All rights reserved.           *|
 |*                                                                             *|
 |* Permission is hereby granted, free of charge, to any person obtaining a     *|
 |* copy of this software and associated documentation files (the "Software"),  *|
@@ -241,6 +241,7 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_D3D9_QuerySwapGroup", 0xeba4d232 },
     { "NvAPI_D3D9_JoinSwapGroup", 0x7d44bb54 },
     { "NvAPI_D3D9_BindSwapBarrier", 0x9c39c246 },
+    { "NvAPI_D3D_SetVerticalSyncMode", 0x5526cfd1 },
     { "NvAPI_D3D1x_Present", 0x03b845a1 },
     { "NvAPI_D3D1x_QueryFrameCount", 0x9152e055 },
     { "NvAPI_D3D1x_ResetFrameCount", 0xfbbb031a },
@@ -325,6 +326,7 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_D3D11_MultiDrawInstancedIndirect", 0xd4e26bbf },
     { "NvAPI_D3D11_MultiDrawIndexedInstancedIndirect", 0x59e890f9 },
     { "NvAPI_D3D_ImplicitSLIControl", 0x2aede111 },
+    { "NvAPI_D3D12_GetNeedsAppFPBlendClamping", 0x6ef4d2d1 },
     { "NvAPI_D3D12_UseDriverHeapPriorities", 0xf0d978a8 },
     { "NvAPI_D3D12_Mosaic_GetCompanionAllocations", 0xa46022c7 },
     { "NvAPI_D3D12_Mosaic_GetViewportAndGpuPartitions", 0xb092b818 },
@@ -343,6 +345,7 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_D3D_GetSleepStatus", 0xaef96ca1 },
     { "NvAPI_D3D_SetSleepMode", 0xac1ca9e0 },
     { "NvAPI_D3D_Sleep", 0x852cd1d2 },
+    { "NvAPI_D3D_SetReflexSync", 0xb9f6faff },
     { "NvAPI_D3D_GetLatency", 0x1a587f9c },
     { "NvAPI_D3D_SetLatencyMarker", 0xd9984c05 },
     { "NvAPI_D3D12_SetAsyncFrameMarker", 0x13c98f73 },
@@ -359,6 +362,7 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_D3D12_EnumFunctionsInModule", 0x7ab88d88 },
     { "NvAPI_D3D12_CreateCuFunction", 0xe2436e22 },
     { "NvAPI_D3D12_LaunchCuKernelChain", 0x24973538 },
+    { "NvAPI_D3D12_LaunchCuKernelChainEx", 0x846a9bf0 },
     { "NvAPI_D3D12_DestroyCuModule", 0x41c65285 },
     { "NvAPI_D3D12_DestroyCuFunction", 0xdf295ea6 },
     { "NvAPI_D3D11_CreateCubinComputeShader", 0x0ed98181 },
@@ -373,16 +377,23 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_D3D11_GetCudaTextureObject", 0x9006fa68 },
     { "NvAPI_D3D11_GetResourceGPUVirtualAddress", 0x1819b423 },
     { "NvAPI_D3D12_GetRaytracingCaps", 0x85a6c2a0 },
+    { "NvAPI_D3D12_GetRaytracingDisplacementMicromapArrayPrebuildInfo", 0xfa99b6de },
     { "NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo", 0x4726d180 },
     { "NvAPI_D3D12_SetCreatePipelineStateOptions", 0x5c607a27 },
     { "NvAPI_D3D12_CheckDriverMatchingIdentifierEx", 0xafb237d4 },
     { "NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx", 0x8d025b77 },
     { "NvAPI_D3D12_BuildRaytracingOpacityMicromapArray", 0x814f8d11 },
     { "NvAPI_D3D12_RelocateRaytracingOpacityMicromapArray", 0x0425c538 },
+    { "NvAPI_D3D12_BuildRaytracingDisplacementMicromapArray", 0x066f569d },
+    { "NvAPI_D3D12_RelocateRaytracingDisplacementMicromapArray", 0x1c142308 },
+    { "NvAPI_D3D12_EmitRaytracingDisplacementMicromapArrayPostbuildInfo", 0x68b9a790 },
     { "NvAPI_D3D12_EmitRaytracingOpacityMicromapArrayPostbuildInfo", 0x1d9a39b6 },
     { "NvAPI_D3D12_BuildRaytracingAccelerationStructureEx", 0xe24ead45 },
     { "NvAPI_D3D12_QueryWorkstationFeatureProperties", 0xa92ea23a },
     { "NvAPI_D3D12_CreateCommittedRDMABuffer", 0xe78dcb44 },
+    { "NvAPI_DirectD3D12GraphicsCommandList_Create", 0x74a4e712 },
+    { "NvAPI_DirectD3D12GraphicsCommandList_Release", 0x99da3dde },
+    { "NvAPI_DirectD3D12GraphicsCommandList_Reset", 0x999c26d8 },
     { "NvAPI_VIO_GetCapabilities", 0x1dc91303 },
     { "NvAPI_VIO_Open", 0x44ee4841 },
     { "NvAPI_VIO_Close", 0xd01bd237 },

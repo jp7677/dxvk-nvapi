@@ -1,6 +1,6 @@
 /*****************************************************************************\
 |*                                                                             *|
-|* Copyright (c) 2019-2022, NVIDIA CORPORATION. All rights reserved.           *|
+|* Copyright (c) 2019-2023, NVIDIA CORPORATION. All rights reserved.           *|
 |*                                                                             *|
 |* Permission is hereby granted, free of charge, to any person obtaining a     *|
 |* copy of this software and associated documentation files (the "Software"),  *|
@@ -24,7 +24,7 @@
 \*****************************************************************************/
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Date: Feb 27, 2023 
+// Date: Jun 21, 2023 
 // File: nvapi.h
 //
 // NvAPI provides an interface to NVIDIA devices. This file contains the 
@@ -2926,7 +2926,7 @@ NVAPI_INTERFACE NvAPI_EnumTCCPhysicalGPUs( NvPhysicalGpuHandle nvGPUHandle[NVAPI
 //!
 //! \note All logical GPUs handles get invalidated on a GPU topology change, so the calling
 //!       application is required to renum the logical GPU handles to get latest physical handle
-//!       mapping after every GPU topology change activated by a call to NvAPI_SetGpuTopologies().
+//!       mapping after every GPU topology change.
 //!
 //! To detect if SLI rendering is enabled, use NvAPI_D3D_GetCurrentSLIState().
 //!
@@ -3247,8 +3247,7 @@ typedef enum
 typedef struct _NV_GPU_DISPLAYIDS
 {
     NvU32    version;
-    NV_MONITOR_CONN_TYPE connectorType;     //!< out: vga, tv, dvi, hdmi and dp. This is reserved for future use and clients should not rely on this information. Instead get the
-                                            //!< GPU connector type from NvAPI_GPU_GetConnectorInfo/NvAPI_GPU_GetConnectorInfoEx
+    NV_MONITOR_CONN_TYPE connectorType;     //!< out: vga, tv, dvi, hdmi and dp. This is reserved for future use and clients should not rely on this information.
     NvU32    displayId;                     //!< this is a unique identifier for each device
 
     NvU32    isDynamic              : 1;    //!< if bit is set then this display is part of MST topology and it's a dynamic
@@ -5720,8 +5719,7 @@ typedef  NV_GPU_PERF_PSTATES_INFO_V2 NV_GPU_PERF_PSTATES_INFO;
 //
 // FUNCTION NAME:   NvAPI_GPU_GetPstatesInfoEx
 //
-//! DESCRIPTION:     This API retrieves all performance states (P-States) information. This is the same as
-//!                  NvAPI_GPU_GetPstatesInfo(), but supports an input flag for various options.
+//! DESCRIPTION:     This API retrieves all performance states (P-States) information.
 //!
 //!                  P-States are GPU active/executing performance capability and power consumption states.
 //!
@@ -9970,6 +9968,8 @@ typedef NV_TARGET_INFO_DATA_V1 NV_TARGET_INFO_DATA;
 ///////////////////////////////////////////////////////////////////////////////
 NVAPI_INTERFACE NvAPI_Disp_GetDisplayIdsFromTarget(__inout NV_TARGET_INFO_DATA* pTargetInfoData);
 
+#endif
+
 
 //! \ingroup dispcontrol
 
@@ -10005,8 +10005,6 @@ typedef NV_GET_VRR_INFO_V1 NV_GET_VRR_INFO;
 ///////////////////////////////////////////////////////////////////////////////
 NVAPI_INTERFACE NvAPI_Disp_GetVRRInfo(__in NvU32 displayId, __inout NV_GET_VRR_INFO *pVrrInfo);
 
-
-#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -10653,8 +10651,6 @@ typedef NV_MOSAIC_GRID_TOPO_V2           NV_MOSAIC_GRID_TOPO;
 #define NV_MOSAIC_DISPLAYCAPS_PROBLEM_GPU_TOPOLOGY_NOT_SUPPORTED    NV_BIT(10)
 
 
-//! SUPPORTED OS:  Windows 7 and higher
-//!
 ///////////////////////////////////////////////////////////////////////////////
 //
 // FUNCTION NAME:   NvAPI_Mosaic_GetDisplayViewportsByResolution
@@ -10670,10 +10666,10 @@ typedef NV_MOSAIC_GRID_TOPO_V2           NV_MOSAIC_GRID_TOPO;
 //! \param [in]      srcHeight       Height of full display topology. If both
 //!                                  width and height are 0, the current
 //!                                  resolution is used.
-//! \param [out]     viewports       Array of NV_RECT viewports which represent
-//!                                  the displays as identified in
-//!                                  NvAPI_Mosaic_EnumGridTopologies. If the
-//!                                  requested resolution is a single-wide
+//! \param [out]     viewports       Array of NV_RECT viewports.
+//! SUPPORTED OS:  Windows 7 and higher
+//!
+//!                                  If the requested resolution is a single-wide
 //!                                  resolution, only viewports[0] will
 //!                                  contain the viewport details, regardless
 //!                                  of which display is driving the display.
@@ -12795,6 +12791,41 @@ NVAPI_INTERFACE NvAPI_D3D9_BindSwapBarrier(IDirect3DDevice9 *pDevice,
                                            NvU32 group, 
                                            NvU32 barrier); 
 #endif //if defined(_D3D9_H_)
+
+//! \ingroup dx
+typedef enum
+{
+    NVAPI_VSYNC_DEFAULT,                    //!< Fall back to the default settings
+    NVAPI_VSYNC_OFF,                        //!< Force vertical sync off when performance is more important than image quality and for benchmarking" 
+    NVAPI_VSYNC_ON,                         //!< Force vertical sync on when image quality is more important than performance
+    NVAPI_VSYNC_ADAPTIVE,                   //!< Select adaptive to turn vertical sync on or off based on the frame rate. 
+                                            //!  Vertical sync will only be on for frame rates above the monitor refresh rate.
+    NVAPI_VSYNC_ADAPTIVE_HALF_REFRESH_RATE  //!<
+
+} NVAPI_VSYNC_MODE;
+
+
+#if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__) || defined(__d3d12_h__)
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D_SetVerticalSyncMode
+//
+//!   DESCRIPTION: This API set the vertical sync mode for the given device context.
+//!
+//! \param [in]    pDevice    The caller provides the device and can be either IDirect3DDevice9 or ID3D10Device or ID3D10Device1 or ID3D11Device.
+//! \param [in]    vsyncMode  The caller specifies the NVAPI_VSYNC_MODE to be set.
+//!
+//! SUPPORTED OS:  Windows Vista
+//!
+//!
+//! RETURN STATUS: This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!                If there are return error codes with specific meaning for this API, they are listed below.
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D_SetVerticalSyncMode(__in IUnknown *pDevice, __in NVAPI_VSYNC_MODE vsyncMode); 
+
+#endif //if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__) || defined(__d3d12_h__)
 
 #if defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__) || defined(__d3d12_h__)
 ///////////////////////////////////////////////////////////////////////////////
@@ -17434,6 +17465,35 @@ NVAPI_INTERFACE NvAPI_D3D_ImplicitSLIControl(__in IMPLICIT_SLI_CONTROL implicitS
 
 #endif //defined (__cplusplus) && ( defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d10_1_h__) ||defined(__d3d11_h__) )
 
+
+#if defined (__cplusplus) && defined(__d3d12_h__)
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D12_GetNeedsAppFPBlendClamping
+//
+//! \code
+//!   DESCRIPTION: This function returns whether the application needs to do FP blend clamping itself
+//!
+//!         \param [in]        pDevice              Current d3d device
+//!         \param [out]       pAppClampNeeded      If true, app needs to clamp. If false, HW does the clamping
+//!
+//! \return  This API can return any of the error codes enumerated in
+//!          #NvAPI_Status.  If there are return error codes with specific
+//!          meaning for this API, they are listed below.
+//!
+//! \since Release: 375
+//!
+//! SUPPORTED OS:  Windows 10
+//!
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+
+NVAPI_INTERFACE NvAPI_D3D12_GetNeedsAppFPBlendClamping(__in  ID3D12Device *pDevice,
+                                                       __out bool         *pAppClampNeeded);
+
+#endif //defined(__cplusplus) && defined(__d3d12_h__)
+
 //! SUPPORTED OS:  Windows 10
 //!
 
@@ -18807,7 +18867,9 @@ typedef struct _NV_GET_SLEEP_STATUS_PARAMS
 {
     NvU32  version;                                       //!< (IN) Structure version
     NvBool bLowLatencyMode;                               //!< (OUT) Is low latency mode enabled?
-    NvU8   rsvd[128];                                     //!< (IN) Reserved. Must be set to 0s.
+    NvBool bFsVrr;                                        //!< (OUT) Is fullscreen VRR enabled?
+    NvBool bCplVsyncOn;                                   //!< (OUT) Is Control Panel overriding VSYNC ON?
+    NvU8   rsvd[126];                                     //!< (IN) Reserved. Must be set to 0s.
 } NV_GET_SLEEP_STATUS_PARAMS_V1;
 
 typedef NV_GET_SLEEP_STATUS_PARAMS_V1            NV_GET_SLEEP_STATUS_PARAMS;
@@ -18819,12 +18881,14 @@ typedef NV_GET_SLEEP_STATUS_PARAMS_V1            NV_GET_SLEEP_STATUS_PARAMS;
 //
 // FUNCTION NAME: NvAPI_D3D_GetSleepStatus
 //
-//!   DESCRIPTION: This function can be used to get the latest sleep status.
+//!   DESCRIPTION: This function can be used to get the latest sleep status:
 //!   bLowLatencyMode indicates whether low latency mode is currently
 //!   enabled in the driver.
 //!   Note that it may not always reflect the previously requested sleep mode,
 //!   as the feature may not be available on the platform, or the setting has
 //!   been overridden by the control panel, for example.
+//!   bFsVrr indicates fullscreen GSYNC or GSYNC Compatible mode.
+//!   bCplVsyncOn indicates Control Panel VSYNC ON override.
 //!
 //! \since Release: 455
 //! \param [in] pDev                          The target device.
@@ -18925,6 +18989,47 @@ NVAPI_INTERFACE NvAPI_D3D_SetSleepMode(__in IUnknown *pDev, __in NV_SET_SLEEP_MO
 //! \ingroup dx
 ///////////////////////////////////////////////////////////////////////////////
 NVAPI_INTERFACE NvAPI_D3D_Sleep(__in IUnknown *pDev);
+#endif //defined(__cplusplus) && (defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__) || defined(__d3d12_h__))
+
+//! SUPPORTED OS:  Windows 10 and higher
+//!
+//! Used to send Reflex Sync data to UMD
+//! \ingroup dx
+typedef struct _NV_SET_REFLEX_SYNC_PARAMS
+{
+    NvU32  version;                                       //!< (IN) Structure version
+    NvU32  bEnable:1;                                     //!< (IN) Enable Reflex Sync
+    NvU32  bDisable:1;                                    //!< (IN) Disable Reflex Sync
+    NvU32  flagsRsvd:30;                                  //!< (IN) Reserved flag bits. Must be set to 0s.
+    NvU32  vblankIntervalUs;                              //!< (IN) Interval between VBLANKs in microseconds. (0 means N/A)
+    NvS32  timeInQueueUs;                                 //!< (IN) Amount of time in the completed frame queue. Can be negative. (0 means N/A)
+    NvU32  timeInQueueUsTarget;                           //!< (IN) Target amount of time in the completed frame queue. (0 means N/A)
+    NvU8   rsvd[28];                                      //!< (IN) Reserved. Must be set to 0s.
+} NV_SET_REFLEX_SYNC_PARAMS_V1;
+
+typedef NV_SET_REFLEX_SYNC_PARAMS_V1            NV_SET_REFLEX_SYNC_PARAMS;
+#define NV_SET_REFLEX_SYNC_PARAMS_VER1          MAKE_NVAPI_VERSION(NV_SET_REFLEX_SYNC_PARAMS_V1, 1)
+#define NV_SET_REFLEX_SYNC_PARAMS_VER           NV_SET_REFLEX_SYNC_PARAMS_VER1
+
+#if defined(__cplusplus) && (defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__) || defined(__d3d12_h__))
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D_SetReflexSync
+//
+//!   DESCRIPTION: This function can be used to enable/disable Reflex Sync,
+//!   and to pass in essential data for the Reflex Sync operation.
+//!
+//! \since Release: 530
+//! \param [in] pDev                          The target device.
+//! \param [in] pSetReflexSyncParams          Reflex Sync params.
+//! SUPPORTED OS:  Windows 10 and higher
+//!
+//!
+//! \return This API can return any of the error codes enumerated in #NvAPI_Status.
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D_SetReflexSync(__in IUnknown *pDev, __in NV_SET_REFLEX_SYNC_PARAMS *pSetReflexSyncParams);
 #endif //defined(__cplusplus) && (defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__) || defined(__d3d12_h__))
 
 //! SUPPORTED OS:  Windows 7 and higher
@@ -19248,6 +19353,28 @@ NVAPI_INTERFACE NvAPI_D3D12_LaunchCuKernelChain(__in  ID3D12GraphicsCommandList*
 // Experimental API for internal use. DO NOT USE!
 //! SUPPORTED OS:  Windows 10 and higher
 //!
+
+typedef struct _NVAPI_CU_KERNEL_LAUNCH_PARAMS_EX
+{
+    NVDX_ObjectHandle          hFunction;
+    NVAPI_DIM3                 gridDim;
+    NVAPI_DIM3                 blockDim;
+    NvU32                      dynSharedMemBytes;
+
+    // either pParams/paramsSize is used or kernelParams is used
+    void const *               pParams;
+    NvU32                      paramSize;
+    void                     **kernelParams;
+} NVAPI_CU_KERNEL_LAUNCH_PARAMS_EX;
+
+NVAPI_INTERFACE NvAPI_D3D12_LaunchCuKernelChainEx(__in  ID3D12GraphicsCommandList*               pCommandList,
+                                                  __in  const NVAPI_CU_KERNEL_LAUNCH_PARAMS_EX*  pKernels,
+                                                  __in  NvU32                                    numKernels);
+
+
+// Experimental API for internal use. DO NOT USE!
+//! SUPPORTED OS:  Windows 10 and higher
+//!
 NVAPI_INTERFACE NvAPI_D3D12_DestroyCuModule(__in  ID3D12Device*       pDevice,
                                             __in  NVDX_ObjectHandle   hModule);
 
@@ -19390,6 +19517,17 @@ typedef enum _NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS
     NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_STANDARD = NV_BIT(0)  //!< Standard Opacity Micromap support is available
 } NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS;
 
+//! Flags specifying raytracing Displacement Micromap support.
+//! Additional flags will be added as support becomes available.
+//!
+//! \ingroup dx
+typedef enum _NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS
+{
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_NONE     = 0x0,       //!< Displacement Micromap support is not available.
+                                                                           //!< The application must not attempt to use any DMM entrypoints or flags.
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_STANDARD = NV_BIT(0)  //!< Standard Displacement Micromap support is available
+} NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS;
+
 //! List of Raytracing CAPS types that can be queried.
 //!
 //! \ingroup dx
@@ -19397,6 +19535,7 @@ typedef enum _NVAPI_D3D12_RAYTRACING_CAPS_TYPE
 {
     NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING      =  0,
     NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP       =  1,
+    NVAPI_D3D12_RAYTRACING_CAPS_TYPE_DISPLACEMENT_MICROMAP  =  2,
     NVAPI_D3D12_RAYTRACING_CAPS_TYPE_INVALID                = -1
 } NVAPI_D3D12_RAYTRACING_CAPS_TYPE;
 
@@ -19431,6 +19570,130 @@ NVAPI_INTERFACE NvAPI_D3D12_GetRaytracingCaps(
     __out   void* pData,
     __in    size_t dataSize);
 #endif // defined(__cplusplus) && defined(__d3d12_h__)
+
+//! SUPPORTED OS:  Windows 10 and higher
+//!
+#if defined(__cplusplus) && defined(__d3d12_h__) && (defined(__ID3D12Device5_INTERFACE_DEFINED__) || defined(__ID3D12GraphicsCommandList4_INTERFACE_DEFINED__))
+
+// Types used by both device and command list functions.
+
+//! Flags specifying building instructions and hints when constructing a DMM Array.
+//!
+//! \ingroup dx
+typedef enum _NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_BUILD_FLAGS
+{
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_BUILD_FLAG_NONE              = 0x0,       //!< No options specified for the DMM Array build.
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_BUILD_FLAG_PREFER_FAST_TRACE = NV_BIT(0), //!< Allow the DMM Array build to take a little longer in order to optimize for traversal performance.
+                                                                                                 //!< This flag is incompatible with #NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_BUILD_FLAG_PREFER_FAST_BUILD.
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_BUILD_FLAG_PREFER_FAST_BUILD = NV_BIT(1)  //!< Spend as little time as possible on the DMM Array build with some potential loss to traversal performance.
+                                                                                                 //!< This flag is incompatible with #NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_BUILD_FLAG_PREFER_FAST_TRACE.
+} NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_BUILD_FLAGS;
+
+//! Specifies the input Displacement Micromap formats.
+//! The DC1 (Displacement Compression 1) format follows the space-filling curve in barycentric space over the uniformly tessellated micro-triangles.
+//!
+//! \note This is a 16-bit value when used in #NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_DESC
+//!
+//! \ingroup dx
+typedef enum _NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_FORMAT
+{
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_FORMAT_DC1_64_TRIS_64_BYTES    = 0x1, //!< 64 micro-triangles packed into 64 bytes
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_FORMAT_DC1_256_TRIS_128_BYTES  = 0x2, //!< 256 micro-triangles packed into 128 bytes
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_FORMAT_DC1_1024_TRIS_128_BYTES = 0x3, //!< 1024 micro-triangles packed into 128 bytes
+
+} NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_FORMAT;
+
+//! Number of DMMs of a specific configuration in a DMM Array or BLAS build.
+//! Used to compute conservative buffer size estimates for DMM Array and BLAS builds.
+//!
+//! \ingroup dx
+typedef struct _NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_USAGE_COUNT
+{
+    NvU32                                               count;            //!< For DMM Array builds: total number of DMMs in the DMM Array with the particular \p subdivisionLevel and \p format specified in this descriptor.
+                                                                          //!< For BLAS builds: total number of DMMs with the \p subdivisionLevel and \p format combination that is referenced from the BLAS.
+    NvU32                                               subdivisionLevel; //!< Number of subdivisions for the DMM; valid inputs are [0, 5] (#NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_DC1_MAX_SUBDIVISION_LEVEL).
+                                                                          //!< The total number of micro-triangles is 4<sup><tt>subdivisionLevel</tt></sup>.
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_FORMAT format;           //!< Displacement Micromap format.
+} NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_USAGE_COUNT;
+
+//! Describes one Displacement Micromap.
+//!
+//! \ingroup dx
+typedef struct _NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_DESC
+{
+    NvU32 byteOffset;       //!< Byte offset from the \c inputBuffer, specified in the input structure #NVAPI_D3D12_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_INPUTS, to where the input DMM data is located.
+    NvU16 subdivisionLevel; //!< Number of subdivisions for the DMM; valid inputs are [0, 5] (#NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_DC1_MAX_SUBDIVISION_LEVEL).
+                            //!< The total number of micro-triangles is 4<sup><tt>subdivisionLevel</tt></sup>.
+    NvU16 format;           //!< Format of the DMM of type #NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_FORMAT.
+} NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_DESC;
+
+//! Input structure to DMM Array construction.
+//! Individual DMMs are accessed via indices when used in bottom-level acceleration structure (BLAS) construction.
+//!
+//! \ingroup dx
+typedef struct _NVAPI_D3D12_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_INPUTS
+{
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_BUILD_FLAGS  flags;             //!< Flags which apply to all DMMs in the array.
+    NvU32                                                           numDMMUsageCounts; //!< Number of DMM usage count entries in the \p pDMMUsageCounts array.
+    const NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_USAGE_COUNT* pDMMUsageCounts;   //!< Usage counts for each subdivision level and format combination across all the DMM entries in the build.
+    D3D12_GPU_VIRTUAL_ADDRESS                                       inputBuffer;       //!< Address for raw DMM input data; it must be 256-byte aligned (#NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_BYTE_ALIGNMENT)
+                                                                                       //!< It is recommended to try to organize DMMs together in memory that are expected to be used close together spatially.
+    D3D12_GPU_VIRTUAL_ADDRESS_AND_STRIDE                            perDMMDescs;       //!< GPU array with one #NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_DESC entry per DMM.
+} NVAPI_D3D12_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_INPUTS;
+
+#endif // defined(__cplusplus) && defined(__d3d12_h__) && (defined(__ID3D12Device5_INTERFACE_DEFINED__) || defined(__ID3D12GraphicsCommandList4_INTERFACE_DEFINED__))
+
+#if defined(__cplusplus) && defined(__d3d12_h__) && defined(__ID3D12Device5_INTERFACE_DEFINED__)
+
+//! Conservative memory requirements for building a DMM Array.
+//!
+//! \ingroup dx
+typedef struct _NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PREBUILD_INFO
+{
+    NvU64 resultDataMaxSizeInBytes; //!< Size required to hold the result of a DMM Array build based on the specified inputs.
+    NvU64 scratchDataSizeInBytes;   //!< Scratch storage on GPU required during DMM Array build based on the specified inputs.
+} NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PREBUILD_INFO;
+
+//! Parameters given to NvAPI_D3D12_GetRaytracingDisplacementMicromapArrayPrebuildInfo().
+//!
+//! \ingroup dx
+typedef struct _NVAPI_GET_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS_V1
+{
+    NvU32                                                                  version; //!< [in]  Structure version; it should be set to #NVAPI_GET_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS_VER.
+    const NVAPI_D3D12_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_INPUTS* pDesc;   //!< [in]  Description of the DMM Array build.
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PREBUILD_INFO*      pInfo;   //!< [out] Result of the query.
+} NVAPI_GET_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS_V1;
+#define NVAPI_GET_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS_VER1          MAKE_NVAPI_VERSION(NVAPI_GET_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS_V1, 1)
+typedef NVAPI_GET_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS_V1            NVAPI_GET_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS;
+#define NVAPI_GET_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS_VER           NVAPI_GET_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS_VER1
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D12_GetRaytracingDisplacementMicromapArrayPrebuildInfo
+//
+//! DESCRIPTION: Query conservative memory requirements for building a DMM (Displacement Micromap) Array.
+//!              The returned size is conservative for DMM Array builds containing
+//!              a lower or equal number of entries for each resolution and format combination.
+//!
+//!
+//! SUPPORTED OS:  Windows 10 and higher
+//!
+//!
+//! \since Release: 525
+//!
+//! \param [in]     pDevice                      Device on which the DMM Array will be built.
+//! \param [in,out] pParams                      Wrapper around the inputs and outputs of the function.
+//!
+//! \return This API can return any of the error codes enumerated in #NvAPI_Status.
+//!         If there are return error codes with specific meaning for this API, they are listed below.
+//!
+//! \ingroup dx 
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D12_GetRaytracingDisplacementMicromapArrayPrebuildInfo(
+    __in    ID3D12Device5* pDevice,
+    __inout NVAPI_GET_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS* pParams);
+
+#endif // defined(__cplusplus) && defined(__d3d12_h__) && defined(__ID3D12Device5_INTERFACE_DEFINED__)
 
 //! SUPPORTED OS:  Windows 10 and higher
 //!
@@ -19564,6 +19827,9 @@ typedef enum _NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS
     NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT = NV_BIT(0), //!< [in] Change whether raytracing pipelines are created with support for Opacity Micromaps.
                                                                               //!<      If a triangle with an OMM is encountered during traversal and the pipeline was not created with support for them, behavior is undefined.
                                                                               //!<      Support should only be enabled if there are OMMs present, since it may incur a small penalty on traversal performance overall.
+    NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_DMM_SUPPORT = NV_BIT(1), //!< [in] Change whether raytracing pipelines are created with support for Displacement Micromaps.
+                                                                              //!<      If a triangle with a DMM is encountered during traversal and the pipeline was not created with support for them, behavior is undefined.
+                                                                              //!<      Support should only be enabled if there are DMMs present, since it may incur a small penalty on traversal performance overall.
 } NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS;
 
 //! State used when creating new pipelines.
@@ -19622,6 +19888,8 @@ typedef enum _NVAPI_D3D12_SERIALIZED_DATA_TYPE_EX
     // NVAPI_D3D12_SERIALIZED_DATA_TYPE_EX specific flags
     NVAPI_D3D12_SERIALIZED_DATA_RAYTRACING_OPACITY_MICROMAP_ARRAY_EX = 0x1,      //!< Data blob contains an OMM Array.
                                                                                  //!< Starting from offset 0, the first bytes of the OMM Array can be reinterpreted as \c D3D12_SERIALIZED_DATA_DRIVER_MATCHING_IDENTIFIER.
+    NVAPI_D3D12_SERIALIZED_DATA_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_EX = 0x2, //!< Data blob contains a DMM Array.
+                                                                                 //!< Starting from offset 0, the first bytes of the DMM Array can be reinterpreted as \c D3D12_SERIALIZED_DATA_DRIVER_MATCHING_IDENTIFIER.
 
 } NVAPI_D3D12_SERIALIZED_DATA_TYPE_EX;
 
@@ -19690,6 +19958,7 @@ typedef enum _NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS_EX
                                                                                                              //!< Specifying this build flag may result in some reductions in traversal performance.
     NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_OMM_OPACITY_STATES_UPDATE_EX = NV_BIT(8), //!< The acceleration structure (AS) supports updating OMM data (encoded opacity values).
                                                                                                              //!< Specifying this flag may reduce traversal performance.
+    NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_DATA_ACCESS_EX               = NV_BIT(9), //!< Allows triangle and micro-triangle data to be accessed through the BLAS via shader intrinsics.
 
 } NVAPI_D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS_EX;
 
@@ -19706,7 +19975,8 @@ typedef enum _NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_EX
     // NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_EX specific flags
     NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX              = 0x2, //!< Shares most fields with the basic triangle geometry type, but allows an OMM Array to be attached to the geometry.
                                                                               //!< The basic triangle type and this OMM-enabled type geometries may be mixed in the same BLAS build.
-
+    NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_DMM_TRIANGLES_EX              = 0x3, //!< Triangle geometry with attached DMM data.
+                                                                              //!< This geometry cannot be mixed with other geometry types in the same BLAS.
 
 } NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_EX;
 
@@ -19740,6 +20010,53 @@ typedef struct _NVAPI_D3D12_RAYTRACING_GEOMETRY_OMM_ATTACHMENT_DESC
 
 } NVAPI_D3D12_RAYTRACING_GEOMETRY_OMM_ATTACHMENT_DESC;
 
+//! The edge vA..vB is decimated: after subdivision the number of micro-triangles on that edge is halved.
+//! (i.e. the neighboring primitive can have a lower subdivision level without introducing cracks)
+//!
+//! \ingroup dx
+typedef enum _NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_PRIMITIVE_FLAGS
+{
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_PRIMITIVE_FLAG_DECIMATE_01 = NV_BIT(0),
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_PRIMITIVE_FLAG_DECIMATE_12 = NV_BIT(1),
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_PRIMITIVE_FLAG_DECIMATE_20 = NV_BIT(2),
+
+} NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_PRIMITIVE_FLAGS;
+
+//! Geometry descriptor attachment with Displacement Micromaps.
+//!
+//! \ingroup dx
+typedef struct _NVAPI_D3D12_RAYTRACING_GEOMETRY_DMM_ATTACHMENT_DESC
+{
+    D3D12_GPU_VIRTUAL_ADDRESS_AND_STRIDE                            triangleMicromapIndexBuffer;    //!< Optional buffer specifying which DMM index to use for each triangle; if \c NULL, there is a 1:1 mapping between input triangles and DMM Array entries.
+                                                                                                    //!< For BLAS updates, this input buffer must match that of the original build.
+    DXGI_FORMAT                                                     triangleMicromapIndexFormat;    //!< Format of \c displacementMicromapIndexBuffer, either \c DXGI_FORMAT_R32_UINT or \c DXGI_FORMAT_R16_UINT.
+    NvU32                                                           triangleMicromapBaseLocation;   //!< Constant added to all DMM indices in \p displacementMicromapIndexBuffer.
+
+    D3D12_GPU_VIRTUAL_ADDRESS_AND_STRIDE                            trianglePrimitiveFlagsBuffer;   //!< Optional, per-triangle UINT8 mode flags (#NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_PRIMITIVE_FLAGS)
+
+    D3D12_GPU_VIRTUAL_ADDRESS_AND_STRIDE                            vertexBiasAndScaleBuffer;       //!< Optional displacement base vertex bias and displacement vector scale buffer. If not supplied, bias defaults to 0 and scale to 1.
+    DXGI_FORMAT                                                     vertexBiasAndScaleFormat;       //!< Format of \c displacementBiasAndScaleBuffer. Supported formats are \c DXGI_FORMAT_R16G16_FLOAT and \c DXGI_FORMAT_R32G32_FLOAT
+
+    D3D12_GPU_VIRTUAL_ADDRESS_AND_STRIDE                            vertexDisplacementVectorBuffer; //!< Per-vertex displacement vector buffer. This buffer is indexed using the index buffer from the base triangle geometry.
+    DXGI_FORMAT                                                     vertexDisplacementVectorFormat; //!< Format of \c displacementVectorBuffer. Supported formats are \c DXGI_FORMAT_R32G32B32_FLOAT, \c DXGI_FORMAT_R32G32B32A32_FLOAT, and \c DXGI_FORMAT_R16G16B16A16_FLOAT (The Alpha channel is ignored, and stride can be set accordingly).
+
+    D3D12_GPU_VIRTUAL_ADDRESS                                       displacementMicromapArray;      //!< Pointer to a DMM Array used by this geometry.
+                                                                                                    //!< Unlike vertex, index, and transform buffers, this resource is dereferenced during raytracing.
+
+    NvU32                                                           numDMMUsageCounts;              //!< Number of DMM usage count entries in the \p pDMMUsageCounts array.
+    const NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_USAGE_COUNT* pDMMUsageCounts;                //!< Usage counts for each subdivision level and format combination across all the DMM entries referred-to by the DMM index buffer specified by this geometry.
+
+} NVAPI_D3D12_RAYTRACING_GEOMETRY_DMM_ATTACHMENT_DESC;
+
+//! Geometry triangle descriptor with attached augmented Displacement Micromaps.
+//!
+//! \ingroup dx
+typedef struct _NVAPI_D3D12_RAYTRACING_GEOMETRY_DMM_TRIANGLES_DESC
+{
+    D3D12_RAYTRACING_GEOMETRY_TRIANGLES_DESC            triangles;     //!< Triangle mesh descriptor.
+    NVAPI_D3D12_RAYTRACING_GEOMETRY_DMM_ATTACHMENT_DESC dmmAttachment; //!< Displacement Micromap attachment descriptor.
+} NVAPI_D3D12_RAYTRACING_GEOMETRY_DMM_TRIANGLES_DESC;
+
 //! Geometry triangle descriptor with attached augmented Opacity Micromaps.
 //!
 //! \ingroup dx
@@ -19764,6 +20081,8 @@ typedef struct _NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX
         D3D12_RAYTRACING_GEOMETRY_AABBS_DESC               aabbs;        //!< Describes AABB geometry if \c type is #NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX.
                                                                          //!< Otherwise, this parameter is unused (space repurposed in a union).
         NVAPI_D3D12_RAYTRACING_GEOMETRY_OMM_TRIANGLES_DESC ommTriangles; //!< Describes triangle geometry which may optionally use Opacity Micromaps, if \c type is #NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX.
+                                                                         //!< Otherwise, this parameter is unused (space repurposed in a union).
+        NVAPI_D3D12_RAYTRACING_GEOMETRY_DMM_TRIANGLES_DESC dmmTriangles; //!< Describes micro-triangle geometry, if \c type is #NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_DMM_TRIANGLES_EX.
                                                                          //!< Otherwise, this parameter is unused (space repurposed in a union).
     };
 } NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX;
@@ -19992,6 +20311,182 @@ NVAPI_INTERFACE NvAPI_D3D12_RelocateRaytracingOpacityMicromapArray(
 
 #if defined(__cplusplus) && defined(__d3d12_h__) && defined(__ID3D12GraphicsCommandList4_INTERFACE_DEFINED__)
 
+//! Description of the inputs and memory areas used during the building of DMM Arrays.
+//!
+//! \ingroup dx
+typedef struct _NVAPI_D3D12_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_DESC
+{
+    D3D12_GPU_VIRTUAL_ADDRESS                                       destDisplacementMicromapArrayData;    //!< Output location for the DMM Array build.
+                                                                                                          //!< NvAPI_D3D12_GetRaytracingDisplacementMicromapArrayPrebuildInfo() reports the amount of memory required for the result given a set of input parameters.
+                                                                                                          //!< The address must be aligned to 256 bytes (#NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_BYTE_ALIGNMENT).
+    NVAPI_D3D12_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_INPUTS inputs;                               //!< Description of the input data for the DMM Array build.
+    D3D12_GPU_VIRTUAL_ADDRESS                                       scratchDisplacementMicromapArrayData; //!< Location where the build will store temporary data.
+                                                                                                          //!< NvAPI_D3D12_GetRaytracingDisplacementMicromapArrayPrebuildInfo() reports the amount of scratch memory the implementation will need for a given set of input parameters.
+                                                                                                          //!< The address must be aligned to 256 bytes (#NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_BYTE_ALIGNMENT).
+                                                                                                          //!< Contents of this memory going into a build on the GPU timeline are irrelevant and will not be preserved.
+                                                                                                          //!< After the build is complete on the GPU timeline, the memory is left with whatever undefined contents the build finished with.
+                                                                                                          //!< The memory pointed to must be in state \c D3D12_RESOURCE_STATE_UNORDERED_ACCESS.
+} NVAPI_D3D12_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_DESC;
+
+//! Structure emitted by NvAPI_D3D12_EmitRaytracingDisplacementMicromapArrayPostbuildInfo(), and optionally NvAPI_D3D12_BuildRaytracingDisplacementMicromapArray(), when \c type equals #NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_CURRENT_SIZE.
+//!
+//! \ingroup dx
+typedef struct _NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_CURRENT_SIZE_DESC
+{
+    NvU64 currentSizeInBytes; //!< Size of the DMM Array buffer.
+                              //!< The queried size may be smaller than the size reported by NvAPI_D3D12_GetRaytracingDisplacementMicromapArrayPrebuildInfo().
+                              //!< This allows the application to move and relocate the DMM Array to a smaller buffer to reclaim any unused memory after the DMM Array build is complete.
+} NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_CURRENT_SIZE_DESC;
+
+//! Type of postbuild info to emit after a DMM Array build.
+//!
+//! \ingroup dx
+typedef enum _NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_TYPE
+{
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_CURRENT_SIZE = 0x0, //!< Size of the current DMM Array. May be smaller than reported by the NvAPI_D3D12_GetRaytracingDisplacementMicromapArrayPrebuildInfo() call.
+                                                                                          //!< Unused memory can be reclaimed by copying the DMM Array into a new resource; see #NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_CURRENT_SIZE_DESC.
+} NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_TYPE;
+
+//! Description of the postbuild information to generate from a DMM Array.
+//!
+//! \ingroup dx
+typedef struct _NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_DESC
+{
+    D3D12_GPU_VIRTUAL_ADDRESS                                              destBuffer; //!< Result storage.
+                                                                                       //!< Size required and the layout of the contents written by the system depend on \p infoType.
+                                                                                       //!< The memory pointed to must be in state \c D3D12_RESOURCE_STATE_UNORDERED_ACCESS.
+                                                                                       //!< The memory must be aligned to the natural alignment for the members of the particular output structure being generated (e.g. 8 bytes for a struct with the largest member being \c NvU64).
+    NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_TYPE infoType;   //!< Type of postbuild information to retrieve.
+} NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_DESC;
+
+//! Parameters given to NvAPI_D3D12_BuildRaytracingDisplacementMicromapArray().
+//!
+//! \ingroup dx
+typedef struct _NVAPI_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_V1
+{
+    NvU32                                                                         version;               //!< [in] Structure version; it should be set to #NVAPI_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_VER.
+    const NVAPI_D3D12_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_DESC*          pDesc;                 //!< [in] Description of the DMM Array build.
+    NvU32                                                                         numPostbuildInfoDescs; //!< [in] Size of postbuild info desc array. Set to 0 if none are needed.
+    const NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_DESC* pPostbuildInfoDescs;   //!< [in] Optional array of descriptions for postbuild info to generate describing properties of the acceleration structure that was built.
+                                                                                                         //!< [in] Any given postbuild info type, \c D3D12_RAYTRACING_ACCEELRATION_STRUCTURE_POSTBUILD_INFO_TYPE, can only be selected for output by at most one array entry.
+} NVAPI_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_V1;
+#define NVAPI_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_VER1          MAKE_NVAPI_VERSION(NVAPI_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_V1, 1)
+typedef NVAPI_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_V1            NVAPI_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS;
+#define NVAPI_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_VER           NVAPI_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_VER1
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D12_BuildRaytracingDisplacementMicromapArray
+//
+//! DESCRIPTION: Construct DMM Array for a collection of DMMs on the GPU.
+//!              The CPU-side input buffers are not referenced after this call.
+//!              The GPU-side input resources are not referenced after the build has concluded after <tt>ExecuteCommandList()</tt>.
+//!              Additionally, the application may optionally output postbuild information immediately after the build.
+//!
+//! SUPPORTED OS:  Windows 10 and higher
+//!
+//!
+//! \since Release: 525
+//!
+//! \param [in] pCommandList                     Command list on which the command will execute.
+//! \param [in] pParams                          Wrapper around the inputs of the function.
+//!
+//! \return This API can return any of the error codes enumerated in #NvAPI_Status.
+//!         If there are return error codes with specific meaning for this API, they are listed below.
+//!
+//! \retval NVAPI_INVALID_COMBINATION            <tt>pParams->pPostbuildInfoDescs</tt> was set to \c NULL while <tt>pParams->numPostbuildInfoDescs</tt> is non zero.
+//!
+//! \ingroup dx 
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D12_BuildRaytracingDisplacementMicromapArray(
+    __in ID3D12GraphicsCommandList4* pCommandList,
+    __in NVAPI_BUILD_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS* pParams);
+
+#endif // defined(__cplusplus) && defined(__d3d12_h__) && defined(__ID3D12GraphicsCommandList4_INTERFACE_DEFINED__)
+
+#if defined(__cplusplus) && defined(__d3d12_h__) && defined(__ID3D12GraphicsCommandList4_INTERFACE_DEFINED__)
+
+//! Parameters given to NvAPI_D3D12_RelocateRaytracingDisplacementMicromapArray().
+//!
+//! \ingroup dx
+typedef struct _NVAPI_RELOCATE_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_V1
+{
+    NvU32                     version;                   //!< [in] Structure version; it should be set to #NVAPI_RELOCATE_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_VER.
+    D3D12_GPU_VIRTUAL_ADDRESS displacementMicromapArray; //!< [in] DMM Array current memory address; it must be 256-byte aligned (#NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_BYTE_ALIGNMENT).
+} NVAPI_RELOCATE_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_V1;
+#define NVAPI_RELOCATE_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_VER1          MAKE_NVAPI_VERSION(NVAPI_RELOCATE_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_V1, 1)
+typedef NVAPI_RELOCATE_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_V1            NVAPI_RELOCATE_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS;
+#define NVAPI_RELOCATE_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_VER           NVAPI_RELOCATE_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS_VER1
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D12_RelocateRaytracingDisplacementMicromapArray
+//
+//! DESCRIPTION: Makes the DMM Array usable at its current location in memory.
+//!              A DMM Array that has been copied to a new location must be relocated using this function before it may be attached to any BLAS.
+//!
+//! SUPPORTED OS:  Windows 10 and higher
+//!
+//!
+//! \since Release: 525
+//!
+//! \param [in] pCommandList                     Command list on which the command will execute.
+//! \param [in] pParams                          Wrapper around the inputs of the function.
+//!
+//! \return This API can return any of the error codes enumerated in #NvAPI_Status.
+//!         If there are return error codes with specific meaning for this API, they are listed below.
+//!
+//! \ingroup dx 
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D12_RelocateRaytracingDisplacementMicromapArray(
+    __in ID3D12GraphicsCommandList4* pCommandList,
+    __in const NVAPI_RELOCATE_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_PARAMS* pParams);
+
+#endif // defined(__cplusplus) && defined(__d3d12_h__) && defined(__ID3D12GraphicsCommandList4_INTERFACE_DEFINED__)
+
+#if defined(__cplusplus) && defined(__d3d12_h__) && defined(__ID3D12GraphicsCommandList4_INTERFACE_DEFINED__)
+
+//! Parameters given to NvAPI_D3D12_EmitRaytracingDisplacementMicromapArrayPostbuildInfo().
+//!
+//! \ingroup dx
+typedef struct _NVAPI_EMIT_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS_V1
+{
+    NvU32                                                                         version;    //!< [in] Structure version; it should be set to #NVAPI_EMIT_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS_VER.
+    const NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_DESC* pDesc;      //!< [in] Description of which postbuild info to emit.
+    NvU32                                                                         numSources; //!< [in] Number of DMM Arrays in \p pSources.
+    const D3D12_GPU_VIRTUAL_ADDRESS*                                              pSources;   //!< [in] List of DMM Arrays for which postbuild info should be emitted.
+} NVAPI_EMIT_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS_V1;
+#define NVAPI_EMIT_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS_VER1          MAKE_NVAPI_VERSION(NVAPI_EMIT_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS_V1, 1)
+typedef NVAPI_EMIT_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS_V1            NVAPI_EMIT_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS;
+#define NVAPI_EMIT_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS_VER           NVAPI_EMIT_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS_VER1
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D12_EmitRaytracingDisplacementMicromapArrayPostbuildInfo
+//
+//! DESCRIPTION: Emits information about one or more DMM Arrays, only available after the DMM Array constructions have finished.
+//!
+//! SUPPORTED OS:  Windows 10 and higher
+//!
+//!
+//! \since Release: 525
+//!
+//! \param [in] pCommandList                     Command list on which the command will execute.
+//! \param [in] pParams                          Wrapper around the inputs of the function.
+//!
+//! \return This API can return any of the error codes enumerated in #NvAPI_Status.
+//!         If there are return error codes with specific meaning for this API, they are listed below.
+//!
+//! \ingroup dx 
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D12_EmitRaytracingDisplacementMicromapArrayPostbuildInfo(
+    __in ID3D12GraphicsCommandList4* pCommandList,
+    __in const NVAPI_EMIT_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS* pParams);
+
+#endif // defined(__cplusplus) && defined(__d3d12_h__) && defined(__ID3D12GraphicsCommandList4_INTERFACE_DEFINED__)
+
+#if defined(__cplusplus) && defined(__d3d12_h__) && defined(__ID3D12GraphicsCommandList4_INTERFACE_DEFINED__)
+
 //! Parameters given to NvAPI_D3D12_EmitRaytracingOpacityMicromapArrayPostbuildInfo().
 //!
 //! \ingroup dx
@@ -20151,6 +20646,16 @@ typedef enum _NVAPI_RAY_FLAGS_EX
                                                                     //!< If an instance is flagged with #NVAPI_D3D12_RAYTRACING_INSTANCE_FLAG_DISABLE_OMMS_EX, that takes precedence over this flag.
 } NVAPI_RAY_FLAG_EX;
 
+//! Mandatory alignment for the address of a DMM Array.
+//!
+//! \ingroup dx
+#define NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_ARRAY_BYTE_ALIGNMENT 256
+
+//! Highest subdivision-level allowed with DC1.
+//!
+//! \ingroup dx
+#define NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_DC1_MAX_SUBDIVISION_LEVEL 5
+
 #endif // defined(__cplusplus) && defined(__d3d12_h__) && defined(__ID3D12GraphicsCommandList4_INTERFACE_DEFINED__)
 
 
@@ -20252,6 +20757,82 @@ NVAPI_INTERFACE NvAPI_D3D12_CreateCommittedRDMABuffer(
         __out void **ppRDMAAddress);
 
 #endif //defined(__cplusplus) && defined(__d3d12_h__)
+
+//! SUPPORTED OS:  Windows 10 and higher
+//!
+#if defined(__cplusplus) && defined(__d3d12_h__)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// NVAPI DIRECT TYPE NAME: INvAPI_DirectD3D12GraphicsCommandList
+//
+///////////////////////////////////////////////////////////////////////////////
+class INvAPI_DirectD3D12GraphicsCommandList
+{
+public:
+    virtual bool IsValid() const = 0;
+    virtual ID3D12GraphicsCommandList* GetID3D12GraphicsCommandList() const = 0;
+
+    void DispatchGraphics(NvU32 numDispatches);
+    void SetMarker(void* pMarkerData, NvU32 markerSize);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// NVAPI DIRECT FUNCTION NAME: NvAPI_DirectD3D12GraphicsCommandList_Create
+//
+//!   DESCRIPTION: Create the NvAPI_DirectD3D12GraphicsCommandList handle.
+//!                This function must be called after ID3D12Device::CreateCommandList.
+//!
+//! \param [in]         pDXD3D12GraphicsCommandList             The ID3D12GraphicsCommandList
+//! \param [out]        ppReturnD3D12GraphicsCommandList        The corresponding NvAPI_DirectD3D12GraphicsCommandList handle
+//! SUPPORTED OS:  Windows 10 and higher
+//!
+//!
+//! \return This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_DirectD3D12GraphicsCommandList_Create(__in  ID3D12GraphicsCommandList              *pDXD3D12GraphicsCommandList, 
+                                                            __out INvAPI_DirectD3D12GraphicsCommandList **ppReturnD3D12GraphicsCommandList);
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// NVAPI DIRECT FUNCTION NAME: NvAPI_DirectD3D12GraphicsCommandList_Release
+//
+//!   DESCRIPTION: release the NvAPI_DirectD3D12GraphicsCommandList handle.
+//!
+//! \param [in]         pD3D12GraphicsCommandList               The NvAPI_DirectD3D12GraphicsCommandList handle to release
+//! SUPPORTED OS:  Windows 10 and higher
+//!
+//!
+//! \return This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_DirectD3D12GraphicsCommandList_Release(__in INvAPI_DirectD3D12GraphicsCommandList *pD3D12GraphicsCommandList);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// NVAPI DIRECT FUNCTION NAME: NvAPI_DirectD3D12GraphicsCommandList_Reset
+//
+//!   DESCRIPTION: reset the NvAPI_DirectD3D12GraphicsCommandList handle.
+//!                This function must be called after ID3D12GraphicsCommandList::Reset() and before any other NvAPI_Direct 
+//!                function calls such as dispatchGraphics() etc.
+//!
+//! \param [in]         pD3D12GraphicsCommandList               The NvAPI_DirectD3D12GraphicsCommandList handle to reset
+//! SUPPORTED OS:  Windows 10 and higher
+//!
+//!
+//! \return This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_DirectD3D12GraphicsCommandList_Reset(__in INvAPI_DirectD3D12GraphicsCommandList *pD3D12GraphicsCommandList);
+#endif
+
+
 
 /////////////////////////////////////////////////////////////////////////
 // Video Input Output (VIO) API
