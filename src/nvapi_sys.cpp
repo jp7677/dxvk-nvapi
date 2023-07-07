@@ -35,4 +35,42 @@ extern "C" {
 
         return Ok(n);
     }
+
+    NvAPI_Status __cdecl NvAPI_SYS_GetDisplayDriverInfo(NV_DISPLAY_DRIVER_INFO *pDriverInfo) {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pDriverInfo == nullptr)
+            return InvalidArgument(n);
+
+        switch (pDriverInfo->version) {
+            case NV_DISPLAY_DRIVER_INFO_VER1: {
+                pDriverInfo->driverVersion = nvapiAdapterRegistry->GetFirstAdapter()->GetDriverVersion();
+                str::tonvss(pDriverInfo->szBuildBranch, str::format(NVAPI_VERSION, "_", DXVK_NVAPI_VERSION));
+                pDriverInfo->bIsDCHDriver = 1; // Assume DHC driver for Windows
+                pDriverInfo->bIsNVIDIAStudioPackage = 0; // Lets not support "Studio Package"
+                pDriverInfo->bIsNVIDIAGameReadyPackage = 1; // GameReady Package should be "safe" even if other packages is used
+                pDriverInfo->bIsNVIDIARTXProductionBranchPackage = 0;
+                pDriverInfo->bIsNVIDIARTXNewFeatureBranchPackage = 0;
+                break;
+            }
+            case NV_DISPLAY_DRIVER_INFO_VER2: {
+                pDriverInfo->driverVersion = nvapiAdapterRegistry->GetFirstAdapter()->GetDriverVersion();
+                str::tonvss(pDriverInfo->szBuildBranch, str::format(NVAPI_VERSION, "_", DXVK_NVAPI_VERSION));
+                pDriverInfo->bIsDCHDriver = 1; // Assume DHC driver for Windows
+                pDriverInfo->bIsNVIDIAStudioPackage = 0; // Lets not support "Studio Package"
+                pDriverInfo->bIsNVIDIAGameReadyPackage = 1; // GameReady Package should be "safe" even if other packages is used
+                pDriverInfo->bIsNVIDIARTXProductionBranchPackage = 0;
+                pDriverInfo->bIsNVIDIARTXNewFeatureBranchPackage = 0;
+                str::tonvss(pDriverInfo->szBuildBaseBranch, str::format(NVAPI_VERSION, "_", DXVK_NVAPI_VERSION));
+                break;
+            }
+            default:
+                return Error(n); // Unreachable, but just to be sure
+        }
+
+        return Ok(n);
+    }
 }
