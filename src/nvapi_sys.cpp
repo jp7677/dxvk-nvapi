@@ -35,4 +35,46 @@ extern "C" {
 
         return Ok(n);
     }
+
+    NvAPI_Status __cdecl NvAPI_SYS_GetDisplayDriverInfo(NV_DISPLAY_DRIVER_INFO* pDriverInfo) {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pDriverInfo == nullptr)
+            return InvalidArgument(n);
+
+        if (pDriverInfo->version != NV_DISPLAY_DRIVER_INFO_VER1 && pDriverInfo->version != NV_DISPLAY_DRIVER_INFO_VER2)
+            return IncompatibleStructVersion(n);
+
+        switch (pDriverInfo->version) {
+            case NV_DISPLAY_DRIVER_INFO_VER1: {
+                auto pDriverInfoV1 = reinterpret_cast<NV_DISPLAY_DRIVER_INFO_V1*>(pDriverInfo);
+                pDriverInfoV1->driverVersion = nvapiAdapterRegistry->GetFirstAdapter()->GetDriverVersion();
+                str::tonvss(pDriverInfoV1->szBuildBranch, str::format(NVAPI_VERSION, "_", DXVK_NVAPI_VERSION));
+                pDriverInfoV1->bIsDCHDriver = 1;              // Assume DCH driver for Windows
+                pDriverInfoV1->bIsNVIDIAStudioPackage = 0;    // Lets not support "Studio Package"
+                pDriverInfoV1->bIsNVIDIAGameReadyPackage = 1; // GameReady Package should be "safe" even if other packages is used
+                pDriverInfoV1->bIsNVIDIARTXProductionBranchPackage = 0;
+                pDriverInfoV1->bIsNVIDIARTXNewFeatureBranchPackage = 0;
+                break;
+            }
+            case NV_DISPLAY_DRIVER_INFO_VER2: {
+                pDriverInfo->driverVersion = nvapiAdapterRegistry->GetFirstAdapter()->GetDriverVersion();
+                str::tonvss(pDriverInfo->szBuildBranch, str::format(NVAPI_VERSION, "_", DXVK_NVAPI_VERSION));
+                pDriverInfo->bIsDCHDriver = 1;              // Assume DCH driver for Windows
+                pDriverInfo->bIsNVIDIAStudioPackage = 0;    // Lets not support "Studio Package"
+                pDriverInfo->bIsNVIDIAGameReadyPackage = 1; // GameReady Package should be "safe" even if other packages is used
+                pDriverInfo->bIsNVIDIARTXProductionBranchPackage = 0;
+                pDriverInfo->bIsNVIDIARTXNewFeatureBranchPackage = 0;
+                str::tonvss(pDriverInfo->szBuildBaseBranch, NVAPI_VERSION);
+                break;
+            }
+            default:
+                return Error(n); // Unreachable, but just to be sure
+        }
+
+        return Ok(n);
+    }
 }
