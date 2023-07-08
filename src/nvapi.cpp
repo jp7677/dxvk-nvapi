@@ -227,7 +227,7 @@ extern "C" {
         if (szDesc == nullptr)
             return InvalidArgument(n);
 
-        str::tonvss(szDesc, "DXVK_NVAPI");
+        str::tonvss(szDesc, "NVAPI Open Source Interface (DXVK-NVAPI)");
 
         return Ok(n);
     }

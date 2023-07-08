@@ -8,7 +8,7 @@ using namespace Catch::Matchers;
 TEST_CASE("GetInterfaceVersionString returns OK", "[.sysinfo]") {
     NvAPI_ShortString desc;
     REQUIRE(NvAPI_GetInterfaceVersionString(desc) == NVAPI_OK);
-    REQUIRE_THAT(desc, Equals("DXVK_NVAPI"));
+    REQUIRE_THAT(desc, Equals("NVAPI Open Source Interface (DXVK-NVAPI)"));
 }
 
 TEST_CASE("GetErrorMessage returns OK", "[.sysinfo]") {
