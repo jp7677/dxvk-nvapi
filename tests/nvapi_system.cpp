@@ -91,7 +91,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     GETNVAPIPROCADDR(Initialize);
     GETNVAPIPROCADDR(Unload);
     GETNVAPIPROCADDR(GetInterfaceVersionString);
-    GETNVAPIPROCADDR(SYS_GetDriverAndBranchVersion);
+    GETNVAPIPROCADDR(SYS_GetDisplayDriverInfo);
     GETNVAPIPROCADDR(EnumPhysicalGPUs);
     GETNVAPIPROCADDR(GetGPUIDfromPhysicalGPU);
     GETNVAPIPROCADDR(GPU_GetFullName);
@@ -124,7 +124,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     REQUIRE(nvAPI_Initialize);
     REQUIRE(nvAPI_Unload);
     REQUIRE(nvAPI_GetInterfaceVersionString);
-    REQUIRE(nvAPI_SYS_GetDriverAndBranchVersion);
+    REQUIRE(nvAPI_SYS_GetDisplayDriverInfo);
     REQUIRE(nvAPI_EnumPhysicalGPUs);
     REQUIRE(nvAPI_GetGPUIDfromPhysicalGPU);
     REQUIRE(nvAPI_GPU_GetFullName);
@@ -160,11 +160,12 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     std::cout << "--------------------------------" << std::endl;
     std::cout << "Interface version:              " << desc << std::endl;
 
-    NvU32 version;
-    NvAPI_ShortString branch;
-    REQUIRE(nvAPI_SYS_GetDriverAndBranchVersion(&version, branch) == NVAPI_OK);
-    std::cout << "Driver version:                 " << (version / 100) << "." << std::setfill('0') << std::setw(2) << (version % 100) << std::endl;
-    std::cout << "Driver branch:                  " << branch << std::endl;
+    NV_DISPLAY_DRIVER_INFO driverInfo;
+    driverInfo.version = NV_DISPLAY_DRIVER_INFO_VER;
+    REQUIRE(nvAPI_SYS_GetDisplayDriverInfo(&driverInfo) == NVAPI_OK);
+    std::cout << "Driver version:                 " << (driverInfo.driverVersion / 100) << "." << std::setfill('0') << std::setw(2) << (driverInfo.driverVersion % 100) << std::endl;
+    std::cout << "Driver branch:                  " << driverInfo.szBuildBranch << std::endl;
+    std::cout << "Driver base branch:             " << driverInfo.szBuildBaseBranch << std::endl;
 
     NV_COMPUTE_GPU_TOPOLOGY_V1 computeGpuTopology; // Version 2 returns `NVAPI_INCOMPATIBLE_STRUCT_VERSION` on NVIDIA's NVAPI on Windows, so enforce version 1
     computeGpuTopology.version = NV_COMPUTE_GPU_TOPOLOGY_VER1;

@@ -121,6 +121,53 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE_THAT(branch, StartsWith("r"));
     }
 
+    SECTION("GetDisplayDriverInfo succeed") {
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        props->driverVersion = (470 << 22) | (35 << 14) | 1 << 6;
+                    }));
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        SECTION("GetDisplayDriverInfo (V1) returns OK") {
+            NV_DISPLAY_DRIVER_INFO_V1 info;
+            info.version = NV_DISPLAY_DRIVER_INFO_VER1;
+            REQUIRE(NvAPI_SYS_GetDisplayDriverInfo(reinterpret_cast<NV_DISPLAY_DRIVER_INFO*>(&info)) == NVAPI_OK);
+            REQUIRE(info.driverVersion == 47035);
+            REQUIRE(info.bIsDCHDriver == 1);
+            REQUIRE(info.bIsNVIDIAGameReadyPackage == 1);
+            REQUIRE_THAT(info.szBuildBranch, StartsWith("r"));
+        }
+
+        SECTION("GetDisplayDriverInfo (V2) returns OK") {
+            NV_DISPLAY_DRIVER_INFO_V2 info;
+            info.version = NV_DISPLAY_DRIVER_INFO_VER2;
+            REQUIRE(NvAPI_SYS_GetDisplayDriverInfo(&info) == NVAPI_OK);
+            REQUIRE(info.driverVersion == 47035);
+            REQUIRE(info.bIsDCHDriver == 1);
+            REQUIRE(info.bIsNVIDIAGameReadyPackage == 1);
+            REQUIRE_THAT(info.szBuildBranch, StartsWith("r"));
+            REQUIRE_THAT(info.szBuildBaseBranch, StartsWith("r"));
+        }
+
+        SECTION("GetDisplayDriverInfo with unknown struct version returns incompatible-struct-version") {
+            NV_DISPLAY_DRIVER_INFO info;
+            info.version = NV_DISPLAY_DRIVER_INFO_VER2 + 1;
+            REQUIRE(NvAPI_SYS_GetDisplayDriverInfo(&info) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetDisplayDriverInfo with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            NV_DISPLAY_DRIVER_INFO info;
+            info.version = NV_DISPLAY_DRIVER_INFO_VER;
+            REQUIRE(NvAPI_SYS_GetDisplayDriverInfo(&info) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
+
     SECTION("GetDisplayDriverVersion returns OK") {
         struct Data {
             VkDriverId driverId;
