@@ -7,15 +7,25 @@ project('dxvk-nvapi',
   version : 'v0.0',
   meson_version : '>= 0.58.0')
 
-dxvk_compiler = meson.get_compiler('cpp')
-add_project_arguments(dxvk_compiler.get_supported_arguments('-Wno-unused-parameter'), language : 'cpp')
+cpp = meson.get_compiler('cpp')
+
+compiler_args = ['-Wno-unused-parameter']
 if get_option('buildtype') == 'debug' or get_option('buildtype') == 'debugoptimized'
-  add_project_arguments(dxvk_compiler.get_supported_arguments('-gstrict-dwarf'), language : 'cpp')
-  add_project_arguments(dxvk_compiler.get_supported_arguments('-gdwarf-2'), language : 'cpp')
-  add_project_arguments(dxvk_compiler.get_supported_arguments('-Wa,-mbig-obj'), language : 'cpp')
+  compiler_args += [
+    '-gdwarf-4',
+    '-Wa,-mbig-obj'
+  ]
 endif
 
-add_project_link_arguments(dxvk_compiler.get_supported_link_arguments('-Wl,--file-alignment=4096'), language: 'cpp')
+link_args = [
+    '-static',
+    '-static-libgcc',
+    '-static-libstdc++',
+    '-Wl,--file-alignment=4096'
+]
+
+add_project_arguments(cpp.get_supported_arguments(compiler_args), language: 'cpp')
+add_project_link_arguments(cpp.get_supported_link_arguments(link_args), language: 'cpp')
 
 dxvk_cpu_family = target_machine.cpu_family()
 if dxvk_cpu_family == 'x86_64'
@@ -26,9 +36,9 @@ endif
 
 vk_headers = include_directories('./external/Vulkan-Headers/include')
 
-lib_dxgi = dxvk_compiler.find_library('dxgi')
-lib_d3d11 = dxvk_compiler.find_library('d3d11')
-lib_version = dxvk_compiler.find_library('version')
+lib_dxgi = cpp.find_library('dxgi')
+lib_d3d11 = cpp.find_library('d3d11')
+lib_version = cpp.find_library('version')
 
 dxvk_nvapi_version = vcs_tag(
   command: ['git', 'describe', '--always', '--tags', '--dirty=+'],
