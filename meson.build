@@ -40,6 +40,13 @@ lib_dxgi = cpp.find_library('dxgi')
 lib_d3d11 = cpp.find_library('d3d11')
 lib_version = cpp.find_library('version')
 
+res_ext = '.o'
+wrc = find_program('windres')
+wrc_generator = generator(wrc,
+  output    : [ '@BASENAME@' + res_ext ],
+  arguments : [ '-i', '@INPUT@', '-o', '@OUTPUT@' ],
+)
+
 dxvk_nvapi_version = vcs_tag(
   command: ['git', 'describe', '--always', '--tags', '--dirty=+'],
   input:  'version.h.in',

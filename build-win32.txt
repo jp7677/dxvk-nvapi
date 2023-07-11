@@ -2,6 +2,7 @@
 cpp = 'i686-w64-mingw32-g++'
 strip = 'i686-w64-mingw32-strip'
 ar = 'i686-w64-mingw32-ar'
+windres = 'i686-w64-mingw32-windres'
 
 [built-in options]
 cpp_args=['-msse', '-msse2']

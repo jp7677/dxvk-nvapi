@@ -1,3 +1,5 @@
+dxvk_nvapi_res = wrc_generator.process('version.rc')
+
 nvapi_src = files([
   'dxvk/dxvk_interfaces.cpp',
   'vkd3d-proton/vkd3d-proton_interfaces.cpp',
@@ -27,7 +29,7 @@ nvapi_src = files([
   'nvapi_interface.cpp',
 ])
 
-nvapi_dll = shared_library('nvapi'+target_suffix, [ nvapi_src, dxvk_nvapi_version ],
+nvapi_dll = shared_library('nvapi'+target_suffix, [ nvapi_src, dxvk_nvapi_version, dxvk_nvapi_res ],
   name_prefix         : '',
   dependencies        : [ lib_dxgi, lib_d3d11, lib_version ],
   include_directories : [ vk_headers ],
