@@ -13,8 +13,8 @@ namespace dxvk {
         virtual void SetTargetFrameTime(uint64_t frame_time_ns);
 
       private:
-        typedef void (*PFN_lfx_WaitAndBeginFrame)();
-        typedef void (*PFN_lfx_SetTargetFrameTime)(__int64);
+        using PFN_lfx_WaitAndBeginFrame = void (*)();
+        using PFN_lfx_SetTargetFrameTime = void (*)(__int64);
 
         HMODULE m_lfxModule{};
         PFN_lfx_WaitAndBeginFrame m_lfx_WaitAndBeginFrame{};
