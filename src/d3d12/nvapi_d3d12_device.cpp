@@ -1,3 +1,4 @@
+#include "../util/util_log.h"
 #include "nvapi_d3d12_device.h"
 
 namespace dxvk {
@@ -60,10 +61,10 @@ namespace dxvk {
 
     bool NvapiD3d12Device::LaunchCubinShader(ID3D12GraphicsCommandList* commandList, NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) {
         auto commandListExt = GetCommandListExt(commandList);
-        if (commandListExt == nullptr)
+        if (!commandListExt.has_value())
             return false;
 
-        return SUCCEEDED(commandListExt->LaunchCubinShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, params, paramSize));
+        return SUCCEEDED(commandListExt.value().CommandListExt->LaunchCubinShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, params, paramSize));
     }
 
     bool NvapiD3d12Device::CaptureUAVInfo(ID3D12Device* device, NVAPI_UAV_INFO* pUAVInfo) {
@@ -105,17 +106,19 @@ namespace dxvk {
         return deviceExt;
     }
 
-    Com<ID3D12GraphicsCommandListExt> NvapiD3d12Device::GetCommandListExt(ID3D12GraphicsCommandList* commandList) {
+    std::optional<NvapiD3d12Device::CommandListExtWithVersion> NvapiD3d12Device::GetCommandListExt(ID3D12GraphicsCommandList* commandList) {
         std::scoped_lock lock(m_CommandListMutex);
         auto it = m_CommandListMap.find(commandList);
         if (it != m_CommandListMap.end())
             return it->second;
 
-        Com<ID3D12GraphicsCommandListExt> commandListExt;
-        if (FAILED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt))))
-            return nullptr;
+        Com<ID3D12GraphicsCommandListExt> commandListExt = nullptr;
+        if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt)))) {
+            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{(ID3D12GraphicsCommandListExt*)commandListExt.ptr(), 0};
+            return std::make_optional(m_CommandListMap.emplace(commandList, cmdListVer).first->second);
+        }
 
-        m_CommandListMap.emplace(commandList, commandListExt.ptr());
-        return commandListExt;
+        log::write("commandList has no ID3D12GraphicsCommandListExt compatible interface!");
+        return {};
     }
 }
