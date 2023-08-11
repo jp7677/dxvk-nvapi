@@ -8,6 +8,11 @@ namespace dxvk {
 
     class NvapiD3d12Device {
 
+        struct CommandListExtWithVersion {
+            ID3D12GraphicsCommandListExt* CommandListExt;
+            uint32_t InterfaceVersion;
+        };
+
       public:
         static std::optional<LUID> GetLuid(IUnknown* unknown);
 
@@ -24,13 +29,13 @@ namespace dxvk {
 
       private:
         inline static std::unordered_map<ID3D12Device*, ID3D12DeviceExt*> m_cubinDeviceMap;
-        inline static std::unordered_map<ID3D12GraphicsCommandList*, ID3D12GraphicsCommandListExt*> m_CommandListMap;
+        inline static std::unordered_map<ID3D12GraphicsCommandList*, CommandListExtWithVersion> m_CommandListMap;
 
         inline static std::mutex m_CommandListMutex;
         inline static std::mutex m_CubinDeviceMutex;
 
         [[nodiscard]] static Com<ID3D12DeviceExt> GetCubinDevice(ID3D12Device* device);
         [[nodiscard]] static Com<ID3D12DeviceExt> GetDeviceExt(ID3D12Device* device, D3D12_VK_EXTENSION extension);
-        [[nodiscard]] static Com<ID3D12GraphicsCommandListExt> GetCommandListExt(ID3D12GraphicsCommandList* commandList);
+        [[nodiscard]] static std::optional<CommandListExtWithVersion> GetCommandListExt(ID3D12GraphicsCommandList* commandList);
     };
 }
