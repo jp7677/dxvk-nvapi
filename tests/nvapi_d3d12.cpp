@@ -392,6 +392,69 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(commandListRefCount == 0);
     }
 
+    SECTION("Create + Launch CuBIN with SMEM returns OK") {
+        const void* cubinData = nullptr;
+        auto cubinSize = 2U;
+        auto blockX = 3U;
+        auto blockY = 4U;
+        auto blockZ = 5U;
+        auto smemSize = 6U;
+        auto shaderName = "shader";
+        auto shaderHandle = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122);
+        auto handle = &shaderHandle;
+        const void* params = nullptr;
+        auto paramSize = 7U;
+        const void* rawParam = nullptr;
+        auto rawParamCount = 0U;
+        REQUIRE_CALL(device, CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, handle))
+            .RETURN(S_OK)
+            .TIMES(1);
+        REQUIRE_CALL(commandList, LaunchCubinShaderEx(shaderHandle, blockX, blockY, blockZ, smemSize, params, paramSize, rawParam, rawParamCount))
+            .RETURN(S_OK)
+            .TIMES(1);
+
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderEx(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, smemSize, shaderName, reinterpret_cast<NVDX_ObjectHandle*>(handle)) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), reinterpret_cast<NVDX_ObjectHandle>(shaderHandle), blockX, blockY, blockZ, params, paramSize) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
+    }
+
+    SECTION("Launch CuBIN without ID3D12GraphicsCommandListExt1 returns OK") {
+        D3D12Vkd3dGraphicsCommandListMock commandList0;
+        ALLOW_CALL(commandList0, QueryInterface(__uuidof(ID3D12GraphicsCommandList1), _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandList1*>(&commandList0))
+            .LR_SIDE_EFFECT(commandListRefCount++)
+            .RETURN(S_OK);
+        ALLOW_CALL(commandList0, QueryInterface(ID3D12GraphicsCommandListExt::guid, _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt*>(&commandList0))
+            .LR_SIDE_EFFECT(commandListRefCount++)
+            .RETURN(S_OK);
+        ALLOW_CALL(commandList0, QueryInterface(ID3D12GraphicsCommandListExt1::guid, _))
+            .RETURN(E_NOINTERFACE);
+        ALLOW_CALL(commandList0, AddRef())
+            .LR_SIDE_EFFECT(commandListRefCount++)
+            .RETURN(commandListRefCount);
+        ALLOW_CALL(commandList0, Release())
+            .LR_SIDE_EFFECT(commandListRefCount--)
+            .RETURN(commandListRefCount);
+
+        auto shaderHandle = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0xbadcf00d);
+        auto blockX = 1U;
+        auto blockY = 2U;
+        auto blockZ = 3U;
+        const void* params = nullptr;
+        auto paramSize = 4U;
+
+        REQUIRE_CALL(commandList0, LaunchCubinShader(shaderHandle, blockX, blockY, blockZ, params, paramSize))
+            .RETURN(S_OK)
+            .TIMES(1);
+        FORBID_CALL(commandList0, LaunchCubinShaderEx(_, _, _, _, _, _, _, _, _));
+
+        REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList0), reinterpret_cast<NVDX_ObjectHandle>(shaderHandle), blockX, blockY, blockZ, params, paramSize) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
+    }
+
     SECTION("GetRaytracingCaps returns OK and claims that thread reordering is not supported") {
         NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS caps;
         REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING, &caps, sizeof(caps)) == NVAPI_OK);
