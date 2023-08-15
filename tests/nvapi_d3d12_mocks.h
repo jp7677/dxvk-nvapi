@@ -80,7 +80,7 @@ class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3
     IMPLEMENT_MOCK1(CaptureUAVInfo);
 };
 
-class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList4, public ID3D12GraphicsCommandListExt {};
+class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList4, public ID3D12GraphicsCommandListExt1 {};
 
 class D3D12Vkd3dGraphicsCommandListMock final : public trompeloeil::mock_interface<ID3D12Vkd3dGraphicsCommandList> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -162,4 +162,5 @@ class D3D12Vkd3dGraphicsCommandListMock final : public trompeloeil::mock_interfa
     IMPLEMENT_MOCK1(DispatchRays);
     IMPLEMENT_MOCK1(GetVulkanHandle);
     IMPLEMENT_MOCK6(LaunchCubinShader);
+    IMPLEMENT_MOCK9(LaunchCubinShaderEx);
 };
