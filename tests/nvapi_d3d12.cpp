@@ -33,6 +33,10 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt*>(&commandList))
         .LR_SIDE_EFFECT(commandListRefCount++)
         .RETURN(S_OK);
+    ALLOW_CALL(commandList, QueryInterface(ID3D12GraphicsCommandListExt1::guid, _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt*>(&commandList))
+        .LR_SIDE_EFFECT(commandListRefCount++)
+        .RETURN(S_OK);
     ALLOW_CALL(commandList, AddRef())
         .LR_SIDE_EFFECT(commandListRefCount++)
         .RETURN(commandListRefCount);
@@ -59,6 +63,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             .RETURN(E_NOINTERFACE);
         ALLOW_CALL(commandList, QueryInterface(ID3D12GraphicsCommandListExt::guid, _))
             .RETURN(E_NOINTERFACE);
+        ALLOW_CALL(commandList, QueryInterface(ID3D12GraphicsCommandListExt1::guid, _))
+            .RETURN(E_NOINTERFACE);
 
         FORBID_CALL(device, CreateCubinComputeShaderWithName(_, _, _, _, _, _, _));
         FORBID_CALL(device, DestroyCubinComputeShader(_));
@@ -66,6 +72,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         FORBID_CALL(device, GetCudaSurfaceObject(_, _));
         FORBID_CALL(device, CaptureUAVInfo(_));
         FORBID_CALL(commandList, LaunchCubinShader(_, _, _, _, _, _));
+        FORBID_CALL(commandList, LaunchCubinShaderEx(_, _, _, _, _, _, _, _, _));
 
         REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderWithName(static_cast<ID3D12Device*>(&device), nullptr, 0, 0, 0, 0, "shader_name", nullptr) == NVAPI_ERROR);
         REQUIRE(NvAPI_D3D12_CreateCubinComputeShader(static_cast<ID3D12Device*>(&device), nullptr, 0, 0, 0, 0, nullptr) == NVAPI_ERROR);
@@ -371,9 +378,12 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto blockX = 1U;
         auto blockY = 2U;
         auto blockZ = 3U;
+        auto smemSize = 0U;
         const void* params = nullptr;
         auto paramSize = 4U;
-        REQUIRE_CALL(commandList, LaunchCubinShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, params, paramSize))
+        const void* rawParam = nullptr;
+        auto rawParamCount = 0U;
+        REQUIRE_CALL(commandList, LaunchCubinShaderEx(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, smemSize, params, paramSize, rawParam, rawParamCount))
             .RETURN(S_OK)
             .TIMES(1);
 
