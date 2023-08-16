@@ -20,6 +20,7 @@ namespace dxvk {
         static bool SetDepthBoundsTestValues(ID3D12GraphicsCommandList* commandList, float minDepth, float maxDepth);
 
         static bool CreateCubinComputeShaderWithName(ID3D12Device* device, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader);
+        static bool CreateCubinComputeShaderEx(ID3D12Device* device, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader);
         static bool DestroyCubinComputeShader(ID3D12Device* device, NVDX_ObjectHandle shader);
         static bool GetCudaTextureObject(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle);
         static bool GetCudaSurfaceObject(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle);
@@ -30,9 +31,11 @@ namespace dxvk {
       private:
         inline static std::unordered_map<ID3D12Device*, ID3D12DeviceExt*> m_cubinDeviceMap;
         inline static std::unordered_map<ID3D12GraphicsCommandList*, CommandListExtWithVersion> m_CommandListMap;
+        inline static std::unordered_map<NVDX_ObjectHandle, NvU32> m_cubinSmemMap;
 
         inline static std::mutex m_CommandListMutex;
         inline static std::mutex m_CubinDeviceMutex;
+        inline static std::mutex m_CubinSmemMutex;
 
         [[nodiscard]] static Com<ID3D12DeviceExt> GetCubinDevice(ID3D12Device* device);
         [[nodiscard]] static Com<ID3D12DeviceExt> GetDeviceExt(ID3D12Device* device, D3D12_VK_EXTENSION extension);

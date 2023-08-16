@@ -25,6 +25,20 @@ extern "C" {
         return NotSupported(__func__);
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderEx(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedError = false;
+        static bool alreadyLoggedOk = false;
+
+        if (pDevice == nullptr)
+            return InvalidArgument(n);
+
+        if (!NvapiD3d12Device::CreateCubinComputeShaderEx(pDevice, cubinData, cubinSize, blockX, blockY, blockZ, smemSize, shaderName, pShader))
+            return Error(n, alreadyLoggedError);
+
+        return Ok(n, alreadyLoggedOk);
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderWithName(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
