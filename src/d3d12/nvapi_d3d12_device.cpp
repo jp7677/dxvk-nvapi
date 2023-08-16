@@ -32,7 +32,24 @@ namespace dxvk {
         if (cubinDevice == nullptr)
             return false;
 
-        return SUCCEEDED(cubinDevice->CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, reinterpret_cast<D3D12_CUBIN_DATA_HANDLE**>(pShader)));
+        return CreateCubinComputeShaderEx(device, cubinData, cubinSize, blockX, blockY, blockZ, 0 /* smemSize */, shaderName, pShader);
+    }
+
+    bool NvapiD3d12Device::CreateCubinComputeShaderEx(ID3D12Device* device, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader) {
+        auto cubinDevice = GetCubinDevice(device);
+        if (cubinDevice == nullptr)
+            return false;
+
+        Com<ID3D12DeviceExt> deviceExt;
+        if (FAILED(cubinDevice->QueryInterface(IID_PPV_ARGS(&deviceExt))))
+            return false;
+
+        if (FAILED(deviceExt->CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, reinterpret_cast<D3D12_CUBIN_DATA_HANDLE**>(pShader))))
+            return false;
+
+        std::scoped_lock lock(m_CubinSmemMutex);
+        m_cubinSmemMap.emplace(*pShader, smemSize);
+        return true;
     }
 
     bool NvapiD3d12Device::DestroyCubinComputeShader(ID3D12Device* device, NVDX_ObjectHandle shader) {
@@ -40,7 +57,12 @@ namespace dxvk {
         if (cubinDevice == nullptr)
             return false;
 
-        return SUCCEEDED(cubinDevice->DestroyCubinComputeShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(shader)));
+        if (FAILED(cubinDevice->DestroyCubinComputeShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(shader))))
+            return false;
+
+        std::scoped_lock lock(m_CubinSmemMutex);
+        m_cubinSmemMap.erase(shader);
+        return true;
     }
 
     bool NvapiD3d12Device::GetCudaTextureObject(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle) {
@@ -67,10 +89,22 @@ namespace dxvk {
         auto cmdList = commandListExt.value().CommandListExt;
         auto interfaceVersion = commandListExt.value().InterfaceVersion;
 
-        if (interfaceVersion >= 1)
-            return SUCCEEDED(cmdList->LaunchCubinShaderEx(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, 0, params, paramSize, nullptr, 0));
+        uint32_t smem = 0;
+        std::scoped_lock lock(m_CubinSmemMutex);
+        auto it = m_cubinSmemMap.find(pShader);
+        if (it != m_cubinSmemMap.end())
+            smem = it->second;
         else
+            log::write("Failed to find CuBIN in m_cubinSmemMap, defaulting to 0");
+
+        if (interfaceVersion >= 1)
+            return SUCCEEDED(cmdList->LaunchCubinShaderEx(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, smem, params, paramSize, nullptr, 0));
+        else {
+            if (smem != 0)
+                log::write("Non-zero SMEM value supplied for CuBIN but ID3D12GraphicsCommandListExt1 not supported! This may cause corruption");
+
             return SUCCEEDED(cmdList->LaunchCubinShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, params, paramSize));
+        }
     }
 
     bool NvapiD3d12Device::CaptureUAVInfo(ID3D12Device* device, NVAPI_UAV_INFO* pUAVInfo) {
