@@ -98,5 +98,22 @@ ID3D12GraphicsCommandListExt : public IUnknown {
         UINT32 param_size) = 0;
 };
 
+MIDL_INTERFACE("d53b0028-afb4-4b65-a4f1-7b0daaa65b4f")
+ID3D12GraphicsCommandListExt1 : public ID3D12GraphicsCommandListExt {
+    static const GUID guid;
+
+    virtual HRESULT STDMETHODCALLTYPE LaunchCubinShaderEx(
+        D3D12_CUBIN_DATA_HANDLE * handle,
+        UINT32 block_x,
+        UINT32 block_y,
+        UINT32 block_z,
+        UINT32 smem_size,
+        const void* params,
+        UINT32 param_size,
+        const void* raw_params,
+        UINT32 raw_params_count) = 0;
+};
+
 VKD3D_PROTON_GUID(ID3D12DeviceExt)
 VKD3D_PROTON_GUID(ID3D12GraphicsCommandListExt)
+VKD3D_PROTON_GUID(ID3D12GraphicsCommandListExt1)

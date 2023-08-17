@@ -64,7 +64,13 @@ namespace dxvk {
         if (!commandListExt.has_value())
             return false;
 
-        return SUCCEEDED(commandListExt.value().CommandListExt->LaunchCubinShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, params, paramSize));
+        auto cmdList = commandListExt.value().CommandListExt;
+        auto interfaceVersion = commandListExt.value().InterfaceVersion;
+
+        if (interfaceVersion >= 1)
+            return SUCCEEDED(cmdList->LaunchCubinShaderEx(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, 0, params, paramSize, nullptr, 0));
+        else
+            return SUCCEEDED(cmdList->LaunchCubinShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, params, paramSize));
     }
 
     bool NvapiD3d12Device::CaptureUAVInfo(ID3D12Device* device, NVAPI_UAV_INFO* pUAVInfo) {
@@ -112,9 +118,15 @@ namespace dxvk {
         if (it != m_CommandListMap.end())
             return it->second;
 
+        Com<ID3D12GraphicsCommandListExt1> commandListExt1 = nullptr;
+        if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt1)))) {
+            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{(ID3D12GraphicsCommandListExt1*)commandListExt1.ptr(), 1};
+            return std::make_optional(m_CommandListMap.emplace(commandList, cmdListVer).first->second);
+        }
+
         Com<ID3D12GraphicsCommandListExt> commandListExt = nullptr;
         if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt)))) {
-            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{(ID3D12GraphicsCommandListExt*)commandListExt.ptr(), 0};
+            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{(ID3D12GraphicsCommandListExt1*)commandListExt.ptr(), 0};
             return std::make_optional(m_CommandListMap.emplace(commandList, cmdListVer).first->second);
         }
 

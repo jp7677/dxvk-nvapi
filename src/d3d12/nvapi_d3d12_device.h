@@ -9,7 +9,7 @@ namespace dxvk {
     class NvapiD3d12Device {
 
         struct CommandListExtWithVersion {
-            ID3D12GraphicsCommandListExt* CommandListExt;
+            ID3D12GraphicsCommandListExt1* CommandListExt;
             uint32_t InterfaceVersion;
         };
 
