@@ -25,7 +25,7 @@ extern "C" {
             return Ok(n);
         }
 
-        if (*pDisplayIdCount != count) {
+        if (*pDisplayIdCount < count) {
             *pDisplayIdCount = count;
             return InsufficientBuffer(n);
         }
