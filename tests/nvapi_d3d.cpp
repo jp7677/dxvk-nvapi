@@ -166,6 +166,9 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
         }
 
         SECTION("GetSleepStatus with unknown struct version returns incompatible-struct-version") {
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
             NV_GET_SLEEP_STATUS_PARAMS params{};
             params.version = NV_GET_SLEEP_STATUS_PARAMS_VER1 + 1;
             REQUIRE(NvAPI_D3D_GetSleepStatus(&unknown, &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
@@ -182,6 +185,9 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
         }
 
         SECTION("SetSleepMode with unknown struct version returns incompatible-struct-version") {
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
             NV_SET_SLEEP_MODE_PARAMS params{};
             params.version = NV_SET_SLEEP_MODE_PARAMS_VER1 + 1;
             REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);

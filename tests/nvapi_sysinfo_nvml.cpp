@@ -346,7 +346,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             REQUIRE(pstate == NVAPI_GPU_PERF_PSTATE_P2);
         }
 
-        SECTION("GetAllClockFrequencies returns OK") {
+        SECTION("GetAllClockFrequencies succeeds") {
             auto graphicsClock = 500U;
             auto memoryClock = 600U;
             auto videoClock = 700U;
@@ -403,50 +403,41 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent == 1);
                 REQUIRE(frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency == videoClock * 1000);
             }
-        }
 
-        SECTION("GetAllClockFrequencies with unknown struct version returns incompatible-struct-version") {
-            NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
-
-            NV_GPU_CLOCK_FREQUENCIES frequencies;
-            frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_3 + 1;
-            REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-        }
-
-        SECTION("GetAllClockFrequencies with current struct version returns not incompatible-struct-version") {
-            // This test should fail when a header update provides a newer not yet implemented struct version
-            NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
-
-            NV_GPU_CLOCK_FREQUENCIES frequencies;
-            frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER;
-            REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-        }
-
-        SECTION("GetAllClockFrequencies returns not-supported for base/boost clock types") {
-            struct Data {
-                NV_GPU_CLOCK_FREQUENCIES_CLOCK_TYPE clockType;
-            };
-            auto args = GENERATE(
-                Data{NV_GPU_CLOCK_FREQUENCIES_BASE_CLOCK},
-                Data{NV_GPU_CLOCK_FREQUENCIES_BOOST_CLOCK});
-
-            NvPhysicalGpuHandle handle;
-            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
-
-            SECTION("GetAllClockFrequencies (V2) returns not-supported") {
-                NV_GPU_CLOCK_FREQUENCIES_V2 frequencies;
-                frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
-                frequencies.ClockType = args.clockType;
-                REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_NOT_SUPPORTED);
+            SECTION("GetAllClockFrequencies with unknown struct version returns incompatible-struct-version") {
+                NV_GPU_CLOCK_FREQUENCIES frequencies;
+                frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_3 + 1;
+                REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
             }
 
-            SECTION("GetAllClockFrequencies (V3) returns not-supported") {
-                NV_GPU_CLOCK_FREQUENCIES_V2 frequencies;
-                frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_3;
-                frequencies.ClockType = args.clockType;
-                REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_NOT_SUPPORTED);
+            SECTION("GetAllClockFrequencies with current struct version returns not incompatible-struct-version") {
+                // This test should fail when a header update provides a newer not yet implemented struct version
+                NV_GPU_CLOCK_FREQUENCIES frequencies;
+                frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER;
+                REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("GetAllClockFrequencies returns not-supported for base/boost clock types") {
+                struct Data {
+                    NV_GPU_CLOCK_FREQUENCIES_CLOCK_TYPE clockType;
+                };
+                auto args = GENERATE(
+                    Data{NV_GPU_CLOCK_FREQUENCIES_BASE_CLOCK},
+                    Data{NV_GPU_CLOCK_FREQUENCIES_BOOST_CLOCK});
+
+                SECTION("GetAllClockFrequencies (V2) returns not-supported") {
+                    NV_GPU_CLOCK_FREQUENCIES_V2 frequencies;
+                    frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
+                    frequencies.ClockType = args.clockType;
+                    REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_NOT_SUPPORTED);
+                }
+
+                SECTION("GetAllClockFrequencies (V3) returns not-supported") {
+                    NV_GPU_CLOCK_FREQUENCIES_V2 frequencies;
+                    frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_3;
+                    frequencies.ClockType = args.clockType;
+                    REQUIRE(NvAPI_GPU_GetAllClockFrequencies(handle, &frequencies) == NVAPI_NOT_SUPPORTED);
+                }
             }
         }
     }

@@ -392,7 +392,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(commandListRefCount == 0);
     }
 
-    SECTION("Create + Launch CuBIN with SMEM returns OK") {
+    SECTION("Create and Launch CuBIN with SMEM returns OK") {
         const void* cubinData = nullptr;
         auto cubinSize = 2U;
         auto blockX = 3U;

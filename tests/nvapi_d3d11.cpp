@@ -446,6 +446,9 @@ TEST_CASE("D3D11 MultiGPU methods succeed", "[.d3d11]") {
 
     auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
 
+    SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+    REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
     SECTION("MultiGPU_GetCaps (V1) returns OK") {
         NV_MULTIGPU_CAPS_V1 multiGPUCaps{};
 
