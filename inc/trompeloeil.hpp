@@ -196,47 +196,49 @@ namespace trompeloeil { using std::unique_lock; }
   TROMPELOEIL_REMOVE_PAREN_INTERNAL __VA_ARGS__
 #define TROMPELOEIL_CLEAR_TROMPELOEIL_REMOVE_PAREN_INTERNAL
 
+#define TROMPELOEIL_EXPAND(x) x
+
 #define TROMPELOEIL_INIT_WITH_STR15(base, x, ...)                              \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR14(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR14(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR14(base, x, ...)                              \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR13(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR13(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR13(base, x, ...)                              \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR12(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR12(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR12(base, x, ...)                              \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR11(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR11(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR11(base, x, ...)                              \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR10(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR10(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR10(base, x, ...)                              \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR9(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR9(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR9(base, x, ...)                               \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR8(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR8(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR8(base, x, ...)                               \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR7(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR7(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR7(base, x, ...)                               \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR6(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR6(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR6(base, x, ...)                               \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR5(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR5(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR5(base, x, ...)                               \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR4(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR4(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR4(base, x, ...)                               \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR3(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR3(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR3(base, x, ...)                               \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR2(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR2(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR2(base, x, ...)                               \
-  base{#x, x}, TROMPELOEIL_INIT_WITH_STR1(base, __VA_ARGS__)
+  base{#x, x}, TROMPELOEIL_EXPAND(TROMPELOEIL_INIT_WITH_STR1(base, __VA_ARGS__))
 
 #define TROMPELOEIL_INIT_WITH_STR1(base, x)                                    \
   base{#x, x}
@@ -2553,28 +2555,50 @@ template <typename T>
       class string_helper // a vastly simplified string_view type of class
       {
       public:
+        template <
+          typename S,
+          typename = decltype(std::declval<const char*&>() = std::declval<S>().data()),
+          typename = decltype(std::declval<S>().length())
+            >
         string_helper(
-          std::string const& s)
+          const S& s)
         noexcept
-          : str(s.c_str())
+          : begin_(s.data())
+          , end_(begin_ + s.length())
         {}
 
         constexpr
         string_helper(
           char const* s)
         noexcept
-          : str(s)
-        {}
-
-        char const*
-        c_str()
-          const
-          noexcept
+          : begin_(s)
+          , end_(s ? begin_ + strlen(s) : nullptr)
         {
-          return str;
+        }
+
+        constexpr
+        explicit
+        operator bool() const
+        {
+          return begin_;
+        }
+        constexpr
+        char const *
+        begin()
+          const
+        {
+          return begin_;
+        }
+        constexpr
+        char const *
+        end()
+          const
+        {
+          return end_;
         }
       private:
-        char const* str;
+        char const* begin_;
+        char const* end_;
       };
 
       regex_check(
@@ -2591,8 +2615,7 @@ template <typename T>
         T const&)
       const
       {
-          return str.c_str()
-                 && std::regex_search(str.c_str(), re, match_type);
+        return str && std::regex_search(str.begin(), str.end(), re, match_type);
       }
 
     private:
@@ -4020,7 +4043,7 @@ template <typename T>
     using call_matcher_base<Sig>::name;
     using call_matcher_base<Sig>::loc;
 
-#if TROMPELOEIL_GCC && TROMPELOEIL_GCC_VERSION >= 70000 && TROMPEOLEIL_GCC_VERSION < 80000
+#if TROMPELOEIL_GCC && TROMPELOEIL_GCC_VERSION >= 70000 && TROMPELOEIL_GCC_VERSION < 80000
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic push
 #endif
@@ -4033,7 +4056,7 @@ template <typename T>
     : call_matcher_base<Sig>(location{file, line}, call_string)
     , val(std::forward<U>(u)...)
     {}
-#if TROMPELOEIL_GCC && TROMPELOEIL_GCC_VERSION >= 70000 && TROMPEOLEIL_GCC_VERSION < 80000
+#if TROMPELOEIL_GCC && TROMPELOEIL_GCC_VERSION >= 70000 && TROMPELOEIL_GCC_VERSION < 80000
 #pragma GCC diagnostic pop
 #endif
 
