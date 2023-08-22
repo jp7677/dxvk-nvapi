@@ -6,7 +6,7 @@
 #include "mock_factory.h"
 
 void SetupResourceFactory(
-    std::unique_ptr<DXGIFactory1Mock> dxgiFactory,
+    std::unique_ptr<DXGIDxvkFactoryMock> dxgiFactory,
     std::unique_ptr<VulkanMock> vulkan,
     std::unique_ptr<NvmlMock> nvml,
     std::unique_ptr<LfxMock> lfx);
@@ -14,7 +14,7 @@ void SetupResourceFactory(
 void ResetGlobals();
 
 [[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 18> ConfigureDefaultTestEnvironment(
-    DXGIFactory1Mock& dxgiFactory,
+    DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
     LfxMock& lfx,
@@ -22,7 +22,7 @@ void ResetGlobals();
     DXGIOutput6Mock& output);
 
 [[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 33> ConfigureExtendedTestEnvironment(
-    DXGIFactory1Mock& dxgiFactory,
+    DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
     LfxMock& lfx,

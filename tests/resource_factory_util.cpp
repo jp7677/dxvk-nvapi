@@ -4,7 +4,7 @@ using namespace trompeloeil;
 using namespace dxvk;
 
 void SetupResourceFactory(
-    std::unique_ptr<DXGIFactory1Mock> dxgiFactory,
+    std::unique_ptr<DXGIDxvkFactoryMock> dxgiFactory,
     std::unique_ptr<VulkanMock> vulkan,
     std::unique_ptr<NvmlMock> nvml,
     std::unique_ptr<LfxMock> lfx) {
@@ -24,7 +24,7 @@ void ResetGlobals() {
 }
 
 [[nodiscard]] std::array<std::unique_ptr<expectation>, 18> ConfigureDefaultTestEnvironment(
-    DXGIFactory1Mock& dxgiFactory,
+    DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
     LfxMock& lfx,
@@ -84,7 +84,7 @@ void ResetGlobals() {
 }
 
 [[nodiscard]] std::array<std::unique_ptr<expectation>, 33> ConfigureExtendedTestEnvironment(
-    DXGIFactory1Mock& dxgiFactory,
+    DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
     LfxMock& lfx,

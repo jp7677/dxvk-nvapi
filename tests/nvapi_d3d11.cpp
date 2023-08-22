@@ -437,7 +437,7 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
 }
 
 TEST_CASE("D3D11 MultiGPU methods succeed", "[.d3d11]") {
-    auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
+    auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();

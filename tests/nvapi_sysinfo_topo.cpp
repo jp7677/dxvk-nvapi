@@ -6,7 +6,7 @@ using namespace trompeloeil;
 using namespace Catch::Matchers;
 
 TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
-    auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
+    auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();

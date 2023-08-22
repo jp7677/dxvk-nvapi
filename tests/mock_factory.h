@@ -9,7 +9,7 @@ class MockFactory : public dxvk::ResourceFactory {
 
   public:
     MockFactory(
-        std::unique_ptr<DXGIFactory1Mock> dxgiFactory1Mock,
+        std::unique_ptr<DXGIDxvkFactoryMock> dxgiFactory1Mock,
         std::unique_ptr<VulkanMock> vulkanMock,
         std::unique_ptr<NvmlMock> nvmlMock,
         std::unique_ptr<LfxMock> lfxMock)
@@ -41,7 +41,7 @@ class MockFactory : public dxvk::ResourceFactory {
     }
 
   private:
-    std::unique_ptr<DXGIFactory1Mock> m_dxgiFactoryMock;
+    std::unique_ptr<DXGIDxvkFactoryMock> m_dxgiFactoryMock;
     std::unique_ptr<VulkanMock> m_vulkanMock;
     std::unique_ptr<NvmlMock> m_nvmlMock;
     std::unique_ptr<LfxMock> m_lfxMock;

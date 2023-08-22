@@ -5,7 +5,9 @@
 #include "../src/sysinfo/vulkan.h"
 #include "../src/sysinfo/nvml.h"
 
-class DXGIFactory1Mock final : public trompeloeil::mock_interface<IDXGIFactory1> {
+class IDXGIDxvkFactoryMock : public IDXGIFactory1, public IDXGIVkInteropFactory {};
+
+class DXGIDxvkFactoryMock final : public trompeloeil::mock_interface<IDXGIDxvkFactoryMock> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
@@ -20,6 +22,7 @@ class DXGIFactory1Mock final : public trompeloeil::mock_interface<IDXGIFactory1>
     IMPLEMENT_MOCK2(CreateSoftwareAdapter);
     IMPLEMENT_MOCK2(EnumAdapters1);
     IMPLEMENT_MOCK0(IsCurrent);
+    IMPLEMENT_MOCK2(GetVulkanInstance);
 };
 
 class IDXGIDxvkAdapter : public IDXGIAdapter1, public IDXGIVkInteropAdapter {};

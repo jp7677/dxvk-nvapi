@@ -18,7 +18,7 @@ TEST_CASE("GetErrorMessage returns OK", "[.sysinfo]") {
 }
 
 TEST_CASE("Initialize succeeds", "[.sysinfo]") {
-    auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
+    auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
@@ -84,7 +84,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
 }
 
 TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
-    auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
+    auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();

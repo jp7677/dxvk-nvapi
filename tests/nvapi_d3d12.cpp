@@ -131,7 +131,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     }
 
     SECTION("GetGraphicsCapabilities succeeds") {
-        auto dxgiFactory = std::make_unique<DXGIFactory1Mock>();
+        auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
         auto vulkan = std::make_unique<VulkanMock>();
         auto nvml = std::make_unique<NvmlMock>();
         auto lfx = std::make_unique<LfxMock>();
