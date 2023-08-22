@@ -3,17 +3,23 @@
 #include "nvapi_tests_private.h"
 #include "../src/resource_factory.h"
 
+using namespace trompeloeil;
+
 class MockFactory : public dxvk::ResourceFactory {
 
   public:
-    MockFactory(std::unique_ptr<IDXGIFactory1> dxgiFactory1Mock, std::unique_ptr<dxvk::Vulkan> vulkanMock,
-        std::unique_ptr<dxvk::Nvml> nvmlMock, std::unique_ptr<dxvk::Lfx> lfxMock)
-        : m_dxgiFactoryMock(std::move(dxgiFactory1Mock)), m_vulkanMock(std::move(vulkanMock)),
-          m_nvmlMock(std::move(nvmlMock)), m_lfxMock(std::move(lfxMock)){};
+    MockFactory(
+        std::unique_ptr<DXGIFactory1Mock> dxgiFactory1Mock,
+        std::unique_ptr<VulkanMock> vulkanMock,
+        std::unique_ptr<NvmlMock> nvmlMock,
+        std::unique_ptr<LfxMock> lfxMock)
+        : m_dxgiFactoryMock(std::move(dxgiFactory1Mock)),
+          m_vulkanMock(std::move(vulkanMock)),
+          m_nvmlMock(std::move(nvmlMock)),
+          m_lfxMock(std::move(lfxMock)){};
 
     dxvk::Com<IDXGIFactory1> CreateDXGIFactory1() override {
-        dxvk::Com<IDXGIFactory1> dxgiFactory = m_dxgiFactoryMock.get();
-        return dxgiFactory;
+        return m_dxgiFactoryMock.get();
     };
 
     std::unique_ptr<dxvk::Vulkan> CreateVulkan(dxvk::Com<IDXGIFactory1>& dxgiFactory) override {
@@ -28,9 +34,15 @@ class MockFactory : public dxvk::ResourceFactory {
         return std::move(m_lfxMock);
     }
 
+    [[nodiscard]] std::array<std::unique_ptr<expectation>, 1> ConfigureAllowRelease() {
+        return {
+            NAMED_ALLOW_CALL(*m_dxgiFactoryMock, Release())
+                .RETURN(0)};
+    }
+
   private:
-    std::unique_ptr<IDXGIFactory1> m_dxgiFactoryMock;
-    std::unique_ptr<dxvk::Vulkan> m_vulkanMock;
-    std::unique_ptr<dxvk::Nvml> m_nvmlMock;
-    std::unique_ptr<dxvk::Lfx> m_lfxMock;
+    std::unique_ptr<DXGIFactory1Mock> m_dxgiFactoryMock;
+    std::unique_ptr<VulkanMock> m_vulkanMock;
+    std::unique_ptr<NvmlMock> m_nvmlMock;
+    std::unique_ptr<LfxMock> m_lfxMock;
 };

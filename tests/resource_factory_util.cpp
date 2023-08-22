@@ -5,10 +5,20 @@ using namespace dxvk;
 
 void SetupResourceFactory(
     std::unique_ptr<DXGIFactory1Mock> dxgiFactory,
-    std::unique_ptr<Vulkan> vulkan,
-    std::unique_ptr<Nvml> nvml,
-    std::unique_ptr<Lfx> lfx) {
+    std::unique_ptr<VulkanMock> vulkan,
+    std::unique_ptr<NvmlMock> nvml,
+    std::unique_ptr<LfxMock> lfx) {
     resourceFactory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+}
+
+void ResetGlobals() {
+    if (resourceFactory == nullptr)
+        return;
+
+    auto mockFactory = reinterpret_cast<MockFactory*>(resourceFactory.get());
+    auto e = mockFactory->ConfigureAllowRelease(); // Ensure that Com<*> mocks can be deleted by destructors
+
+    nvapiD3dInstance.reset();
     nvapiAdapterRegistry.reset();
     initializationCount = 0ULL;
 }
