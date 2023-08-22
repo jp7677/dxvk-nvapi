@@ -1,5 +1,5 @@
-#include "../util/util_log.h"
 #include "nvapi_d3d12_device.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
 
@@ -154,13 +154,13 @@ namespace dxvk {
 
         Com<ID3D12GraphicsCommandListExt1> commandListExt1 = nullptr;
         if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt1)))) {
-            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{(ID3D12GraphicsCommandListExt1*)commandListExt1.ptr(), 1};
+            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{commandListExt1.ptr(), 1};
             return std::make_optional(m_CommandListMap.emplace(commandList, cmdListVer).first->second);
         }
 
         Com<ID3D12GraphicsCommandListExt> commandListExt = nullptr;
         if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt)))) {
-            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{(ID3D12GraphicsCommandListExt1*)commandListExt.ptr(), 0};
+            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{reinterpret_cast<ID3D12GraphicsCommandListExt1*>(commandListExt.ptr()), 0};
             return std::make_optional(m_CommandListMap.emplace(commandList, cmdListVer).first->second);
         }
 
