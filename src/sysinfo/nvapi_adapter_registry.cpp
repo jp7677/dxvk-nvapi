@@ -18,11 +18,11 @@ namespace dxvk {
     }
 
     bool NvapiAdapterRegistry::Initialize() {
-        auto dxgiFactory = m_resourceFactory.CreateDXGIFactory1();
-        if (dxgiFactory == nullptr)
+        m_dxgiFactory = m_resourceFactory.CreateDXGIFactory1();
+        if (m_dxgiFactory == nullptr)
             return false;
 
-        auto vulkan = m_resourceFactory.CreateVulkan(dxgiFactory);
+        auto vulkan = m_resourceFactory.CreateVulkan(m_dxgiFactory);
         if (vulkan == nullptr || !vulkan->IsAvailable())
             return false;
 
@@ -30,9 +30,13 @@ namespace dxvk {
         if (m_nvml->IsAvailable())
             log::write("NVML loaded and initialized successfully");
 
+        Com<IDXGIVkInteropFactory1> dxgiVkInteropFactory;
+        if (SUCCEEDED(m_dxgiFactory->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropFactory))))
+            m_dxgiVkInterop = dxgiVkInteropFactory;
+
         // Query all D3D11 adapter from DXVK to honor any DXVK device filtering
         Com<IDXGIAdapter1> dxgiAdapter;
-        for (auto i = 0U; dxgiFactory->EnumAdapters1(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; i++) {
+        for (auto i = 0U; m_dxgiFactory->EnumAdapters1(i, &dxgiAdapter) != DXGI_ERROR_NOT_FOUND; i++) {
             auto nvapiAdapter = new NvapiAdapter(*m_nvml);
             if (nvapiAdapter->Initialize(dxgiAdapter, i, *vulkan, m_nvapiOutputs))
                 m_nvapiAdapters.push_back(nvapiAdapter);
