@@ -14,6 +14,9 @@ namespace dxvk {
 
         struct ColorData {
             bool HasST2084Support;
+
+            NV_BPC BitsPerColor;
+
             uint16_t RedPrimaryX;
             uint16_t RedPrimaryY;
             uint16_t GreenPrimaryX;
