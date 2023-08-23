@@ -23,7 +23,7 @@ void ResetGlobals() {
     initializationCount = 0ULL;
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 18> ConfigureDefaultTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 21> ConfigureDefaultTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -40,6 +40,14 @@ void ResetGlobals() {
             .RETURN(S_OK),
         NAMED_ALLOW_CALL(dxgiFactory, EnumAdapters1(1U, _))
             .RETURN(DXGI_ERROR_NOT_FOUND),
+
+        NAMED_ALLOW_CALL(dxgiFactory, QueryInterface(IDXGIVkInteropFactory1::guid, _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropFactory1*>(&dxgiFactory))
+            .RETURN(S_OK),
+        NAMED_ALLOW_CALL(dxgiFactory, GetGlobalHDRState(_, _))
+            .RETURN(S_OK),
+        NAMED_ALLOW_CALL(dxgiFactory, SetGlobalHDRState(_, _))
+            .RETURN(S_OK),
 
         NAMED_ALLOW_CALL(adapter, QueryInterface(IDXGIVkInteropAdapter::guid, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter))
@@ -83,7 +91,7 @@ void ResetGlobals() {
             .RETURN(false)};
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 33> ConfigureExtendedTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 36> ConfigureExtendedTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -106,6 +114,14 @@ void ResetGlobals() {
             .RETURN(S_OK),
         NAMED_ALLOW_CALL(dxgiFactory, EnumAdapters1(2U, _))
             .RETURN(DXGI_ERROR_NOT_FOUND),
+
+        NAMED_ALLOW_CALL(dxgiFactory, QueryInterface(IDXGIVkInteropFactory1::guid, _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropFactory1*>(&dxgiFactory))
+            .RETURN(S_OK),
+        NAMED_ALLOW_CALL(dxgiFactory, GetGlobalHDRState(_, _))
+            .RETURN(S_OK),
+        NAMED_ALLOW_CALL(dxgiFactory, SetGlobalHDRState(_, _))
+            .RETURN(S_OK),
 
         NAMED_ALLOW_CALL(adapter1, QueryInterface(IDXGIVkInteropAdapter::guid, _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter1))

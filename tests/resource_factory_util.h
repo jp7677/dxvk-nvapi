@@ -13,7 +13,7 @@ void SetupResourceFactory(
 
 void ResetGlobals();
 
-[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 18> ConfigureDefaultTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 21> ConfigureDefaultTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -21,7 +21,7 @@ void ResetGlobals();
     DXGIDxvkAdapterMock& adapter,
     DXGIOutput6Mock& output);
 
-[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 33> ConfigureExtendedTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 36> ConfigureExtendedTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
