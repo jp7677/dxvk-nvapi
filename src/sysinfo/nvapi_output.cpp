@@ -30,12 +30,22 @@ namespace dxvk {
             const auto m = 50000.0f;
             m_colorData.HasST2084Support = desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
             switch (desc1.BitsPerColor) {
-                case 6:   m_colorData.BitsPerColor = NV_BPC_6; break;
-                case 8:   m_colorData.BitsPerColor = NV_BPC_8; break;
+                case 6:
+                    m_colorData.BitsPerColor = NV_BPC_6;
+                    break;
+                case 8:
+                    m_colorData.BitsPerColor = NV_BPC_8;
+                    break;
                 default:
-                case 10:  m_colorData.BitsPerColor = NV_BPC_10; break;
-                case 12:  m_colorData.BitsPerColor = NV_BPC_12; break;
-                case 16:  m_colorData.BitsPerColor = NV_BPC_16; break;
+                case 10:
+                    m_colorData.BitsPerColor = NV_BPC_10;
+                    break;
+                case 12:
+                    m_colorData.BitsPerColor = NV_BPC_12;
+                    break;
+                case 16:
+                    m_colorData.BitsPerColor = NV_BPC_16;
+                    break;
             }
             m_colorData.RedPrimaryX = static_cast<uint16_t>(desc1.RedPrimary[0] * m);
             m_colorData.RedPrimaryY = static_cast<uint16_t>(desc1.RedPrimary[1] * m);
@@ -67,7 +77,7 @@ namespace dxvk {
         return m_isPrimary;
     }
 
-    NvapiOutput::ColorData NvapiOutput::GetColorData() const {
+    const NvapiOutput::ColorData& NvapiOutput::GetColorData() const {
         return m_colorData;
     }
 }
