@@ -175,7 +175,21 @@ ID3D11VkExtContext1 : public ID3D11VkExtContext {
         uint32_t numWriteResources) = 0;
 };
 
+MIDL_INTERFACE("2a289dbd-2d0a-4a51-89f7-f2adce465cd6")
+IDXGIVkInteropFactory1 : public IDXGIVkInteropFactory {
+    static const GUID guid;
+
+    virtual HRESULT STDMETHODCALLTYPE GetGlobalHDRState(
+        DXGI_COLOR_SPACE_TYPE * pOutColorSpace,
+        DXGI_HDR_METADATA_HDR10 * ppOutMetadata) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE SetGlobalHDRState(
+        DXGI_COLOR_SPACE_TYPE ColorSpace,
+        const DXGI_HDR_METADATA_HDR10* pMetadata) = 0;
+};
+
 DXVK_DEFINE_GUID(IDXGIVkInteropFactory)
+DXVK_DEFINE_GUID(IDXGIVkInteropFactory1)
 DXVK_DEFINE_GUID(IDXGIVkInteropAdapter)
 DXVK_DEFINE_GUID(ID3D11VkExtDevice)
 DXVK_DEFINE_GUID(ID3D11VkExtDevice1)
