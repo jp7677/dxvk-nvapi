@@ -41,7 +41,7 @@ namespace dxvk {
         [[nodiscard]] uint32_t GetId() const;
         [[nodiscard]] std::string GetDeviceName() const;
         [[nodiscard]] bool IsPrimary() const;
-        [[nodiscard]] ColorData GetColorData() const;
+        [[nodiscard]] const ColorData& GetColorData() const;
 
       private:
         NvapiAdapter* m_parent;
