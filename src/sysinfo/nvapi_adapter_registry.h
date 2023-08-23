@@ -6,6 +6,7 @@
 #include "nvapi_output.h"
 #include "vulkan.h"
 #include "nvml.h"
+#include "../dxvk/dxvk_interfaces.h"
 
 namespace dxvk {
     class NvapiAdapterRegistry {
@@ -30,8 +31,12 @@ namespace dxvk {
         [[nodiscard]] NvapiOutput* FindPrimaryOutput() const;
         [[nodiscard]] bool IsOutput(NvapiOutput* handle) const;
 
+        [[nodiscard]] IDXGIVkInteropFactory1* GetInteropFactory() const { return m_dxgiVkInterop.ptr(); }
+
       private:
         ResourceFactory& m_resourceFactory;
+        Com<IDXGIFactory1> m_dxgiFactory;
+        Com<IDXGIVkInteropFactory1> m_dxgiVkInterop;
         std::unique_ptr<Nvml> m_nvml;
         std::vector<NvapiAdapter*> m_nvapiAdapters;
         std::vector<NvapiOutput*> m_nvapiOutputs;
