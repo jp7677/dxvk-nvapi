@@ -19,6 +19,8 @@ extern "C" {
         if (output == nullptr)
             return InvalidArgument(n);
 
+        const auto& data = output->GetColorData();
+
         // Report that HDR is not available
         // Note that DXVK starts to support HDR at the time of writing, so we could report HDR capabilities
         // somewhat correctly by looking at DXGI_OUTPUT_DESC1 (IDXGIOutput6->GetDesc1).
@@ -30,51 +32,51 @@ extern "C" {
             case NV_HDR_CAPABILITIES_VER1: {
                 auto pHdrCapabilitiesV1 = reinterpret_cast<NV_HDR_CAPABILITIES_V1*>(pHdrCapabilities);
                 *pHdrCapabilitiesV1 = {};
-                pHdrCapabilitiesV1->isST2084EotfSupported = false; // output->GetColorData().HasST2084Support;
-                pHdrCapabilitiesV1->display_data.displayPrimary_x0 = output->GetColorData().RedPrimaryX;
-                pHdrCapabilitiesV1->display_data.displayPrimary_y0 = output->GetColorData().RedPrimaryY;
-                pHdrCapabilitiesV1->display_data.displayPrimary_x1 = output->GetColorData().GreenPrimaryX;
-                pHdrCapabilitiesV1->display_data.displayPrimary_y1 = output->GetColorData().GreenPrimaryY;
-                pHdrCapabilitiesV1->display_data.displayPrimary_x2 = output->GetColorData().BluePrimaryX;
-                pHdrCapabilitiesV1->display_data.displayPrimary_y2 = output->GetColorData().BluePrimaryY;
-                pHdrCapabilitiesV1->display_data.displayWhitePoint_x = output->GetColorData().WhitePointX;
-                pHdrCapabilitiesV1->display_data.displayWhitePoint_y = output->GetColorData().WhitePointY;
-                pHdrCapabilitiesV1->display_data.desired_content_min_luminance = output->GetColorData().MinLuminance;
-                pHdrCapabilitiesV1->display_data.desired_content_max_luminance = output->GetColorData().MaxLuminance;
-                pHdrCapabilitiesV1->display_data.desired_content_max_frame_average_luminance = output->GetColorData().MaxFullFrameLuminance;
+                pHdrCapabilitiesV1->isST2084EotfSupported = false; // data.HasST2084Support;
+                pHdrCapabilitiesV1->display_data.displayPrimary_x0 = data.RedPrimaryX;
+                pHdrCapabilitiesV1->display_data.displayPrimary_y0 = data.RedPrimaryY;
+                pHdrCapabilitiesV1->display_data.displayPrimary_x1 = data.GreenPrimaryX;
+                pHdrCapabilitiesV1->display_data.displayPrimary_y1 = data.GreenPrimaryY;
+                pHdrCapabilitiesV1->display_data.displayPrimary_x2 = data.BluePrimaryX;
+                pHdrCapabilitiesV1->display_data.displayPrimary_y2 = data.BluePrimaryY;
+                pHdrCapabilitiesV1->display_data.displayWhitePoint_x = data.WhitePointX;
+                pHdrCapabilitiesV1->display_data.displayWhitePoint_y = data.WhitePointY;
+                pHdrCapabilitiesV1->display_data.desired_content_min_luminance = data.MinLuminance;
+                pHdrCapabilitiesV1->display_data.desired_content_max_luminance = data.MaxLuminance;
+                pHdrCapabilitiesV1->display_data.desired_content_max_frame_average_luminance = data.MaxFullFrameLuminance;
                 break;
             }
             case NV_HDR_CAPABILITIES_VER2: {
                 auto pHdrCapabilitiesV2 = reinterpret_cast<NV_HDR_CAPABILITIES_V2*>(pHdrCapabilities);
                 *pHdrCapabilitiesV2 = {};
-                pHdrCapabilitiesV2->isST2084EotfSupported = false; // output->GetColorData().HasST2084Support;
-                pHdrCapabilitiesV2->display_data.displayPrimary_x0 = output->GetColorData().RedPrimaryX;
-                pHdrCapabilitiesV2->display_data.displayPrimary_y0 = output->GetColorData().RedPrimaryY;
-                pHdrCapabilitiesV2->display_data.displayPrimary_x1 = output->GetColorData().GreenPrimaryX;
-                pHdrCapabilitiesV2->display_data.displayPrimary_y1 = output->GetColorData().GreenPrimaryY;
-                pHdrCapabilitiesV2->display_data.displayPrimary_x2 = output->GetColorData().BluePrimaryX;
-                pHdrCapabilitiesV2->display_data.displayPrimary_y2 = output->GetColorData().BluePrimaryY;
-                pHdrCapabilitiesV2->display_data.displayWhitePoint_x = output->GetColorData().WhitePointX;
-                pHdrCapabilitiesV2->display_data.displayWhitePoint_y = output->GetColorData().WhitePointY;
-                pHdrCapabilitiesV2->display_data.desired_content_min_luminance = output->GetColorData().MinLuminance;
-                pHdrCapabilitiesV2->display_data.desired_content_max_luminance = output->GetColorData().MaxLuminance;
-                pHdrCapabilitiesV2->display_data.desired_content_max_frame_average_luminance = output->GetColorData().MaxFullFrameLuminance;
+                pHdrCapabilitiesV2->isST2084EotfSupported = false; // data.HasST2084Support;
+                pHdrCapabilitiesV2->display_data.displayPrimary_x0 = data.RedPrimaryX;
+                pHdrCapabilitiesV2->display_data.displayPrimary_y0 = data.RedPrimaryY;
+                pHdrCapabilitiesV2->display_data.displayPrimary_x1 = data.GreenPrimaryX;
+                pHdrCapabilitiesV2->display_data.displayPrimary_y1 = data.GreenPrimaryY;
+                pHdrCapabilitiesV2->display_data.displayPrimary_x2 = data.BluePrimaryX;
+                pHdrCapabilitiesV2->display_data.displayPrimary_y2 = data.BluePrimaryY;
+                pHdrCapabilitiesV2->display_data.displayWhitePoint_x = data.WhitePointX;
+                pHdrCapabilitiesV2->display_data.displayWhitePoint_y = data.WhitePointY;
+                pHdrCapabilitiesV2->display_data.desired_content_min_luminance = data.MinLuminance;
+                pHdrCapabilitiesV2->display_data.desired_content_max_luminance = data.MaxLuminance;
+                pHdrCapabilitiesV2->display_data.desired_content_max_frame_average_luminance = data.MaxFullFrameLuminance;
                 break;
             }
             case NV_HDR_CAPABILITIES_VER3:
                 *pHdrCapabilities = {};
-                pHdrCapabilities->isST2084EotfSupported = false; // output->GetColorData().HasST2084Support;
-                pHdrCapabilities->display_data.displayPrimary_x0 = output->GetColorData().RedPrimaryX;
-                pHdrCapabilities->display_data.displayPrimary_y0 = output->GetColorData().RedPrimaryY;
-                pHdrCapabilities->display_data.displayPrimary_x1 = output->GetColorData().GreenPrimaryX;
-                pHdrCapabilities->display_data.displayPrimary_y1 = output->GetColorData().GreenPrimaryY;
-                pHdrCapabilities->display_data.displayPrimary_x2 = output->GetColorData().BluePrimaryX;
-                pHdrCapabilities->display_data.displayPrimary_y2 = output->GetColorData().BluePrimaryY;
-                pHdrCapabilities->display_data.displayWhitePoint_x = output->GetColorData().WhitePointX;
-                pHdrCapabilities->display_data.displayWhitePoint_y = output->GetColorData().WhitePointY;
-                pHdrCapabilities->display_data.desired_content_min_luminance = output->GetColorData().MinLuminance;
-                pHdrCapabilities->display_data.desired_content_max_luminance = output->GetColorData().MaxLuminance;
-                pHdrCapabilities->display_data.desired_content_max_frame_average_luminance = output->GetColorData().MaxFullFrameLuminance;
+                pHdrCapabilities->isST2084EotfSupported = false; // data.HasST2084Support;
+                pHdrCapabilities->display_data.displayPrimary_x0 = data.RedPrimaryX;
+                pHdrCapabilities->display_data.displayPrimary_y0 = data.RedPrimaryY;
+                pHdrCapabilities->display_data.displayPrimary_x1 = data.GreenPrimaryX;
+                pHdrCapabilities->display_data.displayPrimary_y1 = data.GreenPrimaryY;
+                pHdrCapabilities->display_data.displayPrimary_x2 = data.BluePrimaryX;
+                pHdrCapabilities->display_data.displayPrimary_y2 = data.BluePrimaryY;
+                pHdrCapabilities->display_data.displayWhitePoint_x = data.WhitePointX;
+                pHdrCapabilities->display_data.displayWhitePoint_y = data.WhitePointY;
+                pHdrCapabilities->display_data.desired_content_min_luminance = data.MinLuminance;
+                pHdrCapabilities->display_data.desired_content_max_luminance = data.MaxLuminance;
+                pHdrCapabilities->display_data.desired_content_max_frame_average_luminance = data.MaxFullFrameLuminance;
                 break;
             default:
                 return IncompatibleStructVersion(n);
