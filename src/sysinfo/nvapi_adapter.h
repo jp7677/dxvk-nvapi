@@ -10,10 +10,10 @@ namespace dxvk {
     class NvapiAdapter {
 
       public:
-        explicit NvapiAdapter(Nvml& nvml);
+        explicit NvapiAdapter(Vulkan& vulkan, Nvml& nvml);
         ~NvapiAdapter();
 
-        bool Initialize(Com<IDXGIAdapter1>& dxgiAdapter, uint32_t index, Vulkan& vulkan, std::vector<NvapiOutput*>& outputs);
+        bool Initialize(Com<IDXGIAdapter1>& dxgiAdapter, uint32_t index, std::vector<NvapiOutput*>& outputs);
         [[nodiscard]] std::string GetDeviceName() const;
         [[nodiscard]] bool HasNvProprietaryDriver() const;
         [[nodiscard]] uint32_t GetDriverVersion() const;
@@ -44,6 +44,7 @@ namespace dxvk {
         [[nodiscard]] nvmlReturn_t GetNvmlDeviceDynamicPstatesInfo(nvmlGpuDynamicPstatesInfo_t* pDynamicPstatesInfo) const;
 
       private:
+        Vulkan& m_vulkan;
         Nvml& m_nvml;
 
         std::set<std::string> m_vkExtensions;

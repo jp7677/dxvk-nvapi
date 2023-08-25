@@ -37,6 +37,7 @@ namespace dxvk {
         ResourceFactory& m_resourceFactory;
         Com<IDXGIFactory1> m_dxgiFactory;
         Com<IDXGIVkInteropFactory1> m_dxgiVkInterop;
+        std::unique_ptr<Vulkan> m_vulkan;
         std::unique_ptr<Nvml> m_nvml;
         std::vector<NvapiAdapter*> m_nvapiAdapters;
         std::vector<NvapiOutput*> m_nvapiOutputs;
