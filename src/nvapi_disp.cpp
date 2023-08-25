@@ -200,7 +200,7 @@ extern "C" {
             }
         }
 
-        return Ok(str::format(n, " (0x", std::hex, displayId, ")"));
+        return Ok(str::format(n, " (0x", std::hex, displayId, "/", (pHdrColorData->cmd == NV_HDR_CMD_GET ? "Get" : "Set"), ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char* displayName, NvU32* displayId) {
