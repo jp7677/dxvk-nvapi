@@ -5,6 +5,7 @@
 using PFN_wineDbgOutput = int(__cdecl*)(const char*);
 
 static PFN_wineDbgOutput wineDbgOutput = nullptr;
+static std::mutex fileStreamMutex;
 
 namespace dxvk::log {
     void print(const std::string& message) {
@@ -56,7 +57,9 @@ namespace dxvk::log {
             return;
 
         print(message);
-        if (filestream)
+        if (filestream) {
+            std::scoped_lock lock(fileStreamMutex);
             filestream << message << std::endl;
+        }
     }
 }
