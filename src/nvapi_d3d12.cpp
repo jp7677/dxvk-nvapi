@@ -302,14 +302,11 @@ extern "C" {
         }
 
         if (d3dDesc->Type == D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL && d3dDesc->DescsLayout == D3D12_ELEMENTS_LAYOUT_ARRAY) {
-            if (nvDesc->geometryDescStrideInBytes != sizeof(NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX))
-                return false;
-
             geometryDescs.resize(d3dDesc->NumDescs);
 
             for (unsigned i = 0; i < d3dDesc->NumDescs; ++i) {
                 auto& d3dGeoDesc = geometryDescs[i];
-                auto& nvGeoDesc = nvDesc->pGeometryDescs[i];
+                auto& nvGeoDesc = *reinterpret_cast<const NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX*>(reinterpret_cast<const std::byte*>(nvDesc->pGeometryDescs) + (i * nvDesc->geometryDescStrideInBytes));
 
                 d3dGeoDesc.Flags = nvGeoDesc.flags;
 
