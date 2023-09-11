@@ -467,9 +467,14 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(caps == NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE);
     }
 
+    SECTION("GetRaytracingCaps returns OK and claims that Displacement Micromap is not supported") {
+        NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS caps;
+        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_DISPLACEMENT_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
+        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_NONE);
+    }
+
     SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx succeeds") {
         SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx returns OK") {
-            NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx{};
             NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX desc{};
             D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info{};
             NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS params{};
