@@ -277,6 +277,13 @@ extern "C" {
                 *(NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS*)pData = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE;
                 break;
 
+            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_DISPLACEMENT_MICROMAP:
+                if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS))
+                    return InvalidArgument(n);
+
+                *(NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS*)pData = NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_NONE;
+                break;
+
             default:
                 return InvalidArgument(n);
         }
@@ -286,7 +293,7 @@ extern "C" {
 
     static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
         d3dDesc->Type = nvDesc->type;
-        // assume that OMM via VK_EXT_opacity_micromap is not supported, allow only standard flags to be passed
+        // assume that OMM via VK_EXT_opacity_micromap and DMM via VK_NV_displacement_micromap are not supported, allow only standard flags to be passed
         d3dDesc->Flags = static_cast<D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS>(nvDesc->flags & 0x3f);
         d3dDesc->NumDescs = nvDesc->numDescs;
         d3dDesc->DescsLayout = nvDesc->descsLayout;
@@ -320,7 +327,13 @@ extern "C" {
                         d3dGeoDesc.AABBs = nvGeoDesc.aabbs;
                         break;
                     case NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX: // GetRaytracingCaps reports no OMM caps, we shouldn't reach this
+                        log::write("Triangles with OMM attachment passed to acceleration structure build when OMM is not supported");
+                        return false;
+                    case NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_DMM_TRIANGLES_EX: // GetRaytracingCaps reports no DMM caps, we shouldn't reach this
+                        log::write("Triangles with DMM attachment passed to acceleration structure build when DMM is not supported");
+                        return false;
                     default:
+                        log::write(str::format("Unknown NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_EX: ", nvGeoDesc.type));
                         return false;
                 }
             }
