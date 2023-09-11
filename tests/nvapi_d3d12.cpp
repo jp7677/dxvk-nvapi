@@ -5,6 +5,20 @@
 
 using namespace trompeloeil;
 
+// previous version of this structure before the union gained a new dmmTriangles member in R535
+typedef struct _NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX_R520 {
+    NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_EX type; //!< The type of geometry stored in the union of this structure.
+    D3D12_RAYTRACING_GEOMETRY_FLAGS flags;        //!< Flags affecting how this geometry is processed by the raytracing pipeline.
+    union {
+        D3D12_RAYTRACING_GEOMETRY_TRIANGLES_DESC triangles;              //!< Describes triangle geometry if \c type is #NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX.
+                                                                         //!< Otherwise, this parameter is unused (space repurposed in a union).
+        D3D12_RAYTRACING_GEOMETRY_AABBS_DESC aabbs;                      //!< Describes AABB geometry if \c type is #NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX.
+                                                                         //!< Otherwise, this parameter is unused (space repurposed in a union).
+        NVAPI_D3D12_RAYTRACING_GEOMETRY_OMM_TRIANGLES_DESC ommTriangles; //!< Describes triangle geometry which may optionally use Opacity Micromaps, if \c type is #NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX.
+                                                                         //!< Otherwise, this parameter is unused (space repurposed in a union).
+    };
+} NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX_R520;
+
 TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     D3D12Vkd3dDeviceMock device;
     D3D12Vkd3dGraphicsCommandListMock commandList;
@@ -483,8 +497,16 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             params.pInfo = &info;
 
             D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS d3d12Desc{};
+            std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs{};
             ALLOW_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, &info))
-                .LR_SIDE_EFFECT(d3d12Desc = *_1);
+                .LR_SIDE_EFFECT({
+                    d3d12Desc = *_1;
+
+                    // we know that our implementation passes pointer to data in stack-allocated vector in pGeometryDescs
+                    // so we need to copy it before the function returns and the vector is destroyed
+                    if (_1->Type == D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL && _1->DescsLayout == D3D12_ELEMENTS_LAYOUT_ARRAY)
+                        geometryDescs.assign(_1->pGeometryDescs, _1->pGeometryDescs + _1->NumDescs);
+                });
 
             SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with TLAS") {
                 desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
@@ -505,32 +527,80 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             }
 
             SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with BLAS for array") {
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx[2];
                 desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
                 desc.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-                desc.numDescs = 1;
-                desc.pGeometryDescs = &geometryDescEx;
-                desc.geometryDescStrideInBytes = sizeof(geometryDescEx);
+                desc.numDescs = 2;
+                desc.pGeometryDescs = geometryDescEx;
+                desc.geometryDescStrideInBytes = sizeof(NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX);
 
                 SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx for triangles geometry") {
-                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
-                    geometryDescEx.triangles.IndexBuffer = D3D12_GPU_VIRTUAL_ADDRESS{};
+                    geometryDescEx[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                    geometryDescEx[0].triangles.IndexBuffer = 3;
+                    geometryDescEx[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                    geometryDescEx[1].triangles.IndexBuffer = 4;
 
                     REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
                     REQUIRE(d3d12Desc.NumDescs == desc.numDescs);
                     REQUIRE(d3d12Desc.DescsLayout == desc.descsLayout);
-                    REQUIRE(d3d12Desc.pGeometryDescs->Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
-                    REQUIRE(d3d12Desc.pGeometryDescs->Triangles.IndexBuffer == geometryDescEx.triangles.IndexBuffer);
+                    REQUIRE(geometryDescs[0].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                    REQUIRE(geometryDescs[0].Triangles.IndexBuffer == geometryDescEx[0].triangles.IndexBuffer);
+                    REQUIRE(geometryDescs[1].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                    REQUIRE(geometryDescs[1].Triangles.IndexBuffer == geometryDescEx[1].triangles.IndexBuffer);
                 }
 
                 SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with AABBs geometry") {
-                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
-                    geometryDescEx.aabbs.AABBCount = 3;
+                    geometryDescEx[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
+                    geometryDescEx[0].aabbs.AABBCount = 3;
+                    geometryDescEx[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
+                    geometryDescEx[1].aabbs.AABBCount = 4;
 
                     REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
                     REQUIRE(d3d12Desc.NumDescs == desc.numDescs);
                     REQUIRE(d3d12Desc.DescsLayout == desc.descsLayout);
-                    REQUIRE(d3d12Desc.pGeometryDescs->Type == D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS);
-                    REQUIRE(d3d12Desc.pGeometryDescs->AABBs.AABBCount == geometryDescEx.aabbs.AABBCount);
+                    REQUIRE(geometryDescs[0].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS);
+                    REQUIRE(geometryDescs[0].AABBs.AABBCount == geometryDescEx[0].aabbs.AABBCount);
+                    REQUIRE(geometryDescs[1].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS);
+                    REQUIRE(geometryDescs[1].AABBs.AABBCount == geometryDescEx[1].aabbs.AABBCount);
+                }
+            }
+
+            SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with BLAS for array of R520 structures") {
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX_R520 geometryDescExR520[2];
+                desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+                desc.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+                desc.numDescs = 2;
+                desc.pGeometryDescs = reinterpret_cast<NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX*>(geometryDescExR520);
+                desc.geometryDescStrideInBytes = sizeof(NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX_R520);
+
+                SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx for triangles geometry") {
+                    geometryDescExR520[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                    geometryDescExR520[0].triangles.IndexBuffer = 3;
+                    geometryDescExR520[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                    geometryDescExR520[1].triangles.IndexBuffer = 4;
+
+                    REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                    REQUIRE(d3d12Desc.NumDescs == desc.numDescs);
+                    REQUIRE(d3d12Desc.DescsLayout == desc.descsLayout);
+                    REQUIRE(geometryDescs[0].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                    REQUIRE(geometryDescs[0].Triangles.IndexBuffer == geometryDescExR520[0].triangles.IndexBuffer);
+                    REQUIRE(geometryDescs[1].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                    REQUIRE(geometryDescs[1].Triangles.IndexBuffer == geometryDescExR520[1].triangles.IndexBuffer);
+                }
+
+                SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with AABBs geometry") {
+                    geometryDescExR520[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
+                    geometryDescExR520[0].aabbs.AABBCount = 3;
+                    geometryDescExR520[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
+                    geometryDescExR520[1].aabbs.AABBCount = 4;
+
+                    REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                    REQUIRE(d3d12Desc.NumDescs == desc.numDescs);
+                    REQUIRE(d3d12Desc.DescsLayout == desc.descsLayout);
+                    REQUIRE(geometryDescs[0].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS);
+                    REQUIRE(geometryDescs[0].AABBs.AABBCount == geometryDescExR520[0].aabbs.AABBCount);
+                    REQUIRE(geometryDescs[1].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS);
+                    REQUIRE(geometryDescs[1].AABBs.AABBCount == geometryDescExR520[1].aabbs.AABBCount);
                 }
             }
         }
@@ -551,15 +621,22 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
     SECTION("BuildRaytracingAccelerationStructureEx succeeds") {
         SECTION("BuildRaytracingAccelerationStructureEx returns OK") {
-            NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx{};
             NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC_EX desc{};
             NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS params{};
             params.version = NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER1;
             params.pDesc = &desc;
 
             D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC d3d12Desc{};
+            std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs{};
             ALLOW_CALL(commandList, BuildRaytracingAccelerationStructure(_, params.numPostbuildInfoDescs, params.pPostbuildInfoDescs))
-                .LR_SIDE_EFFECT(d3d12Desc = *_1);
+                .LR_SIDE_EFFECT({
+                    d3d12Desc = *_1;
+
+                    // we know that our implementation passes pointer to data in stack-allocated vector in pGeometryDescs
+                    // so we need to copy it before the function returns and the vector is destroyed
+                    if (_1->Inputs.Type == D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL && _1->Inputs.DescsLayout == D3D12_ELEMENTS_LAYOUT_ARRAY)
+                        geometryDescs.assign(_1->Inputs.pGeometryDescs, _1->Inputs.pGeometryDescs + _1->Inputs.NumDescs);
+                });
 
             SECTION("BuildRaytracingAccelerationStructureEx with TLAS") {
                 desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
@@ -586,36 +663,90 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             }
 
             SECTION("BuildRaytracingAccelerationStructureEx with BLAS for array") {
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx[2];
                 desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
                 desc.inputs.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-                desc.inputs.numDescs = 1;
-                desc.inputs.pGeometryDescs = &geometryDescEx;
-                desc.inputs.geometryDescStrideInBytes = sizeof(geometryDescEx);
+                desc.inputs.numDescs = 2;
+                desc.inputs.pGeometryDescs = geometryDescEx;
+                desc.inputs.geometryDescStrideInBytes = sizeof(NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX);
 
                 SECTION("BuildRaytracingAccelerationStructureEx for triangles geometry") {
-                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
-                    geometryDescEx.triangles.IndexBuffer = D3D12_GPU_VIRTUAL_ADDRESS{};
+                    geometryDescEx[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                    geometryDescEx[0].triangles.IndexBuffer = 3;
+                    geometryDescEx[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                    geometryDescEx[1].triangles.IndexBuffer = 4;
 
                     REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
                     REQUIRE(d3d12Desc.DestAccelerationStructureData == desc.destAccelerationStructureData);
                     REQUIRE(d3d12Desc.Inputs.NumDescs == desc.inputs.numDescs);
                     REQUIRE(d3d12Desc.Inputs.DescsLayout == desc.inputs.descsLayout);
-                    REQUIRE(d3d12Desc.Inputs.pGeometryDescs->Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
-                    REQUIRE(d3d12Desc.Inputs.pGeometryDescs->Triangles.IndexBuffer == geometryDescEx.triangles.IndexBuffer);
+                    REQUIRE(geometryDescs[0].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                    REQUIRE(geometryDescs[0].Triangles.IndexBuffer == geometryDescEx[0].triangles.IndexBuffer);
+                    REQUIRE(geometryDescs[1].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                    REQUIRE(geometryDescs[1].Triangles.IndexBuffer == geometryDescEx[1].triangles.IndexBuffer);
                     REQUIRE(d3d12Desc.SourceAccelerationStructureData == desc.sourceAccelerationStructureData);
                     REQUIRE(d3d12Desc.ScratchAccelerationStructureData == desc.scratchAccelerationStructureData);
                 }
 
                 SECTION("BuildRaytracingAccelerationStructureEx for AABBs geometry") {
-                    geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
-                    geometryDescEx.aabbs.AABBCount = 3;
+                    geometryDescEx[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
+                    geometryDescEx[0].aabbs.AABBCount = 3;
+                    geometryDescEx[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
+                    geometryDescEx[1].aabbs.AABBCount = 4;
 
                     REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
                     REQUIRE(d3d12Desc.DestAccelerationStructureData == desc.destAccelerationStructureData);
                     REQUIRE(d3d12Desc.Inputs.NumDescs == desc.inputs.numDescs);
                     REQUIRE(d3d12Desc.Inputs.DescsLayout == desc.inputs.descsLayout);
-                    REQUIRE(d3d12Desc.Inputs.pGeometryDescs->Type == D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS);
-                    REQUIRE(d3d12Desc.Inputs.pGeometryDescs->AABBs.AABBCount == geometryDescEx.aabbs.AABBCount);
+                    REQUIRE(geometryDescs[0].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS);
+                    REQUIRE(geometryDescs[0].AABBs.AABBCount == geometryDescEx[0].aabbs.AABBCount);
+                    REQUIRE(geometryDescs[1].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS);
+                    REQUIRE(geometryDescs[1].AABBs.AABBCount == geometryDescEx[1].aabbs.AABBCount);
+                    REQUIRE(d3d12Desc.SourceAccelerationStructureData == desc.sourceAccelerationStructureData);
+                    REQUIRE(d3d12Desc.ScratchAccelerationStructureData == desc.scratchAccelerationStructureData);
+                }
+            }
+
+            SECTION("BuildRaytracingAccelerationStructureEx with BLAS for array of R520 structures") {
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX_R520 geometryDescExR520[2];
+                desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+                desc.inputs.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+                desc.inputs.numDescs = 2;
+                desc.inputs.pGeometryDescs = reinterpret_cast<NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX*>(geometryDescExR520);
+                desc.inputs.geometryDescStrideInBytes = sizeof(NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX_R520);
+
+                SECTION("BuildRaytracingAccelerationStructureEx for triangles geometry") {
+                    geometryDescExR520[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                    geometryDescExR520[0].triangles.IndexBuffer = 3;
+                    geometryDescExR520[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                    geometryDescExR520[1].triangles.IndexBuffer = 4;
+
+                    REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+                    REQUIRE(d3d12Desc.DestAccelerationStructureData == desc.destAccelerationStructureData);
+                    REQUIRE(d3d12Desc.Inputs.NumDescs == desc.inputs.numDescs);
+                    REQUIRE(d3d12Desc.Inputs.DescsLayout == desc.inputs.descsLayout);
+                    REQUIRE(geometryDescs[0].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                    REQUIRE(geometryDescs[0].Triangles.IndexBuffer == geometryDescExR520[0].triangles.IndexBuffer);
+                    REQUIRE(geometryDescs[1].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                    REQUIRE(geometryDescs[1].Triangles.IndexBuffer == geometryDescExR520[1].triangles.IndexBuffer);
+                    REQUIRE(d3d12Desc.SourceAccelerationStructureData == desc.sourceAccelerationStructureData);
+                    REQUIRE(d3d12Desc.ScratchAccelerationStructureData == desc.scratchAccelerationStructureData);
+                }
+
+                SECTION("BuildRaytracingAccelerationStructureEx for AABBs geometry") {
+                    geometryDescExR520[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
+                    geometryDescExR520[0].aabbs.AABBCount = 3;
+                    geometryDescExR520[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
+                    geometryDescExR520[1].aabbs.AABBCount = 4;
+
+                    REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+                    REQUIRE(d3d12Desc.DestAccelerationStructureData == desc.destAccelerationStructureData);
+                    REQUIRE(d3d12Desc.Inputs.NumDescs == desc.inputs.numDescs);
+                    REQUIRE(d3d12Desc.Inputs.DescsLayout == desc.inputs.descsLayout);
+                    REQUIRE(geometryDescs[0].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS);
+                    REQUIRE(geometryDescs[0].AABBs.AABBCount == geometryDescExR520[0].aabbs.AABBCount);
+                    REQUIRE(geometryDescs[1].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS);
+                    REQUIRE(geometryDescs[1].AABBs.AABBCount == geometryDescExR520[1].aabbs.AABBCount);
                     REQUIRE(d3d12Desc.SourceAccelerationStructureData == desc.sourceAccelerationStructureData);
                     REQUIRE(d3d12Desc.ScratchAccelerationStructureData == desc.scratchAccelerationStructureData);
                 }
