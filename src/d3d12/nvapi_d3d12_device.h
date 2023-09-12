@@ -28,6 +28,8 @@ namespace dxvk {
         static bool CaptureUAVInfo(ID3D12Device* device, NVAPI_UAV_INFO* uavInfo);
         static bool IsFatbinPTXSupported(ID3D12Device* device);
 
+        static void ClearCacheMaps();
+
       private:
         inline static std::unordered_map<ID3D12Device*, ID3D12DeviceExt*> m_cubinDeviceMap;
         inline static std::unordered_map<ID3D12GraphicsCommandList*, CommandListExtWithVersion> m_CommandListMap;

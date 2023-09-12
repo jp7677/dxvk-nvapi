@@ -1,4 +1,6 @@
 #include "nvapi_adapter_registry.h"
+#include "../d3d11/nvapi_d3d11_device.h"
+#include "../d3d12/nvapi_d3d12_device.h"
 #include "../util/util_log.h"
 
 namespace dxvk {
@@ -7,6 +9,9 @@ namespace dxvk {
         : m_resourceFactory(resourceFactory) {}
 
     NvapiAdapterRegistry::~NvapiAdapterRegistry() {
+        NvapiD3d11Device::ClearCacheMaps();
+        NvapiD3d12Device::ClearCacheMaps();
+
         for (const auto output : m_nvapiOutputs)
             delete output;
 

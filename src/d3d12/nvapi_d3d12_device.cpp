@@ -167,4 +167,14 @@ namespace dxvk {
         log::write("commandList has no ID3D12GraphicsCommandListExt compatible interface!");
         return {};
     }
+
+    void NvapiD3d12Device::ClearCacheMaps() {
+        std::scoped_lock commandListLock(m_CommandListMutex);
+        std::scoped_lock cubinDeviceLock(m_CubinDeviceMutex);
+        std::scoped_lock cubinSmemLock(m_CubinSmemMutex);
+
+        m_cubinDeviceMap.clear();
+        m_CommandListMap.clear();
+        m_cubinSmemMap.clear();
+    }
 }

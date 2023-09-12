@@ -199,4 +199,16 @@ namespace dxvk {
 
         return deviceContextExt;
     }
+
+    void NvapiD3d11Device::ClearCacheMaps() {
+        std::scoped_lock depthBoundsDeviceOrContextLock(m_depthBoundsDeviceOrContextMutex);
+        std::scoped_lock barrierControlDeviceOrContextLock(m_barrierControlDeviceOrContextMutex);
+        std::scoped_lock multiDrawIndirectContextLock(m_multiDrawIndirectContextMutex);
+        std::scoped_lock binaryImportContextLock(m_binaryImportContextMutex);
+
+        m_depthBoundsDeviceOrContextMap.clear();
+        m_barrierControlDeviceOrContextMap.clear();
+        m_multiDrawIndirectContextMap.clear();
+        m_binaryImportContextMap.clear();
+    }
 }
