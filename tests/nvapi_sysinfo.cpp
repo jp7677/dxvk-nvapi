@@ -70,6 +70,8 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
     }
 
     SECTION("Initialize returns device-not-found when adapter with non NVIDIA driver ID has been found") {
+        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
+
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
