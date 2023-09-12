@@ -204,8 +204,6 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         REQUIRE(deviceRefCount == 0);
     }
 
-    // Test failing scenarios first because caches won't be reset between tests (we don't cache negatives)
-
     SECTION("IsNvShaderExtnOpCodeSupported returns OK") {
         bool supportedForDevice = true;
         bool supportedForContext = true;
