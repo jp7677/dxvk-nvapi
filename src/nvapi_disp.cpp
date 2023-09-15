@@ -195,8 +195,8 @@ extern "C" {
                 pHDRColorDataV2->hdrDynamicRange = NV_DYNAMIC_RANGE_VESA;
                 pHDRColorDataV2->hdrBpc = data.BitsPerColor;
             } else {
+                // Ignoring some extended properties of HDRColorDataV2.
                 // Nothing to set. It's all random useless garbage that you would NEVER trust an app to set.
-                log::write("Ignoring some extended properties of HDRColorDataV2");
             }
         }
 
