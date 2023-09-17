@@ -47,7 +47,7 @@ namespace dxvk {
         if (FAILED(deviceExt->CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, reinterpret_cast<D3D12_CUBIN_DATA_HANDLE**>(pShader))))
             return false;
 
-        std::scoped_lock lock(m_CubinSmemMutex);
+        std::scoped_lock lock(m_cubinSmemMutex);
         m_cubinSmemMap.emplace(*pShader, smemSize);
         return true;
     }
@@ -60,7 +60,7 @@ namespace dxvk {
         if (FAILED(cubinDevice->DestroyCubinComputeShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(shader))))
             return false;
 
-        std::scoped_lock lock(m_CubinSmemMutex);
+        std::scoped_lock lock(m_cubinSmemMutex);
         m_cubinSmemMap.erase(shader);
         return true;
     }
@@ -90,7 +90,7 @@ namespace dxvk {
         auto interfaceVersion = commandListExt.value().InterfaceVersion;
 
         uint32_t smem = 0;
-        std::scoped_lock lock(m_CubinSmemMutex);
+        std::scoped_lock lock(m_cubinSmemMutex);
         auto it = m_cubinSmemMap.find(pShader);
         if (it != m_cubinSmemMap.end())
             smem = it->second;
@@ -123,7 +123,7 @@ namespace dxvk {
     // We are going to have single map for storing devices with extensions D3D12_VK_NVX_BINARY_IMPORT & D3D12_VK_NVX_IMAGE_VIEW_HANDLE.
     // These are specific to NVIDIA and both of these extensions goes together.
     Com<ID3D12DeviceExt> NvapiD3d12Device::GetCubinDevice(ID3D12Device* device) {
-        std::scoped_lock lock(m_CubinDeviceMutex);
+        std::scoped_lock lock(m_cubinDeviceMutex);
         auto it = m_cubinDeviceMap.find(device);
         if (it != m_cubinDeviceMap.end())
             return it->second;
@@ -147,21 +147,21 @@ namespace dxvk {
     }
 
     std::optional<NvapiD3d12Device::CommandListExtWithVersion> NvapiD3d12Device::GetCommandListExt(ID3D12GraphicsCommandList* commandList) {
-        std::scoped_lock lock(m_CommandListMutex);
-        auto it = m_CommandListMap.find(commandList);
-        if (it != m_CommandListMap.end())
+        std::scoped_lock lock(m_commandListMutex);
+        auto it = m_commandListMap.find(commandList);
+        if (it != m_commandListMap.end())
             return it->second;
 
         Com<ID3D12GraphicsCommandListExt1> commandListExt1 = nullptr;
         if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt1)))) {
             NvapiD3d12Device::CommandListExtWithVersion cmdListVer{commandListExt1.ptr(), 1};
-            return std::make_optional(m_CommandListMap.emplace(commandList, cmdListVer).first->second);
+            return std::make_optional(m_commandListMap.emplace(commandList, cmdListVer).first->second);
         }
 
         Com<ID3D12GraphicsCommandListExt> commandListExt = nullptr;
         if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt)))) {
             NvapiD3d12Device::CommandListExtWithVersion cmdListVer{reinterpret_cast<ID3D12GraphicsCommandListExt1*>(commandListExt.ptr()), 0};
-            return std::make_optional(m_CommandListMap.emplace(commandList, cmdListVer).first->second);
+            return std::make_optional(m_commandListMap.emplace(commandList, cmdListVer).first->second);
         }
 
         log::write("commandList has no ID3D12GraphicsCommandListExt compatible interface!");
@@ -169,12 +169,12 @@ namespace dxvk {
     }
 
     void NvapiD3d12Device::ClearCacheMaps() {
-        std::scoped_lock commandListLock(m_CommandListMutex);
-        std::scoped_lock cubinDeviceLock(m_CubinDeviceMutex);
-        std::scoped_lock cubinSmemLock(m_CubinSmemMutex);
+        std::scoped_lock commandListLock(m_commandListMutex);
+        std::scoped_lock cubinDeviceLock(m_cubinDeviceMutex);
+        std::scoped_lock cubinSmemLock(m_cubinSmemMutex);
 
         m_cubinDeviceMap.clear();
-        m_CommandListMap.clear();
+        m_commandListMap.clear();
         m_cubinSmemMap.clear();
     }
 }
