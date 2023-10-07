@@ -17,11 +17,11 @@ namespace dxvk {
         m_deviceName = str::fromws(desc.DeviceName);
         log::write(str::format("NvAPI Output: ", m_deviceName));
 
-        MONITORINFO info;
+        MONITORINFO info{};
         info.cbSize = sizeof(MONITORINFO);
         ::GetMonitorInfo(desc.Monitor, &info);
 
-        m_isPrimary = (info.dwFlags & MONITORINFOF_PRIMARY);
+        m_isPrimary = info.dwFlags & MONITORINFOF_PRIMARY;
 
         Com<IDXGIOutput6> dxgiOutput6;
         if (SUCCEEDED(dxgiOutput->QueryInterface(IID_PPV_ARGS(&dxgiOutput6)))) {
