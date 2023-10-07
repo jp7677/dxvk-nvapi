@@ -62,6 +62,8 @@ namespace dxvk {
 
         [[nodiscard]] bool IsVkDeviceExtensionSupported(std::string name) const;
 
+        constexpr static auto driverVersionEnvName = "DXVK_NVAPI_DRIVER_VERSION";
+        constexpr static auto allowOtherDriversEnvName = "DXVK_NVAPI_ALLOW_OTHER_DRIVERS";
         constexpr static uint16_t NvidiaPciVendorId = 0x10de;
     };
 }

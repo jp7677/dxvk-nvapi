@@ -382,9 +382,6 @@ extern "C" {
         if (pGpuArchInfo->version != NV_GPU_ARCH_INFO_VER_1 && pGpuArchInfo->version != NV_GPU_ARCH_INFO_VER_2)
             return IncompatibleStructVersion(n);
 
-        if (!adapter->HasNvProprietaryDriver())
-            return NvidiaDeviceNotFound(n);
-
         auto architectureId = adapter->GetArchitectureId();
 
         if (env::needsAmpereSpoofing(architectureId, returnAddress))

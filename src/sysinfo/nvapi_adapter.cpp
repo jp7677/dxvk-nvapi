@@ -11,9 +11,6 @@ namespace dxvk {
     NvapiAdapter::~NvapiAdapter() = default;
 
     bool NvapiAdapter::Initialize(Com<IDXGIAdapter1>& dxgiAdapter, uint32_t index, std::vector<NvapiOutput*>& outputs) {
-        constexpr auto driverVersionEnvName = "DXVK_NVAPI_DRIVER_VERSION";
-        constexpr auto allowOtherDriversEnvName = "DXVK_NVAPI_ALLOW_OTHER_DRIVERS";
-
         if (FAILED(dxgiAdapter->GetDesc1(&m_dxgiDesc)))
             return false; // Should never happen since we already know that we are dealing with a recent DXVK version
 
@@ -200,6 +197,12 @@ namespace dxvk {
     }
 
     NV_GPU_ARCHITECTURE_ID NvapiAdapter::GetArchitectureId() const {
+        if (!this->HasNvProprietaryDriver()) {
+            // DXVK_NVAPI_ALLOW_OTHER_DRIVERS must be set, otherwise this would be unreachable
+            log::write(str::format(allowOtherDriversEnvName, " is set, spoofing Pascal for GPU with non-NVIDIA proprietary driver"));
+            return NV_GPU_ARCHITECTURE_GP100;
+        }
+
         // In lieu of a more idiomatic Vulkan-based solution, check the PCI
         // DeviceID to determine if an Ada card is present
         if (m_vkProperties.deviceID >= 0x2600)

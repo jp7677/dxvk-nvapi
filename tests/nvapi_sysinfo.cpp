@@ -654,7 +654,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
     }
 
-    SECTION("GetArchInfo returns device-not-found when no NVIDIA device is present") {
+    SECTION("GetArchInfo spoofs Pascal when a non-NVIDIA device is present") {
         ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
 
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
@@ -670,9 +670,23 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         NvPhysicalGpuHandle handle;
         REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
-        NV_GPU_ARCH_INFO archInfo;
-        archInfo.version = NV_GPU_ARCH_INFO_VER;
-        REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
+        SECTION("GetArchInfo (V1) returns OK") {
+            NV_GPU_ARCH_INFO_V1 archInfo;
+            archInfo.version = NV_GPU_ARCH_INFO_VER_1;
+            REQUIRE(NvAPI_GPU_GetArchInfo(handle, reinterpret_cast<NV_GPU_ARCH_INFO*>(&archInfo)) == NVAPI_OK);
+            REQUIRE(archInfo.architecture == NV_GPU_ARCHITECTURE_GP100);
+            REQUIRE(archInfo.implementation == NV_GPU_ARCH_IMPLEMENTATION_GP102);
+            REQUIRE(archInfo.revision == NV_GPU_CHIP_REV_UNKNOWN);
+        }
+
+        SECTION("GetArchInfo (V2) returns OK") {
+            NV_GPU_ARCH_INFO_V2 archInfo;
+            archInfo.version = NV_GPU_ARCH_INFO_VER_2;
+            REQUIRE(NvAPI_GPU_GetArchInfo(handle, &archInfo) == NVAPI_OK);
+            REQUIRE(archInfo.architecture_id == NV_GPU_ARCHITECTURE_GP100);
+            REQUIRE(archInfo.implementation_id == NV_GPU_ARCH_IMPLEMENTATION_GP102);
+            REQUIRE(archInfo.revision_id == NV_GPU_CHIP_REV_UNKNOWN);
+        }
 
         ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
     }
