@@ -2,6 +2,7 @@
 #include "resource_factory_util.h"
 #include "nvapi_sysinfo_mocks.h"
 #include "nvapi_d3d12_mocks.h"
+#include "nvapi_d3d_mocks.h"
 
 using namespace trompeloeil;
 
@@ -21,9 +22,13 @@ typedef struct _NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX_R520 {
 
 TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     D3D12Vkd3dDeviceMock device;
+    D3D12Vkd3dCommandQueueMock commandQueue;
+    D3DLowLatencyDeviceMock lowLatencyDevice;
     D3D12Vkd3dGraphicsCommandListMock commandList;
     auto deviceRefCount = 0;
     auto commandListRefCount = 0;
+    auto commandQueueRefCount = 0;
+    auto lowLatencyDeviceRefCount = 0;
 
     ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt*>(&device))
@@ -35,6 +40,9 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     ALLOW_CALL(device, Release())
         .LR_SIDE_EFFECT(deviceRefCount--)
         .RETURN(deviceRefCount);
+
+    ALLOW_CALL(device, QueryInterface(__uuidof(ID3DLowLatencyDevice), _))
+        .RETURN(E_NOINTERFACE);
 
     ALLOW_CALL(device, GetExtensionSupport(_))
         .RETURN(true);
@@ -57,6 +65,24 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     ALLOW_CALL(commandList, Release())
         .LR_SIDE_EFFECT(commandListRefCount--)
         .RETURN(commandListRefCount);
+
+    ALLOW_CALL(commandQueue, QueryInterface(__uuidof(ID3D12CommandQueue), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12CommandQueue*>(&commandQueue))
+        .LR_SIDE_EFFECT(commandQueueRefCount++)
+        .RETURN(S_OK);
+    ALLOW_CALL(commandQueue, QueryInterface(__uuidof(ID3D12CommandQueueExt), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12CommandQueueExt*>(&commandQueue))
+        .LR_SIDE_EFFECT(commandQueueRefCount++)
+        .RETURN(S_OK);
+    ALLOW_CALL(commandQueue, AddRef())
+        .LR_SIDE_EFFECT(commandQueueRefCount++)
+        .RETURN(commandQueueRefCount);
+    ALLOW_CALL(commandQueue, Release())
+        .LR_SIDE_EFFECT(commandQueueRefCount--)
+        .RETURN(commandQueueRefCount);
+    ALLOW_CALL(commandQueue, GetDevice(__uuidof(ID3D12Device), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12Device*>(&device))
+        .RETURN(S_OK);
 
     SECTION("CreateGraphicsPipelineState for other than SetDepthBounds returns not-supported") {
         FORBID_CALL(device, CreateGraphicsPipelineState(_, _, _));
@@ -748,6 +774,106 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS params{};
             params.version = NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER;
             REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
+
+    SECTION("D3DLowLatencyDevice methods succeed") {
+        auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
+        auto vulkan = std::make_unique<VulkanMock>();
+        auto nvml = std::make_unique<NvmlMock>();
+        auto lfx = std::make_unique<LfxMock>();
+        DXGIDxvkAdapterMock adapter;
+        DXGIOutput6Mock output;
+
+        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
+
+        ALLOW_CALL(device, QueryInterface(__uuidof(ID3DLowLatencyDevice), _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<ID3DLowLatencyDevice*>(&lowLatencyDevice))
+            .LR_SIDE_EFFECT(lowLatencyDeviceRefCount++)
+            .RETURN(S_OK);
+        ALLOW_CALL(lowLatencyDevice, AddRef())
+            .LR_SIDE_EFFECT(lowLatencyDeviceRefCount++)
+            .RETURN(lowLatencyDeviceRefCount);
+        ALLOW_CALL(lowLatencyDevice, Release())
+            .LR_SIDE_EFFECT(lowLatencyDeviceRefCount--)
+            .RETURN(lowLatencyDeviceRefCount);
+
+        ALLOW_CALL(lowLatencyDevice, SupportsLowLatency())
+            .RETURN(true);
+
+        SECTION("NotifyOutOfBandCommandQueue succeeds") {
+            SECTION("NotifyOutOfBandCommandQueue returns OK") {
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+
+                REQUIRE_CALL(commandQueue, NotifyOutOfBandCommandQueue(static_cast<D3D12_OUT_OF_BAND_CQ_TYPE>(OUT_OF_BAND_RENDER)))
+                    .RETURN(S_OK);
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+                REQUIRE(NvAPI_D3D12_NotifyOutOfBandCommandQueue(&commandQueue, OUT_OF_BAND_RENDER) == NVAPI_OK);
+            }
+
+            SECTION("NotifyOutOfBandCommandQueue returns no-implementation with LFX") {
+                ALLOW_CALL(*lfx, IsAvailable())
+                    .RETURN(true); // NOLINT(bugprone-use-after-move)
+
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+                REQUIRE(NvAPI_D3D12_NotifyOutOfBandCommandQueue(&commandQueue, OUT_OF_BAND_RENDER) == NVAPI_NO_IMPLEMENTATION);
+            }
+        }
+
+        SECTION("SetAsyncFrameMarker succeeds") {
+            SECTION("SetAsyncFrameMarker returns OK") {
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(123ULL, OUT_OF_BAND_RENDERSUBMIT_START))
+                    .RETURN(S_OK);
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_LATENCY_MARKER_PARAMS params{};
+                params.version = NV_LATENCY_MARKER_PARAMS_VER1;
+                params.frameID = 123ULL;
+                params.markerType = OUT_OF_BAND_RENDERSUBMIT_START;
+                REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(&commandQueue, &params) == NVAPI_OK);
+            }
+
+            SECTION("SetAsyncFrameMarker returns no-implementation with LFX") {
+                ALLOW_CALL(*lfx, IsAvailable())
+                    .RETURN(true); // NOLINT(bugprone-use-after-move)
+
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_LATENCY_MARKER_PARAMS params{};
+                params.version = NV_LATENCY_MARKER_PARAMS_VER1;
+                REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(&commandQueue, &params) == NVAPI_NO_IMPLEMENTATION);
+            }
+
+            SECTION("SetAsyncFrameMarker with unknown struct version returns incompatible-struct-version") {
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_LATENCY_MARKER_PARAMS params{};
+                params.version = NV_LATENCY_MARKER_PARAMS_VER1 + 1;
+                REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(&commandQueue, &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("SetAsyncFrameMarker with current struct version returns not incompatible-struct-version") {
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+
+                ALLOW_CALL(lowLatencyDevice, SetLatencyMarker(_, _))
+                    .RETURN(S_OK);
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_LATENCY_MARKER_PARAMS params{};
+                params.version = NV_LATENCY_MARKER_PARAMS_VER;
+                REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(&commandQueue, &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
         }
     }
 }

@@ -116,10 +116,15 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
+    D3DLowLatencyDeviceMock lowLatencyDevice;
     DXGIDxvkAdapterMock adapter;
     DXGIOutput6Mock output;
+    auto lowLatencyDeviceRefCount = 0;
 
     auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
+
+    ALLOW_CALL(unknown, QueryInterface(__uuidof(ID3DLowLatencyDevice), _))
+        .RETURN(E_NOINTERFACE);
 
     ALLOW_CALL(*lfx, IsAvailable())
         .RETURN(false);
@@ -223,17 +228,246 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
         SECTION("Sleep returns NoImplementation") {
             REQUIRE(NvAPI_D3D_Sleep(&unknown) == NVAPI_NO_IMPLEMENTATION);
         }
+
+        SECTION("GetLatency returns no-implementation") {
+            NV_LATENCY_RESULT_PARAMS params;
+            params.version = NV_LATENCY_RESULT_PARAMS_VER;
+            REQUIRE(NvAPI_D3D_GetLatency(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
+        }
+
+        SECTION("SetLatencyMarker returns no-implementation") {
+            NV_LATENCY_MARKER_PARAMS params;
+            params.version = NV_LATENCY_MARKER_PARAMS_VER;
+            REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
+        }
     }
 
-    SECTION("GetLatency returns no-implementation") {
-        NV_LATENCY_RESULT_PARAMS params;
-        params.version = NV_LATENCY_RESULT_PARAMS_VER;
-        REQUIRE(NvAPI_D3D_GetLatency(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
-    }
+    SECTION("Reflex depending methods succeed when D3DLowLatencyDevice is available") {
+        ALLOW_CALL(unknown, QueryInterface(__uuidof(ID3DLowLatencyDevice), _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<ID3DLowLatencyDevice*>(&lowLatencyDevice))
+            .LR_SIDE_EFFECT(lowLatencyDeviceRefCount++)
+            .RETURN(S_OK);
+        ALLOW_CALL(lowLatencyDevice, AddRef())
+            .LR_SIDE_EFFECT(lowLatencyDeviceRefCount++)
+            .RETURN(lowLatencyDeviceRefCount);
+        ALLOW_CALL(lowLatencyDevice, Release())
+            .LR_SIDE_EFFECT(lowLatencyDeviceRefCount--)
+            .RETURN(lowLatencyDeviceRefCount);
 
-    SECTION("SetLatencyMarker returns no-implementation") {
-        NV_LATENCY_MARKER_PARAMS params;
-        params.version = NV_LATENCY_MARKER_PARAMS_VER;
-        REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
+        ALLOW_CALL(lowLatencyDevice, SupportsLowLatency())
+            .RETURN(false);
+
+        SECTION("D3DLowLatencyDevice does not support low latency") {
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            SECTION("GetSleepStatus returns NoImplementation") {
+                REQUIRE_CALL(lowLatencyDevice, SupportsLowLatency())
+                    .RETURN(false);
+
+                NV_GET_SLEEP_STATUS_PARAMS_V1 params{};
+                params.version = NV_GET_SLEEP_STATUS_PARAMS_VER1;
+                REQUIRE(NvAPI_D3D_GetSleepStatus(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
+            }
+
+            SECTION("SetSleepMode returns NoImplementation") {
+                NV_SET_SLEEP_MODE_PARAMS params{};
+                params.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+                REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
+            }
+
+            SECTION("Sleep returns NoImplementation") {
+                REQUIRE(NvAPI_D3D_Sleep(&unknown) == NVAPI_NO_IMPLEMENTATION);
+            }
+
+            SECTION("GetLatency returns no-implementation") {
+                NV_LATENCY_RESULT_PARAMS params;
+                params.version = NV_LATENCY_RESULT_PARAMS_VER;
+                REQUIRE(NvAPI_D3D_GetLatency(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
+            }
+
+            SECTION("SetLatencyMarker returns no-implementation") {
+                NV_LATENCY_MARKER_PARAMS params;
+                params.version = NV_LATENCY_MARKER_PARAMS_VER;
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
+            }
+        }
+
+        SECTION("D3DLowLatencyDevice supports low latency") {
+            ALLOW_CALL(lowLatencyDevice, SupportsLowLatency())
+                .RETURN(true);
+
+            SECTION("GetSleepStatus returns OK") {
+                REQUIRE_CALL(lowLatencyDevice, SupportsLowLatency())
+                    .RETURN(true);
+
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_GET_SLEEP_STATUS_PARAMS_V1 params{};
+                params.version = NV_GET_SLEEP_STATUS_PARAMS_VER1;
+                REQUIRE(NvAPI_D3D_GetSleepStatus(&unknown, &params) == NVAPI_OK);
+            }
+
+            SECTION("SetSleepMode calls ID3DLowLatencyDevice::SetLatencySleepMode returns OK") {
+                FORBID_CALL(*lfx, SetTargetFrameTime(_)); // NOLINT(bugprone-use-after-move)
+
+                REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(true, false, 250U))
+                    .RETURN(S_OK);
+
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_SET_SLEEP_MODE_PARAMS_V1 params{};
+                params.version = NV_SET_SLEEP_MODE_PARAMS_VER1;
+                params.bLowLatencyMode = true;
+                params.minimumIntervalUs = 250;
+                REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_OK);
+            }
+
+            SECTION("Sleep calls ID3DLowLatencyDevice::LatencySleep and returns OK") {
+                FORBID_CALL(*lfx, SetTargetFrameTime(_)); // NOLINT(bugprone-use-after-move)
+                FORBID_CALL(*lfx, WaitAndBeginFrame());
+
+                REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(true, false, 500U))
+                    .RETURN(S_OK);
+                REQUIRE_CALL(lowLatencyDevice, LatencySleep())
+                    .RETURN(S_OK);
+
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_SET_SLEEP_MODE_PARAMS sleepModeParams{};
+                sleepModeParams.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+                sleepModeParams.bLowLatencyMode = true;
+                sleepModeParams.minimumIntervalUs = 500;
+                REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &sleepModeParams) == NVAPI_OK);
+                REQUIRE(NvAPI_D3D_Sleep(&unknown) == NVAPI_OK);
+            }
+
+            SECTION("SetLatencyMarker calls ID3DLowLatencyDevice::SetLatencyMarker and returns OK") {
+                REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(true, false, 750U))
+                    .RETURN(S_OK);
+                REQUIRE_CALL(lowLatencyDevice, LatencySleep())
+                    .RETURN(S_OK);
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(123ULL, SIMULATION_START))
+                    .RETURN(S_OK);
+
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_SET_SLEEP_MODE_PARAMS sleepModeParams{};
+                sleepModeParams.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+                sleepModeParams.bLowLatencyMode = true;
+                sleepModeParams.minimumIntervalUs = 750;
+                NV_LATENCY_MARKER_PARAMS latencyMarkerParams{};
+                latencyMarkerParams.version = NV_LATENCY_MARKER_PARAMS_VER1;
+                latencyMarkerParams.frameID = 123ULL;
+                latencyMarkerParams.markerType = SIMULATION_START;
+                REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &sleepModeParams) == NVAPI_OK);
+                REQUIRE(NvAPI_D3D_Sleep(&unknown) == NVAPI_OK);
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
+            }
+
+            SECTION("SetLatencyMarker with unknown struct version returns incompatible-struct-version") {
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_LATENCY_MARKER_PARAMS params{};
+                params.version = NV_LATENCY_MARKER_PARAMS_VER1 + 1;
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("SetLatencyMarker with current struct version returns not incompatible-struct-version") {
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+
+                ALLOW_CALL(lowLatencyDevice, SetLatencyMarker(_, _))
+                    .RETURN(S_OK);
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_LATENCY_MARKER_PARAMS params{};
+                params.version = NV_LATENCY_MARKER_PARAMS_VER;
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("GetLatency calls ID3DLowLatencyDevice::GetLatencyInfo and returns OK") {
+                REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(true, false, 1000U))
+                    .RETURN(S_OK);
+                REQUIRE_CALL(lowLatencyDevice, GetLatencyInfo(_))
+                    .RETURN(S_OK);
+
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_SET_SLEEP_MODE_PARAMS sleepModeParams{};
+                sleepModeParams.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+                sleepModeParams.bLowLatencyMode = true;
+                sleepModeParams.minimumIntervalUs = 1000;
+                NV_LATENCY_RESULT_PARAMS latencyResults{};
+                latencyResults.version = NV_LATENCY_RESULT_PARAMS_VER1;
+                REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &sleepModeParams) == NVAPI_OK);
+                REQUIRE(NvAPI_D3D_GetLatency(&unknown, &latencyResults) == NVAPI_OK);
+            }
+        }
+
+        SECTION("D3DLowLatencyDevice supports low latency and LFX is available") {
+            ALLOW_CALL(lowLatencyDevice, SupportsLowLatency())
+                .RETURN(true);
+            ALLOW_CALL(*lfx, IsAvailable())
+                .RETURN(true); // NOLINT(bugprone-use-after-move)
+
+            SECTION("SetSleepMode calls Lfx::SetTargetFrameTime returns OK") {
+                REQUIRE_CALL(*lfx, SetTargetFrameTime(250ULL * 1000)); // NOLINT(bugprone-use-after-move)
+
+                FORBID_CALL(lowLatencyDevice, SetLatencySleepMode(_, _, _));
+
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_SET_SLEEP_MODE_PARAMS_V1 params{};
+                params.version = NV_SET_SLEEP_MODE_PARAMS_VER1;
+                params.bLowLatencyMode = true;
+                params.minimumIntervalUs = 250;
+                REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_OK);
+            }
+
+            SECTION("Sleep calls Lfx::WaitAndBeginFrame and returns OK") {
+                REQUIRE_CALL(*lfx, SetTargetFrameTime(500ULL * 1000)); // NOLINT(bugprone-use-after-move)
+                REQUIRE_CALL(*lfx, WaitAndBeginFrame());
+
+                FORBID_CALL(lowLatencyDevice, SetLatencySleepMode(_, _, _));
+                FORBID_CALL(lowLatencyDevice, LatencySleep());
+
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_SET_SLEEP_MODE_PARAMS params{};
+                params.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+                params.bLowLatencyMode = true;
+                params.minimumIntervalUs = 500;
+                REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &params) == NVAPI_OK);
+                REQUIRE(NvAPI_D3D_Sleep(&unknown) == NVAPI_OK);
+            }
+
+            SECTION("GetLatency returns no-implementation") {
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_LATENCY_RESULT_PARAMS params;
+                params.version = NV_LATENCY_RESULT_PARAMS_VER;
+                REQUIRE(NvAPI_D3D_GetLatency(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
+            }
+
+            SECTION("SetLatencyMarker returns no-implementation") {
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_LATENCY_MARKER_PARAMS params;
+                params.version = NV_LATENCY_MARKER_PARAMS_VER;
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &params) == NVAPI_NO_IMPLEMENTATION);
+            }
+        }
     }
 }

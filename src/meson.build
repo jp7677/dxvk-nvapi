@@ -10,6 +10,7 @@ nvapi_src = files([
   'resource_factory.cpp',
   'd3d/lfx.cpp',
   'd3d/nvapi_d3d_instance.cpp',
+  'd3d/nvapi_d3d_low_latency_device.cpp',
   'd3d11/nvapi_d3d11_device.cpp',
   'd3d12/nvapi_d3d12_device.cpp',
   'nvapi_globals.cpp',

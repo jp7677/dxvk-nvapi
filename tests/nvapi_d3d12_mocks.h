@@ -177,3 +177,32 @@ class D3D12Vkd3dGraphicsCommandListMock final : public trompeloeil::mock_interfa
     IMPLEMENT_MOCK6(LaunchCubinShader);
     IMPLEMENT_MOCK9(LaunchCubinShaderEx);
 };
+
+class ID3D12Vkd3dCommandQueue : public ID3D12CommandQueue, public ID3D12CommandQueueExt {};
+
+class D3D12Vkd3dCommandQueueMock final : public trompeloeil::mock_interface<ID3D12Vkd3dCommandQueue> {
+    MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
+    MAKE_MOCK0(AddRef, ULONG(), override);
+    MAKE_MOCK0(Release, ULONG(), override);
+    IMPLEMENT_MOCK3(GetPrivateData);
+    IMPLEMENT_MOCK3(SetPrivateData);
+    IMPLEMENT_MOCK2(SetPrivateDataInterface);
+    IMPLEMENT_MOCK1(SetName);
+    IMPLEMENT_MOCK2(GetDevice);
+    IMPLEMENT_MOCK10(UpdateTileMappings);
+    IMPLEMENT_MOCK6(CopyTileMappings);
+    IMPLEMENT_MOCK2(ExecuteCommandLists);
+    IMPLEMENT_MOCK3(SetMarker);
+    IMPLEMENT_MOCK3(BeginEvent);
+    IMPLEMENT_MOCK0(EndEvent);
+    IMPLEMENT_MOCK2(Signal);
+    IMPLEMENT_MOCK2(Wait);
+    IMPLEMENT_MOCK1(GetTimestampFrequency);
+    IMPLEMENT_MOCK2(GetClockCalibration);
+#if defined(WIDL_EXPLICIT_AGGREGATE_RETURNS)
+    MAKE_MOCK1(GetDesc, D3D12_COMMAND_QUEUE_DESC*(D3D12_COMMAND_QUEUE_DESC*), override);
+#else
+    IMPLEMENT_MOCK0(GetDesc);
+#endif
+    IMPLEMENT_MOCK1(NotifyOutOfBandCommandQueue);
+};

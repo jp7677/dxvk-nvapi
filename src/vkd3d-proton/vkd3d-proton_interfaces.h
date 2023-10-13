@@ -25,7 +25,13 @@
 
 enum D3D12_VK_EXTENSION : uint32_t {
     D3D12_VK_NVX_BINARY_IMPORT = 0x1,
-    D3D12_VK_NVX_IMAGE_VIEW_HANDLE = 0x2
+    D3D12_VK_NVX_IMAGE_VIEW_HANDLE = 0x2,
+    D3D12_VK_NV_LOW_LATENCY_2 = 0x3
+};
+
+enum D3D12_OUT_OF_BAND_CQ_TYPE : uint32_t {
+    D3D_OUT_OF_BAND_RENDER = 0x0,
+    D3D_OUT_OF_BAND_PRESENT = 0x1
 };
 
 struct D3D12_CUBIN_DATA_HANDLE {
@@ -106,8 +112,15 @@ ID3D12GraphicsCommandListExt1 : public ID3D12GraphicsCommandListExt {
         UINT32 raw_params_count) = 0;
 };
 
+MIDL_INTERFACE("40ed3f96-e773-e9bc-fc0c-e95560c99ad6")
+ID3D12CommandQueueExt : public IUnknown {
+    virtual HRESULT STDMETHODCALLTYPE NotifyOutOfBandCommandQueue(
+        D3D12_OUT_OF_BAND_CQ_TYPE type) = 0;
+};
+
 #ifndef _MSC_VER
 __CRT_UUID_DECL(ID3D12DeviceExt, 0x11ea7a1a, 0x0f6a, 0x49bf, 0xb6, 0x12, 0x3e, 0x30, 0xf8, 0xe2, 0x01, 0xdd);
 __CRT_UUID_DECL(ID3D12GraphicsCommandListExt, 0x77a86b09, 0x2bea, 0x4801, 0xb8, 0x9a, 0x37, 0x64, 0x8e, 0x10, 0x4a, 0xf1);
 __CRT_UUID_DECL(ID3D12GraphicsCommandListExt1, 0xd53b0028, 0xafb4, 0x4b65, 0xa4, 0xf1, 0x7b, 0x0d, 0xaa, 0xa6, 0x5b, 0x4f);
+__CRT_UUID_DECL(ID3D12CommandQueueExt, 0x40ed3f96, 0xe773, 0xe9bc, 0xfc, 0x0c, 0xe9, 0x55, 0x60, 0xc9, 0x9a, 0xd6);
 #endif
