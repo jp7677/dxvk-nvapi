@@ -1,5 +1,6 @@
 #include "nvapi_private.h"
 #include "nvapi_globals.h"
+#include "d3d/nvapi_d3d_low_latency_device.h"
 #include "d3d12/nvapi_d3d12_device.h"
 #include "util/util_statuscode.h"
 #include "util/util_op_code.h"
@@ -394,6 +395,57 @@ extern "C" {
             return InvalidArgument(n);
 
         pCommandList->BuildRaytracingAccelerationStructure(&desc, pParams->numPostbuildInfoDescs, pParams->pPostbuildInfoDescs);
+
+        return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedError = false;
+        static bool alreadyLoggedOk = false;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pCommandQueue == nullptr)
+            return InvalidArgument(n);
+
+        ID3D12Device* pDevice;
+        if (FAILED(pCommandQueue->GetDevice(IID_PPV_ARGS(&pDevice))))
+            return InvalidArgument(n);
+
+        if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDevice))
+            return NoImplementation(n);
+
+        if (!NvapiD3d12Device::NotifyOutOfBandCommandQueue(pCommandQueue, static_cast<D3D12_OUT_OF_BAND_CQ_TYPE>(cqType)))
+            return Error(n, alreadyLoggedError);
+
+        return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_SetAsyncFrameMarker(ID3D12CommandQueue* pCommandQueue, NV_LATENCY_MARKER_PARAMS* pSetLatencyMarkerParams) {
+        constexpr auto n = __func__;
+        static bool alreadyLoggedError = false;
+        static bool alreadyLoggedOk = false;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
+            return IncompatibleStructVersion(n);
+
+        if (pCommandQueue == nullptr)
+            return InvalidArgument(n);
+
+        ID3D12Device* pDevice;
+        if (FAILED(pCommandQueue->GetDevice(IID_PPV_ARGS(&pDevice))))
+            return InvalidArgument(n);
+
+        if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDevice))
+            return NoImplementation(n);
+
+        if (!NvapiD3dLowLatencyDevice::SetLatencyMarker(pDevice, pSetLatencyMarkerParams->frameID, pSetLatencyMarkerParams->markerType))
+            return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);
     }

@@ -1,3 +1,5 @@
+#include "dxvk/dxvk_interfaces.h"
+#include "d3d/nvapi_d3d_low_latency_device.h"
 #include "nvapi_private.h"
 #include "nvapi_globals.h"
 #include "util/util_statuscode.h"
@@ -106,23 +108,26 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D_Sleep(IUnknown* pDevice) {
         constexpr auto n = __func__;
+        static bool alreadyLoggedNoReflex = false;
+        static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
-        static bool alreadyLoggedNoLfx = false;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (!nvapiD3dInstance->IsReflexAvailable())
-            return NoImplementation(n, alreadyLoggedNoLfx);
+        if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
+            return NoImplementation(n, alreadyLoggedNoReflex);
 
-        nvapiD3dInstance->Sleep();
+        if (!nvapiD3dInstance->Sleep(pDevice))
+            return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_SetSleepMode(IUnknown* pDevice, NV_SET_SLEEP_MODE_PARAMS* pSetSleepModeParams) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedNoLfx = false;
+        static bool alreadyLoggedNoReflex = false;
+        static bool alreadyLoggedError = false;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -130,19 +135,19 @@ extern "C" {
         if (pSetSleepModeParams->version != NV_SET_SLEEP_MODE_PARAMS_VER1)
             return IncompatibleStructVersion(n);
 
-        if (!nvapiD3dInstance->IsReflexAvailable())
-            return NoImplementation(n, alreadyLoggedNoLfx);
+        if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
+            return NoImplementation(n, alreadyLoggedNoReflex);
 
-        nvapiD3dInstance->SetReflexEnabled(pSetSleepModeParams->bLowLatencyMode);
-        if (pSetSleepModeParams->bLowLatencyMode)
-            nvapiD3dInstance->SetTargetFrameTime(pSetSleepModeParams->minimumIntervalUs);
+        if (!nvapiD3dInstance->SetReflexMode(pDevice, pSetSleepModeParams->bLowLatencyMode, pSetSleepModeParams->bLowLatencyBoost, pSetSleepModeParams->minimumIntervalUs))
+            return Error(n, alreadyLoggedError);
 
         return Ok(str::format(n, " (", pSetSleepModeParams->bLowLatencyMode ? (str::format("Enabled/", pSetSleepModeParams->minimumIntervalUs, "us")) : "Disabled", ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_GetSleepStatus(IUnknown* pDevice, NV_GET_SLEEP_STATUS_PARAMS* pGetSleepStatusParams) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedNoLfx = false;
+        static bool alreadyLoggedNoReflex = false;
+        static bool alreadyLoggedOk = false;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -150,20 +155,53 @@ extern "C" {
         if (pGetSleepStatusParams->version != NV_GET_SLEEP_STATUS_PARAMS_VER1)
             return IncompatibleStructVersion(n);
 
-        if (!nvapiD3dInstance->IsReflexAvailable())
-            return NoImplementation(n, alreadyLoggedNoLfx);
+        if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
+            return NoImplementation(n, alreadyLoggedNoReflex);
 
-        pGetSleepStatusParams->bLowLatencyMode = nvapiD3dInstance->IsReflexEnabled();
-        return Ok(n);
+        pGetSleepStatusParams->bLowLatencyMode = nvapiD3dInstance->IsLowLatencyEnabled();
+
+        return Ok(n, alreadyLoggedOk);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_GetLatency(IUnknown* pDev, NV_LATENCY_RESULT_PARAMS* pGetLatencyParams) {
-        static bool alreadyLogged = false;
-        return NoImplementation(__func__, alreadyLogged);
+        constexpr auto n = __func__;
+        static bool alreadyLoggedNoImpl = false;
+        static bool alreadyLoggedError = false;
+        static bool alreadyLoggedOk = false;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pGetLatencyParams->version != NV_LATENCY_RESULT_PARAMS_VER1)
+            return IncompatibleStructVersion(n);
+
+        if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
+            return NoImplementation(n, alreadyLoggedNoImpl);
+
+        if (!NvapiD3dLowLatencyDevice::GetLatencyInfo(pDev, reinterpret_cast<D3D_LATENCY_RESULTS*>(pGetLatencyParams)))
+            return Error(n, alreadyLoggedError);
+
+        return Ok(n, alreadyLoggedOk);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_SetLatencyMarker(IUnknown* pDev, NV_LATENCY_MARKER_PARAMS* pSetLatencyMarkerParams) {
-        static bool alreadyLogged = false;
-        return NoImplementation(__func__, alreadyLogged);
+        constexpr auto n = __func__;
+        static bool alreadyLoggedNoImpl = false;
+        static bool alreadyLoggedError = false;
+        static bool alreadyLoggedOk = false;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
+            return IncompatibleStructVersion(n);
+
+        if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
+            return NoImplementation(n, alreadyLoggedNoImpl);
+
+        if (!NvapiD3dLowLatencyDevice::SetLatencyMarker(pDev, pSetLatencyMarkerParams->frameID, pSetLatencyMarkerParams->markerType))
+            return Error(n, alreadyLoggedError);
+
+        return Ok(n, alreadyLoggedOk);
     }
 }

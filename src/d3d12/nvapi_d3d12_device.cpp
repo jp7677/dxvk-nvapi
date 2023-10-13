@@ -81,6 +81,14 @@ namespace dxvk {
         return SUCCEEDED(cubinDevice->GetCudaSurfaceObject(uavHandle, reinterpret_cast<UINT32*>(cudaSurfaceHandle)));
     }
 
+    bool NvapiD3d12Device::NotifyOutOfBandCommandQueue(ID3D12CommandQueue* commandQueue, D3D12_OUT_OF_BAND_CQ_TYPE type) {
+        auto commandQueueExt = GetCommandQueueExt(commandQueue);
+        if (commandQueueExt == nullptr)
+            return false;
+
+        return SUCCEEDED(commandQueueExt->NotifyOutOfBandCommandQueue(type));
+    }
+
     bool NvapiD3d12Device::LaunchCubinShader(ID3D12GraphicsCommandList* commandList, NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) {
         auto commandListExt = GetCommandListExt(commandList);
         if (!commandListExt.has_value())
@@ -146,6 +154,22 @@ namespace dxvk {
         return deviceExt;
     }
 
+    Com<ID3D12CommandQueueExt> NvapiD3d12Device::GetCommandQueueExt(ID3D12CommandQueue* commandQueue) {
+        std::scoped_lock lock(m_commandQueueMutex);
+        auto it = m_commandQueueMap.find(commandQueue);
+        if (it != m_commandQueueMap.end())
+            return it->second;
+
+        Com<ID3D12CommandQueueExt> commandQueueExt;
+        if (FAILED(commandQueue->QueryInterface(IID_PPV_ARGS(&commandQueueExt))))
+            return nullptr;
+
+        if (commandQueueExt != nullptr)
+            m_commandQueueMap.emplace(commandQueue, commandQueueExt.ptr());
+
+        return commandQueueExt;
+    }
+
     std::optional<NvapiD3d12Device::CommandListExtWithVersion> NvapiD3d12Device::GetCommandListExt(ID3D12GraphicsCommandList* commandList) {
         std::scoped_lock lock(m_commandListMutex);
         auto it = m_commandListMap.find(commandList);
@@ -169,11 +193,13 @@ namespace dxvk {
     }
 
     void NvapiD3d12Device::ClearCacheMaps() {
+        std::scoped_lock commandQueueLock(m_commandQueueMutex);
         std::scoped_lock commandListLock(m_commandListMutex);
         std::scoped_lock cubinDeviceLock(m_cubinDeviceMutex);
         std::scoped_lock cubinSmemLock(m_cubinSmemMutex);
 
         m_cubinDeviceMap.clear();
+        m_commandQueueMap.clear();
         m_commandListMap.clear();
         m_cubinSmemMap.clear();
     }

@@ -10,15 +10,17 @@ namespace dxvk {
         ~NvapiD3dInstance();
 
         void Initialize();
-        [[nodiscard]] bool IsReflexAvailable();
-        [[nodiscard]] bool IsReflexEnabled() const;
-        void SetReflexEnabled(bool value);
-        void Sleep();
-        void SetTargetFrameTime(uint64_t frameTimeUs);
+        [[nodiscard]] bool IsReflexAvailable(IUnknown* device);
+        [[nodiscard]] bool IsLowLatencyEnabled() const;
+        [[nodiscard]] bool IsUsingLfx() const;
+        [[nodiscard]] bool SetReflexMode(IUnknown* device, bool enable, bool boost, uint32_t frameTimeUs);
+        [[nodiscard]] bool Sleep(IUnknown* device);
 
       private:
+        constexpr static uint64_t kNanoInMicro = 1000;
+
         ResourceFactory& m_resourceFactory;
         std::unique_ptr<Lfx> m_lfx;
-        bool m_isLfxEnabled = false;
+        bool m_isLowLatencyEnabled = false;
     };
 }
