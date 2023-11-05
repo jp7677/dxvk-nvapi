@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <processenv.h>
 #include <libloaderapi.h>
 #include "../inc/nvapi.h"
 #include "../inc/nvapi_interface.h"
@@ -76,6 +77,8 @@ static std::string ToFormattedLuid(LUID& luid) {
 }
 
 TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
+    ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "1");
+
     const auto nvapiModuleName = "nvapi64.dll";
     auto nvapiModule = ::LoadLibraryA(nvapiModuleName);
     REQUIRE(nvapiModule);
