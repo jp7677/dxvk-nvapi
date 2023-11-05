@@ -226,8 +226,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             REQUIRE(graphicsCaps.majorSMVersion == args.expectedMajorSMVersion);
             REQUIRE(graphicsCaps.minorSMVersion == args.expectedMinorSMVersion);
             REQUIRE(deviceRefCount == 0);
-
-            ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "");
         }
 
         SECTION("GetGraphicsCapabilities with unknown struct version returns incompatible-struct-version") {

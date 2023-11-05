@@ -65,13 +65,9 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
 
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
         REQUIRE(NvAPI_Unload() == NVAPI_OK);
-
-        ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "0");
     }
 
     SECTION("Initialize returns device-not-found when adapter with non NVIDIA driver ID has been found") {
-        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
-
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
@@ -95,8 +91,6 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
     auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
     auto primaryDisplayId = 0x00010001;
-
-    ::SetEnvironmentVariableA("DXVK_NVAPI_DRIVER_VERSION", "");
 
     SECTION("Initialize and unloads return OK") {
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
@@ -209,8 +203,6 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(version.drvVersion == args.expectedVersion);
         REQUIRE_THAT(version.szAdapterString, Equals("GPU0"));
         REQUIRE_THAT(version.szBuildBranchString, StartsWith("r"));
-
-        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
     }
 
     SECTION("GetDisplayDriverVersion with version override returns OK") {
@@ -247,8 +239,6 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         version.version = NV_DISPLAY_DRIVER_VERSION_VER;
         REQUIRE(NvAPI_GetDisplayDriverVersion(handle, &version) == NVAPI_OK);
         REQUIRE(version.drvVersion == args.expectedVersion);
-
-        ::SetEnvironmentVariableA("DXVK_NVAPI_DRIVER_VERSION", "");
     }
 
     SECTION("GetGPUIDFromPhysicalGPU / GetPhysicalGPUFromGPUID succeeds") {
@@ -331,8 +321,6 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             gpuTopology.version = NV_COMPUTE_GPU_TOPOLOGY_VER;
             REQUIRE(NvAPI_GPU_CudaEnumComputeCapableGpus(&gpuTopology) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
-
-        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
     }
 
     SECTION("GetGPUType returns OK") {
@@ -687,8 +675,6 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(archInfo.implementation_id == NV_GPU_ARCH_IMPLEMENTATION_GP102);
             REQUIRE(archInfo.revision_id == NV_GPU_CHIP_REV_UNKNOWN);
         }
-
-        ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "0");
     }
 
     SECTION("GetPstates20 returns no-implementation") {
