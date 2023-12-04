@@ -143,11 +143,11 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
             .RETURN(S_OK);
 
         DXGI_COLOR_SPACE_TYPE inColorSpace = DXGI_COLOR_SPACE_RESERVED;
-        const DXGI_HDR_METADATA_HDR10* inMetadata;
+        DXGI_HDR_METADATA_HDR10 inMetadata{};
         ALLOW_CALL(*dxgiFactory, SetGlobalHDRState(_, _)) // NOLINT(bugprone-use-after-move)
             .LR_SIDE_EFFECT({
                 inColorSpace = _1;
-                inMetadata = _2;
+                inMetadata = *_2;
             })
             .RETURN(S_OK);
 
@@ -195,18 +195,18 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
 
             REQUIRE(NvAPI_Disp_HdrColorControl(primaryDisplayId, &colorData) == NVAPI_OK);
             REQUIRE(inColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020);
-            REQUIRE(inMetadata->RedPrimary[0] == 32000);
-            REQUIRE(inMetadata->RedPrimary[1] == 16500);
-            REQUIRE(inMetadata->GreenPrimary[0] == 15000);
-            REQUIRE(inMetadata->GreenPrimary[1] == 30000);
-            REQUIRE(inMetadata->BluePrimary[0] == 7500);
-            REQUIRE(inMetadata->BluePrimary[1] == 3000);
-            REQUIRE(inMetadata->WhitePoint[0] == 15635);
-            REQUIRE(inMetadata->WhitePoint[1] == 16450);
-            REQUIRE(inMetadata->MinMasteringLuminance == 100);
-            REQUIRE(inMetadata->MaxMasteringLuminance == 1499);
-            REQUIRE(inMetadata->MaxContentLightLevel == 1199);
-            REQUIRE(inMetadata->MaxFrameAverageLightLevel == 799);
+            REQUIRE(inMetadata.RedPrimary[0] == 32000);
+            REQUIRE(inMetadata.RedPrimary[1] == 16500);
+            REQUIRE(inMetadata.GreenPrimary[0] == 15000);
+            REQUIRE(inMetadata.GreenPrimary[1] == 30000);
+            REQUIRE(inMetadata.BluePrimary[0] == 7500);
+            REQUIRE(inMetadata.BluePrimary[1] == 3000);
+            REQUIRE(inMetadata.WhitePoint[0] == 15635);
+            REQUIRE(inMetadata.WhitePoint[1] == 16450);
+            REQUIRE(inMetadata.MinMasteringLuminance == 100);
+            REQUIRE(inMetadata.MaxMasteringLuminance == 1499);
+            REQUIRE(inMetadata.MaxContentLightLevel == 1199);
+            REQUIRE(inMetadata.MaxFrameAverageLightLevel == 799);
         }
 
         SECTION("HdrColorControl (V2) with get command returns OK") {
@@ -253,18 +253,18 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
 
             REQUIRE(NvAPI_Disp_HdrColorControl(primaryDisplayId, &colorData) == NVAPI_OK);
             REQUIRE(inColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020);
-            REQUIRE(inMetadata->RedPrimary[0] == 32000);
-            REQUIRE(inMetadata->RedPrimary[1] == 16500);
-            REQUIRE(inMetadata->GreenPrimary[0] == 15000);
-            REQUIRE(inMetadata->GreenPrimary[1] == 30000);
-            REQUIRE(inMetadata->BluePrimary[0] == 7500);
-            REQUIRE(inMetadata->BluePrimary[1] == 3000);
-            REQUIRE(inMetadata->WhitePoint[0] == 15635);
-            REQUIRE(inMetadata->WhitePoint[1] == 16450);
-            REQUIRE(inMetadata->MinMasteringLuminance == 100);
-            REQUIRE(inMetadata->MaxMasteringLuminance == 1499);
-            REQUIRE(inMetadata->MaxContentLightLevel == 1199);
-            REQUIRE(inMetadata->MaxFrameAverageLightLevel == 799);
+            REQUIRE(inMetadata.RedPrimary[0] == 32000);
+            REQUIRE(inMetadata.RedPrimary[1] == 16500);
+            REQUIRE(inMetadata.GreenPrimary[0] == 15000);
+            REQUIRE(inMetadata.GreenPrimary[1] == 30000);
+            REQUIRE(inMetadata.BluePrimary[0] == 7500);
+            REQUIRE(inMetadata.BluePrimary[1] == 3000);
+            REQUIRE(inMetadata.WhitePoint[0] == 15635);
+            REQUIRE(inMetadata.WhitePoint[1] == 16450);
+            REQUIRE(inMetadata.MinMasteringLuminance == 100);
+            REQUIRE(inMetadata.MaxMasteringLuminance == 1499);
+            REQUIRE(inMetadata.MaxContentLightLevel == 1199);
+            REQUIRE(inMetadata.MaxFrameAverageLightLevel == 799);
         }
 
         SECTION("HdrColorControl with unknown struct version returns incompatible-struct-version") {
