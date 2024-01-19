@@ -501,7 +501,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             }
 
             SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with BLAS for pointer array") {
-                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX* geometryDescExArray[] = {};
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX** geometryDescExArray = nullptr;
                 desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
                 desc.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY_OF_POINTERS;
                 desc.ppGeometryDescs = geometryDescExArray;
@@ -634,7 +634,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             }
 
             SECTION("BuildRaytracingAccelerationStructureEx with BLAS for pointer array") {
-                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX* geometryDescExArray[] = {};
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX** geometryDescExArray = nullptr;
                 desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
                 desc.inputs.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY_OF_POINTERS;
                 desc.inputs.ppGeometryDescs = geometryDescExArray;
