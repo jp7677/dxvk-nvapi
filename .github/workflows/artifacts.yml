@@ -1,4 +1,4 @@
-name: Artifacts (Package)
+name: Build, test and package on Linux (MinGW)
 
 on:
   push:
