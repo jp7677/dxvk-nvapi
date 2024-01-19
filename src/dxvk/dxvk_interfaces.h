@@ -6,10 +6,6 @@
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #endif // __GNUC__
 
-#define DXVK_DEFINE_GUID(iface) \
-    template <>                 \
-    inline GUID const& __mingw_uuidof<iface>() { return iface::guid; }
-
 enum D3D11_VK_EXTENSION : uint32_t {
     D3D11_VK_EXT_MULTI_DRAW_INDIRECT = 0,
     D3D11_VK_EXT_MULTI_DRAW_INDIRECT_COUNT = 1,
@@ -28,8 +24,6 @@ enum D3D11_VK_BARRIER_CONTROL : uint32_t {
  */
 MIDL_INTERFACE("4c5e1b0d-b0c8-4131-bfd8-9b2476f7f408")
 IDXGIVkInteropFactory : public IUnknown {
-    static const GUID guid;
-
     /**
      * \brief Queries Vulkan instance used by DXVK
      *
@@ -49,8 +43,6 @@ IDXGIVkInteropFactory : public IUnknown {
 ￼ */
 MIDL_INTERFACE("3a6d8f2c-b0e8-4ab4-b4dc-4fd24891bfa5")
 IDXGIVkInteropAdapter : public IUnknown {
-    static const GUID guid;
-
     /**
      * \brief Queries Vulkan handles used by DXVK
      *
@@ -64,8 +56,6 @@ IDXGIVkInteropAdapter : public IUnknown {
 
 MIDL_INTERFACE("8a6e3c42-f74c-45b7-8265-a231b677ca17")
 ID3D11VkExtDevice : public IUnknown {
-    static const GUID guid;
-
     /**
      * \brief Checks whether an extension is supported
      *
@@ -78,8 +68,6 @@ ID3D11VkExtDevice : public IUnknown {
 
 MIDL_INTERFACE("cfcf64ef-9586-46d0-bca4-97cf2ca61b06")
 ID3D11VkExtDevice1 : public ID3D11VkExtDevice {
-    static const GUID guid;
-
     virtual bool STDMETHODCALLTYPE GetResourceHandleGPUVirtualAddressAndSizeNVX(
         void* hObject,
         uint64_t* gpuVAStart,
@@ -119,8 +107,6 @@ ID3D11VkExtDevice1 : public ID3D11VkExtDevice {
 
 MIDL_INTERFACE("fd0bca13-5cb6-4c3a-987e-4750de2ca791")
 ID3D11VkExtContext : public IUnknown {
-    static const GUID guid;
-
     virtual void STDMETHODCALLTYPE MultiDrawIndirect(
         UINT DrawCount,
         ID3D11Buffer * pBufferForArgs,
@@ -160,8 +146,6 @@ ID3D11VkExtContext : public IUnknown {
 
 MIDL_INTERFACE("874b09b2-ae0b-41d8-8476-5f3b7a0e879d")
 ID3D11VkExtContext1 : public ID3D11VkExtContext {
-    static const GUID guid;
-
     virtual bool STDMETHODCALLTYPE LaunchCubinShaderNVX(
         IUnknown * hShader,
         uint32_t gridX,
@@ -177,8 +161,6 @@ ID3D11VkExtContext1 : public ID3D11VkExtContext {
 
 MIDL_INTERFACE("2a289dbd-2d0a-4a51-89f7-f2adce465cd6")
 IDXGIVkInteropFactory1 : public IDXGIVkInteropFactory {
-    static const GUID guid;
-
     virtual HRESULT STDMETHODCALLTYPE GetGlobalHDRState(
         DXGI_COLOR_SPACE_TYPE * pOutColorSpace,
         DXGI_HDR_METADATA_HDR10 * ppOutMetadata) = 0;
@@ -188,10 +170,12 @@ IDXGIVkInteropFactory1 : public IDXGIVkInteropFactory {
         const DXGI_HDR_METADATA_HDR10* pMetadata) = 0;
 };
 
-DXVK_DEFINE_GUID(IDXGIVkInteropFactory)
-DXVK_DEFINE_GUID(IDXGIVkInteropFactory1)
-DXVK_DEFINE_GUID(IDXGIVkInteropAdapter)
-DXVK_DEFINE_GUID(ID3D11VkExtDevice)
-DXVK_DEFINE_GUID(ID3D11VkExtDevice1)
-DXVK_DEFINE_GUID(ID3D11VkExtContext)
-DXVK_DEFINE_GUID(ID3D11VkExtContext1)
+#ifndef _MSC_VER
+__CRT_UUID_DECL(IDXGIVkInteropFactory, 0x4c5e1b0d, 0xb0c8, 0x4131, 0xbf, 0xd8, 0x9b, 0x24, 0x76, 0xf7, 0xf4, 0x08);
+__CRT_UUID_DECL(IDXGIVkInteropFactory1, 0x2a289dbd, 0x2d0a, 0x4a51, 0x89, 0xf7, 0xf2, 0xad, 0xce, 0x46, 0x5c, 0xd6);
+__CRT_UUID_DECL(IDXGIVkInteropAdapter, 0x3a6d8f2c, 0xb0e8, 0x4ab4, 0xb4, 0xdc, 0x4f, 0xd2, 0x48, 0x91, 0xbf, 0xa5);
+__CRT_UUID_DECL(ID3D11VkExtDevice, 0x8a6e3c42, 0xf74c, 0x45b7, 0x82, 0x65, 0xa2, 0x31, 0xb6, 0x77, 0xca, 0x17);
+__CRT_UUID_DECL(ID3D11VkExtDevice1, 0xcfcf64ef, 0x9586, 0x46d0, 0xbc, 0xa4, 0x97, 0xcf, 0x2c, 0xa6, 0x1b, 0x06);
+__CRT_UUID_DECL(ID3D11VkExtContext, 0xfd0bca13, 0x5cb6, 0x4c3a, 0x98, 0x7e, 0x47, 0x50, 0xde, 0x2c, 0xa7, 0x91);
+__CRT_UUID_DECL(ID3D11VkExtContext1, 0x874b09b2, 0xae0b, 0x41d8, 0x84, 0x76, 0x5f, 0x3b, 0x7a, 0x0e, 0x87, 0x9d);
+#endif

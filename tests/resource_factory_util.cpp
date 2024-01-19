@@ -44,7 +44,7 @@ void ResetGlobals() {
         NAMED_ALLOW_CALL(dxgiFactory, EnumAdapters1(1U, _))
             .RETURN(DXGI_ERROR_NOT_FOUND),
 
-        NAMED_ALLOW_CALL(dxgiFactory, QueryInterface(IDXGIVkInteropFactory1::guid, _))
+        NAMED_ALLOW_CALL(dxgiFactory, QueryInterface(__uuidof(IDXGIVkInteropFactory1), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropFactory1*>(&dxgiFactory))
             .RETURN(S_OK),
         NAMED_ALLOW_CALL(dxgiFactory, GetGlobalHDRState(_, _))
@@ -52,7 +52,7 @@ void ResetGlobals() {
         NAMED_ALLOW_CALL(dxgiFactory, SetGlobalHDRState(_, _))
             .RETURN(S_OK),
 
-        NAMED_ALLOW_CALL(adapter, QueryInterface(IDXGIVkInteropAdapter::guid, _))
+        NAMED_ALLOW_CALL(adapter, QueryInterface(__uuidof(IDXGIVkInteropAdapter), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter))
             .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter, Release())
@@ -118,7 +118,7 @@ void ResetGlobals() {
         NAMED_ALLOW_CALL(dxgiFactory, EnumAdapters1(2U, _))
             .RETURN(DXGI_ERROR_NOT_FOUND),
 
-        NAMED_ALLOW_CALL(dxgiFactory, QueryInterface(IDXGIVkInteropFactory1::guid, _))
+        NAMED_ALLOW_CALL(dxgiFactory, QueryInterface(__uuidof(IDXGIVkInteropFactory1), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropFactory1*>(&dxgiFactory))
             .RETURN(S_OK),
         NAMED_ALLOW_CALL(dxgiFactory, GetGlobalHDRState(_, _))
@@ -126,7 +126,7 @@ void ResetGlobals() {
         NAMED_ALLOW_CALL(dxgiFactory, SetGlobalHDRState(_, _))
             .RETURN(S_OK),
 
-        NAMED_ALLOW_CALL(adapter1, QueryInterface(IDXGIVkInteropAdapter::guid, _))
+        NAMED_ALLOW_CALL(adapter1, QueryInterface(__uuidof(IDXGIVkInteropAdapter), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter1))
             .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter1, Release())
@@ -145,7 +145,7 @@ void ResetGlobals() {
         NAMED_ALLOW_CALL(adapter1, GetVulkanHandles(_, _))
             .LR_SIDE_EFFECT(*_2 = reinterpret_cast<VkPhysicalDevice>(0x01)),
 
-        NAMED_ALLOW_CALL(adapter2, QueryInterface(IDXGIVkInteropAdapter::guid, _))
+        NAMED_ALLOW_CALL(adapter2, QueryInterface(__uuidof(IDXGIVkInteropAdapter), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter2))
             .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter2, Release())
