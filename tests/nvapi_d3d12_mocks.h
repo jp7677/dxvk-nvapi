@@ -31,8 +31,13 @@ class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3
     IMPLEMENT_MOCK2(CreateSampler);
     IMPLEMENT_MOCK7(CopyDescriptors);
     IMPLEMENT_MOCK4(CopyDescriptorsSimple);
+#if defined(WIDL_EXPLICIT_AGGREGATE_RETURNS)
     MAKE_MOCK4(GetResourceAllocationInfo, D3D12_RESOURCE_ALLOCATION_INFO*(D3D12_RESOURCE_ALLOCATION_INFO*, UINT, UINT, const D3D12_RESOURCE_DESC*), override);
     MAKE_MOCK3(GetCustomHeapProperties, D3D12_HEAP_PROPERTIES*(D3D12_HEAP_PROPERTIES*, UINT, D3D12_HEAP_TYPE), override);
+#else
+    IMPLEMENT_MOCK3(GetResourceAllocationInfo);
+    IMPLEMENT_MOCK2(GetCustomHeapProperties);
+#endif
     IMPLEMENT_MOCK7(CreateCommittedResource);
     IMPLEMENT_MOCK3(CreateHeap);
     IMPLEMENT_MOCK7(CreatePlacedResource);
@@ -49,7 +54,11 @@ class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3
     IMPLEMENT_MOCK1(SetStablePowerState);
     IMPLEMENT_MOCK4(CreateCommandSignature);
     IMPLEMENT_MOCK7(GetResourceTiling);
+#if defined(WIDL_EXPLICIT_AGGREGATE_RETURNS)
     MAKE_MOCK1(GetAdapterLuid, LUID*(LUID*), override);
+#else
+    IMPLEMENT_MOCK0(GetAdapterLuid);
+#endif
     IMPLEMENT_MOCK4(CreatePipelineLibrary);
     IMPLEMENT_MOCK5(SetEventOnMultipleFenceCompletion);
     IMPLEMENT_MOCK3(SetResidencyPriority);
@@ -62,7 +71,11 @@ class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3
     IMPLEMENT_MOCK8(CreateCommittedResource1);
     IMPLEMENT_MOCK4(CreateHeap1);
     IMPLEMENT_MOCK6(CreateReservedResource1);
+#if defined(WIDL_EXPLICIT_AGGREGATE_RETURNS)
     MAKE_MOCK5(GetResourceAllocationInfo1, D3D12_RESOURCE_ALLOCATION_INFO*(D3D12_RESOURCE_ALLOCATION_INFO*, UINT, UINT, const D3D12_RESOURCE_DESC*, D3D12_RESOURCE_ALLOCATION_INFO1*), override);
+#else
+    IMPLEMENT_MOCK4(GetResourceAllocationInfo1);
+#endif
     IMPLEMENT_MOCK3(CreateLifetimeTracker);
     IMPLEMENT_MOCK0(RemoveDevice);
     IMPLEMENT_MOCK2(EnumerateMetaCommands);
