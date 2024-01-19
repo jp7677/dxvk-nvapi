@@ -1,0 +1,50 @@
+name: Build and test on Windows
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build-set-windows:
+    runs-on: windows-2022
+
+    steps:
+    - name: Checkout code
+      id: checkout-code
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Setup Meson
+      shell: pwsh
+      run: pip install meson
+
+    - name: Find Visual Studio
+      shell: pwsh
+      run: |
+        $installationPath = Get-VSSetupInstance `
+          | Select-VSSetupInstance -Require Microsoft.VisualStudio.Workload.NativeDesktop -Latest `
+          | Select-Object -ExpandProperty InstallationPath
+        Write-Output "VSDEVCMD=${installationPath}\Common7\Tools\VsDevCmd.bat" `
+          | Out-File -FilePath "${Env:GITHUB_ENV}" -Append
+
+    - name: Build MSVC x86
+      shell: pwsh
+      run: |
+        & "${Env:COMSPEC}" /s /c "`"${Env:VSDEVCMD}`" -arch=x86 -host_arch=x64 -no_logo && set" `
+          | % { , ($_ -Split '=', 2) } `
+          | % { [System.Environment]::SetEnvironmentVariable($_[0], $_[1]) }
+        meson setup --buildtype release --backend vs2022 build-msvc-x86 -Denable_tests=true
+        msbuild -m build-msvc-x86/dxvk-nvapi.sln
+
+    - name: Build MSVC x64
+      shell: pwsh
+      run: |
+        & "${Env:COMSPEC}" /s /c "`"${Env:VSDEVCMD}`" -arch=x64 -host_arch=x64 -no_logo && set" `
+          | % { , ($_ -Split '=', 2) } `
+          | % { [System.Environment]::SetEnvironmentVariable($_[0], $_[1]) }
+        meson setup --buildtype release --backend vs2022 build-msvc-x64 -Denable_tests=true
+        msbuild -m build-msvc-x64/dxvk-nvapi.sln
+
+    - name: Test MSVC x64
+      shell: pwsh
+      run: |
+        & .\build-msvc-x64\tests\nvapi64-tests.exe [@unit-tests]
