@@ -33,6 +33,8 @@
 #pragma GCC diagnostic ignored "-Wattributes"
 #endif // __GNUC__
 
+// Suppress deprecation warnings.
+#define NVAPI_INTERNAL 1
 #include "../inc/nvapi.h"
 
 #ifdef __GNUC__
