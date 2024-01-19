@@ -235,8 +235,8 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
         }
 
         SECTION("GetConnectedDisplayIds with wrong display ID count returns insufficient-buffer") {
-            NvU32 gpu0DisplayIdCount = 1U;
-            NV_GPU_DISPLAYIDS gpu0DisplayIds[gpu0DisplayIdCount];
+            NV_GPU_DISPLAYIDS gpu0DisplayIds[1];
+            NvU32 gpu0DisplayIdCount = std::size(gpu0DisplayIds);
             memset(&gpu0DisplayIds, 0, sizeof(gpu0DisplayIds));
             gpu0DisplayIds->version = NV_GPU_DISPLAYIDS_VER;
             REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], gpu0DisplayIds, &gpu0DisplayIdCount, 0) == NVAPI_INSUFFICIENT_BUFFER);
@@ -244,8 +244,8 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
         }
 
         SECTION("GetConnectedDisplayIds with correct display ID count returns OK") {
-            NvU32 gpu0DisplayIdCount = 2U;
-            NV_GPU_DISPLAYIDS gpu0DisplayIds[gpu0DisplayIdCount];
+            NV_GPU_DISPLAYIDS gpu0DisplayIds[2];
+            NvU32 gpu0DisplayIdCount = std::size(gpu0DisplayIds);
             memset(&gpu0DisplayIds, 0, sizeof(gpu0DisplayIds));
             gpu0DisplayIds->version = NV_GPU_DISPLAYIDS_VER;
             REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], gpu0DisplayIds, &gpu0DisplayIdCount, 0) == NVAPI_OK);
@@ -254,8 +254,8 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
             REQUIRE(gpu0DisplayIds[1].displayId == 0x00010002);
             REQUIRE(gpu0DisplayIds[1].isConnected == true);
 
-            NvU32 gpu1DisplayIdCount = 1U;
-            NV_GPU_DISPLAYIDS gpu1DisplayIds[gpu1DisplayIdCount];
+            NV_GPU_DISPLAYIDS gpu1DisplayIds[1];
+            NvU32 gpu1DisplayIdCount = std::size(gpu1DisplayIds);
             memset(&gpu1DisplayIds, 0, sizeof(gpu1DisplayIds));
             gpu1DisplayIds->version = NV_GPU_DISPLAYIDS_VER;
             REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[1U], gpu1DisplayIds, &gpu1DisplayIdCount, 0) == NVAPI_OK);
@@ -264,24 +264,24 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
         }
 
         SECTION("GetConnectedDisplayIds (V1) returns OK") {
-            NvU32 gpu0DisplayIdCount = 2U;
-            NV_GPU_DISPLAYIDS gpu0DisplayIds[gpu0DisplayIdCount];
+            NV_GPU_DISPLAYIDS gpu0DisplayIds[2];
+            NvU32 gpu0DisplayIdCount = std::size(gpu0DisplayIds);
             memset(&gpu0DisplayIds, 0, sizeof(gpu0DisplayIds));
             gpu0DisplayIds->version = NV_GPU_DISPLAYIDS_VER1;
             REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], gpu0DisplayIds, &gpu0DisplayIdCount, 0) == NVAPI_OK);
         }
 
         SECTION("GetConnectedDisplayIds (V2) returns OK") {
-            NvU32 gpu0DisplayIdCount = 2U;
-            NV_GPU_DISPLAYIDS gpu0DisplayIds[gpu0DisplayIdCount];
+            NV_GPU_DISPLAYIDS gpu0DisplayIds[2];
+            NvU32 gpu0DisplayIdCount = std::size(gpu0DisplayIds);
             memset(&gpu0DisplayIds, 0, sizeof(gpu0DisplayIds));
             gpu0DisplayIds->version = NV_GPU_DISPLAYIDS_VER2;
             REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], gpu0DisplayIds, &gpu0DisplayIdCount, 0) == NVAPI_OK);
         }
 
         SECTION("GetConnectedDisplayIds with unknown struct version returns incompatible-struct-version") {
-            NvU32 gpu0DisplayIdCount = 2U;
-            NV_GPU_DISPLAYIDS gpu0DisplayIds[gpu0DisplayIdCount];
+            NV_GPU_DISPLAYIDS gpu0DisplayIds[2];
+            NvU32 gpu0DisplayIdCount = std::size(gpu0DisplayIds);
             memset(&gpu0DisplayIds, 0, sizeof(gpu0DisplayIds));
             gpu0DisplayIds->version = NV_GPU_DISPLAYIDS_VER2 + 1;
             REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], gpu0DisplayIds, &gpu0DisplayIdCount, 0) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
@@ -289,8 +289,8 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
 
         SECTION("GetConnectedDisplayIds with current struct version returns not incompatible-struct-version") {
             // This test should fail when a header update provides a newer not yet implemented struct version
-            NvU32 gpu0DisplayIdCount = 2U;
-            NV_GPU_DISPLAYIDS gpu0DisplayIds[gpu0DisplayIdCount];
+            NV_GPU_DISPLAYIDS gpu0DisplayIds[2];
+            NvU32 gpu0DisplayIdCount = std::size(gpu0DisplayIds);
             memset(&gpu0DisplayIds, 0, sizeof(gpu0DisplayIds));
             gpu0DisplayIds->version = NV_GPU_DISPLAYIDS_VER;
             REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], gpu0DisplayIds, &gpu0DisplayIdCount, 0) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
