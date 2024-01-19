@@ -60,9 +60,9 @@ namespace dxvk::env {
 
         // Check if module name is either nvngx_dlss.dll, or matches the OTA
         // hashing pattern app_???????.bin
-        if (strcasecmp("nvngx_dlss.dll", modulePath + pathLen - 14) == 0) {
+        if (_stricmp("nvngx_dlss.dll", modulePath + pathLen - 14) == 0) {
             // nvngx_dlss.dll detected
-        } else if (strncasecmp("app_", modulePath + pathLen - 15, 4) == 0 && strcasecmp(".bin", modulePath + pathLen - 4) == 0) {
+        } else if (_strnicmp("app_", modulePath + pathLen - 15, 4) == 0 && _stricmp(".bin", modulePath + pathLen - 4) == 0) {
             // app_???????.bin matches OTA pattern
         } else {
             // Filename does not match known patterns
