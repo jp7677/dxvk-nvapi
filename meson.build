@@ -9,20 +9,29 @@ project('dxvk-nvapi',
 
 cpp = meson.get_compiler('cpp')
 
-compiler_args = ['-Wno-unused-parameter']
-if get_option('buildtype') == 'debug' or get_option('buildtype') == 'debugoptimized'
-  compiler_args += [
-    '-gdwarf-4',
-    '-Wa,-mbig-obj'
-  ]
-endif
+dxvk_is_msvc = cpp.get_argument_syntax() == 'msvc'
 
-link_args = [
+compiler_args = []
+link_args = []
+if not dxvk_is_msvc
+  compiler_args += ['-Wno-unused-parameter']
+  if get_option('buildtype') == 'debug' or get_option('buildtype') == 'debugoptimized'
+    compiler_args += [
+      '-gdwarf-4',
+      '-Wa,-mbig-obj'
+    ]
+  endif
+
+  link_args += [
     '-static',
     '-static-libgcc',
     '-static-libstdc++',
     '-Wl,--file-alignment=4096'
-]
+  ]
+else
+  link_args = ['/FILEALIGN:4096']
+endif
+
 
 add_project_arguments(cpp.get_supported_arguments(compiler_args), language: 'cpp')
 add_project_link_arguments(cpp.get_supported_link_arguments(link_args), language: 'cpp')
