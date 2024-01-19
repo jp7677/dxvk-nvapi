@@ -355,10 +355,9 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         REQUIRE(nvAPI_GPU_GetConnectedDisplayIds(handle, nullptr, &displayIdCount, 0) == NVAPI_OK);
         std::cout << "    Connected display ID(s):    ";
         if (displayIdCount != 0) {
-            NV_GPU_DISPLAYIDS displayIds[displayIdCount];
-            memset(&displayIds, 0, sizeof(displayIds));
-            displayIds->version = NV_GPU_DISPLAYIDS_VER;
-            REQUIRE(nvAPI_GPU_GetConnectedDisplayIds(handle, displayIds, &displayIdCount, 0) == NVAPI_OK);
+            std::vector<NV_GPU_DISPLAYIDS> displayIds(displayIdCount);
+            displayIds[0].version = NV_GPU_DISPLAYIDS_VER;
+            REQUIRE(nvAPI_GPU_GetConnectedDisplayIds(handle, displayIds.data(), &displayIdCount, 0) == NVAPI_OK);
             for (auto i = 0U; i < displayIdCount; ++i) {
                 auto displayId = displayIds[i];
                 std::cout << (i == 0 ? "0x" : "                                0x") << std::setfill('0') << std::setw(8)
