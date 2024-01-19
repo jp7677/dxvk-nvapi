@@ -12,7 +12,7 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
     auto deviceRefCount = 0;
     auto contextRefCount = 0;
 
-    ALLOW_CALL(device, QueryInterface(IID_ID3D11Device, _))
+    ALLOW_CALL(device, QueryInterface(__uuidof(ID3D11Device), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11Device*>(&device))
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
@@ -36,9 +36,9 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         .LR_SIDE_EFFECT(*_1 = &context)
         .LR_SIDE_EFFECT(contextRefCount++);
 
-    ALLOW_CALL(context, QueryInterface(IID_ID3D11Device, _))
+    ALLOW_CALL(context, QueryInterface(__uuidof(ID3D11Device), _))
         .RETURN(E_NOINTERFACE);
-    ALLOW_CALL(context, QueryInterface(IID_ID3D11DeviceContext, _))
+    ALLOW_CALL(context, QueryInterface(__uuidof(ID3D11DeviceContext), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11DeviceContext*>(&context))
         .LR_SIDE_EFFECT(contextRefCount++)
         .RETURN(S_OK);
