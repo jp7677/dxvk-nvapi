@@ -11,7 +11,7 @@ cpp = meson.get_compiler('cpp')
 
 dxvk_is_msvc = cpp.get_argument_syntax() == 'msvc'
 
-compiler_args = []
+compiler_args = ['-DNOMINMAX', '-DWIN32_LEAN_AND_MEAN']
 link_args = []
 if not dxvk_is_msvc
   compiler_args += ['-Wno-unused-parameter']
@@ -29,7 +29,7 @@ if not dxvk_is_msvc
     '-Wl,--file-alignment=4096'
   ]
 else
-  link_args = ['/FILEALIGN:4096']
+  link_args += ['/FILEALIGN:4096']
 endif
 
 
