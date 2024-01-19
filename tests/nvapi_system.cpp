@@ -1,7 +1,6 @@
 #include <iostream>
 #include <iomanip>
-#include <processenv.h>
-#include <libloaderapi.h>
+#include <windows.h>
 #include "../inc/nvapi.h"
 #include "../inc/nvapi_interface.h"
 #include "../inc/catch_amalgamated.hpp"
