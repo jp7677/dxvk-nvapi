@@ -149,7 +149,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto lfx = std::make_unique<LfxMock>();
         DXGIDxvkAdapterMock adapter;
         DXGIOutput6Mock output;
-        auto luid = new LUID{};
+        LUID luid{};
 
         auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
 
@@ -164,8 +164,14 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             .LR_SIDE_EFFECT(deviceRefCount--)
             .RETURN(deviceRefCount);
 
+#if defined(WIDL_EXPLICIT_AGGREGATE_RETURNS)
         ALLOW_CALL(device, GetAdapterLuid(_))
+            .LR_SIDE_EFFECT(*_1 = luid)
+            .LR_RETURN(_1);
+#else
+        ALLOW_CALL(device, GetAdapterLuid())
             .LR_RETURN(luid);
+#endif
 
         SECTION("GetGraphicsCapabilities without matching adapter returns OK with sm_0") {
             SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
@@ -199,8 +205,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
             ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
 
-            luid->HighPart = 0x00000002;
-            luid->LowPart = 0x00000001;
+            luid.HighPart = 0x00000002;
+            luid.LowPart = 0x00000001;
 
             ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
                 .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, args.extensionName});
@@ -244,8 +250,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             NV_D3D12_GRAPHICS_CAPS graphicsCaps{};
             REQUIRE(NvAPI_D3D12_GetGraphicsCapabilities(static_cast<ID3D12Device*>(&device), NV_D3D12_GRAPHICS_CAPS_VER, &graphicsCaps) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
-
-        delete luid;
     }
 
     SECTION("CreateGraphicsPipelineState succeeds") {
