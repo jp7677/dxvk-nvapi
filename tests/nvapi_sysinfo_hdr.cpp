@@ -335,7 +335,7 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
     }
 
     SECTION("HdrColorControl without DXGI interop returns no-implementation") {
-        ALLOW_CALL(*dxgiFactory, QueryInterface(IDXGIVkInteropFactory1::guid, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*dxgiFactory, QueryInterface(__uuidof(IDXGIVkInteropFactory1), _)) // NOLINT(bugprone-use-after-move)
             .RETURN(E_NOINTERFACE);
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));

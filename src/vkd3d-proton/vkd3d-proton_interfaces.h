@@ -23,10 +23,6 @@
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #endif // __GNUC__
 
-#define VKD3D_PROTON_GUID(iface) \
-    template <>                  \
-    inline GUID const& __mingw_uuidof<iface>() { return iface::guid; }
-
 enum D3D12_VK_EXTENSION : uint32_t {
     D3D12_VK_NVX_BINARY_IMPORT = 0x1,
     D3D12_VK_NVX_IMAGE_VIEW_HANDLE = 0x2
@@ -49,7 +45,6 @@ typedef struct D3D12_UAV_INFO {
 
 MIDL_INTERFACE("11ea7a1a-0f6a-49bf-b612-3e30f8e201dd")
 ID3D12DeviceExt : public IUnknown {
-    static const GUID guid;
     virtual HRESULT STDMETHODCALLTYPE GetVulkanHandles(
         VkInstance * vk_instance,
         VkPhysicalDevice * vk_physical_device,
@@ -85,7 +80,6 @@ ID3D12DeviceExt : public IUnknown {
 
 MIDL_INTERFACE("77a86b09-2bea-4801-b89a-37648e104af1")
 ID3D12GraphicsCommandListExt : public IUnknown {
-    static const GUID guid;
     virtual HRESULT STDMETHODCALLTYPE GetVulkanHandle(
         VkCommandBuffer * pVkCommandBuffer) = 0;
 
@@ -100,8 +94,6 @@ ID3D12GraphicsCommandListExt : public IUnknown {
 
 MIDL_INTERFACE("d53b0028-afb4-4b65-a4f1-7b0daaa65b4f")
 ID3D12GraphicsCommandListExt1 : public ID3D12GraphicsCommandListExt {
-    static const GUID guid;
-
     virtual HRESULT STDMETHODCALLTYPE LaunchCubinShaderEx(
         D3D12_CUBIN_DATA_HANDLE * handle,
         UINT32 block_x,
@@ -114,6 +106,8 @@ ID3D12GraphicsCommandListExt1 : public ID3D12GraphicsCommandListExt {
         UINT32 raw_params_count) = 0;
 };
 
-VKD3D_PROTON_GUID(ID3D12DeviceExt)
-VKD3D_PROTON_GUID(ID3D12GraphicsCommandListExt)
-VKD3D_PROTON_GUID(ID3D12GraphicsCommandListExt1)
+#ifndef _MSC_VER
+__CRT_UUID_DECL(ID3D12DeviceExt, 0x11ea7a1a, 0x0f6a, 0x49bf, 0xb6, 0x12, 0x3e, 0x30, 0xf8, 0xe2, 0x01, 0xdd);
+__CRT_UUID_DECL(ID3D12GraphicsCommandListExt, 0x77a86b09, 0x2bea, 0x4801, 0xb8, 0x9a, 0x37, 0x64, 0x8e, 0x10, 0x4a, 0xf1);
+__CRT_UUID_DECL(ID3D12GraphicsCommandListExt1, 0xd53b0028, 0xafb4, 0x4b65, 0xa4, 0xf1, 0x7b, 0x0d, 0xaa, 0xa6, 0x5b, 0x4f);
+#endif

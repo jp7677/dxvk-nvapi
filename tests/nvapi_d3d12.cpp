@@ -25,7 +25,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     auto deviceRefCount = 0;
     auto commandListRefCount = 0;
 
-    ALLOW_CALL(device, QueryInterface(ID3D12DeviceExt::guid, _))
+    ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt*>(&device))
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
@@ -43,11 +43,11 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandList1*>(&commandList))
         .LR_SIDE_EFFECT(commandListRefCount++)
         .RETURN(S_OK);
-    ALLOW_CALL(commandList, QueryInterface(ID3D12GraphicsCommandListExt::guid, _))
+    ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt*>(&commandList))
         .LR_SIDE_EFFECT(commandListRefCount++)
         .RETURN(S_OK);
-    ALLOW_CALL(commandList, QueryInterface(ID3D12GraphicsCommandListExt1::guid, _))
+    ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt1), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt*>(&commandList))
         .LR_SIDE_EFFECT(commandListRefCount++)
         .RETURN(S_OK);
@@ -73,11 +73,11 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     }
 
     SECTION("D3D12 methods without VKD3D-Proton return error") {
-        ALLOW_CALL(device, QueryInterface(ID3D12DeviceExt::guid, _))
+        ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt), _))
             .RETURN(E_NOINTERFACE);
-        ALLOW_CALL(commandList, QueryInterface(ID3D12GraphicsCommandListExt::guid, _))
+        ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt), _))
             .RETURN(E_NOINTERFACE);
-        ALLOW_CALL(commandList, QueryInterface(ID3D12GraphicsCommandListExt1::guid, _))
+        ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt1), _))
             .RETURN(E_NOINTERFACE);
 
         FORBID_CALL(device, CreateCubinComputeShaderWithName(_, _, _, _, _, _, _));
@@ -434,7 +434,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     }
 
     SECTION("Launch CuBIN without ID3D12GraphicsCommandListExt1 returns OK") {
-        ALLOW_CALL(commandList, QueryInterface(ID3D12GraphicsCommandListExt1::guid, _))
+        ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt1), _))
             .RETURN(E_NOINTERFACE);
 
         auto shaderHandle = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0xbadcf00d);

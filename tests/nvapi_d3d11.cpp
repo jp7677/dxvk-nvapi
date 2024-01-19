@@ -16,11 +16,11 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11Device*>(&device))
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
-    ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice::guid, _))
+    ALLOW_CALL(device, QueryInterface(__uuidof(ID3D11VkExtDevice), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtDevice*>(&device))
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
-    ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice1::guid, _))
+    ALLOW_CALL(device, QueryInterface(__uuidof(ID3D11VkExtDevice1), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtDevice1*>(&device))
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
@@ -42,11 +42,11 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11DeviceContext*>(&context))
         .LR_SIDE_EFFECT(contextRefCount++)
         .RETURN(S_OK);
-    ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext::guid, _))
+    ALLOW_CALL(context, QueryInterface(__uuidof(ID3D11VkExtContext), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtContext*>(&context))
         .LR_SIDE_EFFECT(contextRefCount++)
         .RETURN(S_OK);
-    ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext1::guid, _))
+    ALLOW_CALL(context, QueryInterface(__uuidof(ID3D11VkExtContext1), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtContext1*>(&context))
         .LR_SIDE_EFFECT(contextRefCount++)
         .RETURN(S_OK);
@@ -61,13 +61,13 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         .LR_SIDE_EFFECT(deviceRefCount++);
 
     SECTION("D3D11 methods without DXVK return error") {
-        ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice::guid, _))
+        ALLOW_CALL(device, QueryInterface(__uuidof(ID3D11VkExtDevice), _))
             .RETURN(E_NOINTERFACE);
-        ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice1::guid, _))
+        ALLOW_CALL(device, QueryInterface(__uuidof(ID3D11VkExtDevice1), _))
             .RETURN(E_NOINTERFACE);
-        ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext::guid, _))
+        ALLOW_CALL(context, QueryInterface(__uuidof(ID3D11VkExtContext), _))
             .RETURN(E_NOINTERFACE);
-        ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext1::guid, _))
+        ALLOW_CALL(context, QueryInterface(__uuidof(ID3D11VkExtContext1), _))
             .RETURN(E_NOINTERFACE);
         FORBID_CALL(context, SetDepthBoundsTest(_, _, _));
         FORBID_CALL(context, SetBarrierControl(_));
@@ -145,9 +145,9 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
     }
 
     SECTION("CreateCubinComputeShader/CreateCubinComputeShaderWithName/LaunchCubinShader without extended DXVK interface returns error") {
-        ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice1::guid, _))
+        ALLOW_CALL(device, QueryInterface(__uuidof(ID3D11VkExtDevice1), _))
             .RETURN(E_NOINTERFACE);
-        ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext1::guid, _))
+        ALLOW_CALL(context, QueryInterface(__uuidof(ID3D11VkExtContext1), _))
             .RETURN(E_NOINTERFACE);
         FORBID_CALL(device, CreateCubinComputeShaderWithNameNVX(_, _, _, _, _, _, _));
         FORBID_CALL(context, LaunchCubinShaderNVX(_, _, _, _, _, _, _, _, _, _));
@@ -161,9 +161,9 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
     }
 
     SECTION("IsFatbinPTXSupported without extended DXVK interface returns OK but reports unsupported") {
-        ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice1::guid, _))
+        ALLOW_CALL(device, QueryInterface(__uuidof(ID3D11VkExtDevice1), _))
             .RETURN(E_NOINTERFACE);
-        ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext1::guid, _))
+        ALLOW_CALL(context, QueryInterface(__uuidof(ID3D11VkExtContext1), _))
             .RETURN(E_NOINTERFACE);
 
         bool supported = true;
@@ -173,9 +173,9 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
     }
 
     SECTION("CreateUnorderedAccessView/CreateShaderResourceView/GetResourceGPUVirtualAddress/GetResourceGPUVirtualAddressEx/GetCudaTextureObject/CreateSamplerState without extended DXVK interface returns error") {
-        ALLOW_CALL(device, QueryInterface(ID3D11VkExtDevice1::guid, _))
+        ALLOW_CALL(device, QueryInterface(__uuidof(ID3D11VkExtDevice1), _))
             .RETURN(E_NOINTERFACE);
-        ALLOW_CALL(context, QueryInterface(ID3D11VkExtContext1::guid, _))
+        ALLOW_CALL(context, QueryInterface(__uuidof(ID3D11VkExtContext1), _))
             .RETURN(E_NOINTERFACE);
         FORBID_CALL(device, CreateUnorderedAccessViewAndGetDriverHandleNVX(_, _, _, _));
         FORBID_CALL(device, CreateShaderResourceViewAndGetDriverHandleNVX(_, _, _, _));

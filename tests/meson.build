@@ -1,6 +1,4 @@
 nvapi_src = files([
-  '../src/dxvk/dxvk_interfaces.cpp',
-  '../src/vkd3d-proton/vkd3d-proton_interfaces.cpp',
   '../src/util/util_string.cpp',
   '../src/util/util_env.cpp',
   '../src/util/util_log.cpp',
