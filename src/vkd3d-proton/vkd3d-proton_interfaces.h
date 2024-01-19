@@ -19,9 +19,9 @@
 
 #include "../nvapi_private.h"
 
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif // __GNUC__
+#endif // defined(__GNUC__) || defined(__clang__)
 
 enum D3D12_VK_EXTENSION : uint32_t {
     D3D12_VK_NVX_BINARY_IMPORT = 0x1,
