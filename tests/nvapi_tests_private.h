@@ -1,4 +1,6 @@
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif // defined(__GNUC__) || defined(__clang__)
 
 #include "../src/nvapi_private.h"
 #include "../src/nvapi_globals.h"
