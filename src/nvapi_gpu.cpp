@@ -341,15 +341,18 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (pLogicalGpuData == nullptr || pLogicalGpuData->pOSAdapterId == nullptr)
+        if (pLogicalGpuData == nullptr)
+            return InvalidArgument(n);
+
+        if (pLogicalGpuData->version != NV_LOGICAL_GPU_DATA_VER1)
+            return IncompatibleStructVersion(n);
+
+        if (pLogicalGpuData->pOSAdapterId == nullptr)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hLogicalGpu);
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedLogicalGpuHandle(n);
-
-        if (pLogicalGpuData->version != NV_LOGICAL_GPU_DATA_VER1)
-            return IncompatibleStructVersion(n);
 
         auto luid = adapter->GetLuid();
         if (!luid.has_value())
