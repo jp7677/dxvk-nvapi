@@ -61,7 +61,7 @@ jobs:
       run: tar cvfz "dxvk-nvapi-${{ env.VERSION }}.tar.gz" -C "./build/dxvk-nvapi-${{ env.VERSION }}" .
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dxvk-nvapi-${{ env.VERSION }}
         path: ${{ env.ARTIFACT }}
