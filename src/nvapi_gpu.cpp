@@ -486,6 +486,45 @@ extern "C" {
         return Ok(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_GPU_GetGPUInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_INFO* pGpuInfo) {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pGpuInfo == nullptr)
+            return InvalidArgument(n);
+
+        if (pGpuInfo->version != NV_GPU_INFO_VER1 && pGpuInfo->version != NV_GPU_INFO_VER2)
+            return IncompatibleStructVersion(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        auto architectureId = adapter->GetArchitectureId();
+
+        switch (pGpuInfo->version) {
+            case NV_GPU_INFO_VER1: {
+                auto pGpuInfoV1 = reinterpret_cast<NV_GPU_INFO_V1*>(pGpuInfo);
+                *pGpuInfoV1 = {};
+                break;
+            }
+            case NV_GPU_INFO_VER2:
+                *pGpuInfo = {};
+                if (architectureId >= NV_GPU_ARCHITECTURE_TU100) {
+                    // Values are taken from RTX4080
+                    pGpuInfo->rayTracingCores = 76;
+                    pGpuInfo->tensorCores = 304;
+                }
+                break;
+            default:
+                return IncompatibleStructVersion(n);
+        }
+
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_GPU_GetVbiosVersionString(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szBiosRevision) {
         constexpr auto n = __func__;
 

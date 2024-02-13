@@ -677,6 +677,82 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         }
     }
 
+    SECTION("GetGPUInfo returns OK") {
+        struct Data {
+            uint32_t deviceId;
+            std::string extensionName;
+            uint32_t expectedRayTracingCores;
+            uint32_t expectedTensorCores;
+        };
+        auto args = GENERATE(
+            Data{0x2600, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 76, 304},
+            Data{0x2000, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 76, 304},
+            Data{0x2000, VK_NV_SHADING_RATE_IMAGE_EXTENSION_NAME, 76, 304},
+            Data{0x2000, VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME, 0, 0},
+            Data{0x2000, VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME, 0, 0},
+            Data{0x2000, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, 0, 0},
+            Data{0x2000, "ext", 0, 0});
+
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+            .RETURN(std::set<std::string>{
+                VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,
+                args.extensionName});
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        props->deviceID = args.deviceId;
+                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        if (args.extensionName == VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
+                            fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
+                    }));
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
+
+        SECTION("GetGPUInfo (V1) returns OK") {
+            NV_GPU_INFO_V1 gpuInfo;
+            gpuInfo.version = NV_GPU_INFO_VER1;
+            REQUIRE(NvAPI_GPU_GetGPUInfo(handle, reinterpret_cast<NV_GPU_INFO*>(&gpuInfo)) == NVAPI_OK);
+        }
+
+        SECTION("GetGPUInfo (V2) returns OK") {
+            NV_GPU_INFO_V2 gpuInfo;
+            gpuInfo.version = NV_GPU_INFO_VER2;
+            REQUIRE(NvAPI_GPU_GetGPUInfo(handle, &gpuInfo) == NVAPI_OK);
+            REQUIRE(gpuInfo.rayTracingCores == args.expectedRayTracingCores);
+            REQUIRE(gpuInfo.tensorCores == args.expectedTensorCores);
+        }
+    }
+
+    SECTION("GetGPUInfo with unknown struct version returns incompatible-struct-version") {
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
+
+        NV_GPU_INFO gpuInfo;
+        gpuInfo.version = NV_GPU_INFO_VER2 + 1;
+        REQUIRE(NvAPI_GPU_GetGPUInfo(handle, &gpuInfo) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
+
+    SECTION("GetGPUInfo with current struct version returns not incompatible-struct-version") {
+        // This test should fail when a header update provides a newer not yet implemented struct version
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
+
+        NV_GPU_INFO gpuInfo;
+        gpuInfo.version = NV_GPU_INFO_VER;
+        REQUIRE(NvAPI_GPU_GetGPUInfo(handle, &gpuInfo) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
+
     SECTION("GetPstates20 returns no-implementation") {
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
