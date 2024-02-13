@@ -1,6 +1,6 @@
 /*****************************************************************************\
 |*                                                                             *|
-|* Copyright (c) 2019-2023, NVIDIA CORPORATION. All rights reserved.           *|
+|* Copyright (c) 2019-2024, NVIDIA CORPORATION. All rights reserved.           *|
 |*                                                                             *|
 |* Permission is hereby granted, free of charge, to any person obtaining a     *|
 |* copy of this software and associated documentation files (the "Software"),  *|
@@ -115,6 +115,7 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_GPU_NVLINK_GetStatus", 0xc72a38e3 },
     { "NvAPI_GPU_GetGPUInfo", 0xafd1b02c },
     { "NvAPI_GPU_GetVRReadyData", 0x81d629c5 },
+    { "NvAPI_GPU_GetGspFeatures", 0x581c4391 },
     { "NvAPI_GPU_GetPerfDecreaseInfo", 0x7f7f4600 },
     { "NvAPI_GPU_GetPstatesInfoEx", 0x843c0256 },
     { "NvAPI_GPU_GetPstates20", 0x6ff81213 },
@@ -185,6 +186,8 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_DISP_GetNvManagedDedicatedDisplays", 0xdbdf0cb2 },
     { "NvAPI_DISP_AcquireDedicatedDisplay", 0x47c917ba },
     { "NvAPI_DISP_ReleaseDedicatedDisplay", 0x1247825f },
+    { "NvAPI_DISP_GetNvManagedDedicatedDisplayMetadata", 0xd645d80c },
+    { "NvAPI_DISP_SetNvManagedDedicatedDisplayMetadata", 0x3d8b129a },
     { "NvAPI_Disp_GetDisplayIdInfo", 0xbae8aa5e },
     { "NvAPI_Disp_GetDisplayIdsFromTarget", 0xe7e5f89e },
     { "NvAPI_Disp_GetVRRInfo", 0xdf8fda57 },
@@ -354,6 +357,7 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_D3D_SetLatencyMarker", 0xd9984c05 },
     { "NvAPI_D3D12_SetAsyncFrameMarker", 0x13c98f73 },
     { "NvAPI_D3D12_NotifyOutOfBandCommandQueue", 0x03d6e8cb },
+    { "NvAPI_D3D12_SetCreateCommandQueueLowLatencyHint", 0x548c224f },
     { "NvAPI_D3D12_CreateCubinComputeShader", 0x2a2c79e8 },
     { "NvAPI_D3D12_CreateCubinComputeShaderEx", 0x3151211b },
     { "NvAPI_D3D12_CreateCubinComputeShaderWithName", 0x1dc7261f },
