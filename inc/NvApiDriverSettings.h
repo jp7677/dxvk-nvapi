@@ -1,6 +1,6 @@
 /*****************************************************************************\
 |*                                                                             *|
-|* Copyright (c) 2019-2023, NVIDIA CORPORATION. All rights reserved.           *|
+|* Copyright (c) 2019-2024, NVIDIA CORPORATION. All rights reserved.           *|
 |*                                                                             *|
 |* Permission is hereby granted, free of charge, to any person obtaining a     *|
 |* copy of this software and associated documentation files (the "Software"),  *|
@@ -1057,12 +1057,11 @@ enum EValues_PS_SHADERDISKCACHE_FLAGS {
     PS_SHADERDISKCACHE_FLAGS_LZMA_COMPRESSION            = 0x00004000,
     PS_SHADERDISKCACHE_FLAGS_BACKEND_MEM_MAP_FILES       = 0x00010000,
     PS_SHADERDISKCACHE_FLAGS_BACKEND_DLL                 = 0x00020000,
-    PS_SHADERDISKCACHE_FLAGS_BACKEND_SQLITE              = 0x00040000,
     PS_SHADERDISKCACHE_FLAGS_FLOOD_CACHE_DIRECTORY       = 0x00100000,
     PS_SHADERDISKCACHE_FLAGS_DISABLE_DEDUPLICATION       = 0x00200000,
     PS_SHADERDISKCACHE_FLAGS_DELETE_PERFECT_CACHES       = 0x00400000,
     PS_SHADERDISKCACHE_FLAGS_ALL_BUILDS_MISMATCH_TEST    = 0x00800000,
-    PS_SHADERDISKCACHE_FLAGS_NUM_VALUES = 21,
+    PS_SHADERDISKCACHE_FLAGS_NUM_VALUES = 20,
     PS_SHADERDISKCACHE_FLAGS_DEFAULT = 0x0
 };
 

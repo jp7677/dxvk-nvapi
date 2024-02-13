@@ -1,6 +1,6 @@
 /*****************************************************************************\
 |*                                                                             *|
-|* Copyright (c) 2019-2023, NVIDIA CORPORATION. All rights reserved.           *|
+|* Copyright (c) 2019-2024, NVIDIA CORPORATION. All rights reserved.           *|
 |*                                                                             *|
 |* Permission is hereby granted, free of charge, to any person obtaining a     *|
 |* copy of this software and associated documentation files (the "Software"),  *|
@@ -24,7 +24,7 @@
 \*****************************************************************************/
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Date: Oct 22, 2023 
+// Date: Feb 6, 2024 
 // File: nvapi.h
 //
 // NvAPI provides an interface to NVIDIA devices. This file contains the 
@@ -1209,6 +1209,7 @@ typedef enum _NvAPI_Status
     NVAPI_NOT_PERMITTED                         = -240,    //!< Attempted operation is not permitted.
     NVAPI_CALLBACK_ALREADY_REGISTERED           = -241,    //!< The callback function has already been registered.
     NVAPI_CALLBACK_NOT_FOUND                    = -242,    //!< The callback function is not found or not registered.
+    NVAPI_INVALID_OUTPUT_WIRE_FORMAT            = -243,    //!< Invalid Wire Format for the VR HMD
 } NvAPI_Status;
 
 
@@ -5939,6 +5940,53 @@ typedef NV_GPU_VR_READY_V1               NV_GPU_VR_READY;
 ///////////////////////////////////////////////////////////////////////////////
 NVAPI_INTERFACE NvAPI_GPU_GetVRReadyData(__in NvPhysicalGpuHandle hPhysicalGpu, __inout NV_GPU_VR_READY *pGpuVrReadyData);
 
+
+//! \ingroup gpu
+#define NVAPI_GPU_MAX_BUILD_VERSION_LENGTH (0x0000040)
+
+//! \ingroup gpu
+//! Used in NvAPI_GPU_GetGspFeatures().
+typedef struct _NV_GPU_GSP_INFO_V1
+{
+    NvU32   version;                                               //!< [in]  Structure version
+    NvU8    firmwareVersion[NVAPI_GPU_MAX_BUILD_VERSION_LENGTH];   //!< [out] Contains GSP firmware version 
+    NvU32   reserved;                                              //!< Reserved for future use
+} NV_GPU_GSP_INFO_V1;
+
+//! \ingroup gpu
+//! Macro for constructing the version field of NV_GPU_GSP_INFO_V1
+#define NV_GPU_GSP_INFO_VER1             MAKE_NVAPI_VERSION(NV_GPU_GSP_INFO_V1, 1)
+#define NV_GPU_GSP_INFO_VER              NV_GPU_GSP_INFO_VER1
+typedef NV_GPU_GSP_INFO_V1               NV_GPU_GSP_INFO;
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_GPU_GetGspFeatures
+//
+//! DESCRIPTION: If the device has GSP running, this function populates firmwareVersion field 
+//!              with GSP firmware version and returns NVAPI_OK
+//!              Otherwise returns NVAPI_NOT_SUPPORTED
+//!
+//! SUPPORTED OS:  Windows 10 and higher
+//!
+//!
+//! TCC_SUPPORTED
+//!
+//! \since Release: 550
+//!
+//!  \param [in]   hPhysicalGpu GPU selection
+//!  \param [out]  pGspInfo GSP firmware version
+//!
+//!  \retval       NVAPI_INVALID_ARGUMENT               pMemoryInfo is NULL
+//!  \retval       NVAPI_OK                             call successful
+//!  \retval       NVAPI_API_NOT_INTIALIZED             nvapi not initialized
+//!  \retval       NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE   hPhysicalGpu was not a physical GPU handle
+//!  \retval       NVAPI_INCOMPATIBLE_STRUCT_VERSION    NV_GPU_GSP_INFO structure version mismatch
+//!  \retval       NVAPI_NOT_SUPPORTED                  GSP is not running/supported on this device
+//!  \ingroup  gpu
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_GPU_GetGspFeatures(__in NvPhysicalGpuHandle hPhysicalGpu, __inout NV_GPU_GSP_INFO *pGspInfo);
+
 //! Used in NvAPI_GPU_GetPerfDecreaseInfo.
 //! Bit masks for knowing the exact reason for performance decrease
 typedef enum _NVAPI_GPU_PERF_DECREASE
@@ -10280,6 +10328,89 @@ NVAPI_INTERFACE NvAPI_DISP_AcquireDedicatedDisplay(__in NvU32 displayId, __inout
 //! \ingroup dispcontrol
 ///////////////////////////////////////////////////////////////////////////////
 NVAPI_INTERFACE NvAPI_DISP_ReleaseDedicatedDisplay(__in NvU32 displayId);
+#endif // defined(__cplusplus)
+
+//! SUPPORTED OS:  Windows 11 and higher
+//!
+#if defined(__cplusplus)
+
+typedef struct _NV_MANAGED_DEDICATED_DISPLAY_METADATA
+{
+    NvU32               version;                   //!< [in]      Version of this structure.
+    NvU32               displayId;                 //!< [in]      DisplayId to identify the display connector the metadata operation is requested for.
+    NvU32               bSetPosition         :  1; //!< [in]      Set call: 1 in case the information in variables/fields "positionX" and "positionY" should be stored as metadata. 0 otherwise.
+    NvU32               bRemovePosition      :  1; //!< [in]      Set call: 1 in case the stored positionX and positionY metadata should be set to 'not defined', N/A. 0 otherwise.
+    NvU32               bPositionIsAvailable :  1; //!<     [out] Query call: 1 in case the information in variables/fields "positionX" and "positionY" is valid (has been set before). 0 otherwise.
+    NvU32               bSetName             :  1; //!< [in]      Set call: 1 in case the information in variable/field "name" should be stored as metadata. 0 otherwise.
+    NvU32               bRemoveName          :  1; //!< [in]      Set call: 1 in case the stored name metadata should be set to 'not defined',N/A. 0 otherwise.
+    NvU32               bNameIsAvailable     :  1; //!<     [out] Query call: 1 in case the information in variable/field "name" is valid (has been set before). 0 otherwise.
+    NvU32               reserved             : 26; //!< [in][out] Reserved for future use without adding versioning.
+    NvS32               positionX;                 //!< [in][out] Metadata for the virtual horizontal position for the display connector specified by displayId.
+    NvS32               positionY;                 //!< [in][out] Metadata for the virtual vertical position for the display connector specified by displayId.
+    NvAPI_ShortString   name;                      //!< [in][out] Metadata for the virtual name of for the display connector specified by displayId.
+                                                   //!<           Valid characters are in the range of 32 ' ' (space) to 126 '~' (both included).
+} NV_MANAGED_DEDICATED_DISPLAY_METADATA_V1;
+
+#define NV_MANAGED_DEDICATED_DISPLAY_METADATA_VER1  MAKE_NVAPI_VERSION(NV_MANAGED_DEDICATED_DISPLAY_METADATA_V1,1)
+#define NV_MANAGED_DEDICATED_DISPLAY_METADATA_VER   NV_MANAGED_DEDICATED_DISPLAY_METADATA_VER1
+
+typedef NV_MANAGED_DEDICATED_DISPLAY_METADATA_V1    NV_MANAGED_DEDICATED_DISPLAY_METADATA;
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_DISP_GetNvManagedDedicatedDisplayMetadata
+//
+//!   DESCRIPTION: This API returns metadata which has been set for the display connector in question.
+//!                Main use case would be to query the data for an Nvidia managed dedicated display.
+//!                The function will work for any valid displayId though.
+//!
+//! \since Release: 550
+//!
+//! \param [in/out] pDedicatedDisplayMetadata   Data structure containing input and output data.
+//!
+//! \retval ::NVAPI_OK                          The call succeeded.
+//! \retval ::NVAPI_ERROR                       The call failed.
+//! \retval ::NVAPI_NO_IMPLEMENTATION           The API is not implemented in current driver.
+//! \retval ::NVAPI_NOT_SUPPORTED               The API is not supported on the current operating system or gpu.
+//! \retval ::NVAPI_OUT_OF_MEMORY               There wasn't sufficient memory to complete the call.
+//! \retval ::NVAPI_INVALID_POINTER             An invalid pointer was passed as an argument.
+//! \retval ::NVAPI_API_NOT_INITIALIZED         NvAPI was not initialized.
+//! \retval ::NVAPI_INCOMPATIBLE_STRUCT_VERSION The version of the NV_MANAGED_DEDICATED_DISPLAY_METADATA structure is invalid.
+//!
+//! \ingroup gpu
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_DISP_GetNvManagedDedicatedDisplayMetadata(__inout NV_MANAGED_DEDICATED_DISPLAY_METADATA* pDedicatedDisplayMetadata);
+#endif // defined(__cplusplus)
+
+//! SUPPORTED OS:  Windows 11 and higher
+//!
+#if defined(__cplusplus)
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_DISP_SetNvManagedDedicatedDisplayMetadata
+//
+//!   DESCRIPTION: This API allows to set metadata for the display connector in question.
+//!                Main use case would be to set the data for an Nvidia managed dedicated display.
+//!                The function will work for any valid displayId though.
+//!
+//! \since Release: 550
+//!
+//! \param [in/out] pDedicatedDisplayMetadata   Data structure containing input and output data.
+//!
+//! \retval ::NVAPI_OK                          The call succeeded.
+//! \retval ::NVAPI_ERROR                       The call failed.
+//! \retval ::NVAPI_NO_IMPLEMENTATION           The API is not implemented in current driver.
+//! \retval ::NVAPI_NOT_SUPPORTED               The API is not supported on the current operating system or gpu.
+//! \retval ::NVAPI_OUT_OF_MEMORY               There wasn't sufficient memory to complete the call.
+//! \retval ::NVAPI_INVALID_POINTER             An invalid pointer was passed as an argument.
+//! \retval ::NVAPI_API_NOT_INITIALIZED         NvAPI was not initialized.
+//! \retval ::NVAPI_INCOMPATIBLE_STRUCT_VERSION The version of the NV_MANAGED_DEDICATED_DISPLAY_METADATA structure is invalid.
+//! \retval ::NVAPI_INVALID_USER_PRIVILEGE      The caller doesn't have the required administrator privileges to access this API.
+//! \retval ::NVAPI_INVALID_ARGUMENT            Characters in pDedicatedDisplayMetadata->name are out of the allowed range.
+//!
+//! \ingroup gpu
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_DISP_SetNvManagedDedicatedDisplayMetadata(__inout NV_MANAGED_DEDICATED_DISPLAY_METADATA* pDedicatedDisplayMetadata);
 #endif // defined(__cplusplus)
 
 
@@ -19632,6 +19763,26 @@ typedef enum
 NVAPI_INTERFACE NvAPI_D3D12_NotifyOutOfBandCommandQueue(__in ID3D12CommandQueue *pCommandQueue, __in NV_OUT_OF_BAND_CQ_TYPE cqType);
 #endif //defined(__cplusplus) && defined(__d3d12_h__))
 
+
+#if defined(__cplusplus) && defined(__d3d12_h__)
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D12_SetCreateCommandQueueLowLatencyHint
+//
+//!   DESCRIPTION: Reserved call.
+//!
+//! \since Release: 530
+//! \param [in] pDevice         The creating device
+//! SUPPORTED OS:  Windows 10 and higher
+//!
+//!
+//! \return This API can return any of the error codes enumerated in #NvAPI_Status.
+//!         If there are return error codes with specific meaning for this API, they are listed below.
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D12_SetCreateCommandQueueLowLatencyHint(__in ID3D12Device *pDevice);
+#endif //defined(__cplusplus) && defined(__d3d12_h__))
 
 #if defined (__cplusplus) && defined(__d3d12_h__)
 
