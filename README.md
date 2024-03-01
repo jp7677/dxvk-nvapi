@@ -42,12 +42,13 @@ Support for DXVK-NVAPI has been added to popular game launchers. See their respe
 
 ### Steam Play / Proton
 
-Proton 8.0 includes DXVK-NVAPI and enables it by default for a lot of titles.
+Proton 9.0 includes DXVK-NVAPI and enables it by default for all titles with a few exceptions. Proton 9.0 can force-enable DXVK-NVAPI for titles that have DXVK-NVAPI disabled by default and also for non-NVIDIA GPUs when setting `PROTON_FORCE_NVAPI=1`. Contrary, `PROTON_DISABLE_NVAPI` disables DXVK-NVAPI.
 
-- Use `PROTON_ENABLE_NVAPI=1` as game launch argument in Steam to enable DXVK-NVAPI for other titles.
-- Copy and replace `nvapi.dll`/`nvapi64.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 8.0/` for manually updating the included version.
+- Copy and replace `nvapi.dll`/`nvapi64.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 9.0/` for manually updating the included version.
 
-Proton Experimental 8.0 can force-enable DXVK-NVAPI for non-NVIDIA GPUs when setting `PROTON_FORCE_NVAPI=1`. Proton Experimental Bleeding Edge additionally always contains the latest DXVK-NVAPI development (master) version.
+Proton Experimental Bleeding Edge additionally always contains the latest DXVK-NVAPI development (master) version.
+
+Proton 8.0 includes DXVK-NVAPI and enables it by default for a lot of titles. Use `PROTON_ENABLE_NVAPI=1` for that version as game launch argument in Steam to enable DXVK-NVAPI for other titles. 
 
 ### Wine / Wine-Staging
 
