@@ -1,4 +1,5 @@
 external/*
 inc/*
 build/*
-builddir/*
+buildDir/*
+out/*
