@@ -66,10 +66,12 @@ namespace dxvk {
         if (allowOtherDrivers == "1")
             log::write(str::format(allowOtherDriversEnvName, " is set, reporting also GPUs with non-NVIDIA proprietary driver"));
 
-        if (!HasNvProprietaryDriver() && allowOtherDrivers != "1")
+        if (!HasNvProprietaryDriver() && !HasNvkDriver() && allowOtherDrivers != "1")
             return false;
 
-        if (HasNvProprietaryDriver() && m_dxgiDesc.VendorId != NvidiaPciVendorId && env::getEnvVariable("DXVK_ENABLE_NVAPI") != "1")
+        if ((HasNvProprietaryDriver() || HasNvkDriver())
+            && m_dxgiDesc.VendorId != NvidiaPciVendorId
+            && env::getEnvVariable("DXVK_ENABLE_NVAPI") != "1")
             return false; // DXVK NVAPI-hack is enabled, skip this adapter
 
         if (HasNvProprietaryDriver())
@@ -144,6 +146,10 @@ namespace dxvk {
 
     bool NvapiAdapter::HasNvProprietaryDriver() const {
         return m_vkDriverProperties.driverID == VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+    }
+
+    bool NvapiAdapter::HasNvkDriver() const {
+        return m_vkDriverProperties.driverID == VK_DRIVER_ID_MESA_NVK;
     }
 
     uint32_t NvapiAdapter::GetDeviceId() const {

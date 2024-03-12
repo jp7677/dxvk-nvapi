@@ -16,6 +16,7 @@ namespace dxvk {
         bool Initialize(Com<IDXGIAdapter1>& dxgiAdapter, uint32_t index, std::vector<NvapiOutput*>& outputs);
         [[nodiscard]] std::string GetDeviceName() const;
         [[nodiscard]] bool HasNvProprietaryDriver() const;
+        [[nodiscard]] bool HasNvkDriver() const;
         [[nodiscard]] uint32_t GetDriverVersion() const;
         [[nodiscard]] uint32_t GetDeviceId() const;
         [[nodiscard]] uint32_t GetExternalDeviceId() const;

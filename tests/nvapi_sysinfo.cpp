@@ -55,14 +55,40 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
     }
 
     SECTION("Initialize returns OK when DXVK reports other vendor but DXVK_ENABLE_NVAPI is set") {
+        struct Data {
+            VkDriverId driverId;
+        };
+        auto args = GENERATE(
+            Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY},
+            Data{VK_DRIVER_ID_MESA_NVK});
+
         ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "1");
 
         ALLOW_CALL(adapter, GetDesc1(_))
             .SIDE_EFFECT(_1->VendorId = 0x1002)
             .RETURN(S_OK);
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = args.driverId;
+                    }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
 
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+        REQUIRE(NvAPI_Unload() == NVAPI_OK);
+    }
+
+    SECTION("Initialize returns Ok when adapter with Mesa NVK driver ID has been found") {
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+            .SIDE_EFFECT(
+                ConfigureGetPhysicalDeviceProperties2(_3,
+                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                        driverProps->driverID = VK_DRIVER_ID_MESA_NVK;
+                    }));
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
         REQUIRE(NvAPI_Unload() == NVAPI_OK);
     }
