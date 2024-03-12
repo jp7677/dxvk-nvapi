@@ -175,7 +175,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         auto args = GENERATE(
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 470, 45, 1, 47045},
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 470, 101, 1, 47099},
-            Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, 21, 2, 3, 2102});
+            Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, 21, 2, 3, 99999});
 
         ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
 

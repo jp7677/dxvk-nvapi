@@ -79,7 +79,10 @@ namespace dxvk {
                 VK_VERSION_MINOR(m_vkProperties.driverVersion >> 0) >> 2,
                 VK_VERSION_PATCH(m_vkProperties.driverVersion >> 2) >> 4);
         else
-            m_vkDriverVersion = m_vkProperties.driverVersion;
+            // Reporting e.g. Mesa driver versions turned out to be not very useful
+            // since those will usually always fail driver version checks,
+            // so just report a number that should be "useful" until the end of time
+            m_vkDriverVersion = VK_MAKE_VERSION(999, 99, 0);
 
         log::write(str::format("NvAPI Device: ", m_vkProperties.deviceName, " (",
             VK_VERSION_MAJOR(m_vkDriverVersion), ".",

@@ -66,7 +66,7 @@ DXVK 1.10 and older does not support `DXVK_ENABLE_NVAPI`. Disable the `nvapiHack
 
 Using DXVK-NVAPI with other GPU vendors / drivers has very limited use. Outside of testing, only Reflex (LatencyFlex) or HDR entry points provide benefits. This requires DXVK to see the GPU as an NVIDIA GPU. Use `DXVK_CONFIG="dxgi.hideAmdGpu = True"` to spoof an AMD GPU as NVIDIA GPU. Use `DXVK_CONFIG="dxgi.customVendorId = 10de"` for generally spoofing an NVIDIA GPU. 
 
-Setting `DXVK_NVAPI_ALLOW_OTHER_DRIVERS=1` is needed for successful DXVK-NVAPI initialization when using a driver other than the NVIDIA proprietary driver like RADV or NVK. Overriding the reported driver version is additionally recommended. The reported GPU arrchitecture for other drivers is always Pascal to prevent attempts to initialize DLSS. This behavior cannot be changed without modifying the source code.
+Setting `DXVK_NVAPI_ALLOW_OTHER_DRIVERS=1` is needed for successful DXVK-NVAPI initialization when using a driver other than the NVIDIA proprietary driver like RADV or NVK. The reported driver version will be 999.99. Overriding the reported driver version is still recommended. The reported GPU arrchitecture for other drivers is always Pascal to prevent attempts to initialize DLSS. This behavior cannot be changed without modifying the source code.
 
 ## Tweaks, debugging and troubleshooting
 
