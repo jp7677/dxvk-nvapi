@@ -13,7 +13,7 @@ void SetupResourceFactory(
 
 void ResetGlobals();
 
-[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 21> ConfigureDefaultTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 22> ConfigureDefaultTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -21,7 +21,7 @@ void ResetGlobals();
     DXGIDxvkAdapterMock& adapter,
     DXGIOutput6Mock& output);
 
-[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 36> ConfigureExtendedTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 37> ConfigureExtendedTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -40,4 +40,11 @@ void ConfigureGetPhysicalDeviceProperties2(
         VkPhysicalDevicePCIBusInfoPropertiesEXT*,
         VkPhysicalDeviceDriverPropertiesKHR*,
         VkPhysicalDeviceFragmentShadingRatePropertiesKHR*)>
+        configure);
+
+void ConfigureGetPhysicalDeviceFeatures2(
+    VkPhysicalDeviceFeatures2* features,
+    std::function<void(
+        VkPhysicalDeviceFeatures*,
+        VkPhysicalDeviceDepthClipControlFeaturesEXT*)>
         configure);

@@ -26,7 +26,7 @@ void ResetGlobals() {
     initializationCount = 0ULL;
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 21> ConfigureDefaultTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 22> ConfigureDefaultTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -87,6 +87,7 @@ void ResetGlobals() {
                         props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
                         driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
+        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceFeatures2(_, _, _)),
 
         NAMED_ALLOW_CALL(nvml, IsAvailable())
             .RETURN(false),
@@ -94,7 +95,7 @@ void ResetGlobals() {
             .RETURN(false)};
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 36> ConfigureExtendedTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 37> ConfigureExtendedTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -205,6 +206,7 @@ void ResetGlobals() {
                         props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
                         driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
+        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceFeatures2(_, _, _)),
 
         NAMED_ALLOW_CALL(nvml, IsAvailable())
             .RETURN(false),
@@ -257,4 +259,33 @@ void ConfigureGetPhysicalDeviceProperties2(
     }
 
     configure(&props->properties, idProps, pciBusInfoProps, driverProps, fragmentShadingRateProps);
+}
+
+void ConfigureGetPhysicalDeviceFeatures2(
+    VkPhysicalDeviceFeatures2* features,
+    std::function<void(
+        VkPhysicalDeviceFeatures*,
+        VkPhysicalDeviceDepthClipControlFeaturesEXT*)>
+        configure) { // NOLINT(performance-unnecessary-value-param)
+    VkPhysicalDeviceDepthClipControlFeaturesEXT* depthClipControlFeatures = nullptr;
+
+    struct VkStructure {
+        VkStructureType sType;
+        void* pNext;
+    };
+    auto next = reinterpret_cast<VkStructure*>(features);
+    while (next != nullptr) {
+        switch (next->sType) {
+            case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT: {
+                depthClipControlFeatures = reinterpret_cast<VkPhysicalDeviceDepthClipControlFeaturesEXT*>(next);
+                break;
+            }
+            default:
+                break;
+        }
+
+        next = reinterpret_cast<VkStructure*>(next->pNext);
+    }
+
+    configure(&features->features, depthClipControlFeatures);
 }

@@ -54,6 +54,8 @@ namespace dxvk {
         VkPhysicalDevicePCIBusInfoPropertiesEXT m_vkPciBusProperties{};
         VkPhysicalDeviceDriverPropertiesKHR m_vkDriverProperties{};
         VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_vkFragmentShadingRateProperties{};
+        VkPhysicalDeviceFeatures m_vkFeatures{};
+        VkPhysicalDeviceDepthClipControlFeaturesEXT m_vkDepthClipControlFeatures{};
         uint32_t m_vkDriverVersion{};
         DXGI_ADAPTER_DESC1 m_dxgiDesc{};
 
