@@ -160,7 +160,7 @@ extern "C" {
         if (luid.has_value())
             adapter = nvapiAdapterRegistry->FindAdapter(luid.value());
 
-        if (adapter == nullptr || !adapter->HasNvProprietaryDriver())
+        if (adapter == nullptr || (!adapter->HasNvProprietaryDriver() && !adapter->HasNvkDriver()))
             return Ok(str::format(n, " (sm_0)"));
 
         // From https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/

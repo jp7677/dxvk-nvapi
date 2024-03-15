@@ -226,6 +226,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME, 7, 0},
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME, 6, 0},
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, 5, 0},
+                Data{VK_DRIVER_ID_MESA_NVK, 0x2600, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 9},
                 Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, 0x2000, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 0, 0},
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, "ext", 0, 0});
 
@@ -239,8 +240,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
                 .SIDE_EFFECT(
                     ConfigureGetPhysicalDeviceProperties2(_3,
-                        [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                            auto luid = LUID{0x00000001, 0x00000002};
+                        [&args, &luid](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
                             memcpy(&idProps->deviceLUID, &luid, sizeof(luid));
                             idProps->deviceLUIDValid = VK_TRUE;
                             driverProps->driverID = args.driverId;
