@@ -17,7 +17,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
     auto primaryDisplayId = 0x00010001;
 
     SECTION("NVML depending methods succeed when NVML is available") {
-        ALLOW_CALL(*nvml, IsAvailable()) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*nvml, IsAvailable())
             .RETURN(true);
         ALLOW_CALL(*nvml, DeviceGetHandleByPciBusId_v2(_, _))
             .SIDE_EFFECT(*_2 = reinterpret_cast<nvmlDevice_t>(0x1234)) // Just a non-nullptr
@@ -25,7 +25,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
 
         SECTION("GetCurrentPCIEDownstreamWidth returns OK") {
             auto linkWidth = 16U;
-            ALLOW_CALL(*nvml, DeviceGetCurrPcieLinkWidth(_, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetCurrPcieLinkWidth(_, _))
                 .LR_SIDE_EFFECT(*_2 = linkWidth)
                 .RETURN(NVML_SUCCESS);
 
@@ -42,7 +42,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
 
         SECTION("GetIrq returns OK") {
             auto irqNum = 143U;
-            ALLOW_CALL(*nvml, DeviceGetIrqNum(_, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetIrqNum(_, _))
                 .LR_SIDE_EFFECT(*_2 = irqNum)
                 .RETURN(NVML_SUCCESS);
 
@@ -59,7 +59,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
 
         SECTION("GetGpuCoreCount returns OK") {
             auto cores = 1536U;
-            ALLOW_CALL(*nvml, DeviceGetNumGpuCores(_, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetNumGpuCores(_, _))
                 .LR_SIDE_EFFECT(*_2 = cores)
                 .RETURN(NVML_SUCCESS);
 
@@ -76,7 +76,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
 
         SECTION("GetPCIIdentifiers returns OK and has subsystem ID when NVML is available") {
             auto id = 0x88161043;
-            ALLOW_CALL(*nvml, DeviceGetPciInfo_v3(_, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetPciInfo_v3(_, _))
                 .LR_SIDE_EFFECT(_2->pciSubSystemId = id)
                 .RETURN(NVML_SUCCESS);
 
@@ -93,7 +93,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
 
         SECTION("GetVbiosVersionString returns OK") {
             auto version = "12.34";
-            ALLOW_CALL(*nvml, DeviceGetVbiosVersion(_, _, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetVbiosVersion(_, _, _))
                 .LR_SIDE_EFFECT(strcpy(_2, version))
                 .RETURN(NVML_SUCCESS);
 
@@ -120,7 +120,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 Data{NVML_BUS_TYPE_AGP, NVAPI_GPU_BUS_TYPE_AGP},
                 Data{NVML_BUS_TYPE_UNKNOWN, NVAPI_GPU_BUS_TYPE_UNDEFINED});
 
-            ALLOW_CALL(*nvml, DeviceGetBusType(_, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetBusType(_, _))
                 .LR_SIDE_EFFECT(*_2 = args.nvmlBusType)
                 .RETURN(NVML_SUCCESS);
 
@@ -140,7 +140,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             auto fbUtilization = 56U;
             auto vidUtilization = 8U;
             auto busUtilization = 80U;
-            ALLOW_CALL(*nvml, DeviceGetDynamicPstatesInfo(_, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetDynamicPstatesInfo(_, _))
                 .LR_SIDE_EFFECT({
                     _2->flags = 0;
                     _2->utilization[NVML_GPU_UTILIZATION_DOMAIN_GPU].percentage = gpuUtilization;
@@ -151,7 +151,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                         _2->utilization[i].bIsPresent = i < 4;
                 })
                 .RETURN(NVML_SUCCESS);
-            ALLOW_CALL(*nvml, DeviceGetUtilizationRates(_, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetUtilizationRates(_, _))
                 .LR_SIDE_EFFECT({
                     _2->gpu = gpuUtilization + 1;
                     _2->memory = fbUtilization + 1;
@@ -183,9 +183,9 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
         SECTION("GetDynamicPstatesInfoEx returns OK when DeviceGetDynamicPstatesInfo is not available but DeviceGetUtilizationRates is") {
             auto gpuUtilization = 32U;
             auto memoryUtilization = 56U;
-            ALLOW_CALL(*nvml, DeviceGetDynamicPstatesInfo(_, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetDynamicPstatesInfo(_, _))
                 .RETURN(NVML_ERROR_FUNCTION_NOT_FOUND);
-            ALLOW_CALL(*nvml, DeviceGetUtilizationRates(_, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetUtilizationRates(_, _))
                 .LR_SIDE_EFFECT({
                     _2->gpu = gpuUtilization;
                     _2->memory = memoryUtilization;
@@ -218,7 +218,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             auto temp = 65;
             auto maxTemp = 127;
             auto minTemp = -40;
-            ALLOW_CALL(*nvml, DeviceGetThermalSettings(_, _, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetThermalSettings(_, _, _))
                 .LR_SIDE_EFFECT({
                     _3->count = 1;
                     if (_2 == 0 || _2 == NVML_THERMAL_TARGET_ALL) {
@@ -230,7 +230,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                     }
                 })
                 .RETURN(NVML_SUCCESS);
-            ALLOW_CALL(*nvml, DeviceGetTemperature(_, _, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetTemperature(_, _, _))
                 .LR_SIDE_EFFECT(*_3 = temp + 1)
                 .RETURN(NVML_SUCCESS);
 
@@ -280,9 +280,9 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
 
         SECTION("GetThermalSettings succeeds when DeviceGetThermalSettings is not available but DeviceGetTemperature is") {
             auto temp = 65U;
-            ALLOW_CALL(*nvml, DeviceGetThermalSettings(_, _, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetThermalSettings(_, _, _))
                 .RETURN(NVML_ERROR_FUNCTION_NOT_FOUND);
-            ALLOW_CALL(*nvml, DeviceGetTemperature(_, _, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetTemperature(_, _, _))
                 .LR_SIDE_EFFECT(*_3 = temp)
                 .RETURN(NVML_SUCCESS);
 
@@ -331,7 +331,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
         }
 
         SECTION("GetCurrentPstate returns OK") {
-            ALLOW_CALL(*nvml, DeviceGetPerformanceState(_, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetPerformanceState(_, _))
                 .LR_SIDE_EFFECT(*_2 = NVML_PSTATE_2)
                 .RETURN(NVML_SUCCESS);
 
@@ -350,7 +350,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             auto graphicsClock = 500U;
             auto memoryClock = 600U;
             auto videoClock = 700U;
-            ALLOW_CALL(*nvml, DeviceGetClockInfo(_, NVML_CLOCK_GRAPHICS, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*nvml, DeviceGetClockInfo(_, NVML_CLOCK_GRAPHICS, _))
                 .LR_SIDE_EFFECT(*_3 = graphicsClock)
                 .RETURN(NVML_SUCCESS);
             ALLOW_CALL(*nvml, DeviceGetClockInfo(_, NVML_CLOCK_MEM, _))
@@ -443,7 +443,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
     }
 
     SECTION("NVML depending methods succeed when NVML is not available") {
-        ALLOW_CALL(*nvml, IsAvailable()) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*nvml, IsAvailable())
             .RETURN(false);
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
@@ -481,7 +481,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
     }
 
     SECTION("NVML depending methods succeed when NVML is available but without suitable adapter") {
-        ALLOW_CALL(*nvml, IsAvailable()) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*nvml, IsAvailable())
             .RETURN(true);
         ALLOW_CALL(*nvml, DeviceGetHandleByPciBusId_v2(_, _))
             .RETURN(NVML_ERROR_NOT_FOUND);

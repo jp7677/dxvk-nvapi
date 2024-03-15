@@ -135,7 +135,7 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
             .MinMasteringLuminance = 100,
             .MaxContentLightLevel = 1199,
             .MaxFrameAverageLightLevel = 799};
-        ALLOW_CALL(*dxgiFactory, GetGlobalHDRState(_, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*dxgiFactory, GetGlobalHDRState(_, _))
             .LR_SIDE_EFFECT({
                 *_1 = outColorSpace;
                 *_2 = outMetadata;
@@ -144,7 +144,7 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
 
         DXGI_COLOR_SPACE_TYPE inColorSpace = DXGI_COLOR_SPACE_RESERVED;
         DXGI_HDR_METADATA_HDR10 inMetadata{};
-        ALLOW_CALL(*dxgiFactory, SetGlobalHDRState(_, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*dxgiFactory, SetGlobalHDRState(_, _))
             .LR_SIDE_EFFECT({
                 inColorSpace = _1;
                 inMetadata = *_2;
@@ -282,7 +282,7 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
     }
 
     SECTION("HdrColorControl with failed get-global-hdr-state succeeds") {
-        ALLOW_CALL(*dxgiFactory, GetGlobalHDRState(_, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*dxgiFactory, GetGlobalHDRState(_, _))
             .RETURN(E_FAIL);
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
@@ -335,7 +335,7 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
     }
 
     SECTION("HdrColorControl without DXGI interop returns no-implementation") {
-        ALLOW_CALL(*dxgiFactory, QueryInterface(__uuidof(IDXGIVkInteropFactory1), _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*dxgiFactory, QueryInterface(__uuidof(IDXGIVkInteropFactory1), _))
             .RETURN(E_NOINTERFACE);
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));

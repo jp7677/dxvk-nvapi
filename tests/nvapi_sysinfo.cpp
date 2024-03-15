@@ -34,7 +34,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
     }
 
     SECTION("Initialize returns device-not-found when DXVK reports no adapters") {
-        ALLOW_CALL(*dxgiFactory, EnumAdapters1(_, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*dxgiFactory, EnumAdapters1(_, _))
             .RETURN(DXGI_ERROR_NOT_FOUND);
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
@@ -81,7 +81,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
     }
 
     SECTION("Initialize returns Ok when adapter with Mesa NVK driver ID has been found") {
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -94,7 +94,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
     }
 
     SECTION("Initialize returns device-not-found when adapter with non NVIDIA driver ID has been found") {
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -125,7 +125,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetDriverAndBranchVersion returns OK") {
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -144,7 +144,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetDisplayDriverInfo succeeds") {
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -205,7 +205,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
         ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
 
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -247,7 +247,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
         ::SetEnvironmentVariableA("DXVK_NVAPI_DRIVER_VERSION", args.override.c_str());
 
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -268,7 +268,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetGPUIDFromPhysicalGPU / GetPhysicalGPUFromGPUID succeeds") {
-        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
             .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, VK_EXT_PCI_BUS_INFO_EXTENSION_NAME});
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .LR_SIDE_EFFECT(
@@ -312,7 +312,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
         ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
 
-        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
             .RETURN(std::set<std::string>{
                 VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,
                 args.extensionName});
@@ -350,7 +350,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetGPUType returns OK") {
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -393,7 +393,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
     SECTION("GetFullName returns OK") {
         auto name = "High-End GPU01";
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .LR_SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [&name](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -414,7 +414,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
     SECTION("GetBusId returns OK") {
         auto id = 2U;
-        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
             .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, VK_EXT_PCI_BUS_INFO_EXTENSION_NAME});
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .LR_SIDE_EFFECT(
@@ -437,7 +437,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
     SECTION("GetBusSlotId returns OK") {
         auto id = 3U;
-        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
             .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, VK_EXT_PCI_BUS_INFO_EXTENSION_NAME});
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .LR_SIDE_EFFECT(
@@ -467,7 +467,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             Data{VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, NVAPI_GPU_BUS_TYPE_PCI_EXPRESS},
             Data{"ext", NVAPI_GPU_BUS_TYPE_UNDEFINED});
 
-        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
             .RETURN(std::set<std::string>{
                 VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,
                 args.extensionName});
@@ -509,7 +509,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetAdapterIdFromPhysicalGpu returns OK") {
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -532,7 +532,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetLogicalGpuInfo returns OK") {
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -614,7 +614,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             Data{VK_DRIVER_ID_MESA_NVK, 0x2000, VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME, 0x4000, NV_GPU_ARCHITECTURE_GM200, NV_GPU_ARCH_IMPLEMENTATION_GM204},
             Data{VK_DRIVER_ID_MESA_NVK, 0x2000, "ext", 0x4000, NV_GPU_ARCHITECTURE_GK100, NV_GPU_ARCH_IMPLEMENTATION_GK104});
 
-        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
             .RETURN(std::set<std::string>{
                 VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,
                 args.extensionName});
@@ -689,7 +689,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     SECTION("GetArchInfo spoofs Pascal when a non-NVIDIA device is present") {
         ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
 
-        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -738,7 +738,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, "ext", 0, 0},
             Data{VK_DRIVER_ID_MESA_NVK, 0x2600, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 76, 304});
 
-        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+        ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
             .RETURN(std::set<std::string>{
                 VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,
                 args.extensionName});

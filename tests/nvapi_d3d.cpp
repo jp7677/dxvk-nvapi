@@ -131,7 +131,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
 
     SECTION("LatencyFleX depending methods succeed when LFX is available") {
         ALLOW_CALL(*lfx, IsAvailable())
-            .RETURN(true); // NOLINT(bugprone-use-after-move)
+            .RETURN(true);
 
         SECTION("GetSleepStatus returns OK") {
             SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
@@ -143,7 +143,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
         }
 
         SECTION("SetSleepMode returns OK") {
-            REQUIRE_CALL(*lfx, SetTargetFrameTime(250ULL * 1000)); // NOLINT(bugprone-use-after-move)
+            REQUIRE_CALL(*lfx, SetTargetFrameTime(250ULL * 1000));
 
             SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -156,7 +156,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
         }
 
         SECTION("Sleep calls LFX throttle callback and returns OK") {
-            REQUIRE_CALL(*lfx, SetTargetFrameTime(500ULL * 1000)); // NOLINT(bugprone-use-after-move)
+            REQUIRE_CALL(*lfx, SetTargetFrameTime(500ULL * 1000));
             REQUIRE_CALL(*lfx, WaitAndBeginFrame());
 
             SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
@@ -310,7 +310,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
             }
 
             SECTION("SetSleepMode calls ID3DLowLatencyDevice::SetLatencySleepMode returns OK") {
-                FORBID_CALL(*lfx, SetTargetFrameTime(_)); // NOLINT(bugprone-use-after-move)
+                FORBID_CALL(*lfx, SetTargetFrameTime(_));
 
                 REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(true, false, 250U))
                     .RETURN(S_OK);
@@ -326,7 +326,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
             }
 
             SECTION("Sleep calls ID3DLowLatencyDevice::LatencySleep and returns OK") {
-                FORBID_CALL(*lfx, SetTargetFrameTime(_)); // NOLINT(bugprone-use-after-move)
+                FORBID_CALL(*lfx, SetTargetFrameTime(_));
                 FORBID_CALL(*lfx, WaitAndBeginFrame());
 
                 REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(true, false, 500U))
@@ -416,10 +416,10 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
             ALLOW_CALL(lowLatencyDevice, SupportsLowLatency())
                 .RETURN(true);
             ALLOW_CALL(*lfx, IsAvailable())
-                .RETURN(true); // NOLINT(bugprone-use-after-move)
+                .RETURN(true);
 
             SECTION("SetSleepMode calls Lfx::SetTargetFrameTime returns OK") {
-                REQUIRE_CALL(*lfx, SetTargetFrameTime(250ULL * 1000)); // NOLINT(bugprone-use-after-move)
+                REQUIRE_CALL(*lfx, SetTargetFrameTime(250ULL * 1000));
 
                 FORBID_CALL(lowLatencyDevice, SetLatencySleepMode(_, _, _));
 
@@ -434,7 +434,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
             }
 
             SECTION("Sleep calls Lfx::WaitAndBeginFrame and returns OK") {
-                REQUIRE_CALL(*lfx, SetTargetFrameTime(500ULL * 1000)); // NOLINT(bugprone-use-after-move)
+                REQUIRE_CALL(*lfx, SetTargetFrameTime(500ULL * 1000));
                 REQUIRE_CALL(*lfx, WaitAndBeginFrame());
 
                 FORBID_CALL(lowLatencyDevice, SetLatencySleepMode(_, _, _));

@@ -235,9 +235,9 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             luid.HighPart = 0x00000002;
             luid.LowPart = 0x00000001;
 
-            ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
                 .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, args.extensionName});
-            ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _)) // NOLINT(bugprone-use-after-move)
+            ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
                 .SIDE_EFFECT(
                     ConfigureGetPhysicalDeviceProperties2(_3,
                         [&args, &luid](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -814,7 +814,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
             SECTION("NotifyOutOfBandCommandQueue returns no-implementation with LFX") {
                 ALLOW_CALL(*lfx, IsAvailable())
-                    .RETURN(true); // NOLINT(bugprone-use-after-move)
+                    .RETURN(true);
 
                 SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
 
@@ -841,7 +841,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
             SECTION("SetAsyncFrameMarker returns no-implementation with LFX") {
                 ALLOW_CALL(*lfx, IsAvailable())
-                    .RETURN(true); // NOLINT(bugprone-use-after-move)
+                    .RETURN(true);
 
                 SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
 
