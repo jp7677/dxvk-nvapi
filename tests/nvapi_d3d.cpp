@@ -383,7 +383,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
                     .RETURN(S_OK);
                 REQUIRE_CALL(lowLatencyDevice, LatencySleep())
                     .RETURN(S_OK);
-                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(123ULL, SIMULATION_START))
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(1ULL, SIMULATION_START))
                     .RETURN(S_OK);
 
                 SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
@@ -400,6 +400,103 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
                 REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &sleepModeParams) == NVAPI_OK);
                 REQUIRE(NvAPI_D3D_Sleep(&unknown) == NVAPI_OK);
                 REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
+            }
+
+            SECTION("SetLatencyMarker correctly produces monotonic frame ids for a sequence of unique application frame ids") {
+                REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(true, false, 750U))
+                    .RETURN(S_OK);
+
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_SET_SLEEP_MODE_PARAMS sleepModeParams{};
+                sleepModeParams.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+                sleepModeParams.bLowLatencyMode = true;
+                sleepModeParams.minimumIntervalUs = 750;
+                NV_LATENCY_MARKER_PARAMS latencyMarkerParams{};
+                latencyMarkerParams.version = NV_LATENCY_MARKER_PARAMS_VER1;
+                latencyMarkerParams.frameID = 256ULL;
+                latencyMarkerParams.markerType = SIMULATION_START;
+                REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &sleepModeParams) == NVAPI_OK);
+
+                for (uint64_t i = 0; i < 1100; i++) {
+                    uint64_t lowLatencyDeviceFrameId = i + 1;
+
+                    {
+                        latencyMarkerParams.markerType = SIMULATION_START;
+                        REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(lowLatencyDeviceFrameId, SIMULATION_START))
+                            .RETURN(S_OK);
+                        REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
+                    }
+
+                    {
+                        latencyMarkerParams.markerType = SIMULATION_END;
+                        REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(lowLatencyDeviceFrameId, SIMULATION_END))
+                            .RETURN(S_OK);
+                        REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
+                    }
+
+                    if (i % 2)
+                        latencyMarkerParams.frameID += 512ULL;
+                    else
+                        latencyMarkerParams.frameID -= 128ULL;
+                }
+            }
+
+            SECTION("GetLatencyInfo correctly returns application frame ids rather than device frame ids") {
+                std::unique_ptr<NV_LATENCY_RESULT_PARAMS> latencyResults = std::make_unique<NV_LATENCY_RESULT_PARAMS>();
+
+                REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(true, false, 750U))
+                    .RETURN(S_OK);
+
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_SET_SLEEP_MODE_PARAMS sleepModeParams{};
+                sleepModeParams.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+                sleepModeParams.bLowLatencyMode = true;
+                sleepModeParams.minimumIntervalUs = 750;
+                NV_LATENCY_MARKER_PARAMS latencyMarkerParams{};
+                latencyMarkerParams.version = NV_LATENCY_MARKER_PARAMS_VER1;
+                latencyMarkerParams.frameID = 0ULL;
+                latencyMarkerParams.markerType = SIMULATION_START;
+                REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &sleepModeParams) == NVAPI_OK);
+
+                for (uint64_t i = 0; i < 1100; i++) {
+                    uint64_t lowLatencyDeviceFrameId = i + 1;
+
+                    {
+                        latencyMarkerParams.markerType = SIMULATION_START;
+                        REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(lowLatencyDeviceFrameId, SIMULATION_START))
+                            .RETURN(S_OK);
+                        REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
+                    }
+
+                    {
+                        latencyMarkerParams.markerType = SIMULATION_END;
+                        REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(lowLatencyDeviceFrameId, SIMULATION_END))
+                            .RETURN(S_OK);
+                        REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
+                    }
+
+                    {
+                        memset(latencyResults.get(), 0, sizeof(NV_LATENCY_RESULT_PARAMS));
+                        latencyResults->version = NV_LATENCY_RESULT_PARAMS_VER1;
+
+                        REQUIRE_CALL(lowLatencyDevice, GetLatencyInfo(reinterpret_cast<D3D_LATENCY_RESULTS*>(latencyResults.get())))
+                            .SIDE_EFFECT(std::ranges::for_each(_1->frame_reports, [&](auto& report) {
+                                report.frameID = lowLatencyDeviceFrameId;
+                            }))
+                            .RETURN(S_OK);
+
+                        REQUIRE(NvAPI_D3D_GetLatency(&unknown, latencyResults.get()) == NVAPI_OK);
+                        REQUIRE(std::ranges::all_of(latencyResults->frameReport, [&](auto& report) {
+                            return (report.frameID == latencyMarkerParams.frameID);
+                        }));
+                    }
+
+                    latencyMarkerParams.frameID += 10ULL;
+                }
             }
 
             SECTION("SetLatencyMarker with unknown struct version returns incompatible-struct-version") {

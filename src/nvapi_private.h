@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <array>
 
 #include <dxgi1_6.h>
 #include <d3d11_1.h>
