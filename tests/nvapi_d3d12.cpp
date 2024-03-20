@@ -834,7 +834,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             SECTION("SetAsyncFrameMarker returns OK") {
                 SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
 
-                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(123ULL, OUT_OF_BAND_RENDERSUBMIT_START))
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(1ULL, OUT_OF_BAND_RENDERSUBMIT_START))
                     .RETURN(S_OK);
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
