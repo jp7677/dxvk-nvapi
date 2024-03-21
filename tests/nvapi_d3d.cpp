@@ -129,6 +129,39 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
     ALLOW_CALL(*lfx, IsAvailable())
         .RETURN(false);
 
+    SECTION("Reflex methods fail when given null device") {
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        SECTION("GetSleepStatus returns invalid-argument") {
+            NV_GET_SLEEP_STATUS_PARAMS_V1 params{};
+            params.version = NV_GET_SLEEP_STATUS_PARAMS_VER1;
+            REQUIRE(NvAPI_D3D_GetSleepStatus(nullptr, &params) == NVAPI_INVALID_ARGUMENT);
+        }
+
+        SECTION("SetSleepMode returns invalid-argument") {
+            NV_SET_SLEEP_MODE_PARAMS params{};
+            params.version = NV_SET_SLEEP_MODE_PARAMS_VER;
+            REQUIRE(NvAPI_D3D_SetSleepMode(nullptr, &params) == NVAPI_INVALID_ARGUMENT);
+        }
+
+        SECTION("Sleep returns invalid-argument") {
+            REQUIRE(NvAPI_D3D_Sleep(nullptr) == NVAPI_INVALID_ARGUMENT);
+        }
+
+        SECTION("GetLatency returns invalid-argument") {
+            NV_LATENCY_RESULT_PARAMS params;
+            params.version = NV_LATENCY_RESULT_PARAMS_VER;
+            REQUIRE(NvAPI_D3D_GetLatency(nullptr, &params) == NVAPI_INVALID_ARGUMENT);
+        }
+
+        SECTION("SetLatencyMarker returns invalid-argument") {
+            NV_LATENCY_MARKER_PARAMS params;
+            params.version = NV_LATENCY_MARKER_PARAMS_VER;
+            REQUIRE(NvAPI_D3D_SetLatencyMarker(nullptr, &params) == NVAPI_INVALID_ARGUMENT);
+        }
+    }
+
     SECTION("LatencyFleX depending methods succeed when LFX is available") {
         ALLOW_CALL(*lfx, IsAvailable())
             .RETURN(true);
