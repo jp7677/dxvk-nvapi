@@ -48,6 +48,9 @@ namespace dxvk {
     }
 
     Com<ID3DLowLatencyDevice> NvapiD3dLowLatencyDevice::GetLowLatencyDevice(IUnknown* device) {
+        if (device == nullptr)
+            return nullptr;
+
         std::scoped_lock lock(m_LowLatencyDeviceMutex);
         auto it = m_lowLatencyDeviceMap.find(device);
         if (it != m_lowLatencyDeviceMap.end())
