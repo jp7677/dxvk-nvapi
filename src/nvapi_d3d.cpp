@@ -115,6 +115,9 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
+        if (pDevice == nullptr)
+            return InvalidArgument(n);
+
         if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
             return NoImplementation(n, alreadyLoggedNoReflex);
 
@@ -134,6 +137,9 @@ extern "C" {
 
         if (pSetSleepModeParams->version != NV_SET_SLEEP_MODE_PARAMS_VER1)
             return IncompatibleStructVersion(n);
+
+        if (pDevice == nullptr)
+            return InvalidArgument(n);
 
         if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
             return NoImplementation(n, alreadyLoggedNoReflex);
@@ -155,6 +161,9 @@ extern "C" {
         if (pGetSleepStatusParams->version != NV_GET_SLEEP_STATUS_PARAMS_VER1)
             return IncompatibleStructVersion(n);
 
+        if (pDevice == nullptr)
+            return InvalidArgument(n);
+
         if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
             return NoImplementation(n, alreadyLoggedNoReflex);
 
@@ -174,6 +183,9 @@ extern "C" {
 
         if (pGetLatencyParams->version != NV_LATENCY_RESULT_PARAMS_VER1)
             return IncompatibleStructVersion(n);
+
+        if (pDev == nullptr)
+            return InvalidArgument(n);
 
         if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
             return NoImplementation(n, alreadyLoggedNoImpl);
@@ -195,6 +207,9 @@ extern "C" {
 
         if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
             return IncompatibleStructVersion(n);
+
+        if (pDev == nullptr)
+            return InvalidArgument(n);
 
         if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
             return NoImplementation(n, alreadyLoggedNoImpl);

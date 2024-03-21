@@ -408,7 +408,7 @@ extern "C" {
             return ApiNotInitialized(n);
 
         if (pCommandQueue == nullptr)
-            return InvalidArgument(n);
+            return InvalidPointer(n);
 
         ID3D12Device* pDevice;
         if (FAILED(pCommandQueue->GetDevice(IID_PPV_ARGS(&pDevice))))
@@ -435,7 +435,7 @@ extern "C" {
             return IncompatibleStructVersion(n);
 
         if (pCommandQueue == nullptr)
-            return InvalidArgument(n);
+            return InvalidPointer(n);
 
         ID3D12Device* pDevice;
         if (FAILED(pCommandQueue->GetDevice(IID_PPV_ARGS(&pDevice))))

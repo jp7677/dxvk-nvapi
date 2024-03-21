@@ -821,6 +821,13 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
                 REQUIRE(NvAPI_D3D12_NotifyOutOfBandCommandQueue(&commandQueue, OUT_OF_BAND_RENDER) == NVAPI_NO_IMPLEMENTATION);
             }
+
+            SECTION("NotifyOutOfBandCommandQueue with null command queue returns invalid-pointer") {
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+                REQUIRE(NvAPI_D3D12_NotifyOutOfBandCommandQueue(nullptr, OUT_OF_BAND_RENDER) == NVAPI_INVALID_POINTER);
+            }
         }
 
         SECTION("SetAsyncFrameMarker succeeds") {
@@ -873,6 +880,16 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 NV_LATENCY_MARKER_PARAMS params{};
                 params.version = NV_LATENCY_MARKER_PARAMS_VER;
                 REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(&commandQueue, &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("SetAsyncFrameMarker with null command queue returns invalid-pointer") {
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_LATENCY_MARKER_PARAMS params{};
+                params.version = NV_LATENCY_MARKER_PARAMS_VER;
+                REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(nullptr, &params) == NVAPI_INVALID_POINTER);
             }
         }
     }
