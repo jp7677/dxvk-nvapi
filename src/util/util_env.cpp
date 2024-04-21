@@ -131,9 +131,18 @@ namespace dxvk::env {
         return getExecutableName() == std::string("MonsterHunterWorld.exe");
     }
 
+    bool isWarThunder() {
+        return getExecutableName() == std::string("aces.exe");
+    }
+
     bool needsPascalSpoofing(NV_GPU_ARCHITECTURE_ID architectureId) {
         if (architectureId >= NV_GPU_ARCHITECTURE_TU100 && isMonsterHunterWorld()) {
             log::write("Spoofing Pascal for Turing and later due to detecting MonsterHunterWorld.exe");
+            return true;
+        }
+
+        if (architectureId >= NV_GPU_ARCHITECTURE_TU100 && isWarThunder()) {
+            log::write("Spoofing Pascal for Turing and later due to detecting aces.exe (War Thunder)");
             return true;
         }
 
