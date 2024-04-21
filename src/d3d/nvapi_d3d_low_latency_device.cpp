@@ -1,8 +1,9 @@
 #include "nvapi_d3d_low_latency_device.h"
 
 namespace dxvk {
-    LowLatencyFrameIdGenerator::LowLatencyFrameIdGenerator() : m_nextLowLatencyDeviceFrameId(1),
-                                                               m_applicationIdList({0}) {}
+    LowLatencyFrameIdGenerator::LowLatencyFrameIdGenerator()
+        : m_nextLowLatencyDeviceFrameId(1),
+          m_applicationIdList({0}) {}
 
     LowLatencyFrameIdGenerator::~LowLatencyFrameIdGenerator() = default;
 
