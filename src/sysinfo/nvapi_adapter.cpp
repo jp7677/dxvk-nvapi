@@ -3,6 +3,7 @@
 #include "../util/util_string.h"
 #include "../util/util_env.h"
 #include "../util/util_log.h"
+#include "../util/util_version.h"
 
 namespace dxvk {
     NvapiAdapter::NvapiAdapter(Vulkan& vulkan, Nvml& nvml)
@@ -88,21 +89,17 @@ namespace dxvk {
             return false; // DXVK NVAPI-hack is enabled, skip this adapter
 
         if (HasNvProprietaryDriver())
-            // Handle NVIDIA version notation
-            m_vkDriverVersion = VK_MAKE_VERSION(
-                VK_VERSION_MAJOR(m_vkProperties.driverVersion),
-                VK_VERSION_MINOR(m_vkProperties.driverVersion >> 0) >> 2,
-                VK_VERSION_PATCH(m_vkProperties.driverVersion >> 2) >> 4);
+            m_vkDriverVersion = m_vkProperties.driverVersion;
         else
             // Reporting e.g. Mesa driver versions turned out to be not very useful
             // since those will usually always fail driver version checks,
             // so just report a number that should be "useful" until the end of time
-            m_vkDriverVersion = VK_MAKE_VERSION(999, 99, 0);
+            m_vkDriverVersion = nvMakeVersion(999, 99, 0);
 
         log::write(str::format("NvAPI Device: ", m_vkProperties.deviceName, " (",
-            VK_VERSION_MAJOR(m_vkDriverVersion), ".",
-            VK_VERSION_MINOR(m_vkDriverVersion), ".",
-            VK_VERSION_PATCH(m_vkDriverVersion), ")"));
+            nvVersionMajor(m_vkDriverVersion), ".",
+            nvVersionMinor(m_vkDriverVersion), ".",
+            nvVersionPatch(m_vkDriverVersion), ")"));
 
         // Query all outputs from DXVK
         // Mosaic setup is not supported, thus one display output refers to one GPU
@@ -154,7 +151,7 @@ namespace dxvk {
         // and does not have a patch number
         return m_driverVersionOverride > 0
             ? m_driverVersionOverride
-            : VK_VERSION_MAJOR(m_vkDriverVersion) * 100 + std::min(VK_VERSION_MINOR(m_vkDriverVersion), 99U);
+            : nvVersionMajor(m_vkDriverVersion) * 100 + std::min((nvVersionMinor(m_vkDriverVersion)), 99U);
     }
 
     bool NvapiAdapter::HasNvProprietaryDriver() const {
