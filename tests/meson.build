@@ -39,6 +39,7 @@ nvapi_tests_src = files([
   'nvapi_sysinfo_nvml.cpp',
   'nvapi_sysinfo_hdr.cpp',
   'nvapi_system.cpp',
+  'util.cpp',
 ])
 
 nvapi_exe = executable('nvapi'+target_suffix+'-tests', [ nvapi_src, catch2_src, nvapi_tests_src, dxvk_nvapi_version ],
