@@ -221,6 +221,24 @@ extern "C" {
         return Ok(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_GetAssociatedNvidiaDisplayHandle(const char* szDisplayName, NvDisplayHandle* pNvDispHandle) {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (szDisplayName == nullptr)
+            return InvalidArgument(n);
+
+        auto output = nvapiAdapterRegistry->FindOutput(szDisplayName);
+        if (output == nullptr)
+            return NvidiaDeviceNotFound(n);
+
+        *pNvDispHandle = reinterpret_cast<NvDisplayHandle>(output);
+
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_GetInterfaceVersionString(NvAPI_ShortString szDesc) {
         constexpr auto n = __func__;
 
