@@ -213,6 +213,28 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
         REQUIRE(NvAPI_GetAssociatedNvidiaDisplayName(handle4, name4) == NVAPI_INVALID_ARGUMENT);
     }
 
+    SECTION("GetAssociatedNvidiaDisplayHandle succeeds") {
+        NvDisplayHandle handle1 = nullptr;
+        NvDisplayHandle handle2 = nullptr;
+        NvDisplayHandle handle3 = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0U, &handle1) == NVAPI_OK);
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(1U, &handle2) == NVAPI_OK);
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(2U, &handle3) == NVAPI_OK);
+
+        NvDisplayHandle handle;
+
+        REQUIRE(NvAPI_GetAssociatedNvidiaDisplayHandle("Output1", &handle) == NVAPI_OK);
+        REQUIRE(handle == handle1);
+
+        REQUIRE(NvAPI_GetAssociatedNvidiaDisplayHandle("Output2", &handle) == NVAPI_OK);
+        REQUIRE(handle == handle2);
+
+        REQUIRE(NvAPI_GetAssociatedNvidiaDisplayHandle("Output3", &handle) == NVAPI_OK);
+        REQUIRE(handle == handle3);
+
+        REQUIRE(NvAPI_GetAssociatedNvidiaDisplayHandle("Output4", &handle) == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
+    }
+
     SECTION("GetGDIPrimaryDisplayId succeeds") {
         NvU32 displayId;
         REQUIRE(NvAPI_DISP_GetGDIPrimaryDisplayId(&displayId) == NVAPI_NVIDIA_DEVICE_NOT_FOUND); // MONITORINFO.dwFlags isn't mocked
