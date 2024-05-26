@@ -37,6 +37,14 @@ extern "C" {
         return Ok(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_DRS_GetCurrentGlobalProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
+        constexpr auto n = __func__;
+
+        *phProfile = nvapiDrsProfile;
+
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
         constexpr auto n = __func__;
 
