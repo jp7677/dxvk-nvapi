@@ -520,6 +520,26 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(size == 8191);
     }
 
+    SECTION("GetVirtualFrameBufferSize returns OK") {
+        ALLOW_CALL(adapter, GetDesc1(_))
+            .SIDE_EFFECT({
+                _1->VendorId = 0x10de;
+                _1->DedicatedVideoMemory = 8191 * 1024;
+                _1->DedicatedSystemMemory = 1014 * 1024;
+            })
+            .RETURN(S_OK);
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
+
+        NvU32 size;
+        REQUIRE(NvAPI_GPU_GetVirtualFrameBufferSize(handle, &size) == NVAPI_OK);
+        REQUIRE(size == 9205);
+    }
+
     SECTION("GetAdapterIdFromPhysicalGpu returns OK") {
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(

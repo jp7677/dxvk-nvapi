@@ -26,6 +26,7 @@ namespace dxvk {
         [[nodiscard]] uint32_t GetPciDeviceId() const;
         [[nodiscard]] uint32_t GetBoardId() const;
         [[nodiscard]] uint32_t GetVRamSize() const;
+        [[nodiscard]] uint32_t GetVirtualVRamSize() const;
         [[nodiscard]] std::optional<LUID> GetLuid() const;
         [[nodiscard]] NV_GPU_ARCHITECTURE_ID GetArchitectureId() const;
 

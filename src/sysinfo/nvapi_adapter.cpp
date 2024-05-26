@@ -206,6 +206,11 @@ namespace dxvk {
         return m_dxgiDesc.DedicatedVideoMemory / 1024;
     }
 
+    uint32_t NvapiAdapter::GetVirtualVRamSize() const {
+        // Report VRAM size from DXVK to honor memory overrides
+        return (m_dxgiDesc.DedicatedVideoMemory + m_dxgiDesc.DedicatedSystemMemory) / 1024;
+    }
+
     std::optional<LUID> NvapiAdapter::GetLuid() const {
         if (!m_vkIdProperties.deviceLUIDValid)
             return {};
