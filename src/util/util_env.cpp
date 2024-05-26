@@ -154,9 +154,19 @@ namespace dxvk::env {
             || getExecutableName() == std::string("tlou-i-l.exe");
     }
 
+    bool isXDefiant() {
+        return getExecutableName() == std::string("XDefiant.exe")
+            || getExecutableName() == std::string("XDefiant_BE.exe");
+    }
+
     bool needsSucceededGpuQuery() {
         if (isTheLastOfUsPartOne()) {
             log::write("Faking GPU query success due to detecting tlou-i.exe/tlou-i-l.exe");
+            return true;
+        }
+
+        if (isXDefiant()) {
+            log::write("Faking GPU query success due to detecting XDefiant.exe/XDefiant_BE.exe (XDefiant)");
             return true;
         }
 
