@@ -580,6 +580,13 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
+        if (!adapter->HasNvml() && env::needsSucceededGpuQuery()) {
+            for (auto& util : pDynamicPstatesInfoEx->utilization)
+                util.bIsPresent = 0;
+
+            return Ok(n, alreadyLoggedOk);
+        }
+
         if (!adapter->HasNvml())
             return NoImplementation(n, alreadyLoggedNoNvml);
 
@@ -667,6 +674,11 @@ extern "C" {
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
+
+        if (!adapter->HasNvml() && env::needsSucceededGpuQuery()) {
+            pThermalSettings->count = 0;
+            return Ok(n, alreadyLoggedOk);
+        }
 
         if (!adapter->HasNvmlDevice() && sensorIndex != 0 && sensorIndex != NVAPI_THERMAL_TARGET_ALL) {
             pThermalSettings->count = 0;
@@ -813,6 +825,9 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
+        if (!adapter->HasNvml() && env::needsSucceededGpuQuery())
+            return Ok(n, alreadyLoggedOk);
+
         if (!adapter->HasNvml())
             return NoImplementation(n, alreadyLoggedNoNvml);
 
@@ -861,8 +876,12 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        if (!adapter->HasNvml() && env::needsSucceededGpuQuery())
+        if (!adapter->HasNvml() && env::needsSucceededGpuQuery()) {
+            for (auto& domain : pClkFreqs->domain)
+                domain.bIsPresent = 0;
+
             return Ok(n, alreadyLoggedOk);
+        }
 
         if (!adapter->HasNvml())
             return NoImplementation(n, alreadyLoggedNoNvml);
@@ -983,8 +1002,10 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        if (env::needsSucceededGpuQuery())
+        if (env::needsSucceededGpuQuery()) {
+            pPstatesInfo->numPstates = 0;
             return Ok(n);
+        }
 
         return NoImplementation(n);
     }
