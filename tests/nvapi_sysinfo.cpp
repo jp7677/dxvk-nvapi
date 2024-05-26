@@ -369,6 +369,18 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(type == NV_SYSTEM_TYPE_DGPU);
     }
 
+    SECTION("GetSystemType returns OK") {
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
+
+        NV_SYSTEM_TYPE type;
+        REQUIRE(NvAPI_GPU_GetSystemType(handle, &type) == NVAPI_OK);
+        REQUIRE(type == NV_SYSTEM_TYPE_UNKNOWN);
+    }
+
     SECTION("GetPCIIdentifiers returns OK") {
         ALLOW_CALL(adapter, GetDesc1(_))
             .SIDE_EFFECT({
