@@ -89,6 +89,9 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
+        if (hPhysicalGpu == nullptr)
+            return InvalidArgument(n);
+
         NvapiAdapter* adapter = nullptr;
         for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++)
             if (nvapiAdapterRegistry->GetAdapter(i)->GetBoardId() == gpuId)
@@ -130,7 +133,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGPU == nullptr)
+        if (hPhysicalGPU == nullptr || pLogicalGPU == nullptr)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGPU);
@@ -142,13 +145,31 @@ extern "C" {
         return Ok(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_GetLogicalGPUFromDisplay(NvDisplayHandle hNvDisp, NvLogicalGpuHandle* pLogicalGPU) {
+        constexpr auto n = __func__;
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (hNvDisp == nullptr || pLogicalGPU == nullptr)
+            return InvalidArgument(n);
+
+        auto output = reinterpret_cast<NvapiOutput*>(hNvDisp);
+        if (!nvapiAdapterRegistry->IsOutput(output))
+            return ExpectedDisplayHandle(n);
+
+        *pLogicalGPU = reinterpret_cast<NvLogicalGpuHandle>(output->GetParent());
+
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_GetPhysicalGPUsFromLogicalGPU(NvLogicalGpuHandle hLogicalGPU, NvPhysicalGpuHandle hPhysicalGPU[NVAPI_MAX_PHYSICAL_GPUS], NvU32* pGpuCount) {
         constexpr auto n = __func__;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hLogicalGPU == nullptr)
+        if (hLogicalGPU == nullptr || hPhysicalGPU == nullptr || pGpuCount == nullptr)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hLogicalGPU);
@@ -209,7 +230,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (NvDispHandle == nullptr)
+        if (NvDispHandle == nullptr || szDisplayName == nullptr)
             return InvalidArgument(n);
 
         auto output = reinterpret_cast<NvapiOutput*>(NvDispHandle);
@@ -227,7 +248,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (szDisplayName == nullptr)
+        if (szDisplayName == nullptr || pNvDispHandle == nullptr)
             return InvalidArgument(n);
 
         auto output = nvapiAdapterRegistry->FindOutput(szDisplayName);

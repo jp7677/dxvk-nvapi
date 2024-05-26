@@ -106,6 +106,35 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
         REQUIRE(logicalhandle == reinterpret_cast<NvLogicalGpuHandle>(handles[1]));
     }
 
+    SECTION("GetLogicalGPUFromDisplay succeeds") {
+        NvLogicalGpuHandle logicalhandles[NVAPI_MAX_LOGICAL_GPUS]{};
+        NvU32 count;
+        REQUIRE(NvAPI_EnumLogicalGPUs(logicalhandles, &count) == NVAPI_OK);
+
+        NvDisplayHandle handle1 = nullptr;
+        NvDisplayHandle handle2 = nullptr;
+        NvDisplayHandle handle3 = nullptr;
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(0U, &handle1) == NVAPI_OK);
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(1U, &handle2) == NVAPI_OK);
+        REQUIRE(NvAPI_EnumNvidiaDisplayHandle(2U, &handle3) == NVAPI_OK);
+
+        NvLogicalGpuHandle logicalhandle1;
+        REQUIRE(NvAPI_GetLogicalGPUFromDisplay(handle1, &logicalhandle1) == NVAPI_OK);
+        REQUIRE(logicalhandle1 == reinterpret_cast<NvLogicalGpuHandle>(logicalhandles[0]));
+
+        NvLogicalGpuHandle logicalhandle2;
+        REQUIRE(NvAPI_GetLogicalGPUFromDisplay(handle2, &logicalhandle2) == NVAPI_OK);
+        REQUIRE(logicalhandle2 == reinterpret_cast<NvLogicalGpuHandle>(logicalhandles[0]));
+
+        NvLogicalGpuHandle logicalhandle3;
+        REQUIRE(NvAPI_GetLogicalGPUFromDisplay(handle3, &logicalhandle3) == NVAPI_OK);
+        REQUIRE(logicalhandle3 == reinterpret_cast<NvLogicalGpuHandle>(logicalhandles[1]));
+
+        auto invalid = reinterpret_cast<NvDisplayHandle>(0x1);
+        NvLogicalGpuHandle logicalhandle4;
+        REQUIRE(NvAPI_GetLogicalGPUFromDisplay(invalid, &logicalhandle4) == NVAPI_EXPECTED_DISPLAY_HANDLE);
+    }
+
     SECTION("GetPhysicalGPUsFromLogicalGPU succeeds") {
         NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS]{};
         NvU32 count;
@@ -208,9 +237,9 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
         REQUIRE(NvAPI_GetAssociatedNvidiaDisplayName(handle3, name3) == NVAPI_OK);
         REQUIRE_THAT(name3, Equals("Output3"));
 
+        auto invalid = reinterpret_cast<NvDisplayHandle>(0x1);
         NvAPI_ShortString name4;
-        NvDisplayHandle handle4 = nullptr;
-        REQUIRE(NvAPI_GetAssociatedNvidiaDisplayName(handle4, name4) == NVAPI_INVALID_ARGUMENT);
+        REQUIRE(NvAPI_GetAssociatedNvidiaDisplayName(invalid, name4) == NVAPI_EXPECTED_DISPLAY_HANDLE);
     }
 
     SECTION("GetAssociatedNvidiaDisplayHandle succeeds") {
