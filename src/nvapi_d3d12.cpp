@@ -31,7 +31,7 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
-        if (pDevice == nullptr)
+        if (pDevice == nullptr || shaderName == nullptr || pShader == nullptr)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::CreateCubinComputeShaderEx(pDevice, cubinData, cubinSize, blockX, blockY, blockZ, smemSize, shaderName, pShader))
@@ -45,7 +45,7 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
-        if (pDevice == nullptr)
+        if (pDevice == nullptr || shaderName == nullptr || pShader == nullptr)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::CreateCubinComputeShaderWithName(pDevice, cubinData, cubinSize, blockX, blockY, blockZ, shaderName, pShader))
@@ -59,7 +59,7 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
-        if (pDevice == nullptr)
+        if (pDevice == nullptr || pShader == nullptr)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::CreateCubinComputeShaderWithName(pDevice, cubinData, cubinSize, blockX, blockY, blockZ, "", pShader))
@@ -87,7 +87,7 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
-        if (pDevice == nullptr)
+        if (pDevice == nullptr || cudaTextureHandle == nullptr)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::GetCudaTextureObject(pDevice, srvHandle, samplerHandle, cudaTextureHandle))
@@ -101,7 +101,7 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
-        if (pDevice == nullptr)
+        if (pDevice == nullptr || cudaSurfaceHandle == nullptr)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::GetCudaSurfaceObject(pDevice, uavHandle, cudaSurfaceHandle))
@@ -129,7 +129,7 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
-        if (pDevice == nullptr)
+        if (pDevice == nullptr || pUAVInfo == nullptr)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::CaptureUAVInfo(pDevice, pUAVInfo))
@@ -144,7 +144,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (pDevice == nullptr)
+        if (pDevice == nullptr || pGraphicsCaps == nullptr)
             return InvalidArgument(n);
 
         if (structVersion != NV_D3D12_GRAPHICS_CAPS_VER1)
@@ -207,7 +207,7 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
-        if (pDevice == nullptr)
+        if (pDevice == nullptr || isSupported == nullptr)
             return InvalidArgument(n);
 
         *isSupported = NvapiD3d12Device::IsFatbinPTXSupported(pDevice);
@@ -221,7 +221,7 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
 
-        if (pDevice == nullptr)
+        if (pDevice == nullptr || pPSODesc == nullptr || ppExtensions == nullptr || ppPSO == nullptr)
             return InvalidArgument(n);
 
         if (numExtensions == 0)
@@ -434,7 +434,7 @@ extern "C" {
         if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
             return IncompatibleStructVersion(n);
 
-        if (pCommandQueue == nullptr)
+        if (pCommandQueue == nullptr || pSetLatencyMarkerParams == nullptr)
             return InvalidPointer(n);
 
         ID3D12Device* pDevice;

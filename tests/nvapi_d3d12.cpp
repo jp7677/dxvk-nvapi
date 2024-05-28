@@ -114,19 +114,25 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         FORBID_CALL(commandList, LaunchCubinShader(_, _, _, _, _, _));
         FORBID_CALL(commandList, LaunchCubinShaderEx(_, _, _, _, _, _, _, _, _));
 
-        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderWithName(static_cast<ID3D12Device*>(&device), nullptr, 0, 0, 0, 0, "shader_name", nullptr) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D12_CreateCubinComputeShader(static_cast<ID3D12Device*>(&device), nullptr, 0, 0, 0, 0, nullptr) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D12_DestroyCubinComputeShader(static_cast<ID3D12Device*>(&device), nullptr) == NVAPI_ERROR);
+        const void* cubinData = nullptr;
+        NVDX_ObjectHandle handle{};
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderWithName(static_cast<ID3D12Device*>(&device), cubinData, 0, 0, 0, 0, "shader_name", &handle) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShader(static_cast<ID3D12Device*>(&device), cubinData, 0, 0, 0, 0, &handle) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderEx(static_cast<ID3D12Device*>(&device), cubinData, 0, 0, 0, 0, 0, "shader_name", &handle) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_DestroyCubinComputeShader(static_cast<ID3D12Device*>(&device), handle) == NVAPI_ERROR);
 
         D3D12_CPU_DESCRIPTOR_HANDLE srvHandle;
-        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, srvHandle, nullptr) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, nullptr) == NVAPI_ERROR);
+        NvU32 textureHandle;
+        NvU32 surfaceHandle;
+        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, srvHandle, &textureHandle) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, &surfaceHandle) == NVAPI_ERROR);
 
-        REQUIRE(NvAPI_D3D12_CaptureUAVInfo(static_cast<ID3D12Device*>(&device), nullptr) == NVAPI_ERROR);
+        NVAPI_UAV_INFO info{};
+        REQUIRE(NvAPI_D3D12_CaptureUAVInfo(static_cast<ID3D12Device*>(&device), &info) == NVAPI_ERROR);
         bool isPTXSupported;
         REQUIRE(NvAPI_D3D12_IsFatbinPTXSupported(static_cast<ID3D12Device*>(&device), &isPTXSupported) == NVAPI_ERROR);
 
-        REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), reinterpret_cast<NVDX_ObjectHandle>(0), 0, 0, 0, nullptr, 0) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), handle, 0, 0, 0, nullptr, 0) == NVAPI_ERROR);
         REQUIRE(deviceRefCount == 0);
         REQUIRE(commandListRefCount == 0);
     }
@@ -141,15 +147,21 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         FORBID_CALL(device, GetCudaSurfaceObject(_, _));
         FORBID_CALL(device, CaptureUAVInfo(_));
 
-        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderWithName(static_cast<ID3D12Device*>(&device), nullptr, 0, 0, 0, 0, "shader_name", nullptr) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D12_CreateCubinComputeShader(static_cast<ID3D12Device*>(&device), nullptr, 0, 0, 0, 0, nullptr) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D12_DestroyCubinComputeShader(static_cast<ID3D12Device*>(&device), nullptr) == NVAPI_ERROR);
+        const void* cubinData = nullptr;
+        NVDX_ObjectHandle handle{};
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderWithName(static_cast<ID3D12Device*>(&device), cubinData, 0, 0, 0, 0, "shader_name", &handle) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShader(static_cast<ID3D12Device*>(&device), cubinData, 0, 0, 0, 0, &handle) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderEx(static_cast<ID3D12Device*>(&device), cubinData, 0, 0, 0, 0, 0, "shader_name", &handle) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_DestroyCubinComputeShader(static_cast<ID3D12Device*>(&device), handle) == NVAPI_ERROR);
 
         D3D12_CPU_DESCRIPTOR_HANDLE srvHandle;
-        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, srvHandle, nullptr) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, nullptr) == NVAPI_ERROR);
+        NvU32 textureHandle;
+        NvU32 surfaceHandle;
+        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, srvHandle, &textureHandle) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, &surfaceHandle) == NVAPI_ERROR);
 
-        REQUIRE(NvAPI_D3D12_CaptureUAVInfo(static_cast<ID3D12Device*>(&device), nullptr) == NVAPI_ERROR);
+        NVAPI_UAV_INFO info{};
+        REQUIRE(NvAPI_D3D12_CaptureUAVInfo(static_cast<ID3D12Device*>(&device), &info) == NVAPI_ERROR);
         bool isPTXSupported;
         REQUIRE(NvAPI_D3D12_IsFatbinPTXSupported(static_cast<ID3D12Device*>(&device), &isPTXSupported) == NVAPI_ERROR);
         REQUIRE(deviceRefCount == 0);
@@ -378,29 +390,31 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     }
 
     SECTION("GetCudaTextureObject/GetCudaSurfaceObject returns OK") {
+        NvU32 handle;
         D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = {0x123456};
         D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle = {0x654321};
-        REQUIRE_CALL(device, GetCudaTextureObject(_, _, nullptr))
+        REQUIRE_CALL(device, GetCudaTextureObject(_, _, _))
             .LR_WITH(_1.ptr == srvHandle.ptr && _2.ptr == samplerHandle.ptr)
             .RETURN(S_OK)
             .TIMES(1);
-        REQUIRE_CALL(device, GetCudaSurfaceObject(_, nullptr))
+        REQUIRE_CALL(device, GetCudaSurfaceObject(_, _))
             .LR_WITH(_1.ptr == srvHandle.ptr)
             .RETURN(S_OK)
             .TIMES(1);
 
-        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, samplerHandle, nullptr) == NVAPI_OK);
-        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, nullptr) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, samplerHandle, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, &handle) == NVAPI_OK);
         REQUIRE(deviceRefCount == 0);
         REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("CaptureUAVInfo returns OK") {
-        REQUIRE_CALL(device, CaptureUAVInfo(nullptr))
+        REQUIRE_CALL(device, CaptureUAVInfo(_))
             .RETURN(true)
             .TIMES(1);
 
-        REQUIRE(NvAPI_D3D12_CaptureUAVInfo(static_cast<ID3D12Device*>(&device), nullptr) == NVAPI_OK);
+        NVAPI_UAV_INFO info{};
+        REQUIRE(NvAPI_D3D12_CaptureUAVInfo(static_cast<ID3D12Device*>(&device), &info) == NVAPI_OK);
         REQUIRE(deviceRefCount == 0);
         REQUIRE(commandListRefCount == 0);
     }

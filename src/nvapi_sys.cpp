@@ -12,6 +12,9 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
+        if (hPhysicalGpu == nullptr)
+            return InvalidArgument(n);
+
         auto output = nvapiAdapterRegistry->FindOutput(displayId);
         if (output == nullptr)
             return InvalidArgument(n);

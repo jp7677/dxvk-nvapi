@@ -17,6 +17,9 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
+        if (pDisplayIdCount == nullptr)
+            return InvalidArgument(n);
+
         // TODO: return 0 when flags contain NV_GPU_CONNECTED_IDS_FLAG_SLI
         auto count = nvapiAdapterRegistry->GetOutputCount(adapter);
 
@@ -175,7 +178,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == nullptr || pGpuType == nullptr)
+        if (pGpuType == nullptr)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -193,7 +196,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == nullptr)
+        if (pSystemType == nullptr)
             return InvalidArgument(n);
 
         *pSystemType = NV_SYSTEM_TYPE_UNKNOWN;
@@ -207,7 +210,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == nullptr || pDeviceId == nullptr || pSubSystemId == nullptr || pRevisionId == nullptr || pExtDeviceId == nullptr)
+        if (pDeviceId == nullptr || pSubSystemId == nullptr || pRevisionId == nullptr || pExtDeviceId == nullptr)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -228,7 +231,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == nullptr || szName == nullptr)
+        if (szName == nullptr)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -246,7 +249,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == nullptr || pBusId == nullptr)
+        if (pBusId == nullptr)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -264,7 +267,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == nullptr || pBusSlotId == nullptr)
+        if (pBusSlotId == nullptr)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -285,7 +288,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == nullptr || pBusType == nullptr)
+        if (pBusType == nullptr)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);

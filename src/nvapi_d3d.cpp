@@ -8,11 +8,16 @@ extern "C" {
     using namespace dxvk;
 
     NvAPI_Status __cdecl NvAPI_D3D_GetObjectHandleForResource(IUnknown* pDevice, IUnknown* pResource, NVDX_ObjectHandle* pHandle) {
+        constexpr auto n = __func__;
         static bool alreadyLogged = false;
+
+        if (pResource == nullptr || pHandle == nullptr)
+            return InvalidArgument(n);
+
         // Fake-implement with a dumb passthrough, though no other NvAPI entry points
         // we're likely to implement should care about the actual handle value.
         *pHandle = (NVDX_ObjectHandle)pResource;
-        return Ok(__func__, alreadyLogged);
+        return Ok(n, alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_SetResourceHint(IUnknown* pDev, NVDX_ObjectHandle obj, NVAPI_D3D_SETRESOURCEHINT_CATEGORY dwHintCategory, NvU32 dwHintName, NvU32* pdwHintValue) {
@@ -80,6 +85,9 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
 
+        if (pGraphicsCaps == nullptr)
+            return InvalidArgument(n);
+
         switch (structVersion) {
             case NV_D3D1x_GRAPHICS_CAPS_VER1: {
                 auto pGraphicsCapsV1 = reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V1*>(pGraphicsCaps);
@@ -135,11 +143,11 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
+        if (pDevice == nullptr || pSetSleepModeParams == nullptr)
+            return InvalidArgument(n);
+
         if (pSetSleepModeParams->version != NV_SET_SLEEP_MODE_PARAMS_VER1)
             return IncompatibleStructVersion(n);
-
-        if (pDevice == nullptr)
-            return InvalidArgument(n);
 
         if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
             return NoImplementation(n, alreadyLoggedNoReflex);
@@ -158,11 +166,11 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
+        if (pDevice == nullptr || pGetSleepStatusParams == nullptr)
+            return InvalidArgument(n);
+
         if (pGetSleepStatusParams->version != NV_GET_SLEEP_STATUS_PARAMS_VER1)
             return IncompatibleStructVersion(n);
-
-        if (pDevice == nullptr)
-            return InvalidArgument(n);
 
         if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
             return NoImplementation(n, alreadyLoggedNoReflex);
@@ -181,11 +189,11 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
+        if (pDev == nullptr || pGetLatencyParams == nullptr)
+            return InvalidArgument(n);
+
         if (pGetLatencyParams->version != NV_LATENCY_RESULT_PARAMS_VER1)
             return IncompatibleStructVersion(n);
-
-        if (pDev == nullptr)
-            return InvalidArgument(n);
 
         if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
             return NoImplementation(n, alreadyLoggedNoImpl);
@@ -205,11 +213,11 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
+        if (pDev == nullptr || pSetLatencyMarkerParams == nullptr)
+            return InvalidArgument(n);
+
         if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
             return IncompatibleStructVersion(n);
-
-        if (pDev == nullptr)
-            return InvalidArgument(n);
 
         if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
             return NoImplementation(n, alreadyLoggedNoImpl);

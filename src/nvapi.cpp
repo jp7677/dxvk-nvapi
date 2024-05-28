@@ -133,7 +133,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGPU == nullptr || pLogicalGPU == nullptr)
+        if (pLogicalGPU == nullptr)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGPU);
@@ -151,7 +151,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hNvDisp == nullptr || pLogicalGPU == nullptr)
+        if (pLogicalGPU == nullptr)
             return InvalidArgument(n);
 
         auto output = reinterpret_cast<NvapiOutput*>(hNvDisp);
@@ -169,7 +169,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hLogicalGPU == nullptr || hPhysicalGPU == nullptr || pGpuCount == nullptr)
+        if (hPhysicalGPU == nullptr || pGpuCount == nullptr)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hLogicalGPU);
@@ -188,7 +188,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (hNvDisp == nullptr || nvGPUHandle == nullptr || pGpuCount == nullptr)
+        if (nvGPUHandle == nullptr || pGpuCount == nullptr)
             return InvalidArgument(n);
 
         auto output = reinterpret_cast<NvapiOutput*>(hNvDisp);
@@ -230,7 +230,7 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (NvDispHandle == nullptr || szDisplayName == nullptr)
+        if (szDisplayName == nullptr)
             return InvalidArgument(n);
 
         auto output = reinterpret_cast<NvapiOutput*>(NvDispHandle);

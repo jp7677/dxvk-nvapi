@@ -12,6 +12,9 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DRS_CreateSession(NvDRSSessionHandle* phSession) {
         constexpr auto n = __func__;
 
+        if (phSession == nullptr)
+            return InvalidArgument(n);
+
         *phSession = nvapiDrsSession;
 
         return Ok(n);
@@ -32,6 +35,9 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
         constexpr auto n = __func__;
 
+        if (phProfile == nullptr)
+            return InvalidArgument(n);
+
         *phProfile = nvapiDrsProfile;
 
         return Ok(n);
@@ -39,6 +45,9 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_DRS_GetCurrentGlobalProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
         constexpr auto n = __func__;
+
+        if (phProfile == nullptr)
+            return InvalidArgument(n);
 
         *phProfile = nvapiDrsProfile;
 

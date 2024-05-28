@@ -175,7 +175,7 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
-        if (pDevice == nullptr || pCubin == nullptr || phShader == nullptr)
+        if (pDevice == nullptr || pCubin == nullptr || pShaderName == nullptr || phShader == nullptr)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::CreateCubinComputeShaderWithName(pDevice, pCubin, size, blockX, blockY, blockZ, pShaderName, phShader))
@@ -320,7 +320,7 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
-        if (pDevice == nullptr)
+        if (pDevice == nullptr || pCudaTextureHandle == nullptr)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::GetCudaTextureObject(pDevice, srvDriverHandle, samplerDriverHandle, reinterpret_cast<uint32_t*>(pCudaTextureHandle)))
