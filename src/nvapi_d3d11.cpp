@@ -164,7 +164,7 @@ extern "C" {
         if (pDevice == nullptr || pCubin == nullptr || phShader == nullptr)
             return InvalidArgument(n);
 
-        if (!NvapiD3d11Device::CreateCubinComputeShaderWithName(pDevice, pCubin, size, blockX, blockY, blockZ, nullptr, phShader))
+        if (!NvapiD3d11Device::CreateCubinComputeShaderWithName(pDevice, pCubin, size, blockX, blockY, blockZ, "", phShader))
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);

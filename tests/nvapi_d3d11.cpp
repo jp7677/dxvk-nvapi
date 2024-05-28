@@ -271,10 +271,12 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
     SECTION("LaunchCubinShader/CreateCubinComputeShader/CreateCubinComputeShaderWithName returns OK") {
         auto shader = "X";
         NVDX_ObjectHandle objhandle{};
-        REQUIRE_CALL(device, CreateCubinComputeShaderWithNameNVX(reinterpret_cast<void*>(&shader), 1U, 2U, 3U, 4U, nullptr, reinterpret_cast<IUnknown**>(&objhandle)))
+        REQUIRE_CALL(device, CreateCubinComputeShaderWithNameNVX(reinterpret_cast<void*>(&shader), 1U, 2U, 3U, 4U, _, reinterpret_cast<IUnknown**>(&objhandle)))
+            .WITH(_6 == std::string(""))
             .TIMES(1)
             .RETURN(true);
-        REQUIRE_CALL(device, CreateCubinComputeShaderWithNameNVX(reinterpret_cast<void*>(&shader), 1U, 2U, 3U, 4U, "foo", reinterpret_cast<IUnknown**>(&objhandle)))
+        REQUIRE_CALL(device, CreateCubinComputeShaderWithNameNVX(reinterpret_cast<void*>(&shader), 1U, 2U, 3U, 4U, _, reinterpret_cast<IUnknown**>(&objhandle)))
+            .WITH(_6 == std::string("shader"))
             .TIMES(1)
             .RETURN(true);
         REQUIRE_CALL(context, LaunchCubinShaderNVX(reinterpret_cast<IUnknown*>(objhandle), 1U, 2U, 3U, nullptr, 0U, nullptr, 0U, nullptr, 0U))
@@ -282,7 +284,7 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
             .RETURN(true);
 
         REQUIRE(NvAPI_D3D11_CreateCubinComputeShader(static_cast<ID3D11Device*>(&device), reinterpret_cast<void*>(&shader), 1U, 2U, 3U, 4U, &objhandle) == NVAPI_OK);
-        REQUIRE(NvAPI_D3D11_CreateCubinComputeShaderWithName(static_cast<ID3D11Device*>(&device), reinterpret_cast<void*>(&shader), 1U, 2U, 3U, 4U, "foo", &objhandle) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D11_CreateCubinComputeShaderWithName(static_cast<ID3D11Device*>(&device), reinterpret_cast<void*>(&shader), 1U, 2U, 3U, 4U, "shader", &objhandle) == NVAPI_OK);
         REQUIRE(NvAPI_D3D11_LaunchCubinShader(static_cast<ID3D11DeviceContext*>(&context), objhandle, 1U, 2U, 3U, nullptr, 0U, nullptr, 0U, nullptr, 0U) == NVAPI_OK);
         REQUIRE(deviceRefCount == 0);
         REQUIRE(contextRefCount == 0);

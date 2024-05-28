@@ -370,6 +370,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto shaderHandle = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122);
         auto handle = &shaderHandle;
         REQUIRE_CALL(device, CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, handle))
+            .WITH(_6 == std::string("shader"))
             .RETURN(S_OK)
             .TIMES(1);
 
