@@ -221,7 +221,7 @@ extern "C" {
 
         *pSupported = NvapiD3d11Device::IsFatbinPTXSupported(pDevice);
 
-        return Ok(n, alreadyLoggedOk);
+        return Ok(str::format(n, "(", *pSupported ? "Supported" : "Unsupported", ")"), alreadyLoggedOk);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_CreateUnorderedAccessView(ID3D11Device* pDevice, ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC* pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle) {

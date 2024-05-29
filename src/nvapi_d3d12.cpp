@@ -214,7 +214,7 @@ extern "C" {
         if (!*isSupported)
             return Error(n, alreadyLoggedError);
 
-        return Ok(n, alreadyLoggedOk);
+        return Ok(str::format(n, "(", *isSupported ? "Supported" : "Unsupported", ")"), alreadyLoggedOk);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_CreateGraphicsPipelineState(ID3D12Device* pDevice, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pPSODesc, NvU32 numExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** ppExtensions, ID3D12PipelineState** ppPSO) {
