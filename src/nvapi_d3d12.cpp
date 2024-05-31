@@ -33,8 +33,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderEx(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedError = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
@@ -49,8 +49,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderWithName(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedError = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
@@ -65,8 +65,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShader(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NVDX_ObjectHandle* pShader) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedError = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
@@ -81,8 +81,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_DestroyCubinComputeShader(ID3D12Device* pDevice, NVDX_ObjectHandle pShader) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedError = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
@@ -97,8 +97,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetCudaTextureObject(ID3D12Device* pDevice, D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedError = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
@@ -113,8 +113,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetCudaSurfaceObject(ID3D12Device* pDevice, D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedError = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
@@ -129,8 +129,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_LaunchCubinShader(ID3D12GraphicsCommandList* pCmdList, NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedError = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
@@ -145,8 +145,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_CaptureUAVInfo(ID3D12Device* pDevice, NVAPI_UAV_INFO* pUAVInfo) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedError = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
@@ -227,8 +227,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_IsFatbinPTXSupported(ID3D12Device* pDevice, bool* isSupported) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedError = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
@@ -244,7 +244,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_CreateGraphicsPipelineState(ID3D12Device* pDevice, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pPSODesc, NvU32 numExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** ppExtensions, ID3D12PipelineState** ppPSO) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedOk);
 
@@ -271,8 +271,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_SetDepthBoundsTestValues(ID3D12GraphicsCommandList* pCommandList, const float minDepth, const float maxDepth) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedError = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
@@ -379,7 +379,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D12Device5* pDevice, NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* pParams) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedOk);
 
@@ -405,7 +405,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS* pParams) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedOk);
 
@@ -436,8 +436,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedError = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
@@ -462,8 +462,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_SetAsyncFrameMarker(ID3D12CommandQueue* pCommandQueue, NV_LATENCY_MARKER_PARAMS* pSetLatencyMarkerParams) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedError = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedError || alreadyLoggedOk);
 

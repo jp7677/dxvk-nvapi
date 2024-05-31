@@ -56,9 +56,9 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetCurrentPCIEDownstreamWidth(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pWidth) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedNoNvml = false;
-        static bool alreadyLoggedHandleInvalidated = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedNoNvml = false;
+        thread_local bool alreadyLoggedHandleInvalidated = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
 
@@ -97,9 +97,9 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetIRQ(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pIRQ) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedNoNvml = false;
-        static bool alreadyLoggedHandleInvalidated = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedNoNvml = false;
+        thread_local bool alreadyLoggedHandleInvalidated = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
 
@@ -138,9 +138,9 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetGpuCoreCount(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pCount) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedNoNvml = false;
-        static bool alreadyLoggedHandleInvalidated = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedNoNvml = false;
+        thread_local bool alreadyLoggedHandleInvalidated = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
 
@@ -637,9 +637,9 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetDynamicPstatesInfoEx(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_DYNAMIC_PSTATES_INFO_EX* pDynamicPstatesInfoEx) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedNoNvml = false;
-        static bool alreadyLoggedHandleInvalidated = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedNoNvml = false;
+        thread_local bool alreadyLoggedHandleInvalidated = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
 
@@ -734,9 +734,9 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetThermalSettings(NvPhysicalGpuHandle hPhysicalGpu, NvU32 sensorIndex, NV_GPU_THERMAL_SETTINGS* pThermalSettings) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedNoNvml = false;
-        static bool alreadyLoggedHandleInvalidated = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedNoNvml = false;
+        thread_local bool alreadyLoggedHandleInvalidated = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
 
@@ -889,9 +889,9 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetCurrentPstate(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_PERF_PSTATE_ID* pCurrentPstate) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedNoNvml = false;
-        static bool alreadyLoggedHandleInvalidated = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedNoNvml = false;
+        thread_local bool alreadyLoggedHandleInvalidated = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
 
@@ -933,10 +933,10 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetAllClockFrequencies(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_CLOCK_FREQUENCIES* pClkFreqs) {
         constexpr auto n = __func__;
-        static bool alreadyLoggedNotSupported = false;
-        static bool alreadyLoggedNoNvml = false;
-        static bool alreadyLoggedHandleInvalidated = false;
-        static bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedNotSupported = false;
+        thread_local bool alreadyLoggedNoNvml = false;
+        thread_local bool alreadyLoggedHandleInvalidated = false;
+        thread_local bool alreadyLoggedOk = false;
 
         Enter(n, alreadyLoggedNotSupported || alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
 
