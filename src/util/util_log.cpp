@@ -8,8 +8,8 @@ static PFN_wineDbgOutput wineDbgOutput = nullptr;
 static std::mutex fileStreamMutex;
 
 namespace dxvk::log {
-    void print(const std::string& message) {
-        auto line = message + '\n';
+    void print(const std::string& logMessage) {
+        auto line = logMessage + '\n';
         if (wineDbgOutput)
             wineDbgOutput(line.c_str());
         else
@@ -56,10 +56,25 @@ namespace dxvk::log {
         if (skipAllLogging)
             return;
 
-        print(message);
+        LARGE_INTEGER ticks, tickPerSecond;
+        QueryPerformanceCounter(&ticks);
+        QueryPerformanceFrequency(&tickPerSecond);
+        auto seconds = ticks.QuadPart / tickPerSecond.QuadPart;
+        auto milliseconds = ((ticks.QuadPart % tickPerSecond.QuadPart) * 1000) / tickPerSecond.QuadPart;
+
+        auto logMessage = str::format(
+            seconds, ".",
+            std::setfill('0'), std::setw(3), milliseconds, ":",
+            std::setfill('0'), std::setw(4), std::hex, ::GetCurrentProcessId(), ":",
+            std::setfill('0'), std::setw(4), std::hex, ::GetCurrentThreadId(), ":",
+            "info:",
+            "dxvk-nvapi:",
+            message);
+
+        print(logMessage);
         if (filestream) {
             std::scoped_lock lock(fileStreamMutex);
-            filestream << message << std::endl;
+            filestream << logMessage << std::endl;
         }
     }
 }
