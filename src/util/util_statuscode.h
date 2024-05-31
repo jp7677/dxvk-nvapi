@@ -5,6 +5,16 @@
 #include "util_log.h"
 
 namespace dxvk {
+    inline void Enter(const std::string& logMessage) {
+        log::write(str::format(logMessage, ": Enter"));
+    }
+
+    inline void Enter(const std::string& logMessage, bool omit) {
+        if (!omit) {
+            log::write(str::format(logMessage, ": Enter"));
+        }
+    }
+
     inline NvAPI_Status Ok() {
         return NVAPI_OK;
     }

@@ -40,6 +40,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Disp_GetHdrCapabilities(NvU32 displayId, NV_HDR_CAPABILITIES* pHdrCapabilities) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -111,6 +113,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_Disp_HdrColorControl(NvU32 displayId, NV_HDR_COLOR_DATA* pHdrColorData) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -206,6 +210,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char* displayName, NvU32* displayId) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -223,6 +229,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_DISP_GetGDIPrimaryDisplayId(NvU32* displayId) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);

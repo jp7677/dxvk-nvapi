@@ -13,6 +13,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device* pDevice, NvU32 opCode, bool* pSupported) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (pDevice == nullptr || pSupported == nullptr)
             return InvalidArgument(n);
 
@@ -23,13 +25,18 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_EnumerateMetaCommands(ID3D12Device* pDevice, NvU32* pNumMetaCommands, NVAPI_META_COMMAND_DESC* pDescs) {
-        return NotSupported(__func__);
+        constexpr auto n = __func__;
+
+        Enter(n);
+        return NotSupported(n);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderEx(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader) {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
         if (pDevice == nullptr || shaderName == nullptr || pShader == nullptr)
             return InvalidArgument(n);
@@ -45,6 +52,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pDevice == nullptr || shaderName == nullptr || pShader == nullptr)
             return InvalidArgument(n);
 
@@ -58,6 +67,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
         if (pDevice == nullptr || pShader == nullptr)
             return InvalidArgument(n);
@@ -73,6 +84,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pDevice == nullptr)
             return InvalidArgument(n);
 
@@ -86,6 +99,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
         if (pDevice == nullptr || cudaTextureHandle == nullptr)
             return InvalidArgument(n);
@@ -101,6 +116,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pDevice == nullptr || cudaSurfaceHandle == nullptr)
             return InvalidArgument(n);
 
@@ -114,6 +131,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
         if (pCmdList == nullptr)
             return InvalidArgument(n);
@@ -129,6 +148,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pDevice == nullptr || pUAVInfo == nullptr)
             return InvalidArgument(n);
 
@@ -140,6 +161,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetGraphicsCapabilities(IUnknown* pDevice, NvU32 structVersion, NV_D3D12_GRAPHICS_CAPS* pGraphicsCaps) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -207,6 +230,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pDevice == nullptr || isSupported == nullptr)
             return InvalidArgument(n);
 
@@ -220,6 +245,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D12_CreateGraphicsPipelineState(ID3D12Device* pDevice, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pPSODesc, NvU32 numExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** ppExtensions, ID3D12PipelineState** ppPSO) {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedOk);
 
         if (pDevice == nullptr || pPSODesc == nullptr || ppExtensions == nullptr || ppPSO == nullptr)
             return InvalidArgument(n);
@@ -247,6 +274,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pCommandList == nullptr)
             return InvalidArgument(n);
 
@@ -258,6 +287,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingCaps(ID3D12Device* pDevice, NVAPI_D3D12_RAYTRACING_CAPS_TYPE type, void* pData, size_t dataSize) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         if (pDevice == nullptr || pData == nullptr)
             return InvalidPointer(n);
@@ -350,6 +381,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedOk);
+
         if (pDevice == nullptr || pParams == nullptr)
             return InvalidArgument(n);
 
@@ -373,6 +406,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS* pParams) {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedOk);
 
         if (pCommandList == nullptr || pParams == nullptr)
             return InvalidArgument(n);
@@ -404,6 +439,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -427,6 +464,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);

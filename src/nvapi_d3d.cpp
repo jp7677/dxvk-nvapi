@@ -11,6 +11,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLogged = false;
 
+        Enter(n, alreadyLogged);
+
         if (pResource == nullptr || pHandle == nullptr)
             return InvalidArgument(n);
 
@@ -21,24 +23,35 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_SetResourceHint(IUnknown* pDev, NVDX_ObjectHandle obj, NVAPI_D3D_SETRESOURCEHINT_CATEGORY dwHintCategory, NvU32 dwHintName, NvU32* pdwHintValue) {
+        constexpr auto n = __func__;
         static bool alreadyLogged = false;
-        return NoImplementation(__func__, alreadyLogged);
+
+        Enter(n, alreadyLogged);
+        return NoImplementation(n, alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_BeginResourceRendering(IUnknown* pDeviceOrContext, NVDX_ObjectHandle obj, NvU32 Flags) {
+        constexpr auto n = __func__;
         static bool alreadyLogged = false;
+
+        Enter(n, alreadyLogged);
         // Synchronisation hints for SLI...
-        return Ok(__func__, alreadyLogged);
+        return Ok(n, alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_EndResourceRendering(IUnknown* pDeviceOrContext, NVDX_ObjectHandle obj, NvU32 Flags) {
+        constexpr auto n = __func__;
         static bool alreadyLogged = false;
-        return Ok(__func__, alreadyLogged);
+
+        Enter(n, alreadyLogged);
+        return Ok(n, alreadyLogged);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_GetCurrentSLIState(IUnknown* pDevice, NV_GET_CURRENT_SLI_STATE* pSliState) {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedOk);
 
         if (pDevice == nullptr || pSliState == nullptr)
             return InvalidArgument(n);
@@ -75,6 +88,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D_ImplicitSLIControl(IMPLICIT_SLI_CONTROL implicitSLIControl) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (implicitSLIControl == ENABLE_IMPLICIT_SLI)
             return Error(n); // No SLI with this implementation
 
@@ -84,6 +99,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D1x_GetGraphicsCapabilities(IUnknown* pDevice, NvU32 structVersion, NV_D3D1x_GRAPHICS_CAPS* pGraphicsCaps) {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedOk);
 
         if (pGraphicsCaps == nullptr)
             return InvalidArgument(n);
@@ -120,6 +137,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedNoReflex || alreadyLoggedError || alreadyLoggedOk);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -143,6 +162,12 @@ extern "C" {
 
         static bool lastLowLatencyMode = false;
         static uint32_t lastMinimumIntervalUs = UINT32_MAX;
+
+        if (pSetSleepModeParams != nullptr
+            && (lastLowLatencyMode != pSetSleepModeParams->bLowLatencyMode || lastMinimumIntervalUs != pSetSleepModeParams->minimumIntervalUs))
+            Enter(n);
+        else
+            Enter(n, alreadyLoggedOk || alreadyLoggedNoReflex || alreadyLoggedError);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -172,6 +197,8 @@ extern "C" {
         static bool alreadyLoggedNoReflex = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedNoReflex || alreadyLoggedOk);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -194,6 +221,8 @@ extern "C" {
         static bool alreadyLoggedNoImpl = false;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedNoImpl || alreadyLoggedError || alreadyLoggedOk);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -218,6 +247,8 @@ extern "C" {
         static bool alreadyLoggedNoImpl = false;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedNoImpl || alreadyLoggedError || alreadyLoggedOk);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);

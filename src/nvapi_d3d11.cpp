@@ -11,6 +11,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D11_CreateDevice(IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverType, HMODULE Software, UINT Flags, CONST D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, ID3D11Device** ppDevice, D3D_FEATURE_LEVEL* pFeatureLevel, ID3D11DeviceContext** ppImmediateContext, NVAPI_DEVICE_FEATURE_LEVEL* pSupportedLevel) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (pSupportedLevel == nullptr)
             return InvalidArgument(n);
 
@@ -24,6 +26,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D11_CreateDeviceAndSwapChain(IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverType, HMODULE Software, UINT Flags, CONST D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, CONST DXGI_SWAP_CHAIN_DESC* pSwapChainDesc, IDXGISwapChain** ppSwapChain, ID3D11Device** ppDevice, D3D_FEATURE_LEVEL* pFeatureLevel, ID3D11DeviceContext** ppImmediateContext, NVAPI_DEVICE_FEATURE_LEVEL* pSupportedLevel) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         if (pSupportedLevel == nullptr)
             return InvalidArgument(n);
@@ -39,6 +43,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (pDeviceOrContext == nullptr || supported == nullptr)
             return InvalidArgument(n);
 
@@ -50,6 +56,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D11_MultiGPU_GetCaps(PNV_MULTIGPU_CAPS pMultiGPUCaps) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -82,14 +90,19 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_MultiGPU_Init(bool bEnable) {
+        constexpr auto n = __func__;
+
+        Enter(n);
         // Just acknowledge the request since there is nothing to do here
-        return Ok(__func__);
+        return Ok(n);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D11_SetDepthBoundsTest(IUnknown* pDeviceOrContext, NvU32 bEnable, float fMinDepth, float fMaxDepth) {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
         if (pDeviceOrContext == nullptr)
             return InvalidArgument(n);
@@ -105,6 +118,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pDeviceOrContext == nullptr)
             return InvalidArgument(n);
 
@@ -118,6 +133,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
         if (pDeviceOrContext == nullptr)
             return InvalidArgument(n);
@@ -133,6 +150,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pDevContext11 == nullptr || pBuffer == nullptr)
             return InvalidArgument(n);
 
@@ -146,6 +165,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
         if (pDevContext11 == nullptr || pBuffer == nullptr)
             return InvalidArgument(n);
@@ -161,6 +182,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pDevice == nullptr || pCubin == nullptr || phShader == nullptr)
             return InvalidArgument(n);
 
@@ -174,6 +197,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
         if (pDevice == nullptr || pCubin == nullptr || pShaderName == nullptr || phShader == nullptr)
             return InvalidArgument(n);
@@ -189,6 +214,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pDeviceContext == nullptr)
             return InvalidArgument(n);
 
@@ -203,6 +230,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pDevice == nullptr)
             return InvalidArgument(n);
 
@@ -216,6 +245,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedOk);
+
         if (pDevice == nullptr || pSupported == nullptr)
             return InvalidArgument(n);
 
@@ -228,6 +259,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
         if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr || ppUAV == nullptr || pDriverHandle == nullptr)
             return InvalidArgument(n);
@@ -243,6 +276,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr || ppSRV == nullptr || pDriverHandle == nullptr)
             return InvalidArgument(n);
 
@@ -256,6 +291,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
         static bool alreadyLoggedError = false;
+
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
         if (pDevice == nullptr || pResource == nullptr || phObject == nullptr)
             return InvalidArgument(n);
@@ -271,6 +308,8 @@ extern "C" {
         static bool alreadyLoggedOk = false;
         static bool alreadyLoggedError = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pDevice == nullptr || hResource == NVDX_OBJECT_NONE || pGpuVA == nullptr)
             return InvalidArgument(n);
 
@@ -285,6 +324,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedOk = false;
         static bool alreadyLoggedError = false;
+
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
         if (pDevice == nullptr || pParams == nullptr)
             return InvalidArgument(n);
@@ -306,6 +347,8 @@ extern "C" {
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+
         if (pDevice == nullptr || pSamplerDesc == nullptr || ppSamplerState == nullptr || pDriverHandle == nullptr)
             return InvalidArgument(n);
 
@@ -319,6 +362,8 @@ extern "C" {
         constexpr auto n = __func__;
         static bool alreadyLoggedError = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedError || alreadyLoggedOk);
 
         if (pDevice == nullptr || pCudaTextureHandle == nullptr)
             return InvalidArgument(n);

@@ -10,6 +10,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetConnectedDisplayIds(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_DISPLAYIDS* pDisplayIds, NvU32* pDisplayIdCount, NvU32 flags) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -58,6 +60,8 @@ extern "C" {
         static bool alreadyLoggedHandleInvalidated = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -96,6 +100,8 @@ extern "C" {
         static bool alreadyLoggedNoNvml = false;
         static bool alreadyLoggedHandleInvalidated = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -136,6 +142,8 @@ extern "C" {
         static bool alreadyLoggedHandleInvalidated = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -175,6 +183,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetGPUType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_TYPE* pGpuType) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -193,6 +203,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetSystemType(NvPhysicalGpuHandle hPhysicalGpu, NV_SYSTEM_TYPE* pSystemType) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -206,6 +218,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetPCIIdentifiers(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pDeviceId, NvU32* pSubSystemId, NvU32* pRevisionId, NvU32* pExtDeviceId) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -228,6 +242,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetFullName(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szName) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -246,6 +262,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetBusId(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pBusId) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -263,6 +281,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetBusSlotId(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pBusSlotId) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -284,6 +304,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetBusType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_BUS_TYPE* pBusType) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -315,6 +337,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetPhysicalFrameBufferSize(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pSize) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -333,6 +357,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetVirtualFrameBufferSize(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pSize) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -350,6 +376,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetAdapterIdFromPhysicalGpu(NvPhysicalGpuHandle hPhysicalGpu, void* pOSAdapterId) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -372,6 +400,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetLogicalGpuInfo(NvLogicalGpuHandle hLogicalGpu, NV_LOGICAL_GPU_DATA* pLogicalGpuData) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -405,6 +435,9 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetArchInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_ARCH_INFO* pGpuArchInfo) {
         constexpr auto n = __func__;
+
+        Enter(n);
+
         auto returnAddress = _ReturnAddress();
 
         if (nvapiAdapterRegistry == nullptr)
@@ -483,6 +516,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_CudaEnumComputeCapableGpus(NV_COMPUTE_GPU_TOPOLOGY* pComputeTopo) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -524,6 +559,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetGPUInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_INFO* pGpuInfo) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -563,6 +600,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetVbiosVersionString(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szBiosRevision) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -601,6 +640,8 @@ extern "C" {
         static bool alreadyLoggedNoNvml = false;
         static bool alreadyLoggedHandleInvalidated = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -696,6 +737,8 @@ extern "C" {
         static bool alreadyLoggedNoNvml = false;
         static bool alreadyLoggedHandleInvalidated = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -850,6 +893,8 @@ extern "C" {
         static bool alreadyLoggedHandleInvalidated = false;
         static bool alreadyLoggedOk = false;
 
+        Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
@@ -892,6 +937,8 @@ extern "C" {
         static bool alreadyLoggedNoNvml = false;
         static bool alreadyLoggedHandleInvalidated = false;
         static bool alreadyLoggedOk = false;
+
+        Enter(n, alreadyLoggedNotSupported || alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -1026,6 +1073,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetPstates20(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_PERF_PSTATES20_INFO* pPstatesInfo) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);

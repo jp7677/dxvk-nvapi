@@ -12,6 +12,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DRS_CreateSession(NvDRSSessionHandle* phSession) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (phSession == nullptr)
             return InvalidArgument(n);
 
@@ -21,19 +23,30 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_LoadSettings(NvDRSSessionHandle hSession) {
-        return Ok(__func__);
+        constexpr auto n = __func__;
+
+        Enter(n);
+        return Ok(n);
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_FindProfileByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString profileName, NvDRSProfileHandle* phProfile) {
-        return ProfileNotFound(str::format(__func__, " (", str::fromnvus(profileName), ")"));
+        constexpr auto n = __func__;
+
+        Enter(n);
+        return ProfileNotFound(str::format(n, " (", str::fromnvus(profileName), ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_FindApplicationByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString appName, NvDRSProfileHandle* phProfile, NVDRS_APPLICATION* pApplication) {
-        return ExecutableNotFound(str::format(__func__, " (", str::fromnvus(appName), ")"));
+        constexpr auto n = __func__;
+
+        Enter(n);
+        return ExecutableNotFound(str::format(n, " (", str::fromnvus(appName), ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         if (phProfile == nullptr)
             return InvalidArgument(n);
@@ -46,6 +59,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DRS_GetCurrentGlobalProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
         constexpr auto n = __func__;
 
+        Enter(n);
+
         if (phProfile == nullptr)
             return InvalidArgument(n);
 
@@ -56,6 +71,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
         constexpr auto n = __func__;
+
+        Enter(n);
 
         auto id = str::format("0x", std::hex, settingId);
         auto name = std::string("Unknown");
@@ -78,6 +95,9 @@ extern "C" {
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_DestroySession(NvDRSSessionHandle hSession) {
-        return Ok(__func__);
+        constexpr auto n = __func__;
+
+        Enter(n);
+        return Ok(n);
     }
 }
