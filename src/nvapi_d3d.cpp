@@ -137,8 +137,12 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D_SetSleepMode(IUnknown* pDevice, NV_SET_SLEEP_MODE_PARAMS* pSetSleepModeParams) {
         constexpr auto n = __func__;
+        static bool alreadyLoggedOk = false;
         static bool alreadyLoggedNoReflex = false;
         static bool alreadyLoggedError = false;
+
+        static bool lastLowLatencyMode = false;
+        static uint32_t lastMinimumIntervalUs = UINT32_MAX;
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -155,7 +159,12 @@ extern "C" {
         if (!nvapiD3dInstance->SetReflexMode(pDevice, pSetSleepModeParams->bLowLatencyMode, pSetSleepModeParams->bLowLatencyBoost, pSetSleepModeParams->minimumIntervalUs))
             return Error(n, alreadyLoggedError);
 
-        return Ok(str::format(n, " (", pSetSleepModeParams->bLowLatencyMode ? (str::format("Enabled/", pSetSleepModeParams->minimumIntervalUs, "us")) : "Disabled", ")"));
+        if (lastLowLatencyMode != pSetSleepModeParams->bLowLatencyMode || lastMinimumIntervalUs != pSetSleepModeParams->minimumIntervalUs) {
+            lastLowLatencyMode = pSetSleepModeParams->bLowLatencyMode;
+            lastMinimumIntervalUs = pSetSleepModeParams->minimumIntervalUs;
+            return Ok(str::format(n, " (", pSetSleepModeParams->bLowLatencyMode ? (str::format("Enabled/", pSetSleepModeParams->minimumIntervalUs, "us")) : "Disabled", ")"));
+        } else
+            return Ok(n, alreadyLoggedOk);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_GetSleepStatus(IUnknown* pDevice, NV_GET_SLEEP_STATUS_PARAMS* pGetSleepStatusParams) {
