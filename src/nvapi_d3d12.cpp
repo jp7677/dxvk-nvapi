@@ -431,11 +431,11 @@ extern "C" {
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
-            return IncompatibleStructVersion(n);
-
         if (pCommandQueue == nullptr || pSetLatencyMarkerParams == nullptr)
             return InvalidPointer(n);
+
+        if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
+            return IncompatibleStructVersion(n);
 
         ID3D12Device* pDevice;
         if (FAILED(pCommandQueue->GetDevice(IID_PPV_ARGS(&pDevice))))
