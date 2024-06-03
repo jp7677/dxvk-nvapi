@@ -9,7 +9,7 @@ static std::mutex fileStreamMutex;
 
 namespace dxvk::log {
     void print(const std::string& logMessage) {
-        auto line = logMessage + '\n';
+        auto line = logMessage + '\n'; // Do not flush buffers
         if (wineDbgOutput)
             wineDbgOutput(line.c_str());
         else
