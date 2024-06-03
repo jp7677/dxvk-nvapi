@@ -359,13 +359,13 @@ extern "C" {
                         d3dGeoDesc.AABBs = nvGeoDesc.aabbs;
                         break;
                     case NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX: // GetRaytracingCaps reports no OMM caps, we shouldn't reach this
-                        log::write("Triangles with OMM attachment passed to acceleration structure build when OMM is not supported");
+                        log::info("Triangles with OMM attachment passed to acceleration structure build when OMM is not supported");
                         return false;
                     case NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_DMM_TRIANGLES_EX: // GetRaytracingCaps reports no DMM caps, we shouldn't reach this
-                        log::write("Triangles with DMM attachment passed to acceleration structure build when DMM is not supported");
+                        log::info("Triangles with DMM attachment passed to acceleration structure build when DMM is not supported");
                         return false;
                     default:
-                        log::write(str::format("Unknown NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_EX: ", nvGeoDesc.type));
+                        log::info(str::format("Unknown NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_EX: ", nvGeoDesc.type));
                         return false;
                 }
             }

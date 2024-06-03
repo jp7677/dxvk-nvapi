@@ -103,13 +103,13 @@ namespace dxvk {
         if (it != m_cubinSmemMap.end())
             smem = it->second;
         else
-            log::write("Failed to find CuBIN in m_cubinSmemMap, defaulting to 0");
+            log::info("Failed to find CuBIN in m_cubinSmemMap, defaulting to 0");
 
         if (interfaceVersion >= 1)
             return SUCCEEDED(cmdList->LaunchCubinShaderEx(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, smem, params, paramSize, nullptr, 0));
         else {
             if (smem != 0)
-                log::write("Non-zero SMEM value supplied for CuBIN but ID3D12GraphicsCommandListExt1 not supported! This may cause corruption");
+                log::info("Non-zero SMEM value supplied for CuBIN but ID3D12GraphicsCommandListExt1 not supported! This may cause corruption");
 
             return SUCCEEDED(cmdList->LaunchCubinShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, params, paramSize));
         }
@@ -188,7 +188,7 @@ namespace dxvk {
             return std::make_optional(m_commandListMap.emplace(commandList, cmdListVer).first->second);
         }
 
-        log::write("commandList has no ID3D12GraphicsCommandListExt compatible interface!");
+        log::info("commandList has no ID3D12GraphicsCommandListExt compatible interface!");
         return {};
     }
 

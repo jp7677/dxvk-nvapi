@@ -9,7 +9,7 @@ extern "C" {
     static DXGI_COLOR_SPACE_TYPE HDRModeToColorSpace(NV_HDR_MODE mode) {
         switch (mode) {
             default:
-                log::write(str::format("Unhandled HDR type: ", mode, " Falling back to sRGB."));
+                log::info(str::format("Unhandled HDR type: ", mode, " Falling back to sRGB."));
                 [[fallthrough]];
             case NV_HDR_MODE_SDR:
             case NV_HDR_MODE_OFF:
@@ -25,7 +25,7 @@ extern "C" {
     static NV_HDR_MODE ColorSpaceToHDRMode(DXGI_COLOR_SPACE_TYPE colorspace) {
         switch (colorspace) {
             default:
-                log::write(str::format("Unhandled colorspace type: ", colorspace, " Falling back to OFF."));
+                log::info(str::format("Unhandled colorspace type: ", colorspace, " Falling back to OFF."));
                 [[fallthrough]];
             case DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709:
                 return NV_HDR_MODE_OFF;

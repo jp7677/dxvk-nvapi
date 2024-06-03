@@ -11,7 +11,7 @@ namespace dxvk {
     Com<IDXGIFactory1> ResourceFactory::CreateDXGIFactory1() {
         Com<IDXGIFactory1> dxgiFactory;
         if (FAILED(::CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgiFactory))) {
-            log::write("Creating DXGI Factory (IDXGIFactory1) failed, please ensure that DXVK's dxgi.dll is present");
+            log::info("Creating DXGI Factory (IDXGIFactory1) failed, please ensure that DXVK's dxgi.dll is present");
             return nullptr;
         }
 
@@ -21,7 +21,7 @@ namespace dxvk {
     std::unique_ptr<Vulkan> ResourceFactory::CreateVulkan(Com<IDXGIFactory1>& dxgiFactory) {
         Com<IDXGIVkInteropFactory> dxgiVkFactory;
         if (FAILED(dxgiFactory->QueryInterface(IID_PPV_ARGS(&dxgiVkFactory)))) {
-            log::write("Querying Vulkan entry point from DXGI factory failed, please ensure that DXVK's dxgi.dll (version 2.1 or newer) is present");
+            log::info("Querying Vulkan entry point from DXGI factory failed, please ensure that DXVK's dxgi.dll (version 2.1 or newer) is present");
             return nullptr;
         }
 
@@ -29,7 +29,7 @@ namespace dxvk {
         PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr{};
         dxgiVkFactory->GetVulkanInstance(&vkInstance, &vkGetInstanceProcAddr);
 
-        log::write(str::format("Successfully acquired Vulkan vkGetInstanceProcAddr @ 0x", std::hex, reinterpret_cast<uintptr_t>(vkGetInstanceProcAddr)));
+        log::info(str::format("Successfully acquired Vulkan vkGetInstanceProcAddr @ 0x", std::hex, reinterpret_cast<uintptr_t>(vkGetInstanceProcAddr)));
         return std::make_unique<Vulkan>(dxgiFactory, vkGetInstanceProcAddr);
     }
 

@@ -6,12 +6,12 @@
 
 namespace dxvk {
     inline void Enter(const std::string& logMessage) {
-        log::write(str::format(logMessage, ": Enter"));
+        log::info(str::format(logMessage, ": Enter"));
     }
 
     inline void Enter(const std::string& logMessage, bool omit) {
         if (!omit) {
-            log::write(str::format(logMessage, ": Enter"));
+            log::info(str::format(logMessage, ": Enter"));
         }
     }
 
@@ -20,15 +20,14 @@ namespace dxvk {
     }
 
     inline NvAPI_Status Ok(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": OK"));
+        log::info(str::format("<-", logMessage, ": OK"));
         return NVAPI_OK;
     }
 
     inline NvAPI_Status Ok(const std::string& logMessage, bool& alreadyLogged) {
-        if (std::exchange(alreadyLogged, true))
-            return NVAPI_OK;
+        if (!std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": OK"));
 
-        log::write(str::format("<-", logMessage, ": OK"));
         return NVAPI_OK;
     }
 
@@ -37,15 +36,14 @@ namespace dxvk {
     }
 
     inline NvAPI_Status Error(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Error"));
+        log::info(str::format("<-", logMessage, ": Error"));
         return NVAPI_ERROR;
     }
 
     inline NvAPI_Status Error(const std::string& logMessage, bool& alreadyLogged) {
-        if (std::exchange(alreadyLogged, true))
-            return NVAPI_ERROR;
+        if (!std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Error"));
 
-        log::write(str::format("<-", logMessage, ": Error"));
         return NVAPI_ERROR;
     }
 
@@ -54,116 +52,113 @@ namespace dxvk {
     }
 
     inline NvAPI_Status NoImplementation(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": No implementation"));
+        log::info(str::format("<-", logMessage, ": No implementation"));
         return NVAPI_NO_IMPLEMENTATION;
     }
 
     inline NvAPI_Status NoImplementation(const std::string& logMessage, bool& alreadyLogged) {
-        if (std::exchange(alreadyLogged, true))
-            return NVAPI_NO_IMPLEMENTATION;
+        if (!std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": No implementation"));
 
-        log::write(str::format("<-", logMessage, ": No implementation"));
         return NVAPI_NO_IMPLEMENTATION;
     }
 
     inline NvAPI_Status EndEnumeration(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": End enumeration"));
+        log::info(str::format("<-", logMessage, ": End enumeration"));
         return NVAPI_END_ENUMERATION;
     }
 
     inline NvAPI_Status ApiNotInitialized(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": API not initialized"));
+        log::info(str::format("<-", logMessage, ": API not initialized"));
         return NVAPI_API_NOT_INTIALIZED;
     }
 
     inline NvAPI_Status InvalidPointer(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Invalid pointer"));
+        log::info(str::format("<-", logMessage, ": Invalid pointer"));
         return NVAPI_INVALID_POINTER;
     }
 
     inline NvAPI_Status InvalidArgument(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Invalid argument"));
+        log::info(str::format("<-", logMessage, ": Invalid argument"));
         return NVAPI_INVALID_ARGUMENT;
     }
 
     inline NvAPI_Status ExpectedPhysicalGpuHandle(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Expected physical GPU handle"));
+        log::info(str::format("<-", logMessage, ": Expected physical GPU handle"));
         return NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE;
     }
 
     inline NvAPI_Status ExpectedLogicalGpuHandle(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Expected logical GPU handle"));
+        log::info(str::format("<-", logMessage, ": Expected logical GPU handle"));
         return NVAPI_EXPECTED_LOGICAL_GPU_HANDLE;
     }
 
     inline NvAPI_Status IncompatibleStructVersion(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Incompatible struct version"));
+        log::info(str::format("<-", logMessage, ": Incompatible struct version"));
         return NVAPI_INCOMPATIBLE_STRUCT_VERSION;
     }
 
     inline NvAPI_Status HandleInvalidated(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Handle invalidated"));
+        log::info(str::format("<-", logMessage, ": Handle invalidated"));
         return NVAPI_HANDLE_INVALIDATED;
     }
 
     inline NvAPI_Status HandleInvalidated(const std::string& logMessage, bool& alreadyLogged) {
-        if (std::exchange(alreadyLogged, true))
-            return NVAPI_HANDLE_INVALIDATED;
+        if (!std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Handle invalidated"));
 
-        log::write(str::format("<-", logMessage, ": Handle invalidated"));
         return NVAPI_HANDLE_INVALIDATED;
     }
 
     inline NvAPI_Status ExpectedDisplayHandle(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Expected display handle"));
+        log::info(str::format("<-", logMessage, ": Expected display handle"));
         return NVAPI_EXPECTED_DISPLAY_HANDLE;
     }
 
     inline NvAPI_Status NotSupported(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Not supported"));
+        log::info(str::format("<-", logMessage, ": Not supported"));
         return NVAPI_NOT_SUPPORTED;
     }
 
     inline NvAPI_Status NotSupported(const std::string& logMessage, bool& alreadyLogged) {
-        if (std::exchange(alreadyLogged, true))
-            return NVAPI_NOT_SUPPORTED;
+        if (!std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Not supported"));
 
-        log::write(str::format("<-", logMessage, ": Not supported"));
         return NVAPI_NOT_SUPPORTED;
     }
 
     inline NvAPI_Status InvalidDisplayId(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Invalid display ID"));
+        log::info(str::format("<-", logMessage, ": Invalid display ID"));
         return NVAPI_INVALID_DISPLAY_ID;
     }
 
     inline NvAPI_Status MosaicNotActive(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Mosaic not active"));
+        log::info(str::format("<-", logMessage, ": Mosaic not active"));
         return NVAPI_MOSAIC_NOT_ACTIVE;
     }
 
     inline NvAPI_Status NvidiaDeviceNotFound(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": NVIDIA or other suitable device not found or initialization failed"));
+        log::info(str::format("<-", logMessage, ": NVIDIA or other suitable device not found or initialization failed"));
         return NVAPI_NVIDIA_DEVICE_NOT_FOUND;
     }
 
     inline NvAPI_Status ProfileNotFound(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Profile not found"));
+        log::info(str::format("<-", logMessage, ": Profile not found"));
         return NVAPI_PROFILE_NOT_FOUND;
     }
 
     inline NvAPI_Status ExecutableNotFound(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Executable not found"));
+        log::info(str::format("<-", logMessage, ": Executable not found"));
         return NVAPI_EXECUTABLE_NOT_FOUND;
     }
 
     inline NvAPI_Status SettingNotFound(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Setting not found"));
+        log::info(str::format("<-", logMessage, ": Setting not found"));
         return NVAPI_SETTING_NOT_FOUND;
     }
 
     inline NvAPI_Status InsufficientBuffer(const std::string& logMessage) {
-        log::write(str::format("<-", logMessage, ": Insufficient Buffer"));
+        log::info(str::format("<-", logMessage, ": Insufficient Buffer"));
         return NVAPI_INSUFFICIENT_BUFFER;
     }
 }

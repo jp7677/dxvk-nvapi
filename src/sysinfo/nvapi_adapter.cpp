@@ -18,7 +18,7 @@ namespace dxvk {
         // Get the Vulkan handle from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
         if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter)))) {
-            log::write("Querying Vulkan handle from DXGI adapter failed, please ensure that DXVK's dxgi.dll is present");
+            log::info("Querying Vulkan handle from DXGI adapter failed, please ensure that DXVK's dxgi.dll is present");
             return false;
         }
 
@@ -78,7 +78,7 @@ namespace dxvk {
 
         auto allowOtherDrivers = env::getEnvVariable(allowOtherDriversEnvName);
         if (allowOtherDrivers == "1")
-            log::write(str::format(allowOtherDriversEnvName, " is set, reporting also GPUs with non-NVIDIA proprietary driver"));
+            log::info(str::format(allowOtherDriversEnvName, " is set, reporting also GPUs with non-NVIDIA proprietary driver"));
 
         if (!HasNvProprietaryDriver() && !HasNvkDriver() && allowOtherDrivers != "1")
             return false;
@@ -96,7 +96,7 @@ namespace dxvk {
             // so just report a number that should be "useful" until the end of time
             m_vkDriverVersion = nvMakeVersion(999, 99, 0);
 
-        log::write(str::format("NvAPI Device: ", m_vkProperties.deviceName, " (",
+        log::info(str::format("NvAPI Device: ", m_vkProperties.deviceName, " (",
             nvVersionMajor(m_vkDriverVersion), ".",
             nvVersionMinor(m_vkDriverVersion), ".",
             nvVersionPatch(m_vkDriverVersion), ")"));
@@ -123,7 +123,7 @@ namespace dxvk {
             if (result == NVML_SUCCESS)
                 m_nvmlDevice = nvmlDevice;
             else
-                log::write(str::format("NVML failed to find device with PCI BusId [", pciId, "]: ", m_nvml.ErrorString(result)));
+                log::info(str::format("NVML failed to find device with PCI BusId [", pciId, "]: ", m_nvml.ErrorString(result)));
         }
 
         auto driverVersion = env::getEnvVariable(driverVersionEnvName);
@@ -133,10 +133,10 @@ namespace dxvk {
             if (std::string(end).empty() && driverVersionOverride >= 100 && driverVersionOverride <= 99999) {
                 std::stringstream stream;
                 stream << (driverVersionOverride / 100) << "." << std::setfill('0') << std::setw(2) << (driverVersionOverride % 100);
-                log::write(str::format(driverVersionEnvName, " is set to '", driverVersion, "', reporting driver version ", stream.str()));
+                log::info(str::format(driverVersionEnvName, " is set to '", driverVersion, "', reporting driver version ", stream.str()));
                 m_driverVersionOverride = driverVersionOverride;
             } else
-                log::write(str::format(driverVersionEnvName, " is set to '", driverVersion, "', but this value is invalid, please set a number between 100 and 99999"));
+                log::info(str::format(driverVersionEnvName, " is set to '", driverVersion, "', but this value is invalid, please set a number between 100 and 99999"));
         }
 
         return true;
@@ -223,7 +223,7 @@ namespace dxvk {
     NV_GPU_ARCHITECTURE_ID NvapiAdapter::GetArchitectureId() const {
         if (!this->HasNvProprietaryDriver() && !this->HasNvkDriver()) {
             // DXVK_NVAPI_ALLOW_OTHER_DRIVERS must be set, otherwise this would be unreachable
-            log::write(str::format(allowOtherDriversEnvName, " is set, spoofing Pascal for GPU with non-NVIDIA proprietary driver"));
+            log::info(str::format(allowOtherDriversEnvName, " is set, spoofing Pascal for GPU with non-NVIDIA proprietary driver"));
             return NV_GPU_ARCHITECTURE_GP100;
         }
 

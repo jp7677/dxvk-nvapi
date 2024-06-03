@@ -11,7 +11,7 @@ namespace dxvk {
 
         m_lfxModule = ::LoadLibraryA(lfxModuleName);
         if (m_lfxModule != nullptr)
-            log::write(str::format("Successfully loaded ", lfxModuleName));
+            log::info(str::format("Successfully loaded ", lfxModuleName));
 
         if (m_lfxModule == nullptr && ::GetLastError() == ERROR_MOD_NOT_FOUND) {
             // Try fallback entrypoints. These were used by versions prior to [9c2836f].
@@ -19,7 +19,7 @@ namespace dxvk {
             // [9c2836f]: https://github.com/ishitatsuyuki/LatencyFleX/commit/9c2836faf14196190a915064b53c27e675e47960
             m_lfxModule = ::LoadLibraryA(lfxModuleNameFallback);
             if (m_lfxModule != nullptr)
-                log::write(str::format("Successfully loaded ", lfxModuleNameFallback));
+                log::info(str::format("Successfully loaded ", lfxModuleNameFallback));
 
             useFallbackEntrypoints = true;
         }
@@ -27,7 +27,7 @@ namespace dxvk {
         if (m_lfxModule == nullptr) {
             auto lastError = ::GetLastError();
             if (lastError != ERROR_MOD_NOT_FOUND) // Ignore library not found
-                log::write(str::format("Loading ", !useFallbackEntrypoints ? lfxModuleName : lfxModuleNameFallback,
+                log::info(str::format("Loading ", !useFallbackEntrypoints ? lfxModuleName : lfxModuleNameFallback,
                     " failed with error code: ", lastError));
             return;
         }

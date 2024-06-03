@@ -319,7 +319,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Unload() {
         constexpr auto n = __func__;
 
-        Enter(n);
+        log::info(n);
 
         std::scoped_lock lock(initializationMutex);
 
@@ -335,14 +335,14 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Initialize() {
         constexpr auto n = __func__;
 
-        Enter(n);
+        log::info(n);
 
         std::scoped_lock lock(initializationMutex);
 
         if (++initializationCount > 1)
             return Ok(n);
 
-        log::write(str::format("DXVK-NVAPI ", DXVK_NVAPI_VERSION, " (", env::getExecutableName(), ")"));
+        log::info(str::format("DXVK-NVAPI ", DXVK_NVAPI_VERSION, " (", env::getExecutableName(), ")"));
 
         if (resourceFactory == nullptr)
             resourceFactory = std::make_unique<ResourceFactory>();

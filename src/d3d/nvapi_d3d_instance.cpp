@@ -11,7 +11,7 @@ namespace dxvk {
     void NvapiD3dInstance::Initialize() {
         m_lfx = m_resourceFactory.CreateLfx();
         if (m_lfx->IsAvailable())
-            log::write("LatencyFleX loaded and initialized successfully");
+            log::info("LatencyFleX loaded and initialized successfully");
     }
 
     bool NvapiD3dInstance::IsReflexAvailable(IUnknown* device) {

@@ -35,7 +35,7 @@ namespace dxvk {
 
         m_nvml = m_resourceFactory.CreateNvml();
         if (m_nvml->IsAvailable())
-            log::write("NVML loaded and initialized successfully");
+            log::info("NVML loaded and initialized successfully");
 
         Com<IDXGIVkInteropFactory1> dxgiVkInteropFactory;
         if (SUCCEEDED(m_dxgiFactory->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropFactory))))

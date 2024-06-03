@@ -19,7 +19,7 @@ extern "C" {
             [id](const auto& item) { return item.id == id; });
 
         if (it == std::end(nvapi_interface_table)) {
-            log::write(str::format("NvAPI_QueryInterface (0x", std::hex, id, "): Unknown function ID"));
+            log::info(str::format("NvAPI_QueryInterface (0x", std::hex, id, "): Unknown function ID"));
             return registry.insert({id, nullptr}).first->second;
         }
 
@@ -144,7 +144,7 @@ extern "C" {
 
 #undef INSERT_AND_RETURN_WHEN_EQUALS
 
-        log::write(str::format("NvAPI_QueryInterface ", it->func, ": Not implemented method"));
+        log::info(str::format("NvAPI_QueryInterface ", it->func, ": Not implemented method"));
         return registry.insert({id, nullptr}).first->second;
     }
 }

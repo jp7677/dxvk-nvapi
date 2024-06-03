@@ -120,7 +120,7 @@ namespace dxvk::env {
     bool needsAmpereSpoofing(NV_GPU_ARCHITECTURE_ID architectureId, void* pReturnAddress) {
         // Check if we need to workaround NVIDIA Bug 3634851
         if (architectureId >= NV_GPU_ARCHITECTURE_AD100 && isDLSSVersion20To24(pReturnAddress)) {
-            log::write("Spoofing Ampere for Ada and later due to DLSS version 2.0-2.4");
+            log::info("Spoofing Ampere for Ada and later due to DLSS version 2.0-2.4");
             return true;
         }
 
@@ -137,12 +137,12 @@ namespace dxvk::env {
 
     bool needsPascalSpoofing(NV_GPU_ARCHITECTURE_ID architectureId) {
         if (architectureId >= NV_GPU_ARCHITECTURE_TU100 && isMonsterHunterWorld()) {
-            log::write("Spoofing Pascal for Turing and later due to detecting MonsterHunterWorld.exe");
+            log::info("Spoofing Pascal for Turing and later due to detecting MonsterHunterWorld.exe");
             return true;
         }
 
         if (architectureId >= NV_GPU_ARCHITECTURE_TU100 && isWarThunder()) {
-            log::write("Spoofing Pascal for Turing and later due to detecting aces.exe (War Thunder)");
+            log::info("Spoofing Pascal for Turing and later due to detecting aces.exe (War Thunder)");
             return true;
         }
 
@@ -161,12 +161,12 @@ namespace dxvk::env {
 
     bool needsSucceededGpuQuery() {
         if (isTheLastOfUsPartOne()) {
-            log::write("Faking GPU query success due to detecting tlou-i.exe/tlou-i-l.exe");
+            log::info("Faking GPU query success due to detecting tlou-i.exe/tlou-i-l.exe");
             return true;
         }
 
         if (isXDefiant()) {
-            log::write("Faking GPU query success due to detecting XDefiant.exe/XDefiant_BE.exe (XDefiant)");
+            log::info("Faking GPU query success due to detecting XDefiant.exe/XDefiant_BE.exe (XDefiant)");
             return true;
         }
 

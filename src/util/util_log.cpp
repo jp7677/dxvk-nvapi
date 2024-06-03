@@ -46,7 +46,7 @@ namespace dxvk::log {
         print(str::format(logPathEnvName, " is set to '", logPath, "', appending log statements to ", fullPath));
     }
 
-    void write(const std::string& message) {
+    void write(const std::string& severity, const std::string& message) {
         static bool alreadyInitialized = false;
         static bool skipAllLogging = false;
         static std::ofstream filestream;
@@ -67,7 +67,7 @@ namespace dxvk::log {
             std::setfill('0'), std::setw(3), milliseconds, ":",
             std::setfill('0'), std::setw(4), std::hex, ::GetCurrentProcessId(), ":",
             std::setfill('0'), std::setw(4), std::hex, ::GetCurrentThreadId(), ":",
-            "info:",
+            severity, ":",
             "dxvk-nvapi:",
             message);
 
