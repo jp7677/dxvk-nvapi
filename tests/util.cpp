@@ -1,8 +1,25 @@
 #include "nvapi_tests_private.h"
+#include "../src/util/util_log.h"
 #include "../src/util/util_string.h"
 #include "../src/util/util_version.h"
 
 using namespace Catch::Matchers;
+
+TEST_CASE("Log", "[.util]") {
+    REQUIRE(dxvk::log::fmt::hnd(nullptr) == std::string("hnd=0x0"));
+    // Avoid different hex padding between MSVC and GCC
+    REQUIRE(dxvk::log::fmt::hnd((void*)0x1000000000000089) == std::string("hnd=0x1000000000000089"));
+    REQUIRE(dxvk::log::fmt::ptr(nullptr) == std::string("nullptr"));
+    REQUIRE(dxvk::log::fmt::ptr((void*)0x1000000000000089) == std::string("ptr=0x1000000000000089"));
+    REQUIRE(dxvk::log::fmt::flt(0) == std::string("0.0"));
+    REQUIRE(dxvk::log::fmt::flt(1) == std::string("1.0"));
+    REQUIRE(dxvk::log::fmt::flt(0.45) == std::string("0.45"));
+    REQUIRE(dxvk::log::fmt::flags(28) == std::string("flags=0x001c"));
+
+    D3D12_CPU_DESCRIPTOR_HANDLE handle{};
+    auto ptr = dxvk::str::format(std::hex, handle.ptr);
+    REQUIRE(dxvk::log::fmt::d3d12_cpu_descriptor_handle(handle) == dxvk::str::format("{ptr=", dxvk::log::fmt::hex_prefix, ptr, "}"));
+}
 
 TEST_CASE("String", "[.util]") {
     SECTION("NVAPI Unicode-String") {

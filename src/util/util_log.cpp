@@ -6,6 +6,7 @@ using PFN_wineDbgOutput = int(__cdecl*)(const char*);
 
 static PFN_wineDbgOutput wineDbgOutput = nullptr;
 static std::mutex fileStreamMutex;
+static bool traceEnabled = false;
 
 namespace dxvk::log {
     void print(const std::string& logMessage) {
@@ -28,10 +29,14 @@ namespace dxvk::log {
         constexpr auto logFileName = "dxvk-nvapi.log";
 
         auto logLevel = env::getEnvVariable(logLevelEnvName);
-        if (logLevel != "info") {
+        if (logLevel != "info" && logLevel != "trace") {
             skipAllLogging = true;
             return;
         }
+
+        traceEnabled = logLevel == "trace";
+        if (traceEnabled)
+            print(str::format(logLevelEnvName, " is set to 'trace', writing all log statements, this has severe impact on performance"));
 
         auto logPath = env::getEnvVariable(logPathEnvName);
         if (logPath.empty())
@@ -46,7 +51,13 @@ namespace dxvk::log {
         print(str::format(logPathEnvName, " is set to '", logPath, "', appending log statements to ", fullPath));
     }
 
-    void write(const std::string& severity, const std::string& message) {
+    bool tracing() {
+        // Before this method we need to call write() first to set `traceEnabled`, accept this
+        // glitch since NvAPI_Initialize() logs initially without checking for tracing.
+        return traceEnabled;
+    }
+
+    void write(const std::string& level, const std::string& message) {
         static bool alreadyInitialized = false;
         static bool skipAllLogging = false;
         static std::ofstream filestream;
@@ -54,6 +65,9 @@ namespace dxvk::log {
             initialize(filestream, skipAllLogging);
 
         if (skipAllLogging)
+            return;
+
+        if (level == "trace" && !tracing())
             return;
 
         LARGE_INTEGER ticks, tickPerSecond;
@@ -67,7 +81,7 @@ namespace dxvk::log {
             std::setfill('0'), std::setw(3), milliseconds, ":",
             std::setfill('0'), std::setw(4), std::hex, ::GetCurrentProcessId(), ":",
             std::setfill('0'), std::setw(4), std::hex, ::GetCurrentThreadId(), ":",
-            severity, ":",
+            level, ":",
             "dxvk-nvapi:",
             message);
 
