@@ -13,7 +13,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device* pDevice, NvU32 opCode, bool* pSupported) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), opCode, log::fmt::ptr(pSupported));
 
         if (pDevice == nullptr || pSupported == nullptr)
             return InvalidArgument(n);
@@ -27,7 +28,9 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D12_EnumerateMetaCommands(ID3D12Device* pDevice, NvU32* pNumMetaCommands, NVAPI_META_COMMAND_DESC* pDescs) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pNumMetaCommands), log::fmt::ptr(pDescs));
+
         return NotSupported(n);
     }
 
@@ -36,7 +39,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(cubinData), cubinSize, blockX, blockY, blockZ, smemSize, log::fmt::ptr(shaderName), log::fmt::ptr(pShader));
 
         if (pDevice == nullptr || shaderName == nullptr || pShader == nullptr)
             return InvalidArgument(n);
@@ -52,7 +56,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(cubinData), cubinSize, blockX, blockY, blockZ, log::fmt::ptr(shaderName), log::fmt::ptr(pShader));
 
         if (pDevice == nullptr || shaderName == nullptr || pShader == nullptr)
             return InvalidArgument(n);
@@ -68,7 +73,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(cubinData), cubinSize, blockX, blockY, blockZ, log::fmt::ptr(pShader));
 
         if (pDevice == nullptr || pShader == nullptr)
             return InvalidArgument(n);
@@ -84,7 +90,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::hnd(pShader));
 
         if (pDevice == nullptr)
             return InvalidArgument(n);
@@ -100,7 +107,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::d3d12_cpu_descriptor_handle(srvHandle), log::fmt::d3d12_cpu_descriptor_handle(samplerHandle), log::fmt::ptr(cudaTextureHandle));
 
         if (pDevice == nullptr || cudaTextureHandle == nullptr)
             return InvalidArgument(n);
@@ -116,7 +124,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::d3d12_cpu_descriptor_handle(uavHandle), log::fmt::ptr(cudaSurfaceHandle));
 
         if (pDevice == nullptr || cudaSurfaceHandle == nullptr)
             return InvalidArgument(n);
@@ -132,7 +141,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pCmdList), log::fmt::hnd(pShader), blockX, blockY, blockZ, log::fmt::ptr(params), paramSize);
 
         if (pCmdList == nullptr)
             return InvalidArgument(n);
@@ -148,7 +158,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pUAVInfo));
 
         if (pDevice == nullptr || pUAVInfo == nullptr)
             return InvalidArgument(n);
@@ -162,7 +173,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D12_GetGraphicsCapabilities(IUnknown* pDevice, NvU32 structVersion, NV_D3D12_GRAPHICS_CAPS* pGraphicsCaps) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), structVersion, log::fmt::ptr(pGraphicsCaps));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -230,7 +242,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(isSupported));
 
         if (pDevice == nullptr || isSupported == nullptr)
             return InvalidArgument(n);
@@ -246,7 +259,8 @@ extern "C" {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pPSODesc), numExtensions, log::fmt::ptr(ppExtensions), log::fmt::ptr(ppPSO));
 
         if (pDevice == nullptr || pPSODesc == nullptr || ppExtensions == nullptr || ppPSO == nullptr)
             return InvalidArgument(n);
@@ -274,7 +288,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pCommandList), log::fmt::flt(minDepth), log::fmt::flt(maxDepth));
 
         if (pCommandList == nullptr)
             return InvalidArgument(n);
@@ -288,7 +303,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingCaps(ID3D12Device* pDevice, NVAPI_D3D12_RAYTRACING_CAPS_TYPE type, void* pData, size_t dataSize) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), type, log::fmt::ptr(pData), dataSize);
 
         if (pDevice == nullptr || pData == nullptr)
             return InvalidPointer(n);
@@ -381,7 +397,8 @@ extern "C" {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
 
         if (pDevice == nullptr || pParams == nullptr)
             return InvalidArgument(n);
@@ -407,7 +424,8 @@ extern "C" {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pCommandList), log::fmt::ptr(pParams));
 
         if (pCommandList == nullptr || pParams == nullptr)
             return InvalidArgument(n);
@@ -439,7 +457,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, cqType);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -465,7 +484,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pCommandQueue), log::fmt::ptr(pSetLatencyMarkerParams));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);

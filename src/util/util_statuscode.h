@@ -5,16 +5,6 @@
 #include "util_log.h"
 
 namespace dxvk {
-    inline void Enter(const std::string& logMessage) {
-        log::info(str::format(logMessage, ": Enter"));
-    }
-
-    inline void Enter(const std::string& logMessage, bool omit) {
-        if (!omit) {
-            log::info(str::format(logMessage, ": Enter"));
-        }
-    }
-
     inline NvAPI_Status Ok() {
         return NVAPI_OK;
     }
@@ -25,7 +15,7 @@ namespace dxvk {
     }
 
     inline NvAPI_Status Ok(const std::string& logMessage, bool& alreadyLogged) {
-        if (!std::exchange(alreadyLogged, true))
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
             log::info(str::format("<-", logMessage, ": OK"));
 
         return NVAPI_OK;
@@ -41,7 +31,7 @@ namespace dxvk {
     }
 
     inline NvAPI_Status Error(const std::string& logMessage, bool& alreadyLogged) {
-        if (!std::exchange(alreadyLogged, true))
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
             log::info(str::format("<-", logMessage, ": Error"));
 
         return NVAPI_ERROR;
@@ -57,7 +47,7 @@ namespace dxvk {
     }
 
     inline NvAPI_Status NoImplementation(const std::string& logMessage, bool& alreadyLogged) {
-        if (!std::exchange(alreadyLogged, true))
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
             log::info(str::format("<-", logMessage, ": No implementation"));
 
         return NVAPI_NO_IMPLEMENTATION;
@@ -104,7 +94,7 @@ namespace dxvk {
     }
 
     inline NvAPI_Status HandleInvalidated(const std::string& logMessage, bool& alreadyLogged) {
-        if (!std::exchange(alreadyLogged, true))
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
             log::info(str::format("<-", logMessage, ": Handle invalidated"));
 
         return NVAPI_HANDLE_INVALIDATED;
@@ -121,7 +111,7 @@ namespace dxvk {
     }
 
     inline NvAPI_Status NotSupported(const std::string& logMessage, bool& alreadyLogged) {
-        if (!std::exchange(alreadyLogged, true))
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
             log::info(str::format("<-", logMessage, ": Not supported"));
 
         return NVAPI_NOT_SUPPORTED;

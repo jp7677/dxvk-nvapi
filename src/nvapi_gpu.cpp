@@ -10,7 +10,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetConnectedDisplayIds(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_DISPLAYIDS* pDisplayIds, NvU32* pDisplayIdCount, NvU32 flags) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pDisplayIds), log::fmt::ptr(pDisplayIdCount), log::fmt::flags(flags));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -60,7 +61,8 @@ extern "C" {
         thread_local bool alreadyLoggedHandleInvalidated = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pWidth));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -101,7 +103,8 @@ extern "C" {
         thread_local bool alreadyLoggedHandleInvalidated = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pIRQ));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -142,7 +145,8 @@ extern "C" {
         thread_local bool alreadyLoggedHandleInvalidated = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pCount));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -183,7 +187,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetGPUType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_TYPE* pGpuType) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pGpuType));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -203,7 +208,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetSystemType(NvPhysicalGpuHandle hPhysicalGpu, NV_SYSTEM_TYPE* pSystemType) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pSystemType));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -219,7 +225,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetPCIIdentifiers(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pDeviceId, NvU32* pSubSystemId, NvU32* pRevisionId, NvU32* pExtDeviceId) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pDeviceId), log::fmt::ptr(pSubSystemId), log::fmt::ptr(pRevisionId), log::fmt::ptr(pExtDeviceId));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -242,7 +249,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetFullName(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szName) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(szName));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -262,7 +270,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetBusId(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pBusId) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pBusId));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -282,7 +291,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetBusSlotId(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pBusSlotId) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pBusSlotId));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -305,7 +315,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetBusType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_BUS_TYPE* pBusType) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pBusType));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -337,7 +348,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetPhysicalFrameBufferSize(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pSize) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pSize));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -357,7 +369,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetVirtualFrameBufferSize(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pSize) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pSize));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -377,7 +390,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetAdapterIdFromPhysicalGpu(NvPhysicalGpuHandle hPhysicalGpu, void* pOSAdapterId) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pOSAdapterId));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -401,7 +415,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetLogicalGpuInfo(NvLogicalGpuHandle hLogicalGpu, NV_LOGICAL_GPU_DATA* pLogicalGpuData) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hLogicalGpu), log::fmt::ptr(pLogicalGpuData));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -436,7 +451,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetArchInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_ARCH_INFO* pGpuArchInfo) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pGpuArchInfo));
 
         auto returnAddress = _ReturnAddress();
 
@@ -516,7 +532,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_CudaEnumComputeCapableGpus(NV_COMPUTE_GPU_TOPOLOGY* pComputeTopo) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pComputeTopo));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -559,7 +576,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetGPUInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_INFO* pGpuInfo) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pGpuInfo));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -600,7 +618,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetVbiosVersionString(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szBiosRevision) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(szBiosRevision));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -641,7 +660,8 @@ extern "C" {
         thread_local bool alreadyLoggedHandleInvalidated = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pDynamicPstatesInfoEx));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -738,7 +758,8 @@ extern "C" {
         thread_local bool alreadyLoggedHandleInvalidated = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), sensorIndex, log::fmt::ptr(pThermalSettings));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -893,7 +914,8 @@ extern "C" {
         thread_local bool alreadyLoggedHandleInvalidated = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pCurrentPstate));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -938,7 +960,8 @@ extern "C" {
         thread_local bool alreadyLoggedHandleInvalidated = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedNotSupported || alreadyLoggedNoNvml || alreadyLoggedHandleInvalidated || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pClkFreqs));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -1074,7 +1097,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GPU_GetPstates20(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_PERF_PSTATES20_INFO* pPstatesInfo) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pPstatesInfo));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);

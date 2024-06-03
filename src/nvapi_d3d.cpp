@@ -11,7 +11,8 @@ extern "C" {
         constexpr auto n = __func__;
         thread_local bool alreadyLogged = false;
 
-        Enter(n, alreadyLogged);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pResource), log::fmt::ptr(pHandle));
 
         if (pResource == nullptr || pHandle == nullptr)
             return InvalidArgument(n);
@@ -26,7 +27,9 @@ extern "C" {
         constexpr auto n = __func__;
         thread_local bool alreadyLogged = false;
 
-        Enter(n, alreadyLogged);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDev), log::fmt::hnd(obj), dwHintCategory, dwHintName, log::fmt::ptr(pdwHintValue));
+
         return NoImplementation(n, alreadyLogged);
     }
 
@@ -34,7 +37,9 @@ extern "C" {
         constexpr auto n = __func__;
         thread_local bool alreadyLogged = false;
 
-        Enter(n, alreadyLogged);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDeviceOrContext), log::fmt::hnd(obj), log::fmt::flags(Flags));
+
         // Synchronisation hints for SLI...
         return Ok(n, alreadyLogged);
     }
@@ -43,7 +48,9 @@ extern "C" {
         constexpr auto n = __func__;
         thread_local bool alreadyLogged = false;
 
-        Enter(n, alreadyLogged);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDeviceOrContext), log::fmt::hnd(obj), log::fmt::flags(Flags));
+
         return Ok(n, alreadyLogged);
     }
 
@@ -51,7 +58,8 @@ extern "C" {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pSliState));
 
         if (pDevice == nullptr || pSliState == nullptr)
             return InvalidArgument(n);
@@ -88,7 +96,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D_ImplicitSLIControl(IMPLICIT_SLI_CONTROL implicitSLIControl) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, implicitSLIControl);
 
         if (implicitSLIControl == ENABLE_IMPLICIT_SLI)
             return Error(n); // No SLI with this implementation
@@ -100,7 +109,8 @@ extern "C" {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), structVersion, log::fmt::ptr(pGraphicsCaps));
 
         if (pGraphicsCaps == nullptr)
             return InvalidArgument(n);
@@ -137,7 +147,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedNoReflex || alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -160,14 +171,11 @@ extern "C" {
         thread_local bool alreadyLoggedNoReflex = false;
         thread_local bool alreadyLoggedError = false;
 
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pSetSleepModeParams));
+
         static bool lastLowLatencyMode = false;
         static uint32_t lastMinimumIntervalUs = UINT32_MAX;
-
-        if (pSetSleepModeParams != nullptr
-            && (lastLowLatencyMode != pSetSleepModeParams->bLowLatencyMode || lastMinimumIntervalUs != pSetSleepModeParams->minimumIntervalUs))
-            Enter(n);
-        else
-            Enter(n, alreadyLoggedOk || alreadyLoggedNoReflex || alreadyLoggedError);
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -197,7 +205,8 @@ extern "C" {
         thread_local bool alreadyLoggedNoReflex = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedNoReflex || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pGetSleepStatusParams));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -222,7 +231,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedNoImpl || alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDev), log::fmt::ptr(pGetLatencyParams));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -248,7 +258,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedNoImpl || alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDev), log::fmt::ptr(pSetLatencyMarkerParams));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);

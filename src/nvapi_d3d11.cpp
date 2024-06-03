@@ -11,7 +11,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D11_CreateDevice(IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverType, HMODULE Software, UINT Flags, CONST D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, ID3D11Device** ppDevice, D3D_FEATURE_LEVEL* pFeatureLevel, ID3D11DeviceContext** ppImmediateContext, NVAPI_DEVICE_FEATURE_LEVEL* pSupportedLevel) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pAdapter), DriverType, Software, log::fmt::flags(Flags), log::fmt::ptr(pFeatureLevels), FeatureLevels, SDKVersion, log::fmt::ptr(ppDevice), log::fmt::ptr(pFeatureLevel), log::fmt::ptr(ppImmediateContext), log::fmt::ptr(pSupportedLevel));
 
         if (pSupportedLevel == nullptr)
             return InvalidArgument(n);
@@ -27,7 +28,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D11_CreateDeviceAndSwapChain(IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverType, HMODULE Software, UINT Flags, CONST D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, CONST DXGI_SWAP_CHAIN_DESC* pSwapChainDesc, IDXGISwapChain** ppSwapChain, ID3D11Device** ppDevice, D3D_FEATURE_LEVEL* pFeatureLevel, ID3D11DeviceContext** ppImmediateContext, NVAPI_DEVICE_FEATURE_LEVEL* pSupportedLevel) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pAdapter), DriverType, Software, log::fmt::flags(Flags), log::fmt::ptr(pFeatureLevels), FeatureLevels, SDKVersion, log::fmt::ptr(pSwapChainDesc), log::fmt::ptr(ppSwapChain), log::fmt::ptr(ppDevice), log::fmt::ptr(pFeatureLevel), log::fmt::ptr(ppImmediateContext), log::fmt::ptr(pSupportedLevel));
 
         if (pSupportedLevel == nullptr)
             return InvalidArgument(n);
@@ -43,7 +45,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(IUnknown* pDeviceOrContext, NvU32 code, bool* supported) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDeviceOrContext), code, log::fmt::ptr(supported));
 
         if (pDeviceOrContext == nullptr || supported == nullptr)
             return InvalidArgument(n);
@@ -57,7 +60,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D11_MultiGPU_GetCaps(PNV_MULTIGPU_CAPS pMultiGPUCaps) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pMultiGPUCaps));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -92,7 +96,9 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D11_MultiGPU_Init(bool bEnable) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, bEnable);
+
         // Just acknowledge the request since there is nothing to do here
         return Ok(n);
     }
@@ -102,7 +108,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDeviceOrContext), bEnable, log::fmt::flt(fMinDepth), log::fmt::flt(fMaxDepth));
 
         if (pDeviceOrContext == nullptr)
             return InvalidArgument(n);
@@ -118,7 +125,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDeviceOrContext));
 
         if (pDeviceOrContext == nullptr)
             return InvalidArgument(n);
@@ -134,7 +142,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDeviceOrContext));
 
         if (pDeviceOrContext == nullptr)
             return InvalidArgument(n);
@@ -150,7 +159,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevContext11), drawCount, log::fmt::ptr(pBuffer), alignedByteOffsetForArgs, alignedByteStrideForArgs);
 
         if (pDevContext11 == nullptr || pBuffer == nullptr)
             return InvalidArgument(n);
@@ -166,7 +176,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevContext11), drawCount, log::fmt::ptr(pBuffer), alignedByteOffsetForArgs, alignedByteStrideForArgs);
 
         if (pDevContext11 == nullptr || pBuffer == nullptr)
             return InvalidArgument(n);
@@ -182,7 +193,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pCubin), size, blockX, blockY, blockZ, log::fmt::ptr(phShader));
 
         if (pDevice == nullptr || pCubin == nullptr || phShader == nullptr)
             return InvalidArgument(n);
@@ -198,7 +210,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pCubin), size, blockX, blockY, blockZ, log::fmt::ptr(pShaderName), log::fmt::ptr(phShader));
 
         if (pDevice == nullptr || pCubin == nullptr || pShaderName == nullptr || phShader == nullptr)
             return InvalidArgument(n);
@@ -214,7 +227,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDeviceContext), log::fmt::hnd(hShader), gridX, gridY, gridZ, log::fmt::ptr(pParams), paramSize, log::fmt::ptr(pReadResources), numReadResources, log::fmt::ptr(pWriteResources), numWriteResources);
 
         if (pDeviceContext == nullptr)
             return InvalidArgument(n);
@@ -230,7 +244,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::hnd(hShader));
 
         if (pDevice == nullptr)
             return InvalidArgument(n);
@@ -245,7 +260,8 @@ extern "C" {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pSupported));
 
         if (pDevice == nullptr || pSupported == nullptr)
             return InvalidArgument(n);
@@ -260,7 +276,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pResource), log::fmt::ptr(pDesc), log::fmt::ptr(ppUAV), log::fmt::ptr(pDriverHandle));
 
         if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr || ppUAV == nullptr || pDriverHandle == nullptr)
             return InvalidArgument(n);
@@ -276,7 +293,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pResource), log::fmt::ptr(pDesc), log::fmt::ptr(ppSRV), log::fmt::ptr(pDriverHandle));
 
         if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr || ppSRV == nullptr || pDriverHandle == nullptr)
             return InvalidArgument(n);
@@ -292,7 +310,8 @@ extern "C" {
         thread_local bool alreadyLoggedOk = false;
         thread_local bool alreadyLoggedError = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pResource), log::fmt::ptr(phObject));
 
         if (pDevice == nullptr || pResource == nullptr || phObject == nullptr)
             return InvalidArgument(n);
@@ -308,7 +327,8 @@ extern "C" {
         thread_local bool alreadyLoggedOk = false;
         thread_local bool alreadyLoggedError = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::hnd(hResource), log::fmt::ptr(pGpuVA));
 
         if (pDevice == nullptr || hResource == NVDX_OBJECT_NONE || pGpuVA == nullptr)
             return InvalidArgument(n);
@@ -325,7 +345,8 @@ extern "C" {
         thread_local bool alreadyLoggedOk = false;
         thread_local bool alreadyLoggedError = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
 
         if (pDevice == nullptr || pParams == nullptr)
             return InvalidArgument(n);
@@ -347,7 +368,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pSamplerDesc), log::fmt::ptr(ppSamplerState), log::fmt::ptr(pDriverHandle));
 
         if (pDevice == nullptr || pSamplerDesc == nullptr || ppSamplerState == nullptr || pDriverHandle == nullptr)
             return InvalidArgument(n);
@@ -363,7 +385,8 @@ extern "C" {
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
-        Enter(n, alreadyLoggedError || alreadyLoggedOk);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), srvDriverHandle, samplerDriverHandle, log::fmt::ptr(pCudaTextureHandle));
 
         if (pDevice == nullptr || pCudaTextureHandle == nullptr)
             return InvalidArgument(n);

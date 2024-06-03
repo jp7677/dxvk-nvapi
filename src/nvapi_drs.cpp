@@ -12,7 +12,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DRS_CreateSession(NvDRSSessionHandle* phSession) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(phSession));
 
         if (phSession == nullptr)
             return InvalidArgument(n);
@@ -25,28 +26,35 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DRS_LoadSettings(NvDRSSessionHandle hSession) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hSession));
+
         return Ok(n);
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_FindProfileByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString profileName, NvDRSProfileHandle* phProfile) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(profileName), log::fmt::ptr(phProfile));
+
         return ProfileNotFound(str::format(n, " (", str::fromnvus(profileName), ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_FindApplicationByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString appName, NvDRSProfileHandle* phProfile, NVDRS_APPLICATION* pApplication) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(appName), log::fmt::ptr(phProfile), log::fmt::ptr(pApplication));
+
         return ExecutableNotFound(str::format(n, " (", str::fromnvus(appName), ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(phProfile));
 
         if (phProfile == nullptr)
             return InvalidArgument(n);
@@ -59,7 +67,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DRS_GetCurrentGlobalProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(phProfile));
 
         if (phProfile == nullptr)
             return InvalidArgument(n);
@@ -72,7 +81,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), settingId, log::fmt::ptr(pSetting));
 
         auto id = str::format("0x", std::hex, settingId);
         auto name = std::string("Unknown");
@@ -97,7 +107,9 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DRS_DestroySession(NvDRSSessionHandle hSession) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hSession));
+
         return Ok(n);
     }
 }

@@ -15,7 +15,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_EnumLogicalGPUs(NvLogicalGpuHandle nvGPUHandle[NVAPI_MAX_LOGICAL_GPUS], NvU32* pGpuCount) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(nvGPUHandle), log::fmt::ptr(pGpuCount));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -34,7 +35,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_EnumPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32* pGpuCount) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(nvGPUHandle), log::fmt::ptr(pGpuCount));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -53,7 +55,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_EnumTCCPhysicalGPUs(NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32* pGpuCount) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(nvGPUHandle), log::fmt::ptr(pGpuCount));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -73,7 +76,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GetGPUIDfromPhysicalGPU(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pGpuId) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pGpuId));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -94,7 +98,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GetPhysicalGPUFromGPUID(NvU32 gpuId, NvPhysicalGpuHandle* hPhysicalGpu) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, gpuId, log::fmt::ptr(hPhysicalGpu));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -118,7 +123,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GetDisplayDriverVersion(NvDisplayHandle hNvDisplay, NV_DISPLAY_DRIVER_VERSION* pVersion) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hNvDisplay), log::fmt::ptr(pVersion));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -142,7 +148,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GetLogicalGPUFromPhysicalGPU(NvPhysicalGpuHandle hPhysicalGPU, NvLogicalGpuHandle* pLogicalGPU) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGPU), log::fmt::ptr(pLogicalGPU));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -162,7 +169,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GetLogicalGPUFromDisplay(NvDisplayHandle hNvDisp, NvLogicalGpuHandle* pLogicalGPU) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hNvDisp), log::fmt::ptr(pLogicalGPU));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -182,7 +190,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GetPhysicalGPUsFromLogicalGPU(NvLogicalGpuHandle hLogicalGPU, NvPhysicalGpuHandle hPhysicalGPU[NVAPI_MAX_PHYSICAL_GPUS], NvU32* pGpuCount) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hLogicalGPU), log::fmt::ptr(hPhysicalGPU), log::fmt::ptr(pGpuCount));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -203,7 +212,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GetPhysicalGPUsFromDisplay(NvDisplayHandle hNvDisp, NvPhysicalGpuHandle nvGPUHandle[NVAPI_MAX_PHYSICAL_GPUS], NvU32* pGpuCount) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hNvDisp), log::fmt::ptr(nvGPUHandle), log::fmt::ptr(pGpuCount));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -224,7 +234,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_EnumNvidiaDisplayHandle(NvU32 thisEnum, NvDisplayHandle* pNvDispHandle) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, thisEnum, log::fmt::ptr(pNvDispHandle));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -244,7 +255,9 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_EnumNvidiaUnAttachedDisplayHandle(NvU32 thisEnum, NvUnAttachedDisplayHandle* pNvUnAttachedDispHandle) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, thisEnum, log::fmt::ptr(pNvUnAttachedDispHandle));
+
         // DXVK does not know about unattached displays
         return EndEnumeration(str::format(n, " (", thisEnum, ")"));
     }
@@ -252,7 +265,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GetAssociatedNvidiaDisplayName(NvDisplayHandle NvDispHandle, NvAPI_ShortString szDisplayName) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(NvDispHandle), log::fmt::ptr(szDisplayName));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -272,7 +286,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GetAssociatedNvidiaDisplayHandle(const char* szDisplayName, NvDisplayHandle* pNvDispHandle) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(szDisplayName), log::fmt::ptr(pNvDispHandle));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
@@ -292,7 +307,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GetInterfaceVersionString(NvAPI_ShortString szDesc) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(szDesc));
 
         if (szDesc == nullptr)
             return InvalidArgument(n);
@@ -305,7 +321,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_GetErrorMessage(NvAPI_Status nr, NvAPI_ShortString szDesc) {
         constexpr auto n = __func__;
 
-        Enter(n);
+        if (log::tracing())
+            log::trace(n, nr, log::fmt::ptr(szDesc));
 
         if (szDesc == nullptr)
             return InvalidArgument(n);
