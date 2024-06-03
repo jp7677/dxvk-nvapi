@@ -55,18 +55,18 @@ namespace dxvk::log {
         log::write("info", message);
     }
 
-    inline void trace1(std::stringstream&) {}
+    inline void append(std::stringstream&) {}
 
     template <typename T, typename... Tx>
-    void trace1(std::stringstream& str, const T& arg, const Tx&... args) {
+    void append(std::stringstream& str, const T& arg, const Tx&... args) {
         str << arg << ", ";
-        trace1(str, args...);
+        append(str, args...);
     }
 
     template <typename... Args>
     void trace(const std::string& name, const Args&... args) {
         std::stringstream stream;
-        trace1(stream, args...);
+        append(stream, args...);
         auto str = stream.str();
         if (str.ends_with(", "))
             str.erase(str.length() - 2);
