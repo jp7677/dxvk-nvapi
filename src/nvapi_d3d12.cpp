@@ -485,7 +485,7 @@ extern "C" {
         thread_local bool alreadyLoggedOk = false;
 
         if (log::tracing())
-            log::trace(n, log::fmt::ptr(pCommandQueue), log::fmt::ptr(pSetLatencyMarkerParams));
+            log::trace(n, log::fmt::ptr(pCommandQueue), log::fmt::nv_latency_marker_params(pSetLatencyMarkerParams));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);

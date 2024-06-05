@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../nvapi_private.h"
+#include "util_string.h"
 
 namespace dxvk {
     inline std::string fromCode(const uint32_t code) {
@@ -54,6 +55,6 @@ namespace dxvk {
             {92, "NV_EXTN_OP_RT_MICRO_VERTEX_BARYCENTRICS"}};
 
         auto it = codes.find(code);
-        return it != codes.end() ? it->second : "UNKNOWN_EXTN_OP";
+        return it != codes.end() ? it->second : str::format("UNKNOWN_EXTN_OP/", code);
     }
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../nvapi_private.h"
+#include "util_latency_marker_code.h"
 #include "util_string.h"
 
 namespace dxvk::log {
@@ -40,6 +41,13 @@ namespace dxvk::log {
                 return "0x0";
 
             return str::format("flags=0x", std::setfill('0'), std::setw(4), std::hex, h);
+        }
+
+        inline std::string nv_latency_marker_params(NV_LATENCY_MARKER_PARAMS* p) {
+            if (p == nullptr)
+                return "nullptr";
+
+            return str::format("{version=", p->version, ",frameID=", p->frameID, ",markerType=", fromLatencyMarkerType(p->markerType), ",rsvd}");
         }
 
         inline std::string d3d12_cpu_descriptor_handle(D3D12_CPU_DESCRIPTOR_HANDLE h) {

@@ -16,6 +16,12 @@ TEST_CASE("Log", "[.util]") {
     REQUIRE(dxvk::log::fmt::flt(0.45) == std::string("0.45"));
     REQUIRE(dxvk::log::fmt::flags(28) == std::string("flags=0x001c"));
 
+    NV_LATENCY_MARKER_PARAMS type{};
+    type.version = NV_LATENCY_MARKER_PARAMS_VER1;
+    type.frameID = 65;
+    type.markerType = PC_LATENCY_PING;
+    REQUIRE(dxvk::log::fmt::nv_latency_marker_params(&type) == std::string("{version=65624,frameID=65,markerType=PC_LATENCY_PING,rsvd}"));
+
     D3D12_CPU_DESCRIPTOR_HANDLE handle{};
     auto ptr = dxvk::str::format(std::hex, handle.ptr);
     REQUIRE(dxvk::log::fmt::d3d12_cpu_descriptor_handle(handle) == dxvk::str::format("{ptr=", dxvk::log::fmt::hex_prefix, ptr, "}"));
