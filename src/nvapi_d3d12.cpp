@@ -31,7 +31,12 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pNumMetaCommands), log::fmt::ptr(pDescs));
 
-        return NotSupported(n);
+        if (pDevice == nullptr || pNumMetaCommands == nullptr)
+            return InvalidArgument(n);
+
+        *pNumMetaCommands = 0; // No meta commands with this implementation
+
+        return Ok(n);
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderEx(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader) {
