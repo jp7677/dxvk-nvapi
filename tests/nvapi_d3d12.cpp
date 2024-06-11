@@ -803,6 +803,10 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
         auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
 
+        ALLOW_CALL(commandQueue, GetDevice(__uuidof(ID3DLowLatencyDevice), _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<ID3DLowLatencyDevice*>(&lowLatencyDevice))
+            .LR_SIDE_EFFECT(lowLatencyDeviceRefCount++)
+            .RETURN(S_OK);
         ALLOW_CALL(device, QueryInterface(__uuidof(ID3DLowLatencyDevice), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<ID3DLowLatencyDevice*>(&lowLatencyDevice))
             .LR_SIDE_EFFECT(lowLatencyDeviceRefCount++)
