@@ -471,11 +471,7 @@ extern "C" {
         if (pCommandQueue == nullptr)
             return InvalidPointer(n);
 
-        ID3D12Device* pDevice;
-        if (FAILED(pCommandQueue->GetDevice(IID_PPV_ARGS(&pDevice))))
-            return InvalidArgument(n);
-
-        if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDevice))
+        if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pCommandQueue))
             return NoImplementation(n);
 
         if (!NvapiD3d12Device::NotifyOutOfBandCommandQueue(pCommandQueue, static_cast<D3D12_OUT_OF_BAND_CQ_TYPE>(cqType)))
@@ -501,14 +497,10 @@ extern "C" {
         if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
             return IncompatibleStructVersion(n);
 
-        ID3D12Device* pDevice;
-        if (FAILED(pCommandQueue->GetDevice(IID_PPV_ARGS(&pDevice))))
-            return InvalidArgument(n);
-
-        if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDevice))
+        if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pCommandQueue))
             return NoImplementation(n);
 
-        if (!NvapiD3dLowLatencyDevice::SetLatencyMarker(pDevice, pSetLatencyMarkerParams->frameID, pSetLatencyMarkerParams->markerType))
+        if (!NvapiD3dLowLatencyDevice::SetLatencyMarker(pCommandQueue, pSetLatencyMarkerParams->frameID, pSetLatencyMarkerParams->markerType))
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);

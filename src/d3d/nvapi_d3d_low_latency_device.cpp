@@ -48,6 +48,14 @@ namespace dxvk {
         return d3dLowLatencyDevice->SupportsLowLatency();
     }
 
+    bool NvapiD3dLowLatencyDevice::SupportsLowLatency(ID3D12CommandQueue* commandQueue) {
+        auto d3dLowLatencyDevice = GetLowLatencyDevice(commandQueue);
+        if (d3dLowLatencyDevice == nullptr)
+            return false;
+
+        return d3dLowLatencyDevice->SupportsLowLatency();
+    }
+
     bool NvapiD3dLowLatencyDevice::LatencySleep(IUnknown* device) {
         auto d3dLowLatencyDevice = GetLowLatencyDevice(device);
         if (d3dLowLatencyDevice == nullptr)
@@ -93,6 +101,15 @@ namespace dxvk {
             GetFrameIdGenerator(d3dLowLatencyDevice.ptr())->GetLowLatencyDeviceFrameId(frameID), markerType));
     }
 
+    bool NvapiD3dLowLatencyDevice::SetLatencyMarker(ID3D12CommandQueue* commandQueue, uint64_t frameID, uint32_t markerType) {
+        auto d3dLowLatencyDevice = GetLowLatencyDevice(commandQueue);
+        if (d3dLowLatencyDevice == nullptr)
+            return false;
+
+        return SUCCEEDED(d3dLowLatencyDevice->SetLatencyMarker(
+            GetFrameIdGenerator(d3dLowLatencyDevice.ptr())->GetLowLatencyDeviceFrameId(frameID), markerType));
+    }
+
     void NvapiD3dLowLatencyDevice::ClearCacheMaps() {
         std::scoped_lock lock(m_lowLatencyDeviceMutex, m_lowLatencyFrameIdGeneratorMutex);
 
@@ -114,6 +131,26 @@ namespace dxvk {
             return nullptr;
 
         m_lowLatencyDeviceMap.emplace(device, d3dLowLatencyDevice.ptr());
+
+        return d3dLowLatencyDevice;
+    }
+
+    Com<ID3DLowLatencyDevice> NvapiD3dLowLatencyDevice::GetLowLatencyDevice(ID3D12CommandQueue* commandQueue) {
+        if (commandQueue == nullptr)
+            return nullptr;
+
+        auto unknown = static_cast<IUnknown*>(commandQueue);
+
+        std::scoped_lock lock(m_lowLatencyDeviceMutex);
+        auto it = m_lowLatencyDeviceMap.find(unknown);
+        if (it != m_lowLatencyDeviceMap.end())
+            return it->second;
+
+        Com<ID3DLowLatencyDevice> d3dLowLatencyDevice;
+        if (FAILED(commandQueue->GetDevice(IID_PPV_ARGS(&d3dLowLatencyDevice))))
+            return nullptr;
+
+        m_lowLatencyDeviceMap.emplace(unknown, d3dLowLatencyDevice.ptr());
 
         return d3dLowLatencyDevice;
     }

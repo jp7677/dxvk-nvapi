@@ -26,10 +26,12 @@ namespace dxvk {
     class NvapiD3dLowLatencyDevice {
       public:
         static bool SupportsLowLatency(IUnknown* device);
+        static bool SupportsLowLatency(ID3D12CommandQueue* commandQueue);
         static bool LatencySleep(IUnknown* device);
         static bool SetLatencySleepMode(IUnknown* device, bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs);
         static bool GetLatencyInfo(IUnknown* device, D3D_LATENCY_RESULTS* latencyResults);
         static bool SetLatencyMarker(IUnknown* device, uint64_t frameID, uint32_t markerType);
+        static bool SetLatencyMarker(ID3D12CommandQueue* commandQueue, uint64_t frameID, uint32_t markerType);
 
         static void ClearCacheMaps();
 
@@ -41,6 +43,7 @@ namespace dxvk {
         inline static std::mutex m_lowLatencyFrameIdGeneratorMutex;
 
         [[nodiscard]] static Com<ID3DLowLatencyDevice> GetLowLatencyDevice(IUnknown* device);
+        [[nodiscard]] static Com<ID3DLowLatencyDevice> GetLowLatencyDevice(ID3D12CommandQueue* commandQueue);
         [[nodiscard]] static LowLatencyFrameIdGenerator* GetFrameIdGenerator(ID3DLowLatencyDevice* device);
     };
 }
