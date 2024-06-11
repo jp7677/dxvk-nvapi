@@ -82,6 +82,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .RETURN(commandQueueRefCount);
     ALLOW_CALL(commandQueue, GetDevice(__uuidof(ID3D12Device), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12Device*>(&device))
+        .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
 
     SECTION("CreateGraphicsPipelineState for other than SetDepthBounds returns not-supported") {
@@ -912,5 +913,9 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(nullptr, &params) == NVAPI_INVALID_POINTER);
             }
         }
+
+        REQUIRE(deviceRefCount == 0);
+        REQUIRE(commandListRefCount == 0);
+        REQUIRE(lowLatencyDeviceRefCount == 0);
     }
 }
