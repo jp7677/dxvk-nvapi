@@ -35,12 +35,12 @@ namespace dxvk {
 
       private:
         inline static std::unordered_map<IUnknown*, ID3DLowLatencyDevice*> m_lowLatencyDeviceMap;
-        inline static std::unordered_map<IUnknown*, std::unique_ptr<LowLatencyFrameIdGenerator>> m_frameIdGeneratorMap;
+        inline static std::unordered_map<ID3DLowLatencyDevice*, std::unique_ptr<LowLatencyFrameIdGenerator>> m_frameIdGeneratorMap;
 
         inline static std::mutex m_lowLatencyDeviceMutex;
         inline static std::mutex m_lowLatencyFrameIdGeneratorMutex;
 
         [[nodiscard]] static Com<ID3DLowLatencyDevice> GetLowLatencyDevice(IUnknown* device);
-        [[nodiscard]] static LowLatencyFrameIdGenerator* GetFrameIdGenerator(IUnknown* device);
+        [[nodiscard]] static LowLatencyFrameIdGenerator* GetFrameIdGenerator(ID3DLowLatencyDevice* device);
     };
 }

@@ -72,7 +72,7 @@ namespace dxvk {
         if (FAILED(d3dLowLatencyDevice->GetLatencyInfo(latencyResults)))
             return false;
 
-        auto frameIdGenerator = GetFrameIdGenerator(device);
+        auto frameIdGenerator = GetFrameIdGenerator(d3dLowLatencyDevice.ptr());
         for (auto& frameReport : latencyResults->frame_reports) {
             frameReport.frameID = frameIdGenerator->GetApplicationFrameId(frameReport.frameID);
             if (!frameReport.frameID) {
@@ -90,7 +90,7 @@ namespace dxvk {
             return false;
 
         return SUCCEEDED(d3dLowLatencyDevice->SetLatencyMarker(
-            GetFrameIdGenerator(device)->GetLowLatencyDeviceFrameId(frameID), markerType));
+            GetFrameIdGenerator(d3dLowLatencyDevice.ptr())->GetLowLatencyDeviceFrameId(frameID), markerType));
     }
 
     void NvapiD3dLowLatencyDevice::ClearCacheMaps() {
@@ -118,7 +118,7 @@ namespace dxvk {
         return d3dLowLatencyDevice;
     }
 
-    LowLatencyFrameIdGenerator* NvapiD3dLowLatencyDevice::GetFrameIdGenerator(IUnknown* device) {
+    LowLatencyFrameIdGenerator* NvapiD3dLowLatencyDevice::GetFrameIdGenerator(ID3DLowLatencyDevice* device) {
         std::scoped_lock lock(m_lowLatencyFrameIdGeneratorMutex);
         auto it = m_frameIdGeneratorMap.find(device);
         if (it != m_frameIdGeneratorMap.end())
