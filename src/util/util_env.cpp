@@ -181,4 +181,47 @@ namespace dxvk::env {
 
         return false;
     }
+
+    std::optional<NV_GPU_ARCHITECTURE_ID> getGpuArchitectureOverride() {
+        constexpr auto gpuArchEnvName = "DXVK_NVAPI_GPU_ARCH";
+        NV_GPU_ARCHITECTURE_ID override{};
+
+        if (auto overrideStr = env::getEnvVariable(gpuArchEnvName); !overrideStr.empty()) {
+            std::for_each(overrideStr.begin(), overrideStr.end(), [](char& c) { c = std::toupper(c, std::locale::classic()); });
+
+#define CHECK_ARCH(arch)      \
+    if (overrideStr == #arch) \
+        override = NV_GPU_ARCHITECTURE_##arch;
+            CHECK_ARCH(GK100)
+            CHECK_ARCH(GM200)
+            CHECK_ARCH(GP100)
+            CHECK_ARCH(GV100)
+            CHECK_ARCH(TU100)
+            CHECK_ARCH(GA100)
+            CHECK_ARCH(AD100)
+#undef CHECK_ARCH
+
+            if (override) {
+                log::info(str::format("GPU Architecture overriden to ", overrideStr, " via ", gpuArchEnvName, ", this will take precedence"));
+                return override;
+            } else {
+                log::info(str::format(gpuArchEnvName, " was set to unrecognized value ", overrideStr, " and will be ignored"));
+            }
+        }
+
+        return {};
+    }
+
+    std::optional<NV_GPU_ARCHITECTURE_ID> needsGpuArchitectureSpoofing(NV_GPU_ARCHITECTURE_ID architectureId, void* returnAddress) {
+        if (auto override = getGpuArchitectureOverride(); override.has_value())
+            return override;
+
+        if (env::needsAmpereSpoofing(architectureId, returnAddress))
+            architectureId = NV_GPU_ARCHITECTURE_GA100;
+
+        if (env::needsPascalSpoofing(architectureId))
+            architectureId = NV_GPU_ARCHITECTURE_GP100;
+
+        return architectureId;
+    }
 }

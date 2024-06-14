@@ -223,7 +223,7 @@ namespace dxvk {
     NV_GPU_ARCHITECTURE_ID NvapiAdapter::GetArchitectureId() const {
         if (!this->HasNvProprietaryDriver() && !this->HasNvkDriver()) {
             // DXVK_NVAPI_ALLOW_OTHER_DRIVERS must be set, otherwise this would be unreachable
-            log::info(str::format(allowOtherDriversEnvName, " is set, spoofing Pascal for GPU with non-NVIDIA proprietary driver"));
+            log::info(str::format(allowOtherDriversEnvName, " is set, using Pascal architecture for non-NVIDIA GPUs by default"));
             return NV_GPU_ARCHITECTURE_GP100;
         }
 
