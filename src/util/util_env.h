@@ -9,9 +9,7 @@ namespace dxvk::env {
 
     std::string getCurrentDateTime();
 
-    bool needsAmpereSpoofing(NV_GPU_ARCHITECTURE_ID architectureId, void* pReturnAddress);
-
-    bool needsPascalSpoofing(NV_GPU_ARCHITECTURE_ID architectureId);
-
     bool needsSucceededGpuQuery();
+
+    std::optional<NV_GPU_ARCHITECTURE_ID> needsGpuArchitectureSpoofing(NV_GPU_ARCHITECTURE_ID architectureId, void* returnAddress);
 }

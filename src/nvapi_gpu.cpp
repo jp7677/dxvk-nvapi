@@ -470,12 +470,7 @@ extern "C" {
             return IncompatibleStructVersion(n);
 
         auto architectureId = adapter->GetArchitectureId();
-
-        if (env::needsAmpereSpoofing(architectureId, returnAddress))
-            architectureId = NV_GPU_ARCHITECTURE_GA100;
-
-        if (env::needsPascalSpoofing(architectureId))
-            architectureId = NV_GPU_ARCHITECTURE_GP100;
+        architectureId = env::needsGpuArchitectureSpoofing(architectureId, returnAddress).value_or(architectureId);
 
         // Assume the implementation ID from the architecture ID. No simple way
         // to do a more fine-grained query at this time. Would need wine-nvml
