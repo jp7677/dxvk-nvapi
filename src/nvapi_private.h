@@ -1,22 +1,22 @@
 #pragma once
 
+#include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
-#include <iostream>
-#include <iomanip>
-#include <algorithm>
-#include <map>
-#include <set>
-#include <optional>
-#include <sstream>
-#include <fstream>
 #include <ctime>
-#include <mutex>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <map>
 #include <memory>
+#include <mutex>
+#include <optional>
+#include <set>
+#include <sstream>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <array>
 
 #include <dxgi1_6.h>
 #include <d3d11_1.h>
