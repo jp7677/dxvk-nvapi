@@ -89,4 +89,29 @@ extern "C" {
 
         return Ok(n);
     }
+
+    NvAPI_Status __cdecl NvAPI_SYS_GetPhysicalGPUs(NV_PHYSICAL_GPUS* pPhysicalGPUs) {
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pPhysicalGPUs));
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pPhysicalGPUs == nullptr)
+            return InvalidArgument(n);
+
+        if (pPhysicalGPUs->version != NV_PHYSICAL_GPUS_VER1)
+            return IncompatibleStructVersion(n);
+
+        for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++) {
+            pPhysicalGPUs->gpuHandleData[i].hPhysicalGpu = reinterpret_cast<NvPhysicalGpuHandle>(nvapiAdapterRegistry->GetAdapter(i));
+            pPhysicalGPUs->gpuHandleData[i].adapterType = NV_ADAPTER_TYPE_WDDM;
+        }
+
+        pPhysicalGPUs->gpuHandleCount = nvapiAdapterRegistry->GetAdapterCount();
+
+        return Ok(n);
+    }
 }

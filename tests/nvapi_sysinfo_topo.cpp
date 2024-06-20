@@ -347,4 +347,35 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
             REQUIRE(NvAPI_GPU_GetConnectedDisplayIds(gpuHandles[0U], gpu0DisplayIds, &gpu0DisplayIdCount, 0) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
     }
+
+    SECTION("GetPhysicalGPUs succeeds") {
+        SECTION("GetPhysicalGPUs (V1) returns OK") {
+            NvPhysicalGpuHandle handles[NVAPI_MAX_PHYSICAL_BRIDGES]{};
+            NvU32 count;
+            REQUIRE(NvAPI_EnumPhysicalGPUs(handles, &count) == NVAPI_OK);
+
+            NV_PHYSICAL_GPUS gpus{};
+            gpus.version = NV_PHYSICAL_GPUS_VER1;
+            REQUIRE(NvAPI_SYS_GetPhysicalGPUs(&gpus) == NVAPI_OK);
+            REQUIRE(gpus.gpuHandleCount > 0);
+            REQUIRE(gpus.gpuHandleCount == count);
+            for (auto i = 0U; i < count; i++) {
+                REQUIRE(gpus.gpuHandleData[i].hPhysicalGpu == handles[i]);
+                REQUIRE(gpus.gpuHandleData[i].adapterType == NV_ADAPTER_TYPE_WDDM);
+            }
+        }
+
+        SECTION("GetPhysicalGPUs with unknown struct version returns incompatible-struct-version") {
+            NV_PHYSICAL_GPUS gpus;
+            gpus.version = NV_PHYSICAL_GPUS_VER1 + 1;
+            REQUIRE(NvAPI_SYS_GetPhysicalGPUs(&gpus) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetPhysicalGPUs with current struct version returns not incompatible-struct-version") {
+            // This test fails when a header update provides a newer not yet implemented struct version
+            NV_PHYSICAL_GPUS gpus;
+            gpus.version = NV_PHYSICAL_GPUS_VER;
+            REQUIRE(NvAPI_SYS_GetPhysicalGPUs(&gpus) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
 }
