@@ -507,6 +507,8 @@ struct NVAPI_INTERFACE_TABLE nvapi_interface_table[] =
     { "NvAPI_SYS_GetGpuAndOutputIdFromDisplayId", 0x112ba1a5 },
     { "NvAPI_SYS_GetPhysicalGpuFromDisplayId", 0x9ea74659 },
     { "NvAPI_SYS_GetDisplayDriverInfo", 0x721faceb },
+    { "NvAPI_SYS_GetPhysicalGPUs", 0xd3b24d2d },
+    { "NvAPI_SYS_GetLogicalGPUs", 0xccfffc10 },
     { "NvAPI_GPU_ClientRegisterForUtilizationSampleUpdates", 0xadeeaf67 },
 };
 
