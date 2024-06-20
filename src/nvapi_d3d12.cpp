@@ -480,27 +480,27 @@ extern "C" {
         return Ok(n, alreadyLoggedOk);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D12_SetAsyncFrameMarker(ID3D12CommandQueue* pCommandQueue, NV_LATENCY_MARKER_PARAMS* pSetLatencyMarkerParams) {
+    NvAPI_Status __cdecl NvAPI_D3D12_SetAsyncFrameMarker(ID3D12CommandQueue* pCommandQueue, NV_ASYNC_FRAME_MARKER_PARAMS* pSetAsyncFrameMarkerParams) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
         if (log::tracing())
-            log::trace(n, log::fmt::ptr(pCommandQueue), log::fmt::nv_latency_marker_params(pSetLatencyMarkerParams));
+            log::trace(n, log::fmt::ptr(pCommandQueue), log::fmt::nv_async_frame_marker_params(pSetAsyncFrameMarkerParams));
 
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
-        if (pCommandQueue == nullptr || pSetLatencyMarkerParams == nullptr)
+        if (pCommandQueue == nullptr || pSetAsyncFrameMarkerParams == nullptr)
             return InvalidPointer(n);
 
-        if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
+        if (pSetAsyncFrameMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
             return IncompatibleStructVersion(n);
 
         if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pCommandQueue))
             return NoImplementation(n);
 
-        if (!NvapiD3dLowLatencyDevice::SetLatencyMarker(pCommandQueue, pSetLatencyMarkerParams->frameID, pSetLatencyMarkerParams->markerType))
+        if (!NvapiD3dLowLatencyDevice::SetLatencyMarker(pCommandQueue, pSetAsyncFrameMarkerParams->frameID, pSetAsyncFrameMarkerParams->markerType))
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);

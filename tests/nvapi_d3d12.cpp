@@ -860,8 +860,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-                NV_LATENCY_MARKER_PARAMS params{};
-                params.version = NV_LATENCY_MARKER_PARAMS_VER1;
+                NV_ASYNC_FRAME_MARKER_PARAMS params{};
+                params.version = NV_ASYNC_FRAME_MARKER_PARAMS_VER1;
                 params.frameID = 123ULL;
                 params.markerType = OUT_OF_BAND_RENDERSUBMIT_START;
                 REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(&commandQueue, &params) == NVAPI_OK);
@@ -875,8 +875,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-                NV_LATENCY_MARKER_PARAMS params{};
-                params.version = NV_LATENCY_MARKER_PARAMS_VER1;
+                NV_ASYNC_FRAME_MARKER_PARAMS params{};
+                params.version = NV_ASYNC_FRAME_MARKER_PARAMS_VER1;
                 REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(&commandQueue, &params) == NVAPI_NO_IMPLEMENTATION);
             }
 
@@ -885,8 +885,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-                NV_LATENCY_MARKER_PARAMS params{};
-                params.version = NV_LATENCY_MARKER_PARAMS_VER1 + 1;
+                NV_ASYNC_FRAME_MARKER_PARAMS params{};
+                params.version = NV_ASYNC_FRAME_MARKER_PARAMS_VER1 + 1;
                 REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(&commandQueue, &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
             }
 
@@ -898,8 +898,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-                NV_LATENCY_MARKER_PARAMS params{};
-                params.version = NV_LATENCY_MARKER_PARAMS_VER;
+                NV_ASYNC_FRAME_MARKER_PARAMS params{};
+                params.version = NV_ASYNC_FRAME_MARKER_PARAMS_VER;
                 REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(&commandQueue, &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
             }
 
@@ -908,8 +908,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-                NV_LATENCY_MARKER_PARAMS params{};
-                params.version = NV_LATENCY_MARKER_PARAMS_VER;
+                NV_ASYNC_FRAME_MARKER_PARAMS params{};
+                params.version = NV_ASYNC_FRAME_MARKER_PARAMS_VER;
                 REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(nullptr, &params) == NVAPI_INVALID_POINTER);
             }
         }
