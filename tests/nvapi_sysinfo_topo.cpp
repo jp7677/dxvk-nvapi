@@ -378,4 +378,35 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
             REQUIRE(NvAPI_SYS_GetPhysicalGPUs(&gpus) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
     }
+
+    SECTION("GetLogicalGPUs succeeds") {
+        SECTION("GetLogicalGPUs (V1) returns OK") {
+            NvLogicalGpuHandle handles[NVAPI_MAX_LOGICAL_GPUS]{};
+            NvU32 count;
+            REQUIRE(NvAPI_EnumLogicalGPUs(handles, &count) == NVAPI_OK);
+
+            NV_LOGICAL_GPUS gpus{};
+            gpus.version = NV_LOGICAL_GPUS_VER1;
+            REQUIRE(NvAPI_SYS_GetLogicalGPUs(&gpus) == NVAPI_OK);
+            REQUIRE(gpus.gpuHandleCount > 0);
+            REQUIRE(gpus.gpuHandleCount == count);
+            for (auto i = 0U; i < count; i++) {
+                REQUIRE(gpus.gpuHandleData[i].hLogicalGpu == handles[i]);
+                REQUIRE(gpus.gpuHandleData[i].adapterType == NV_ADAPTER_TYPE_WDDM);
+            }
+        }
+
+        SECTION("GetLogicalGPUs with unknown struct version returns incompatible-struct-version") {
+            NV_LOGICAL_GPUS gpus;
+            gpus.version = NV_LOGICAL_GPUS_VER1 + 1;
+            REQUIRE(NvAPI_SYS_GetLogicalGPUs(&gpus) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetLogicalGPUs with current struct version returns not incompatible-struct-version") {
+            // This test fails when a header update provides a newer not yet implemented struct version
+            NV_LOGICAL_GPUS gpus;
+            gpus.version = NV_LOGICAL_GPUS_VER;
+            REQUIRE(NvAPI_SYS_GetLogicalGPUs(&gpus) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
 }

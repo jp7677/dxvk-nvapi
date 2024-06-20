@@ -114,4 +114,29 @@ extern "C" {
 
         return Ok(n);
     }
+
+    NvAPI_Status __cdecl NvAPI_SYS_GetLogicalGPUs(NV_LOGICAL_GPUS* pLogicalGPUs) {
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pLogicalGPUs));
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pLogicalGPUs == nullptr)
+            return InvalidArgument(n);
+
+        if (pLogicalGPUs->version != NV_LOGICAL_GPUS_VER1)
+            return IncompatibleStructVersion(n);
+
+        for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++) {
+            pLogicalGPUs->gpuHandleData[i].hLogicalGpu = reinterpret_cast<NvLogicalGpuHandle>(nvapiAdapterRegistry->GetAdapter(i));
+            pLogicalGPUs->gpuHandleData[i].adapterType = NV_ADAPTER_TYPE_WDDM;
+        }
+
+        pLogicalGPUs->gpuHandleCount = nvapiAdapterRegistry->GetAdapterCount();
+
+        return Ok(n);
+    }
 }
