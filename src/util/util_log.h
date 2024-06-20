@@ -50,6 +50,13 @@ namespace dxvk::log {
             return str::format("{version=", p->version, ",frameID=", p->frameID, ",markerType=", fromLatencyMarkerType(p->markerType), ",rsvd}");
         }
 
+        inline std::string nv_async_frame_marker_params(NV_ASYNC_FRAME_MARKER_PARAMS* p) {
+            if (p == nullptr)
+                return "nullptr";
+
+            return str::format("{version=", p->version, ",frameID=", p->frameID, ",markerType=", fromLatencyMarkerType(p->markerType), ",presentFrameID=", p->presentFrameID, ",rsvd}");
+        }
+
         inline std::string d3d12_cpu_descriptor_handle(D3D12_CPU_DESCRIPTOR_HANDLE h) {
             return str::format("{ptr=", hex_prefix, std::hex, h.ptr, "}");
         }
