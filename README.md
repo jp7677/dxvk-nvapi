@@ -38,7 +38,7 @@ Prebuilt binaries of release versions are available at <https://github.com/jp767
 
 ## How to use
 
-Support for DXVK-NVAPI has been added to popular game launchers. See their respective documentation for usage and updates of DXVK-NVAPI.    
+Support for DXVK-NVAPI has been added to popular game launchers. See their respective documentation for usage and updates of DXVK-NVAPI.
 
 ### Steam Play / Proton
 
