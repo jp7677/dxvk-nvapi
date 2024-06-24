@@ -49,3 +49,7 @@
 #elif defined(_MSC_VER)
 #include <intrin.h>
 #endif
+
+// clang-format off
+#define MAP_ENUM_VALUE(v) {v, #v}
+// clang-format on
