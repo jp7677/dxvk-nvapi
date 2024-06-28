@@ -459,6 +459,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
         constexpr auto n = __func__;
+        thread_local bool alreadyLoggedTypeIgnore = false;
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
 
@@ -473,6 +474,9 @@ extern "C" {
 
         if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pCommandQueue))
             return NoImplementation(n);
+
+        if (cqType == OUT_OF_BAND_IGNORE && !std::exchange(alreadyLoggedTypeIgnore, true))
+            log::info("NvAPI_D3D12_NotifyOutOfBandCommandQueue is called with OUT_OF_BAND_IGNORE");
 
         if (!NvapiD3d12Device::NotifyOutOfBandCommandQueue(pCommandQueue, static_cast<D3D12_OUT_OF_BAND_CQ_TYPE>(cqType)))
             return Error(n, alreadyLoggedError);
