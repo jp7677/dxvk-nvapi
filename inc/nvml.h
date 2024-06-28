@@ -1,5 +1,5 @@
 /*
- * Copyright 1993-2023 NVIDIA Corporation.  All rights reserved.
+ * Copyright 1993-2024 NVIDIA Corporation.  All rights reserved.
  *
  * NOTICE TO USER:
  *
@@ -92,6 +92,8 @@ extern "C" {
     #define DECLDIR
 #endif
 
+    #define NVML_MCDM_SUPPORT
+
 /**
  * NVML API versioning support
  */
@@ -122,6 +124,7 @@ extern "C" {
     #define nvmlGetBlacklistDeviceInfoByIndex           nvmlGetExcludedDeviceInfoByIndex
     #define nvmlDeviceGetGpuInstancePossiblePlacements  nvmlDeviceGetGpuInstancePossiblePlacements_v2
     #define nvmlVgpuInstanceGetLicenseInfo              nvmlVgpuInstanceGetLicenseInfo_v2
+    #define nvmlDeviceGetDriverModel                    nvmlDeviceGetDriverModel_v2
 #endif // #ifndef NVML_NO_UNVERSIONED_FUNC_DEFS
 
 #define NVML_STRUCT_VERSION(data, ver) (unsigned int)(sizeof(nvml ## data ## _v ## ver ## _t) | \
@@ -761,6 +764,8 @@ typedef enum nvmlTemperatureThresholds_enum
                                                   // acoustic threshold.
     NVML_TEMPERATURE_THRESHOLD_ACOUSTIC_MAX  = 6, // Maximum GPU temperature that can be
                                                   // set as acoustic threshold.
+    NVML_TEMPERATURE_THRESHOLD_GPS_CURR      = 7, // Current temperature that is set as
+                                                  // gps threshold.
     // Keep this last
     NVML_TEMPERATURE_THRESHOLD_COUNT
 } nvmlTemperatureThresholds_t;
@@ -937,8 +942,9 @@ typedef enum nvmlClockId_enum
 
 typedef enum nvmlDriverModel_enum
 {
-    NVML_DRIVER_WDDM = 0,       //!< WDDM driver model -- GPU treated as a display device
-    NVML_DRIVER_WDM = 1        //!< WDM (TCC) model (recommended) -- GPU treated as a generic device
+    NVML_DRIVER_WDDM      = 0,       //!< WDDM driver model -- GPU treated as a display device
+    NVML_DRIVER_WDM       = 1,       //!< WDM (TCC) model (deprecated) -- GPU treated as a generic compute device
+    NVML_DRIVER_MCDM      = 2        //!< MCDM driver model -- GPU treated as a Microsoft compute device
 } nvmlDriverModel_t;
 
 #define NVML_MAX_GPU_PERF_PSTATES 16
@@ -966,6 +972,23 @@ typedef enum nvmlPStates_enum
     NVML_PSTATE_15              = 15,      //!< Performance state 15 -- Minimum Performance
     NVML_PSTATE_UNKNOWN         = 32       //!< Unknown performance state
 } nvmlPstates_t;
+
+/**
+ * Clock offset info.
+ */
+typedef struct
+{
+    unsigned int version; //!< The version number of this struct
+    nvmlClockType_t type;
+    nvmlPstates_t pstate;
+    int clockOffsetMHz;
+    int minClockOffsetMHz;
+    int maxClockOffsetMHz;
+} nvmlClockOffset_v1_t;
+
+typedef nvmlClockOffset_v1_t nvmlClockOffset_t;
+
+#define nvmlClockOffset_v1 NVML_STRUCT_VERSION(ClockOffset, 1)
 
 /**
  * GPU Operation Mode
@@ -1625,6 +1648,8 @@ typedef nvmlEccSramErrorStatus_v1_t nvmlEccSramErrorStatus_t;
 #define NVML_DEVICE_ARCH_ADA       8 // Devices based on the NVIDIA Ada architecture
 #define NVML_DEVICE_ARCH_HOPPER    9 // Devices based on the NVIDIA Hopper architecture
 
+#define NVML_DEVICE_ARCH_T23X      11 // Devices based on NVIDIA Orin architecture
+
 #define NVML_DEVICE_ARCH_UNKNOWN   0xffffffff // Anything else, presumably something newer
 
 typedef unsigned int nvmlDeviceArchitecture_t;
@@ -2016,10 +2041,14 @@ typedef struct nvmlGpuDynamicPstatesInfo_st
 #define NVML_FI_DEV_TEMPERATURE_MEM_MAX_TLIMIT        195 //!< T.Limit temperature after which GPU may begin SW slowdown due to memory temperature
 #define NVML_FI_DEV_TEMPERATURE_GPU_MAX_TLIMIT        196 //!< T.Limit temperature after which GPU may be throttled below base clock
 
-#define NVML_FI_DEV_IS_MIG_MODE_INDEPENDENT_MIG_QUERY_CAPABLE   199 //!< MIG mode independent, MIG query capable device. 1=yes. 0=no.
+#define NVML_FI_DEV_PCIE_COUNT_TX_BYTES               197 //!< PCIe transmit bytes. Value can be wrapped.
+#define NVML_FI_DEV_PCIE_COUNT_RX_BYTES               198 //!< PCIe receive bytes. Value can be wrapped.
 
-#define NVML_FI_MAX                                   200 //!< One greater than the largest field ID defined above
+#define NVML_FI_DEV_NVLINK_GET_POWER_THRESHOLD_MAX    199 //!< Max Nvlink Power Threshold. See NVML_FI_DEV_NVLINK_GET_POWER_THRESHOLD
 
+#define NVML_FI_DEV_IS_MIG_MODE_INDEPENDENT_MIG_QUERY_CAPABLE   200 //!< MIG mode independent, MIG query capable device. 1=yes. 0=no.
+
+#define NVML_FI_MAX                                       223 //!< One greater than the largest field ID defined above
 /**
  * Information for a Field Value Sample
  */
@@ -4542,25 +4571,26 @@ nvmlReturn_t DECLDIR nvmlDeviceGetFanControlPolicy_v2(nvmlDevice_t device, unsig
 nvmlReturn_t DECLDIR nvmlDeviceGetNumFans(nvmlDevice_t device, unsigned int *numFans);
 
 /**
- * Retrieves the current temperature readings for the device, in degrees C.
- *
- * For all products.
- *
- * See \ref nvmlTemperatureSensors_t for details on available temperature sensors.
- *
- * @param device                               The identifier of the target device
- * @param sensorType                           Flag that indicates which sensor reading to retrieve
- * @param temp                                 Reference in which to return the temperature reading
- *
- * @return
- *         - \ref NVML_SUCCESS                 if \a temp has been set
- *         - \ref NVML_ERROR_UNINITIALIZED     if the library has not been successfully initialized
- *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a device is invalid, \a sensorType is invalid or \a temp is NULL
- *         - \ref NVML_ERROR_NOT_SUPPORTED     if the device does not have the specified sensor
- *         - \ref NVML_ERROR_GPU_IS_LOST       if the target GPU has fallen off the bus or is otherwise inaccessible
- *         - \ref NVML_ERROR_UNKNOWN           on any unexpected error
- */
+   * Retrieves the current temperature readings for the device, in degrees C.
+   *
+   * For all products.
+   *
+   * See \ref nvmlTemperatureSensors_t for details on available temperature sensors.
+   *
+   * @param device                               The identifier of the target device
+   * @param sensorType                           Flag that indicates which sensor reading to retrieve
+   * @param temp                                 Reference in which to return the temperature reading
+   *
+   * @return
+   *         - \ref NVML_SUCCESS                 if \a temp has been set
+   *         - \ref NVML_ERROR_UNINITIALIZED     if the library has not been successfully initialized
+   *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a device is invalid, \a sensorType is invalid or \a temp is NULL
+   *         - \ref NVML_ERROR_NOT_SUPPORTED     if the device does not have the specified sensor
+   *         - \ref NVML_ERROR_GPU_IS_LOST       if the target GPU has fallen off the bus or is otherwise inaccessible
+   *         - \ref NVML_ERROR_UNKNOWN           on any unexpected error
+   */
 nvmlReturn_t DECLDIR nvmlDeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int *temp);
+
 
 /**
  * Retrieves the temperature threshold for the GPU with the specified threshold type in degrees C.
@@ -4813,6 +4843,52 @@ nvmlReturn_t DECLDIR nvmlDeviceGetGpcClkMinMaxVfOffset(nvmlDevice_t device,
  */
 nvmlReturn_t DECLDIR nvmlDeviceGetMemClkMinMaxVfOffset(nvmlDevice_t device,
                                                        int *minOffset, int *maxOffset);
+
+/**
+ * Retrieve min, max and current clock offset of some clock domain for a given PState
+ *
+ * For Maxwell &tm; or newer fully supported devices.
+ *
+ * Note: \ref nvmlDeviceGetGpcClkVfOffset, \ref nvmlDeviceGetMemClkVfOffset, \ref nvmlDeviceGetGpcClkMinMaxVfOffset and
+ *       \ref nvmlDeviceGetMemClkMinMaxVfOffset will be deprecated in a future release.
+         Use \ref nvmlDeviceGetClockOffsets instead.
+ *
+ * @param device                               The identifier of the target device
+ * @param info                                 Structure specifying the clock type (input) and the pstate (input)
+ *                                             retrieved clock offset value (output), min clock offset (output)
+ *                                             and max clock offset (output)
+ *
+ * @return
+ *         - \ref NVML_SUCCESS                         if everything worked
+ *         - \ref NVML_ERROR_UNINITIALIZED             if the library has not been successfully initialized
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT          if \a device, \a type or \a pstate are invalid or both
+ *                                                             \a minClockOffsetMHz and \a maxClockOffsetMHz are NULL
+ *         - \ref NVML_ERROR_ARGUMENT_VERSION_MISMATCH if the provided version is invalid/unsupported
+ *         - \ref NVML_ERROR_NOT_SUPPORTED             if the device does not support this feature
+ */
+nvmlReturn_t DECLDIR nvmlDeviceGetClockOffsets(nvmlDevice_t device, nvmlClockOffset_t *info);
+
+/**
+ * Control current clock offset of some clock domain for a given PState
+ *
+ * For Maxwell &tm; or newer fully supported devices.
+ *
+ * Requires privileged user.
+ *
+ * @param device                               The identifier of the target device
+ * @param info                                 Structure specifying the clock type (input), the pstate (input)
+ *                                             and clock offset value (input)
+ *
+ * @return
+ *         - \ref NVML_SUCCESS                         if everything worked
+ *         - \ref NVML_ERROR_UNINITIALIZED             if the library has not been successfully initialized
+ *         - \ref NVML_ERROR_NO_PERMISSION             if the user doesn't have permission to perform this operation
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT          if \a device, \a type or \a pstate are invalid or both
+ *                                                             \a clockOffsetMHz is out of allowed range.
+ *         - \ref NVML_ERROR_ARGUMENT_VERSION_MISMATCH if the provided version is invalid/unsupported
+ *         - \ref NVML_ERROR_NOT_SUPPORTED             if the device does not support this feature
+ */
+nvmlReturn_t DECLDIR nvmlDeviceSetClockOffsets(nvmlDevice_t device, nvmlClockOffset_t *info);
 
 /**
  * This API has been deprecated.
@@ -5521,11 +5597,11 @@ nvmlReturn_t DECLDIR nvmlDeviceGetFBCSessions(nvmlDevice_t device, unsigned int 
 /**
  * Retrieves the current and pending driver model for the device.
  *
- * For Fermi &tm; or newer fully supported devices.
+ * For Kepler &tm; or newer fully supported devices.
  * For windows only.
  *
- * On Windows platforms the device driver can run in either WDDM or WDM (TCC) mode. If a display is attached
- * to the device it must run in WDDM mode. TCC mode is preferred if a display is not attached.
+ * On Windows platforms the device driver can run in either WDDM, MCDM or WDM (TCC) modes. If a display is attached
+ * to the device it must run in WDDM mode. MCDM mode is preferred if a display is not attached. TCC mode is deprecated.
  *
  * See \ref nvmlDriverModel_t for details on available driver models.
  *
@@ -5541,9 +5617,9 @@ nvmlReturn_t DECLDIR nvmlDeviceGetFBCSessions(nvmlDevice_t device, unsigned int 
  *         - \ref NVML_ERROR_GPU_IS_LOST       if the target GPU has fallen off the bus or is otherwise inaccessible
  *         - \ref NVML_ERROR_UNKNOWN           on any unexpected error
  *
- * @see nvmlDeviceSetDriverModel()
+ * @see nvmlDeviceSetDriverModel_v2()
  */
-nvmlReturn_t DECLDIR nvmlDeviceGetDriverModel(nvmlDevice_t device, nvmlDriverModel_t *current, nvmlDriverModel_t *pending);
+nvmlReturn_t DECLDIR nvmlDeviceGetDriverModel_v2(nvmlDevice_t device, nvmlDriverModel_t *current, nvmlDriverModel_t *pending);
 
 /**
  * Get VBIOS version of the device.
@@ -5674,7 +5750,7 @@ nvmlReturn_t DECLDIR nvmlDeviceGetComputeRunningProcesses_v3(nvmlDevice_t device
 nvmlReturn_t DECLDIR nvmlDeviceGetGraphicsRunningProcesses_v3(nvmlDevice_t device, unsigned int *infoCount, nvmlProcessInfo_t *infos);
 
 /**
- * Get information about processes with a MPS compute context on a device
+ * Get information about processes with a Multi-Process Service (MPS) compute context on a device
  *
  * For Volta &tm; or newer fully supported devices.
  *
@@ -6227,6 +6303,64 @@ nvmlReturn_t DECLDIR nvmlSystemGetConfComputeKeyRotationThresholdInfo(
                           nvmlConfComputeGetKeyRotationThresholdInfo_t *pKeyRotationThrInfo);
 
 /**
+ * Set Conf Computing Unprotected Memory Size.
+ *
+ * For Ampere &tm; or newer fully supported devices.
+ * Supported on Linux, Windows TCC.
+ *
+ * @param device                               Device Handle
+ * @param sizeKiB                              Unprotected Memory size to be set in KiB
+ *
+ * @return
+ *         - \ref NVML_SUCCESS                 if \a sizeKiB successfully set
+ *         - \ref NVML_ERROR_UNINITIALIZED     if the library has not been successfully initialized
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a device is invalid
+ *         - \ref NVML_ERROR_NOT_SUPPORTED     if this query is not supported by the device
+ */
+nvmlReturn_t DECLDIR nvmlDeviceSetConfComputeUnprotectedMemSize(nvmlDevice_t device, unsigned long long sizeKiB);
+
+/**
+ * Set Conf Computing GPUs ready state.
+ *
+ * For Ampere &tm; or newer fully supported devices.
+ * Supported on Linux, Windows TCC.
+ *
+ * @param isAcceptingWork                      GPU accepting new work, NVML_CC_ACCEPTING_CLIENT_REQUESTS_TRUE or
+ *                                             NVML_CC_ACCEPTING_CLIENT_REQUESTS_FALSE
+ *
+ * return
+ *         - \ref NVML_SUCCESS                 if \a current GPUs ready state is successfully set
+ *         - \ref NVML_ERROR_UNINITIALIZED     if the library has not been successfully initialized
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a isAcceptingWork is invalid
+ *         - \ref NVML_ERROR_NOT_SUPPORTED     if this query is not supported by the device
+ */
+nvmlReturn_t DECLDIR nvmlSystemSetConfComputeGpusReadyState(unsigned int isAcceptingWork);
+
+/**
+ * Set Conf Computing key rotation threshold. 
+ *
+ * %HOPPER_OR_NEWER%
+ * Supported on Linux, Windows TCC.
+ *
+ * This function is to set the confidential compute key rotation threshold parameters.
+ * @ref pKeyRotationThrInfo->maxAttackerAdvantage should be in the range from 
+ * NVML_CC_KEY_ROTATION_THRESHOLD_ATTACKER_ADVANTAGE_MIN to NVML_CC_KEY_ROTATION_THRESHOLD_ATTACKER_ADVANTAGE_MAX.
+ * Default value is 60.
+ *
+ * @param pKeyRotationThrInfo                  Reference to the key rotation threshold data
+ *
+ * @return
+ *         - \ref NVML_SUCCESS                 if \a key rotation threashold max attacker advantage has been set
+ *         - \ref NVML_ERROR_UNINITIALIZED     if the library has not been successfully initialized
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a device is invalid or \a memory is NULL
+ *         - \ref NVML_ERROR_INVALID_STATE     if confidential compute GPU ready state is enabled
+ *         - \ref NVML_ERROR_NOT_SUPPORTED     if this query is not supported by the device
+ *         - \ref NVML_ERROR_UNKNOWN           on any unexpected error
+ */
+nvmlReturn_t DECLDIR nvmlSystemSetConfComputeKeyRotationThresholdInfo(
+                          nvmlConfComputeSetKeyRotationThresholdInfo_t *pKeyRotationThrInfo);
+
+/**
  * Get Conf Computing System Settings.
  *
  * %HOPPER_OR_NEWER%
@@ -6275,6 +6409,7 @@ nvmlReturn_t DECLDIR nvmlDeviceGetGspFirmwareVersion(nvmlDevice_t device, char *
  * @return
  *         - \ref NVML_SUCCESS                 if GSP firmware mode is sucessfully retrieved
  *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a device is invalid or any of \a isEnabled or \a defaultMode is NULL
+ *         - \ref NVML_ERROR_NOT_SUPPORTED     if GSP firmware is not enabled for GPU
  *         - \ref NVML_ERROR_UNKNOWN           on any unexpected error
  */
 nvmlReturn_t DECLDIR nvmlDeviceGetGspFirmwareMode(nvmlDevice_t device, unsigned int *isEnabled, unsigned int *defaultMode);
@@ -7310,6 +7445,9 @@ nvmlReturn_t DECLDIR nvmlDeviceSetAPIRestriction(nvmlDevice_t device, nvmlRestri
 nvmlReturn_t DECLDIR nvmlDeviceSetFanSpeed_v2(nvmlDevice_t device, unsigned int fan, unsigned int speed);
 
 /**
+ * Deprecated: Will be deprecated in a future release. Use \ref nvmlDeviceSetClockOffsets instead. It works
+ *             on Maxwell onwards GPU architectures.
+ *
  * Set the GPCCLK VF offset value
  * @param[in]   device                         The identifier of the target device
  * @param[in]   offset                         The GPCCLK VF offset value to set
@@ -7325,6 +7463,9 @@ nvmlReturn_t DECLDIR nvmlDeviceSetFanSpeed_v2(nvmlDevice_t device, unsigned int 
 nvmlReturn_t DECLDIR nvmlDeviceSetGpcClkVfOffset(nvmlDevice_t device, int offset);
 
 /**
+ * Deprecated: Will be deprecated in a future release. Use \ref nvmlDeviceSetClockOffsets instead. It works
+ *             on Maxwell onwards GPU architectures.
+ *
  * Set the MemClk (Memory Clock) VF offset value. It requires elevated privileges.
  * @param[in]   device                         The identifier of the target device
  * @param[in]   offset                         The MemClk VF offset value to set
@@ -7338,64 +7479,6 @@ nvmlReturn_t DECLDIR nvmlDeviceSetGpcClkVfOffset(nvmlDevice_t device, int offset
  *         - \ref NVML_ERROR_UNKNOWN           on any unexpected error
  */
 nvmlReturn_t DECLDIR nvmlDeviceSetMemClkVfOffset(nvmlDevice_t device, int offset);
-
-/**
- * Set Conf Computing Unprotected Memory Size.
- *
- * For Ampere &tm; or newer fully supported devices.
- * Supported on Linux, Windows TCC.
- *
- * @param device                               Device Handle
- * @param sizeKiB                              Unprotected Memory size to be set in KiB
- *
- * @return
- *         - \ref NVML_SUCCESS                 if \a sizeKiB successfully set
- *         - \ref NVML_ERROR_UNINITIALIZED     if the library has not been successfully initialized
- *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a device is invalid
- *         - \ref NVML_ERROR_NOT_SUPPORTED     if this query is not supported by the device
- */
-nvmlReturn_t DECLDIR nvmlDeviceSetConfComputeUnprotectedMemSize(nvmlDevice_t device, unsigned long long sizeKiB);
-
-/**
- * Set Conf Computing GPUs ready state.
- *
- * For Ampere &tm; or newer fully supported devices.
- * Supported on Linux, Windows TCC.
- *
- * @param isAcceptingWork                      GPU accepting new work, NVML_CC_ACCEPTING_CLIENT_REQUESTS_TRUE or
- *                                             NVML_CC_ACCEPTING_CLIENT_REQUESTS_FALSE
- *
- * return
- *         - \ref NVML_SUCCESS                 if \a current GPUs ready state is successfully set
- *         - \ref NVML_ERROR_UNINITIALIZED     if the library has not been successfully initialized
- *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a isAcceptingWork is invalid
- *         - \ref NVML_ERROR_NOT_SUPPORTED     if this query is not supported by the device
- */
-nvmlReturn_t DECLDIR nvmlSystemSetConfComputeGpusReadyState(unsigned int isAcceptingWork);
-
-/**
- * Set Conf Computing key rotation threshold. 
- *
- * %HOPPER_OR_NEWER%
- * Supported on Linux, Windows TCC.
- *
- * This function is to set the confidential compute key rotation threshold parameters.
- * @ref pKeyRotationThrInfo->maxAttackerAdvantage should be in the range from 
- * NVML_CC_KEY_ROTATION_THRESHOLD_ATTACKER_ADVANTAGE_MIN to NVML_CC_KEY_ROTATION_THRESHOLD_ATTACKER_ADVANTAGE_MAX.
- * Default value is 60.
- *
- * @param pKeyRotationThrInfo                  Reference to the key rotation threshold data
- *
- * @return
- *         - \ref NVML_SUCCESS                 if \a key rotation threashold max attacker advantage has been set
- *         - \ref NVML_ERROR_UNINITIALIZED     if the library has not been successfully initialized
- *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a device is invalid or \a memory is NULL
- *         - \ref NVML_ERROR_INVALID_STATE     if confidential compute GPU ready state is enabled
- *         - \ref NVML_ERROR_NOT_SUPPORTED     if this query is not supported by the device
- *         - \ref NVML_ERROR_UNKNOWN           on any unexpected error
- */
-nvmlReturn_t DECLDIR nvmlSystemSetConfComputeKeyRotationThresholdInfo(
-                          nvmlConfComputeSetKeyRotationThresholdInfo_t *pKeyRotationThrInfo);
 
 /**
  * @}
@@ -10903,8 +10986,16 @@ nvmlReturn_t DECLDIR nvmlGpmSetStreamingEnabled(nvmlDevice_t device, unsigned in
 #define NVML_NVLINK_POWER_STATE_LOW           0x1
 
 #define NVML_NVLINK_LOW_POWER_THRESHOLD_MIN   0x1
+
+/*
+ * NVML_NVLINK_LOW_POWER_THRESHOLD_MAX will be deprecated.
+ * Use the NVML Field Value NVML_FI_DEV_NVLINK_GET_POWER_THRESHOLD_MAX
+ * to get the correct Max Low Power Threshold.
+ */
 #define NVML_NVLINK_LOW_POWER_THRESHOLD_MAX   0x1FFF
 #define NVML_NVLINK_LOW_POWER_THRESHOLD_RESET 0xFFFFFFFF
+
+#define NVML_NVLINK_LOW_POWER_THRESHOLD_DEFAULT NVML_NVLINK_LOW_POWER_THRESHOLD_RESET
 
 /* Structure containing Low Power parameters */
 typedef struct nvmlNvLinkPowerThres_st
@@ -11011,6 +11102,39 @@ nvmlReturn_t DECLDIR nvmlDeviceSetPowerManagementLimit_v2(nvmlDevice_t device, n
  */
 nvmlReturn_t DECLDIR nvmlDeviceGetSramEccErrorStatus(nvmlDevice_t device,
                                                      nvmlEccSramErrorStatus_t *status);
+
+#define NVML_DEV_CAP_EGM (1 << 0) // Extended GPU memory
+/**
+ * Device capabilities
+ */
+typedef struct
+{
+    unsigned int version;               //!< the API version number
+    unsigned int capMask;               //!< OUT: Bit mask of capabilities.
+} nvmlDeviceCapabilities_v1_t;
+typedef nvmlDeviceCapabilities_v1_t nvmlDeviceCapabilities_t;
+#define nvmlDeviceCapabilities_v1 NVML_STRUCT_VERSION(DeviceCapabilities, 1)
+ 
+/**
+ * Get device capabilities
+ *
+ * See \ref  nvmlDeviceCapabilities_v1_t for more information on the struct.
+ *
+ * @param device                               The identifier of the target device
+ * @param caps                                 Returns GPU's capabilities
+ *
+ * @return
+ *         - \ref NVML_SUCCESS                         if the query is success 
+ *         - \ref NVML_ERROR_UNINITIALIZED             if the library has not been successfully initialized
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT          if \a device is invalid or \a counters is NULL
+ *         - \ref NVML_ERROR_NOT_SUPPORTED             if the device does not support this feature
+ *         - \ref NVML_ERROR_GPU_IS_LOST               if the target GPU has fallen off the bus or is otherwise inaccessible
+ *         - \ref NVML_ERROR_ARGUMENT_VERSION_MISMATCH if the provided version is invalid/unsupported
+ *         - \ref NVML_ERROR_UNKNOWN                   on any unexpected error
+ */
+nvmlReturn_t DECLDIR nvmlDeviceGetCapabilities(nvmlDevice_t device,
+                                               nvmlDeviceCapabilities_t *caps);
+
 /**
  * NVML API versioning support
  */
@@ -11038,6 +11162,7 @@ nvmlReturn_t DECLDIR nvmlDeviceGetMPSComputeRunningProcesses(nvmlDevice_t device
 nvmlReturn_t DECLDIR nvmlDeviceGetMPSComputeRunningProcesses_v2(nvmlDevice_t device, unsigned int *infoCount, nvmlProcessInfo_v2_t *infos);
 nvmlReturn_t DECLDIR nvmlDeviceGetGpuInstancePossiblePlacements(nvmlDevice_t device, unsigned int profileId, nvmlGpuInstancePlacement_t *placements, unsigned int *count);
 nvmlReturn_t DECLDIR nvmlVgpuInstanceGetLicenseInfo(nvmlVgpuInstance_t vgpuInstance, nvmlVgpuLicenseInfo_t *licenseInfo);
+nvmlReturn_t DECLDIR nvmlDeviceGetDriverModel(nvmlDevice_t device, nvmlDriverModel_t *current, nvmlDriverModel_t *pending);
 #endif // #ifdef NVML_NO_UNVERSIONED_FUNC_DEFS
 
 #if defined(NVML_NO_UNVERSIONED_FUNC_DEFS)
@@ -11063,6 +11188,7 @@ nvmlReturn_t DECLDIR nvmlVgpuInstanceGetLicenseInfo(nvmlVgpuInstance_t vgpuInsta
 #undef nvmlGetBlacklistDeviceInfoByIndex
 #undef nvmlDeviceGetGpuInstancePossiblePlacements
 #undef nvmlVgpuInstanceGetLicenseInfo
+#undef nvmlDeviceGetDriverModel
 #undef nvmlDeviceSetPowerManagementLimit
 
 #endif
