@@ -128,6 +128,91 @@ namespace dxvk {
         return cubinDevice != nullptr;
     }
 
+    bool NvapiD3d12Device::IsOpacityMicromapSupported(ID3D12Device* device) {
+        auto ommDevice = GetOmmDevice(device);
+        return ommDevice != nullptr;
+    }
+
+    std::optional<NvAPI_Status> NvapiD3d12Device::SetCreatePipelineStateOptions(ID3D12Device5* device, const NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS* params) {
+        auto ommDevice = GetOmmDevice(device);
+        if (ommDevice == nullptr)
+            return std::nullopt;
+
+        return static_cast<NvAPI_Status>(ommDevice->SetCreatePipelineStateOptions(params));
+    }
+
+    std::optional<NvAPI_Status> NvapiD3d12Device::CheckDriverMatchingIdentifierEx(ID3D12Device5* device, NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS* params) {
+        auto ommDevice = GetOmmDevice(device);
+        if (ommDevice == nullptr)
+            return std::nullopt;
+
+        return static_cast<NvAPI_Status>(ommDevice->CheckDriverMatchingIdentifierEx(params));
+    }
+
+    std::optional<NvAPI_Status> NvapiD3d12Device::GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D12Device5* device, NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* params) {
+        auto ommDevice = GetOmmDevice(device);
+        if (ommDevice == nullptr)
+            return std::nullopt;
+
+        return static_cast<NvAPI_Status>(ommDevice->GetRaytracingAccelerationStructurePrebuildInfoEx(params));
+    }
+
+    std::optional<NvAPI_Status> NvapiD3d12Device::GetRaytracingOpacityMicromapArrayPrebuildInfo(ID3D12Device5* device, NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS* params) {
+        auto ommDevice = GetOmmDevice(device);
+        if (ommDevice == nullptr)
+            return std::nullopt;
+
+        return static_cast<NvAPI_Status>(ommDevice->GetRaytracingOpacityMicromapArrayPrebuildInfo(params));
+    }
+
+    std::optional<NvAPI_Status> NvapiD3d12Device::BuildRaytracingAccelerationStructureEx(ID3D12GraphicsCommandList4* commandList, const NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS* params) {
+        auto commandListExt = GetCommandListExt(commandList);
+        if (!commandListExt.has_value())
+            return std::nullopt;
+
+        auto commandListVer = commandListExt.value();
+        if (commandListVer.InterfaceVersion < 2)
+            return std::nullopt;
+
+        return static_cast<NvAPI_Status>(commandListVer.CommandListExt->BuildRaytracingAccelerationStructureEx(params));
+    }
+
+    std::optional<NvAPI_Status> NvapiD3d12Device::BuildRaytracingOpacityMicromapArray(ID3D12GraphicsCommandList4* commandList, NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS* params) {
+        auto commandListExt = GetCommandListExt(commandList);
+        if (!commandListExt.has_value())
+            return std::nullopt;
+
+        auto commandListVer = commandListExt.value();
+        if (commandListVer.InterfaceVersion < 2)
+            return std::nullopt;
+
+        return static_cast<NvAPI_Status>(commandListVer.CommandListExt->BuildRaytracingOpacityMicromapArray(params));
+    }
+
+    std::optional<NvAPI_Status> NvapiD3d12Device::RelocateRaytracingOpacityMicromapArray(ID3D12GraphicsCommandList4* commandList, const NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS* params) {
+        auto commandListExt = GetCommandListExt(commandList);
+        if (!commandListExt.has_value())
+            return std::nullopt;
+
+        auto commandListVer = commandListExt.value();
+        if (commandListVer.InterfaceVersion < 2)
+            return std::nullopt;
+
+        return static_cast<NvAPI_Status>(commandListVer.CommandListExt->RelocateRaytracingOpacityMicromapArray(params));
+    }
+
+    std::optional<NvAPI_Status> NvapiD3d12Device::EmitRaytracingOpacityMicromapArrayPostbuildInfo(ID3D12GraphicsCommandList4* commandList, const NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS* params) {
+        auto commandListExt = GetCommandListExt(commandList);
+        if (!commandListExt.has_value())
+            return std::nullopt;
+
+        auto commandListVer = commandListExt.value();
+        if (commandListVer.InterfaceVersion < 2)
+            return std::nullopt;
+
+        return static_cast<NvAPI_Status>(commandListVer.CommandListExt->EmitRaytracingOpacityMicromapArrayPostbuildInfo(params));
+    }
+
     // We are going to have single map for storing devices with extensions D3D12_VK_NVX_BINARY_IMPORT & D3D12_VK_NVX_IMAGE_VIEW_HANDLE.
     // These are specific to NVIDIA and both of these extensions goes together.
     Com<ID3D12DeviceExt> NvapiD3d12Device::GetCubinDevice(ID3D12Device* device) {
@@ -136,15 +221,29 @@ namespace dxvk {
         if (it != m_cubinDeviceMap.end())
             return it->second;
 
-        auto cubinDevice = GetDeviceExt(device, D3D12_VK_NVX_BINARY_IMPORT);
+        auto cubinDevice = GetDeviceExt<ID3D12DeviceExt>(device, D3D12_VK_NVX_BINARY_IMPORT);
         if (cubinDevice != nullptr)
             m_cubinDeviceMap.emplace(device, cubinDevice.ptr());
 
         return cubinDevice;
     }
 
-    Com<ID3D12DeviceExt> NvapiD3d12Device::GetDeviceExt(ID3D12Device* device, D3D12_VK_EXTENSION extension) {
-        Com<ID3D12DeviceExt> deviceExt;
+    Com<ID3D12DeviceExt2> NvapiD3d12Device::GetOmmDevice(ID3D12Device* device) {
+        std::scoped_lock lock(m_ommDeviceMutex);
+        auto it = m_ommDeviceMap.find(device);
+        if (it != m_ommDeviceMap.end())
+            return it->second;
+
+        auto ommDevice = GetDeviceExt<ID3D12DeviceExt2>(device, D3D12_VK_EXT_OPACITY_MICROMAP);
+        if (ommDevice != nullptr)
+            m_ommDeviceMap.emplace(device, ommDevice.ptr());
+
+        return ommDevice;
+    }
+
+    template <typename T>
+    Com<T> NvapiD3d12Device::GetDeviceExt(ID3D12Device* device, D3D12_VK_EXTENSION extension) {
+        Com<T> deviceExt;
         if (FAILED(device->QueryInterface(IID_PPV_ARGS(&deviceExt))))
             return nullptr;
 
@@ -176,15 +275,21 @@ namespace dxvk {
         if (it != m_commandListMap.end())
             return it->second;
 
+        Com<ID3D12GraphicsCommandListExt2> commandListExt2 = nullptr;
+        if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt2)))) {
+            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{commandListExt2.ptr(), 2};
+            return std::make_optional(m_commandListMap.emplace(commandList, cmdListVer).first->second);
+        }
+
         Com<ID3D12GraphicsCommandListExt1> commandListExt1 = nullptr;
         if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt1)))) {
-            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{commandListExt1.ptr(), 1};
+            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{reinterpret_cast<ID3D12GraphicsCommandListExt2*>(commandListExt1.ptr()), 1};
             return std::make_optional(m_commandListMap.emplace(commandList, cmdListVer).first->second);
         }
 
         Com<ID3D12GraphicsCommandListExt> commandListExt = nullptr;
         if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt)))) {
-            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{reinterpret_cast<ID3D12GraphicsCommandListExt1*>(commandListExt.ptr()), 0};
+            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{reinterpret_cast<ID3D12GraphicsCommandListExt2*>(commandListExt.ptr()), 0};
             return std::make_optional(m_commandListMap.emplace(commandList, cmdListVer).first->second);
         }
 
