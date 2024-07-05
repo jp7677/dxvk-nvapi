@@ -6,8 +6,8 @@
 
 // SPDX-License-Identifier: BSL-1.0
 
-//  Catch v3.5.2
-//  Generated: 2024-01-15 14:06:34.036475
+//  Catch v3.6.0
+//  Generated: 2024-05-05 20:53:27.071502
 //  ----------------------------------------------------------
 //  This file is an amalgamation of multiple different files.
 //  You probably shouldn't edit it directly.
@@ -87,6 +87,9 @@
 // See e.g.:
 // https://opensource.apple.com/source/CarbonHeaders/CarbonHeaders-18.1/TargetConditionals.h.auto.html
 #ifdef __APPLE__
+#  ifndef __has_extension
+#    define __has_extension(x) 0
+#  endif
 #  include <TargetConditionals.h>
 #  if (defined(TARGET_OS_OSX) && TARGET_OS_OSX == 1) || \
       (defined(TARGET_OS_MAC) && TARGET_OS_MAC == 1)
@@ -114,12 +117,12 @@
 
 #ifdef __cplusplus
 
-#  if (__cplusplus >= 201402L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201402L)
-#    define CATCH_CPP14_OR_GREATER
-#  endif
-
 #  if (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
 #    define CATCH_CPP17_OR_GREATER
+#  endif
+
+#  if (__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+#    define CATCH_CPP20_OR_GREATER
 #  endif
 
 #endif
@@ -762,8 +765,8 @@ namespace Catch {
         constexpr const_iterator end() const { return m_start + m_size; }
 
 
-        friend std::string& operator += (std::string& lhs, StringRef sr);
-        friend std::ostream& operator << (std::ostream& os, StringRef sr);
+        friend std::string& operator += (std::string& lhs, StringRef rhs);
+        friend std::ostream& operator << (std::ostream& os, StringRef str);
         friend std::string operator+(StringRef lhs, StringRef rhs);
 
         /**
@@ -2696,11 +2699,11 @@ namespace Catch {
     };
     template<>
     struct StringMaker<signed char> {
-        static std::string convert(signed char c);
+        static std::string convert(signed char value);
     };
     template<>
     struct StringMaker<unsigned char> {
-        static std::string convert(unsigned char c);
+        static std::string convert(unsigned char value);
     };
 
     template<>
@@ -5147,6 +5150,86 @@ namespace Detail {
 #include <type_traits>
 #include <iosfwd>
 
+/** \file
+ * Why does decomposing look the way it does:
+ *
+ * Conceptually, decomposing is simple. We change `REQUIRE( a == b )` into
+ * `Decomposer{} <= a == b`, so that `Decomposer{} <= a` is evaluated first,
+ * and our custom operator is used for `a == b`, because `a` is transformed
+ * into `ExprLhs<T&>` and then into `BinaryExpr<T&, U&>`.
+ *
+ * In practice, decomposing ends up a mess, because we have to support
+ * various fun things.
+ *
+ * 1) Types that are only comparable with literal 0, and they do this by
+ *    comparing against a magic type with pointer constructor and deleted
+ *    other constructors. Example: `REQUIRE((a <=> b) == 0)` in libstdc++
+ *
+ * 2) Types that are only comparable with literal 0, and they do this by
+ *    comparing against a magic type with consteval integer constructor.
+ *    Example: `REQUIRE((a <=> b) == 0)` in current MSVC STL.
+ *
+ * 3) Types that have no linkage, and so we cannot form a reference to
+ *    them. Example: some implementations of traits.
+ *
+ * 4) Starting with C++20, when the compiler sees `a == b`, it also uses
+ *    `b == a` when constructing the overload set. For us this means that
+ *    when the compiler handles `ExprLhs<T> == b`, it also tries to resolve
+ *    the overload set for `b == ExprLhs<T>`.
+ *
+ * To accomodate these use cases, decomposer ended up rather complex.
+ *
+ * 1) These types are handled by adding SFINAE overloads to our comparison
+ *    operators, checking whether `T == U` are comparable with the given
+ *    operator, and if not, whether T (or U) are comparable with literal 0.
+ *    If yes, the overload compares T (or U) with 0 literal inline in the
+ *    definition.
+ *
+ *    Note that for extra correctness, we check  that the other type is
+ *    either an `int` (literal 0 is captured as `int` by templates), or
+ *    a `long` (some platforms use 0L for `NULL` and we want to support
+ *    that for pointer comparisons).
+ *
+ * 2) For these types, `is_foo_comparable<T, int>` is true, but letting
+ *    them fall into the overload that actually does `T == int` causes
+ *    compilation error. Handling them requires that the decomposition
+ *    is `constexpr`, so that P2564R3 applies and the `consteval` from
+ *    their accompanying magic type is propagated through the `constexpr`
+ *    call stack.
+ *
+ *    However this is not enough to handle these types automatically,
+ *    because our default is to capture types by reference, to avoid
+ *    runtime copies. While these references cannot become dangling,
+ *    they outlive the constexpr context and thus the default capture
+ *    path cannot be actually constexpr.
+ *
+ *    The solution is to capture these types by value, by explicitly
+ *    specializing `Catch::capture_by_value` for them. Catch2 provides
+ *    specialization for `std::foo_ordering`s, but users can specialize
+ *    the trait for their own types as well.
+ *
+ * 3) If a type has no linkage, we also cannot capture it by reference.
+ *    The solution is once again to capture them by value. We handle
+ *    the common cases by using `std::is_arithmetic` as the default
+ *    for `Catch::capture_by_value`, but that is only a some-effort
+ *    heuristic. But as with 2), users can specialize `capture_by_value`
+ *    for their own types as needed.
+ *
+ * 4) To support C++20 and make the SFINAE on our decomposing operators
+ *    work, the SFINAE has to happen in return type, rather than in
+ *    a template type. This is due to our use of logical type traits
+ *    (`conjunction`/`disjunction`/`negation`), that we use to workaround
+ *    an issue in older (9-) versions of GCC. I still blame C++20 for
+ *    this, because without the comparison order switching, the logical
+ *    traits could still be used in template type.
+ *
+ * There are also other side concerns, e.g. supporting both `REQUIRE(a)`
+ * and `REQUIRE(a == b)`, or making `REQUIRE_THAT(a, IsEqual(b))` slot
+ * nicely into the same expression handling logic, but these are rather
+ * straightforward and add only a bit of complexity (e.g. common base
+ * class for decomposed expressions).
+ */
+
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable:4389) // '==' : signed/unsigned mismatch
@@ -5159,12 +5242,45 @@ namespace Detail {
 #ifdef __clang__
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wsign-compare"
+#  pragma clang diagnostic ignored "-Wnon-virtual-dtor"
 #elif defined __GNUC__
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wsign-compare"
+#  pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+
+#if defined(CATCH_CPP20_OR_GREATER) && __has_include(<compare>)
+#  include <compare>
+#    if defined( __cpp_lib_three_way_comparison ) && \
+            __cpp_lib_three_way_comparison >= 201907L
+#      define CATCH_CONFIG_CPP20_COMPARE_OVERLOADS
+#    endif
 #endif
 
 namespace Catch {
+
+    namespace Detail {
+        // This was added in C++20, but we require only C++14 for now.
+        template <typename T>
+        using RemoveCVRef_t = std::remove_cv_t<std::remove_reference_t<T>>;
+    }
+
+    // Note: There is nothing that stops us from extending this,
+    //       e.g. to `std::is_scalar`, but the more encompassing
+    //       traits are usually also more expensive. For now we
+    //       keep this as it used to be and it can be changed later.
+    template <typename T>
+    struct capture_by_value
+        : std::integral_constant<bool, std::is_arithmetic<T>{}> {};
+
+#if defined( CATCH_CONFIG_CPP20_COMPARE_OVERLOADS )
+    template <>
+    struct capture_by_value<std::strong_ordering> : std::true_type {};
+    template <>
+    struct capture_by_value<std::weak_ordering> : std::true_type {};
+    template <>
+    struct capture_by_value<std::partial_ordering> : std::true_type {};
+#endif
 
     template <typename T>
     struct always_false : std::false_type {};
@@ -5174,11 +5290,12 @@ namespace Catch {
         bool m_result;
 
     public:
-        auto isBinaryExpression() const -> bool { return m_isBinaryExpression; }
-        auto getResult() const -> bool { return m_result; }
-        virtual void streamReconstructedExpression( std::ostream &os ) const = 0;
+        constexpr auto isBinaryExpression() const -> bool { return m_isBinaryExpression; }
+        constexpr auto getResult() const -> bool { return m_result; }
+        //! This function **has** to be overriden by the derived class.
+        virtual void streamReconstructedExpression( std::ostream& os ) const;
 
-        ITransientExpression( bool isBinaryExpression, bool result )
+        constexpr ITransientExpression( bool isBinaryExpression, bool result )
         :   m_isBinaryExpression( isBinaryExpression ),
             m_result( result )
         {}
@@ -5187,14 +5304,13 @@ namespace Catch {
         ITransientExpression(ITransientExpression const&) = default;
         ITransientExpression& operator=(ITransientExpression const&) = default;
 
-        // We don't actually need a virtual destructor, but many static analysers
-        // complain if it's not here :-(
-        virtual ~ITransientExpression(); // = default;
-
         friend std::ostream& operator<<(std::ostream& out, ITransientExpression const& expr) {
             expr.streamReconstructedExpression(out);
             return out;
         }
+
+    protected:
+        ~ITransientExpression() = default;
     };
 
     void formatReconstructedExpression( std::ostream &os, std::string const& lhs, StringRef op, std::string const& rhs );
@@ -5211,7 +5327,7 @@ namespace Catch {
         }
 
     public:
-        BinaryExpr( bool comparisonResult, LhsT lhs, StringRef op, RhsT rhs )
+        constexpr BinaryExpr( bool comparisonResult, LhsT lhs, StringRef op, RhsT rhs )
         :   ITransientExpression{ true, comparisonResult },
             m_lhs( lhs ),
             m_op( op ),
@@ -5284,7 +5400,7 @@ namespace Catch {
         }
 
     public:
-        explicit UnaryExpr( LhsT lhs )
+        explicit constexpr UnaryExpr( LhsT lhs )
         :   ITransientExpression{ false, static_cast<bool>(lhs) },
             m_lhs( lhs )
         {}
@@ -5295,31 +5411,31 @@ namespace Catch {
     class ExprLhs {
         LhsT m_lhs;
     public:
-        explicit ExprLhs( LhsT lhs ) : m_lhs( lhs ) {}
+        explicit constexpr ExprLhs( LhsT lhs ) : m_lhs( lhs ) {}
 
 #define CATCH_INTERNAL_DEFINE_EXPRESSION_EQUALITY_OPERATOR( id, op )           \
     template <typename RhsT>                                                   \
-    friend auto operator op( ExprLhs&& lhs, RhsT&& rhs )                       \
-        ->std::enable_if_t<                                                    \
+    constexpr friend auto operator op( ExprLhs&& lhs, RhsT&& rhs )             \
+        -> std::enable_if_t<                                                   \
             Detail::conjunction<Detail::is_##id##_comparable<LhsT, RhsT>,      \
-                                Detail::negation<std::is_arithmetic<           \
-                                    std::remove_reference_t<RhsT>>>>::value,   \
+                                Detail::negation<capture_by_value<             \
+                                    Detail::RemoveCVRef_t<RhsT>>>>::value,     \
             BinaryExpr<LhsT, RhsT const&>> {                                   \
         return {                                                               \
             static_cast<bool>( lhs.m_lhs op rhs ), lhs.m_lhs, #op##_sr, rhs }; \
     }                                                                          \
     template <typename RhsT>                                                   \
-    friend auto operator op( ExprLhs&& lhs, RhsT rhs )                         \
-        ->std::enable_if_t<                                                    \
+    constexpr friend auto operator op( ExprLhs&& lhs, RhsT rhs )               \
+        -> std::enable_if_t<                                                   \
             Detail::conjunction<Detail::is_##id##_comparable<LhsT, RhsT>,      \
-                                std::is_arithmetic<RhsT>>::value,              \
+                                capture_by_value<RhsT>>::value,                \
             BinaryExpr<LhsT, RhsT>> {                                          \
         return {                                                               \
             static_cast<bool>( lhs.m_lhs op rhs ), lhs.m_lhs, #op##_sr, rhs }; \
     }                                                                          \
     template <typename RhsT>                                                   \
-    friend auto operator op( ExprLhs&& lhs, RhsT rhs )                         \
-        ->std::enable_if_t<                                                    \
+    constexpr friend auto operator op( ExprLhs&& lhs, RhsT rhs )               \
+        -> std::enable_if_t<                                                   \
             Detail::conjunction<                                               \
                 Detail::negation<Detail::is_##id##_comparable<LhsT, RhsT>>,    \
                 Detail::is_eq_0_comparable<LhsT>,                              \
@@ -5332,8 +5448,8 @@ namespace Catch {
             static_cast<bool>( lhs.m_lhs op 0 ), lhs.m_lhs, #op##_sr, rhs };   \
     }                                                                          \
     template <typename RhsT>                                                   \
-    friend auto operator op( ExprLhs&& lhs, RhsT rhs )                         \
-        ->std::enable_if_t<                                                    \
+    constexpr friend auto operator op( ExprLhs&& lhs, RhsT rhs )               \
+        -> std::enable_if_t<                                                   \
             Detail::conjunction<                                               \
                 Detail::negation<Detail::is_##id##_comparable<LhsT, RhsT>>,    \
                 Detail::is_eq_0_comparable<RhsT>,                              \
@@ -5350,29 +5466,30 @@ namespace Catch {
 
     #undef CATCH_INTERNAL_DEFINE_EXPRESSION_EQUALITY_OPERATOR
 
+
 #define CATCH_INTERNAL_DEFINE_EXPRESSION_COMPARISON_OPERATOR( id, op )         \
     template <typename RhsT>                                                   \
-    friend auto operator op( ExprLhs&& lhs, RhsT&& rhs )                       \
-        ->std::enable_if_t<                                                    \
+    constexpr friend auto operator op( ExprLhs&& lhs, RhsT&& rhs )             \
+        -> std::enable_if_t<                                                   \
             Detail::conjunction<Detail::is_##id##_comparable<LhsT, RhsT>,      \
-                                Detail::negation<std::is_arithmetic<           \
-                                    std::remove_reference_t<RhsT>>>>::value,   \
+                                Detail::negation<capture_by_value<             \
+                                    Detail::RemoveCVRef_t<RhsT>>>>::value,     \
             BinaryExpr<LhsT, RhsT const&>> {                                   \
         return {                                                               \
             static_cast<bool>( lhs.m_lhs op rhs ), lhs.m_lhs, #op##_sr, rhs }; \
     }                                                                          \
     template <typename RhsT>                                                   \
-    friend auto operator op( ExprLhs&& lhs, RhsT rhs )                         \
-        ->std::enable_if_t<                                                    \
+    constexpr friend auto operator op( ExprLhs&& lhs, RhsT rhs )               \
+        -> std::enable_if_t<                                                   \
             Detail::conjunction<Detail::is_##id##_comparable<LhsT, RhsT>,      \
-                                std::is_arithmetic<RhsT>>::value,              \
+                                capture_by_value<RhsT>>::value,                \
             BinaryExpr<LhsT, RhsT>> {                                          \
         return {                                                               \
             static_cast<bool>( lhs.m_lhs op rhs ), lhs.m_lhs, #op##_sr, rhs }; \
     }                                                                          \
     template <typename RhsT>                                                   \
-    friend auto operator op( ExprLhs&& lhs, RhsT rhs )                         \
-        ->std::enable_if_t<                                                    \
+    constexpr friend auto operator op( ExprLhs&& lhs, RhsT rhs )               \
+        -> std::enable_if_t<                                                   \
             Detail::conjunction<                                               \
                 Detail::negation<Detail::is_##id##_comparable<LhsT, RhsT>>,    \
                 Detail::is_##id##_0_comparable<LhsT>,                          \
@@ -5383,8 +5500,8 @@ namespace Catch {
             static_cast<bool>( lhs.m_lhs op 0 ), lhs.m_lhs, #op##_sr, rhs };   \
     }                                                                          \
     template <typename RhsT>                                                   \
-    friend auto operator op( ExprLhs&& lhs, RhsT rhs )                         \
-        ->std::enable_if_t<                                                    \
+    constexpr friend auto operator op( ExprLhs&& lhs, RhsT rhs )               \
+        -> std::enable_if_t<                                                   \
             Detail::conjunction<                                               \
                 Detail::negation<Detail::is_##id##_comparable<LhsT, RhsT>>,    \
                 Detail::is_##id##_0_comparable<RhsT>,                          \
@@ -5404,17 +5521,17 @@ namespace Catch {
 
 #define CATCH_INTERNAL_DEFINE_EXPRESSION_OPERATOR( op )                        \
     template <typename RhsT>                                                   \
-    friend auto operator op( ExprLhs&& lhs, RhsT&& rhs )                       \
-        ->std::enable_if_t<                                                    \
-            !std::is_arithmetic<std::remove_reference_t<RhsT>>::value,         \
+    constexpr friend auto operator op( ExprLhs&& lhs, RhsT&& rhs )             \
+        -> std::enable_if_t<                                                   \
+            !capture_by_value<Detail::RemoveCVRef_t<RhsT>>::value,             \
             BinaryExpr<LhsT, RhsT const&>> {                                   \
         return {                                                               \
             static_cast<bool>( lhs.m_lhs op rhs ), lhs.m_lhs, #op##_sr, rhs }; \
     }                                                                          \
     template <typename RhsT>                                                   \
-    friend auto operator op( ExprLhs&& lhs, RhsT rhs )                         \
-        ->std::enable_if_t<std::is_arithmetic<RhsT>::value,                    \
-                           BinaryExpr<LhsT, RhsT>> {                           \
+    constexpr friend auto operator op( ExprLhs&& lhs, RhsT rhs )               \
+        -> std::enable_if_t<capture_by_value<RhsT>::value,                     \
+                            BinaryExpr<LhsT, RhsT>> {                          \
         return {                                                               \
             static_cast<bool>( lhs.m_lhs op rhs ), lhs.m_lhs, #op##_sr, rhs }; \
     }
@@ -5439,19 +5556,22 @@ namespace Catch {
             "wrap the expression inside parentheses, or decompose it");
         }
 
-        auto makeUnaryExpr() const -> UnaryExpr<LhsT> {
+        constexpr auto makeUnaryExpr() const -> UnaryExpr<LhsT> {
             return UnaryExpr<LhsT>{ m_lhs };
         }
     };
 
     struct Decomposer {
-        template<typename T, std::enable_if_t<!std::is_arithmetic<std::remove_reference_t<T>>::value, int> = 0>
-        friend auto operator <= ( Decomposer &&, T && lhs ) -> ExprLhs<T const&> {
+        template <typename T,
+                  std::enable_if_t<!capture_by_value<Detail::RemoveCVRef_t<T>>::value,
+                      int> = 0>
+        constexpr friend auto operator <= ( Decomposer &&, T && lhs ) -> ExprLhs<T const&> {
             return ExprLhs<const T&>{ lhs };
         }
 
-        template<typename T, std::enable_if_t<std::is_arithmetic<T>::value, int> = 0>
-        friend auto operator <= ( Decomposer &&, T value ) -> ExprLhs<T> {
+        template <typename T,
+                  std::enable_if_t<capture_by_value<T>::value, int> = 0>
+        constexpr friend auto operator <= ( Decomposer &&, T value ) -> ExprLhs<T> {
             return ExprLhs<T>{ value };
         }
     };
@@ -5571,7 +5691,7 @@ namespace Catch {
         INTERNAL_CATCH_TRY { \
             CATCH_INTERNAL_START_WARNINGS_SUPPRESSION \
             CATCH_INTERNAL_SUPPRESS_PARENTHESES_WARNINGS \
-            catchAssertionHandler.handleExpr( Catch::Decomposer() <= __VA_ARGS__ ); \
+            catchAssertionHandler.handleExpr( Catch::Decomposer() <= __VA_ARGS__ ); /* NOLINT(bugprone-chained-comparison) */ \
             CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION \
         } INTERNAL_CATCH_CATCH( catchAssertionHandler ) \
         INTERNAL_CATCH_REACT( catchAssertionHandler ) \
@@ -5786,7 +5906,9 @@ namespace Catch {
     namespace Detail {
         // Intentionally without linkage, as it should only be used as a dummy
         // symbol for static analysis.
-        int GetNewSectionHint();
+        // The arguments are used as a dummy for checking warnings in the passed
+        // expressions.
+        int GetNewSectionHint( StringRef, const char* const = nullptr );
     } // namespace Detail
 } // namespace Catch
 
@@ -5797,7 +5919,8 @@ namespace Catch {
         CATCH_INTERNAL_SUPPRESS_SHADOW_WARNINGS                             \
         if ( [[maybe_unused]] const int catchInternalPreviousSectionHint =  \
                  catchInternalSectionHint,                                  \
-             catchInternalSectionHint = Catch::Detail::GetNewSectionHint(); \
+             catchInternalSectionHint =                                     \
+                 Catch::Detail::GetNewSectionHint(__VA_ARGS__);             \
              catchInternalPreviousSectionHint == __LINE__ )                 \
         CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION
 
@@ -5807,7 +5930,8 @@ namespace Catch {
         CATCH_INTERNAL_SUPPRESS_SHADOW_WARNINGS                             \
         if ( [[maybe_unused]] const int catchInternalPreviousSectionHint =  \
                  catchInternalSectionHint,                                  \
-             catchInternalSectionHint = Catch::Detail::GetNewSectionHint(); \
+             catchInternalSectionHint = Catch::Detail::GetNewSectionHint(   \
+                ( Catch::ReusableStringStream() << __VA_ARGS__ ).str());    \
              catchInternalPreviousSectionHint == __LINE__ )                 \
         CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION
 
@@ -5929,7 +6053,7 @@ struct AutoReg : Detail::NonCopyable {
 namespace Catch {
     namespace Detail {
         struct DummyUse {
-            DummyUse( void ( * )( int ) );
+            DummyUse( void ( * )( int ), Catch::NameAndTags const& );
         };
     } // namespace Detail
 } // namespace Catch
@@ -5941,18 +6065,18 @@ namespace Catch {
 // tests can compile. The redefined `TEST_CASE` shadows this with param.
 static int catchInternalSectionHint = 0;
 
-#    define INTERNAL_CATCH_TESTCASE2( fname )                              \
+#    define INTERNAL_CATCH_TESTCASE2( fname, ... )                         \
         static void fname( int );                                          \
         CATCH_INTERNAL_START_WARNINGS_SUPPRESSION                          \
         CATCH_INTERNAL_SUPPRESS_GLOBALS_WARNINGS                           \
         CATCH_INTERNAL_SUPPRESS_UNUSED_VARIABLE_WARNINGS                   \
         static const Catch::Detail::DummyUse INTERNAL_CATCH_UNIQUE_NAME(   \
-            dummyUser )( &(fname) );                                       \
+            dummyUser )( &(fname), Catch::NameAndTags{ __VA_ARGS__ } );    \
         CATCH_INTERNAL_SUPPRESS_SHADOW_WARNINGS                            \
         static void fname( [[maybe_unused]] int catchInternalSectionHint ) \
             CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION
 #    define INTERNAL_CATCH_TESTCASE( ... ) \
-        INTERNAL_CATCH_TESTCASE2( INTERNAL_CATCH_UNIQUE_NAME( dummyFunction ) )
+        INTERNAL_CATCH_TESTCASE2( INTERNAL_CATCH_UNIQUE_NAME( dummyFunction ), __VA_ARGS__ )
 
 
 #endif // CATCH_CONFIG_EXPERIMENTAL_STATIC_ANALYSIS_SUPPORT
@@ -6935,7 +7059,7 @@ namespace Catch {
     struct TestCaseInfo : Detail::NonCopyable {
 
         TestCaseInfo(StringRef _className,
-                     NameAndTags const& _tags,
+                     NameAndTags const& _nameAndTags,
                      SourceLineInfo const& _lineInfo);
 
         bool isHidden() const;
@@ -7147,8 +7271,8 @@ namespace Catch {
 #define CATCH_VERSION_MACROS_HPP_INCLUDED
 
 #define CATCH_VERSION_MAJOR 3
-#define CATCH_VERSION_MINOR 5
-#define CATCH_VERSION_PATCH 2
+#define CATCH_VERSION_MINOR 6
+#define CATCH_VERSION_PATCH 0
 
 #endif // CATCH_VERSION_MACROS_HPP_INCLUDED
 
@@ -7820,6 +7944,34 @@ namespace Catch {
 #include <cstdint>
 #include <type_traits>
 
+// Note: We use the usual enable-disable-autodetect dance here even though
+//       we do not support these in CMake configuration options (yet?).
+//       It is highly unlikely that we will need to make these actually
+//       user-configurable, but this will make it simpler if weend up needing
+//       it, and it provides an escape hatch to the users who need it.
+#if defined( __SIZEOF_INT128__ )
+#    define CATCH_CONFIG_INTERNAL_UINT128
+// Unlike GCC, MSVC does not polyfill umul as mulh + mul pair on ARM machines.
+// Currently we do not bother doing this ourselves, but we could if it became
+// important for perf.
+#elif defined( _MSC_VER ) && defined( _M_X64 )
+#    define CATCH_CONFIG_INTERNAL_MSVC_UMUL128
+#endif
+
+#if defined( CATCH_CONFIG_INTERNAL_UINT128 ) && \
+    !defined( CATCH_CONFIG_NO_UINT128 ) &&      \
+    !defined( CATCH_CONFIG_UINT128 )
+#define CATCH_CONFIG_UINT128
+#endif
+
+#if defined( CATCH_CONFIG_INTERNAL_MSVC_UMUL128 ) && \
+    !defined( CATCH_CONFIG_NO_MSVC_UMUL128 ) &&      \
+    !defined( CATCH_CONFIG_MSVC_UMUL128 )
+#    define CATCH_CONFIG_MSVC_UMUL128
+#    include <intrin.h>
+#endif
+
+
 namespace Catch {
     namespace Detail {
 
@@ -7847,64 +7999,56 @@ namespace Catch {
         struct ExtendedMultResult {
             T upper;
             T lower;
-            friend bool operator==( ExtendedMultResult const& lhs,
-                                    ExtendedMultResult const& rhs ) {
-                return lhs.upper == rhs.upper && lhs.lower == rhs.lower;
+            bool operator==( ExtendedMultResult const& rhs ) const {
+                return upper == rhs.upper && lower == rhs.lower;
             }
         };
 
-        // Returns 128 bit result of multiplying lhs and rhs
+        /**
+         * Returns 128 bit result of lhs * rhs using portable C++ code
+         *
+         * This implementation is almost twice as fast as naive long multiplication,
+         * and unlike intrinsic-based approach, it supports constexpr evaluation.
+         */
         constexpr ExtendedMultResult<std::uint64_t>
-        extendedMult( std::uint64_t lhs, std::uint64_t rhs ) {
-            // We use the simple long multiplication approach for
-            // correctness, we can use platform specific builtins
-            // for performance later.
-
-            // Split the lhs and rhs into two 32bit "digits", so that we can
-            // do 64 bit arithmetic to handle carry bits.
-            //            32b    32b    32b    32b
-            //     lhs                  L1     L2
-            //   * rhs                  R1     R2
-            //            ------------------------
-            //                       |  R2 * L2  |
-            //                 |  R2 * L1  |
-            //                 |  R1 * L2  |
-            //           |  R1 * L1  |
-            //           -------------------------
-            //           |  a  |  b  |  c  |  d  |
-
+        extendedMultPortable(std::uint64_t lhs, std::uint64_t rhs) {
 #define CarryBits( x ) ( x >> 32 )
 #define Digits( x ) ( x & 0xFF'FF'FF'FF )
+            std::uint64_t lhs_low = Digits( lhs );
+            std::uint64_t rhs_low = Digits( rhs );
+            std::uint64_t low_low = ( lhs_low * rhs_low );
+            std::uint64_t high_high = CarryBits( lhs ) * CarryBits( rhs );
 
-            auto r2l2 = Digits( rhs ) * Digits( lhs );
-            auto r2l1 = Digits( rhs ) * CarryBits( lhs );
-            auto r1l2 = CarryBits( rhs ) * Digits( lhs );
-            auto r1l1 = CarryBits( rhs ) * CarryBits( lhs );
+            // We add in carry bits from low-low already
+            std::uint64_t high_low =
+                ( CarryBits( lhs ) * rhs_low ) + CarryBits( low_low );
+            // Note that we can add only low bits from high_low, to avoid
+            // overflow with large inputs
+            std::uint64_t low_high =
+                ( lhs_low * CarryBits( rhs ) ) + Digits( high_low );
 
-            // Sum to columns first
-            auto d = Digits( r2l2 );
-            auto c = CarryBits( r2l2 ) + Digits( r2l1 ) + Digits( r1l2 );
-            auto b = CarryBits( r2l1 ) + CarryBits( r1l2 ) + Digits( r1l1 );
-            auto a = CarryBits( r1l1 );
-
-            // Propagate carries between columns
-            c += CarryBits( d );
-            b += CarryBits( c );
-            a += CarryBits( b );
-
-            // Remove the used carries
-            c = Digits( c );
-            b = Digits( b );
-            a = Digits( a );
-
+            return { high_high + CarryBits( high_low ) + CarryBits( low_high ),
+                     ( low_high << 32 ) | Digits( low_low ) };
 #undef CarryBits
 #undef Digits
-
-            return {
-                a << 32 | b, // upper 64 bits
-                c << 32 | d  // lower 64 bits
-            };
         }
+
+        //! Returns 128 bit result of lhs * rhs
+        inline ExtendedMultResult<std::uint64_t>
+        extendedMult( std::uint64_t lhs, std::uint64_t rhs ) {
+#if defined( CATCH_CONFIG_UINT128 )
+            auto result = __uint128_t( lhs ) * __uint128_t( rhs );
+            return { static_cast<std::uint64_t>( result >> 64 ),
+                     static_cast<std::uint64_t>( result ) };
+#elif defined( CATCH_CONFIG_MSVC_UMUL128 )
+            std::uint64_t high;
+            std::uint64_t low = _umul128( lhs, rhs, &high );
+            return { high, low };
+#else
+            return extendedMultPortable( lhs, rhs );
+#endif
+        }
+
 
         template <typename UInt>
         constexpr ExtendedMultResult<UInt> extendedMult( UInt lhs, UInt rhs ) {
@@ -8009,22 +8153,6 @@ namespace Catch {
 
 namespace Catch {
 
-    namespace Detail {
-        // Indirection to enable make_unsigned<bool> behaviour.
-        template <typename T>
-        struct make_unsigned {
-            using type = std::make_unsigned_t<T>;
-        };
-
-        template <>
-        struct make_unsigned<bool> {
-            using type = uint8_t;
-        };
-
-        template <typename T>
-        using make_unsigned_t = typename make_unsigned<T>::type;
-    }
-
 /**
  * Implementation of uniform distribution on integers.
  *
@@ -8040,7 +8168,7 @@ template <typename IntegerType>
 class uniform_integer_distribution {
     static_assert(std::is_integral<IntegerType>::value, "...");
 
-    using UnsignedIntegerType = Detail::make_unsigned_t<IntegerType>;
+    using UnsignedIntegerType = Detail::SizedUnsignedType_t<sizeof(IntegerType)>;
 
     // Only the left bound is stored, and we store it converted to its
     // unsigned image. This avoids having to do the conversions inside
@@ -9322,7 +9450,7 @@ namespace Catch {
 
             std::vector<Catch::Detail::unique_ptr<EnumInfo>> m_enumInfos;
 
-            EnumInfo const& registerEnum( StringRef enumName, StringRef allEnums, std::vector<int> const& values) override;
+            EnumInfo const& registerEnum( StringRef enumName, StringRef allValueNames, std::vector<int> const& values) override;
         };
 
         std::vector<StringRef> parseEnums( StringRef enums );
@@ -9795,7 +9923,7 @@ namespace Catch {
         JsonObjectWriter( std::ostream& os );
         JsonObjectWriter( std::ostream& os, std::uint64_t indent_level );
 
-        JsonObjectWriter( JsonObjectWriter&& source );
+        JsonObjectWriter( JsonObjectWriter&& source ) noexcept;
         JsonObjectWriter& operator=( JsonObjectWriter&& source ) = delete;
 
         ~JsonObjectWriter();
@@ -9814,7 +9942,7 @@ namespace Catch {
         JsonArrayWriter( std::ostream& os );
         JsonArrayWriter( std::ostream& os, std::uint64_t indent_level );
 
-        JsonArrayWriter( JsonArrayWriter&& source );
+        JsonArrayWriter( JsonArrayWriter&& source ) noexcept;
         JsonArrayWriter& operator=( JsonArrayWriter&& source ) = delete;
 
         ~JsonArrayWriter();
@@ -10709,6 +10837,8 @@ namespace Catch {
         std::vector<TestCaseHandle> const& getAllTests() const override;
         std::vector<TestCaseHandle> const& getAllTestsSorted( IConfig const& config ) const override;
 
+        ~TestRegistry() override; // = default
+
     private:
         std::vector<Detail::unique_ptr<TestCaseInfo>> m_owned_test_infos;
         // Keeps a materialized vector for `getAllInfos`.
@@ -10819,6 +10949,107 @@ namespace Catch {
         class Columns;
 
         /**
+         * Abstraction for a string with ansi escape sequences that
+         * automatically skips over escapes when iterating. Only graphical
+         * escape sequences are considered.
+         *
+         * Internal representation:
+         * An escape sequence looks like \033[39;49m
+         * We need bidirectional iteration and the unbound length of escape
+         * sequences poses a problem for operator-- To make this work we'll
+         * replace the last `m` with a 0xff (this is a codepoint that won't have
+         * any utf-8 meaning).
+         */
+        class AnsiSkippingString {
+            std::string m_string;
+            std::size_t m_size = 0;
+
+            // perform 0xff replacement and calculate m_size
+            void preprocessString();
+
+        public:
+            class const_iterator;
+            using iterator = const_iterator;
+            // note: must be u-suffixed or this will cause a "truncation of
+            // constant value" warning on MSVC
+            static constexpr char sentinel = static_cast<char>( 0xffu );
+
+            explicit AnsiSkippingString( std::string const& text );
+            explicit AnsiSkippingString( std::string&& text );
+
+            const_iterator begin() const;
+            const_iterator end() const;
+
+            size_t size() const { return m_size; }
+
+            std::string substring( const_iterator begin,
+                                   const_iterator end ) const;
+        };
+
+        class AnsiSkippingString::const_iterator {
+            friend AnsiSkippingString;
+            struct EndTag {};
+
+            const std::string* m_string;
+            std::string::const_iterator m_it;
+
+            explicit const_iterator( const std::string& string, EndTag ):
+                m_string( &string ), m_it( string.end() ) {}
+
+            void tryParseAnsiEscapes();
+            void advance();
+            void unadvance();
+
+        public:
+            using difference_type = std::ptrdiff_t;
+            using value_type = char;
+            using pointer = value_type*;
+            using reference = value_type&;
+            using iterator_category = std::bidirectional_iterator_tag;
+
+            explicit const_iterator( const std::string& string ):
+                m_string( &string ), m_it( string.begin() ) {
+                tryParseAnsiEscapes();
+            }
+
+            char operator*() const { return *m_it; }
+
+            const_iterator& operator++() {
+                advance();
+                return *this;
+            }
+            const_iterator operator++( int ) {
+                iterator prev( *this );
+                operator++();
+                return prev;
+            }
+            const_iterator& operator--() {
+                unadvance();
+                return *this;
+            }
+            const_iterator operator--( int ) {
+                iterator prev( *this );
+                operator--();
+                return prev;
+            }
+
+            bool operator==( const_iterator const& other ) const {
+                return m_it == other.m_it;
+            }
+            bool operator!=( const_iterator const& other ) const {
+                return !operator==( other );
+            }
+            bool operator<=( const_iterator const& other ) const {
+                return m_it <= other.m_it;
+            }
+
+            const_iterator oneBefore() const {
+                auto it = *this;
+                return --it;
+            }
+        };
+
+        /**
          * Represents a column of text with specific width and indentation
          *
          * When written out to a stream, it will perform linebreaking
@@ -10827,10 +11058,11 @@ namespace Catch {
          */
         class Column {
             // String to be written out
-            std::string m_string;
+            AnsiSkippingString m_string;
             // Width of the column for linebreaking
             size_t m_width = CATCH_CONFIG_CONSOLE_WIDTH - 1;
-            // Indentation of other lines (including first if initial indent is unset)
+            // Indentation of other lines (including first if initial indent is
+            // unset)
             size_t m_indent = 0;
             // Indentation of the first line
             size_t m_initialIndent = std::string::npos;
@@ -10845,16 +11077,19 @@ namespace Catch {
 
                 Column const& m_column;
                 // Where does the current line start?
-                size_t m_lineStart = 0;
+                AnsiSkippingString::const_iterator m_lineStart;
                 // How long should the current line be?
-                size_t m_lineLength = 0;
+                AnsiSkippingString::const_iterator m_lineEnd;
                 // How far have we checked the string to iterate?
-                size_t m_parsedTo = 0;
+                AnsiSkippingString::const_iterator m_parsedTo;
                 // Should a '-' be appended to the line?
                 bool m_addHyphen = false;
 
                 const_iterator( Column const& column, EndTag ):
-                    m_column( column ), m_lineStart( m_column.m_string.size() ) {}
+                    m_column( column ),
+                    m_lineStart( m_column.m_string.end() ),
+                    m_lineEnd( column.m_string.end() ),
+                    m_parsedTo( column.m_string.end() ) {}
 
                 // Calculates the length of the current line
                 void calcLength();
@@ -10864,8 +11099,9 @@ namespace Catch {
 
                 // Creates an indented and (optionally) suffixed string from
                 // current iterator position, indentation and length.
-                std::string addIndentAndSuffix( size_t position,
-                                                size_t length ) const;
+                std::string addIndentAndSuffix(
+                    AnsiSkippingString::const_iterator start,
+                    AnsiSkippingString::const_iterator end ) const;
 
             public:
                 using difference_type = std::ptrdiff_t;
@@ -10882,7 +11118,8 @@ namespace Catch {
                 const_iterator operator++( int );
 
                 bool operator==( const_iterator const& other ) const {
-                    return m_lineStart == other.m_lineStart && &m_column == &other.m_column;
+                    return m_lineStart == other.m_lineStart &&
+                           &m_column == &other.m_column;
                 }
                 bool operator!=( const_iterator const& other ) const {
                     return !operator==( other );
@@ -10892,7 +11129,7 @@ namespace Catch {
 
             explicit Column( std::string const& text ): m_string( text ) {}
             explicit Column( std::string&& text ):
-                m_string( CATCH_MOVE(text)) {}
+                m_string( CATCH_MOVE( text ) ) {}
 
             Column& width( size_t newWidth ) & {
                 assert( newWidth > 0 );
@@ -10923,7 +11160,9 @@ namespace Catch {
 
             size_t width() const { return m_width; }
             const_iterator begin() const { return const_iterator( *this ); }
-            const_iterator end() const { return { *this, const_iterator::EndTag{} }; }
+            const_iterator end() const {
+                return { *this, const_iterator::EndTag{} };
+            }
 
             friend std::ostream& operator<<( std::ostream& os,
                                              Column const& col );
@@ -11194,6 +11433,16 @@ namespace Catch {
 
 namespace Catch {
 
+#ifdef __clang__
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wsign-compare"
+#    pragma clang diagnostic ignored "-Wnon-virtual-dtor"
+#elif defined __GNUC__
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wsign-compare"
+#    pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+
     template<typename ArgT, typename MatcherT>
     class MatchExpr : public ITransientExpression {
         ArgT && m_arg;
@@ -11211,6 +11460,13 @@ namespace Catch {
                << m_matcher.toString();
         }
     };
+
+#ifdef __clang__
+#    pragma clang diagnostic pop
+#elif defined __GNUC__
+#    pragma GCC diagnostic pop
+#endif
+
 
     namespace Matchers {
         template <typename ArgT>
@@ -13454,7 +13710,7 @@ namespace Catch {
 
         void assertionEnded( AssertionStats const& assertionStats ) override;
         void sectionEnded( SectionStats const& sectionStats ) override;
-        void testCasePartialEnded(TestCaseStats const& testInfo, uint64_t partNumber) override;
+        void testCasePartialEnded(TestCaseStats const& testStats, uint64_t partNumber) override;
         void testCaseEnded( TestCaseStats const& testCaseStats ) override;
         void testRunEnded( TestRunStats const& testRunStats ) override;
 
@@ -13622,7 +13878,7 @@ namespace Catch {
             xml.endElement();
         }
 
-        void writeRun( TestRunNode const& groupNode );
+        void writeRun( TestRunNode const& runNode );
 
         void writeTestFile(StringRef filename, std::vector<TestCaseNode const*> const& testCaseNodes);
 
@@ -13707,8 +13963,8 @@ namespace Catch {
             return "Reports test results as TeamCity service messages"s;
         }
 
-        void testRunStarting( TestRunInfo const& groupInfo ) override;
-        void testRunEnded( TestRunStats const& testGroupStats ) override;
+        void testRunStarting( TestRunInfo const& runInfo ) override;
+        void testRunEnded( TestRunStats const& runStats ) override;
 
 
         void assertionEnded(AssertionStats const& assertionStats) override;

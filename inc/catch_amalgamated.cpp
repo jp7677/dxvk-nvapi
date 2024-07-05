@@ -6,8 +6,8 @@
 
 // SPDX-License-Identifier: BSL-1.0
 
-//  Catch v3.5.2
-//  Generated: 2024-01-15 14:06:36.675713
+//  Catch v3.6.0
+//  Generated: 2024-05-05 20:53:27.562886
 //  ----------------------------------------------------------
 //  This file is an amalgamation of multiple different files.
 //  You probably shouldn't edit it directly.
@@ -101,8 +101,8 @@ namespace Catch {
                     FDuration mean = FDuration(0);
                     int i = 0;
                     for (auto it = first; it < last; ++it, ++i) {
-                        samples.push_back(FDuration(*it));
-                        mean += FDuration(*it);
+                        samples.push_back(*it);
+                        mean += *it;
                     }
                     mean /= i;
 
@@ -187,7 +187,7 @@ namespace Catch {
                           double const* last,
                           Estimator& estimator ) {
                     auto n = static_cast<size_t>( last - first );
-                    std::uniform_int_distribution<size_t> dist( 0, n - 1 );
+                    Catch::uniform_integer_distribution<size_t> dist( 0, n - 1 );
 
                     sample out;
                     out.reserve( resamples );
@@ -558,7 +558,7 @@ bool marginComparison(double lhs, double rhs, double margin) {
 namespace Catch {
 
     Approx::Approx ( double value )
-    :   m_epsilon( std::numeric_limits<float>::epsilon()*100. ),
+    :   m_epsilon( static_cast<double>(std::numeric_limits<float>::epsilon())*100. ),
         m_margin( 0.0 ),
         m_scale( 0.0 ),
         m_value( value )
@@ -807,14 +807,16 @@ namespace Catch {
 
         // Insert the default reporter if user hasn't asked for a specific one
         if ( m_data.reporterSpecifications.empty() ) {
-            m_data.reporterSpecifications.push_back( {
 #if defined( CATCH_CONFIG_DEFAULT_REPORTER )
-                CATCH_CONFIG_DEFAULT_REPORTER,
+            const auto default_spec = CATCH_CONFIG_DEFAULT_REPORTER;
 #else
-                "console",
+            const auto default_spec = "console";
 #endif
-                {}, {}, {}
-            } );
+            auto parsed = parseReporterSpec(default_spec);
+            CATCH_ENFORCE( parsed,
+                           "Cannot parse the provided default reporter spec: '"
+                               << default_spec << '\'' );
+            m_data.reporterSpecifications.push_back( std::move( *parsed ) );
         }
 
         if ( enableBazelEnvSupport() ) {
@@ -1038,6 +1040,7 @@ namespace Catch {
                     m_messages.back().message += " := ";
                     start = pos;
                 }
+            default:; // noop
             }
         }
         assert(openings.empty() && "Mismatched openings");
@@ -1581,8 +1584,10 @@ namespace Catch {
             while (lastDot > 0 && filename[lastDot - 1] != '.') {
                 --lastDot;
             }
-            --lastDot;
+            // In theory we could have filename without any extension in it
+            if ( lastDot == 0 ) { return StringRef(); }
 
+            --lastDot;
             size_t nameStart = lastDot;
             while (nameStart > 0 && filename[nameStart - 1] != '/' && filename[nameStart - 1] != '\\') {
                 --nameStart;
@@ -1966,13 +1971,13 @@ namespace Detail {
         }
     } // end unnamed namespace
 
-    std::string convertIntoString(StringRef string, bool escape_invisibles) {
+    std::string convertIntoString(StringRef string, bool escapeInvisibles) {
         std::string ret;
         // This is enough for the "don't escape invisibles" case, and a good
         // lower bound on the "escape invisibles" case.
         ret.reserve(string.size() + 2);
 
-        if (!escape_invisibles) {
+        if (!escapeInvisibles) {
             ret += '"';
             ret += string;
             ret += '"';
@@ -2050,7 +2055,7 @@ std::string StringMaker<char const*>::convert(char const* str) {
         return{ "{null string}" };
     }
 }
-std::string StringMaker<char*>::convert(char* str) {
+std::string StringMaker<char*>::convert(char* str) { // NOLINT(readability-non-const-parameter)
     if (str) {
         return Detail::convertIntoString( str );
     } else {
@@ -2147,17 +2152,17 @@ std::string StringMaker<signed char>::convert(signed char value) {
 std::string StringMaker<char>::convert(char c) {
     return ::Catch::Detail::stringify(static_cast<signed char>(c));
 }
-std::string StringMaker<unsigned char>::convert(unsigned char c) {
-    return ::Catch::Detail::stringify(static_cast<char>(c));
+std::string StringMaker<unsigned char>::convert(unsigned char value) {
+    return ::Catch::Detail::stringify(static_cast<char>(value));
 }
 
-int StringMaker<float>::precision = 5;
+int StringMaker<float>::precision = std::numeric_limits<float>::max_digits10;
 
 std::string StringMaker<float>::convert(float value) {
     return Detail::fpToString(value, precision) + 'f';
 }
 
-int StringMaker<double>::precision = 10;
+int StringMaker<double>::precision = std::numeric_limits<double>::max_digits10;
 
 std::string StringMaker<double>::convert(double value) {
     return Detail::fpToString(value, precision);
@@ -2268,7 +2273,7 @@ namespace Catch {
     }
 
     Version const& libraryVersion() {
-        static Version version( 3, 5, 2, "", 0 );
+        static Version version( 3, 6, 0, "", 0 );
         return version;
     }
 
@@ -3092,7 +3097,7 @@ namespace Catch {
                     line = trim(line);
                     if( !line.empty() && !startsWith( line, '#' ) ) {
                         if( !startsWith( line, '"' ) )
-                            line = '"' + line + '"';
+                            line = '"' + CATCH_MOVE(line) + '"';
                         config.testsOrTags.push_back( line );
                         config.testsOrTags.emplace_back( "," );
                     }
@@ -3573,21 +3578,21 @@ namespace {
 
 namespace Catch {
 
-    Detail::unique_ptr<ColourImpl> makeColourImpl( ColourMode implSelection,
+    Detail::unique_ptr<ColourImpl> makeColourImpl( ColourMode colourSelection,
                                                    IStream* stream ) {
 #if defined( CATCH_CONFIG_COLOUR_WIN32 )
-        if ( implSelection == ColourMode::Win32 ) {
+        if ( colourSelection == ColourMode::Win32 ) {
             return Detail::make_unique<Win32ColourImpl>( stream );
         }
 #endif
-        if ( implSelection == ColourMode::ANSI ) {
+        if ( colourSelection == ColourMode::ANSI ) {
             return Detail::make_unique<ANSIColourImpl>( stream );
         }
-        if ( implSelection == ColourMode::None ) {
+        if ( colourSelection == ColourMode::None ) {
             return Detail::make_unique<NoColourImpl>( stream );
         }
 
-        if ( implSelection == ColourMode::PlatformDefault) {
+        if ( colourSelection == ColourMode::PlatformDefault) {
 #if defined( CATCH_CONFIG_COLOUR_WIN32 )
             if ( Win32ColourImpl::useImplementationForStream( *stream ) ) {
                 return Detail::make_unique<Win32ColourImpl>( stream );
@@ -3599,7 +3604,7 @@ namespace Catch {
             return Detail::make_unique<NoColourImpl>( stream );
         }
 
-        CATCH_ERROR( "Could not create colour impl for selection " << static_cast<int>(implSelection) );
+        CATCH_ERROR( "Could not create colour impl for selection " << static_cast<int>(colourSelection) );
     }
 
     bool isColourImplAvailable( ColourMode colourSelection ) {
@@ -3807,7 +3812,12 @@ namespace Catch {
 
 namespace Catch {
 
-    ITransientExpression::~ITransientExpression() = default;
+    void ITransientExpression::streamReconstructedExpression(
+        std::ostream& os ) const {
+        // We can't make this function pure virtual to keep ITransientExpression
+        // constexpr, so we write error message instead
+        os << "Some class derived from ITransientExpression without overriding streamReconstructedExpression";
+    }
 
     void formatReconstructedExpression( std::ostream &os, std::string const& lhs, StringRef op, std::string const& rhs ) {
         if( lhs.size() + rhs.size() < 40 &&
@@ -4473,7 +4483,7 @@ namespace Catch {
         m_os{ os }, m_indent_level{ indent_level } {
         m_os << '{';
     }
-    JsonObjectWriter::JsonObjectWriter( JsonObjectWriter&& source ):
+    JsonObjectWriter::JsonObjectWriter( JsonObjectWriter&& source ) noexcept:
         m_os{ source.m_os },
         m_indent_level{ source.m_indent_level },
         m_should_comma{ source.m_should_comma },
@@ -4504,7 +4514,7 @@ namespace Catch {
         m_os{ os }, m_indent_level{ indent_level } {
         m_os << '[';
     }
-    JsonArrayWriter::JsonArrayWriter( JsonArrayWriter&& source ):
+    JsonArrayWriter::JsonArrayWriter( JsonArrayWriter&& source ) noexcept:
         m_os{ source.m_os },
         m_indent_level{ source.m_indent_level },
         m_should_comma{ source.m_should_comma },
@@ -5283,7 +5293,7 @@ namespace Catch {
             auto kv = splitKVPair( parts[i] );
             auto key = kv.key, value = kv.value;
 
-            if ( key.empty() || value.empty() ) {
+            if ( key.empty() || value.empty() ) { // NOLINT(bugprone-branch-clone)
                 return {};
             } else if ( key[0] == 'X' ) {
                 // This is a reporter-specific option, we don't check these
@@ -5843,6 +5853,13 @@ namespace Catch {
         assertionEnded(CATCH_MOVE(result) );
         resetAssertionInfo();
 
+        // Best effort cleanup for sections that have not been destructed yet
+        // Since this is a fatal error, we have not had and won't have the opportunity to destruct them properly
+        while (!m_activeSections.empty()) {
+            auto nl = m_activeSections.back()->nameAndLocation();
+            SectionEndInfo endInfo{ SectionInfo(CATCH_MOVE(nl.location), CATCH_MOVE(nl.name)), {}, 0.0 };
+            sectionEndedEarly(CATCH_MOVE(endInfo));
+        }
         handleUnfinishedSections();
 
         // Recreate section for test case (as we will lose the one that was in scope)
@@ -6297,17 +6314,29 @@ namespace Catch {
     }
 
     bool replaceInPlace( std::string& str, std::string const& replaceThis, std::string const& withThis ) {
-        bool replaced = false;
         std::size_t i = str.find( replaceThis );
-        while( i != std::string::npos ) {
-            replaced = true;
-            str = str.substr( 0, i ) + withThis + str.substr( i+replaceThis.size() );
-            if( i < str.size()-withThis.size() )
-                i = str.find( replaceThis, i+withThis.size() );
+        if (i == std::string::npos) {
+            return false;
+        }
+        std::size_t copyBegin = 0;
+        std::string origStr = CATCH_MOVE(str);
+        str.clear();
+        // There is at least one replacement, so reserve with the best guess
+        // we can make without actually counting the number of occurences.
+        str.reserve(origStr.size() - replaceThis.size() + withThis.size());
+        do {
+            str.append(origStr, copyBegin, i-copyBegin );
+            str += withThis;
+            copyBegin = i + replaceThis.size();
+            if( copyBegin < origStr.size() )
+                i = origStr.find( replaceThis, copyBegin );
             else
                 i = std::string::npos;
+        } while( i != std::string::npos );
+        if ( copyBegin < origStr.size() ) {
+            str.append(origStr, copyBegin, origStr.size() );
         }
-        return replaced;
+        return true;
     }
 
     std::vector<StringRef> splitStringRef( StringRef str, char delimiter ) {
@@ -6580,6 +6609,8 @@ namespace Catch {
     std::vector<TestCaseHandle> const& getAllTestCasesSorted( IConfig const& config ) {
         return getRegistryHub().getTestCaseRegistry().getAllTestsSorted( config );
     }
+
+    TestRegistry::~TestRegistry() = default;
 
     void TestRegistry::registerTest(Detail::unique_ptr<TestCaseInfo> testInfo, Detail::unique_ptr<ITestInvoker> testInvoker) {
         m_handles.emplace_back(testInfo.get(), testInvoker.get());
@@ -7183,117 +7214,228 @@ namespace {
         return std::memchr( chars, c, sizeof( chars ) - 1 ) != nullptr;
     }
 
-    bool isBoundary( std::string const& line, size_t at ) {
-        assert( at > 0 );
-        assert( at <= line.size() );
-
-        return at == line.size() ||
-               ( isWhitespace( line[at] ) && !isWhitespace( line[at - 1] ) ) ||
-               isBreakableBefore( line[at] ) ||
-               isBreakableAfter( line[at - 1] );
-    }
-
 } // namespace
 
 namespace Catch {
     namespace TextFlow {
+        void AnsiSkippingString::preprocessString() {
+            for ( auto it = m_string.begin(); it != m_string.end(); ) {
+                // try to read through an ansi sequence
+                while ( it != m_string.end() && *it == '\033' &&
+                        it + 1 != m_string.end() && *( it + 1 ) == '[' ) {
+                    auto cursor = it + 2;
+                    while ( cursor != m_string.end() &&
+                            ( isdigit( *cursor ) || *cursor == ';' ) ) {
+                        ++cursor;
+                    }
+                    if ( cursor == m_string.end() || *cursor != 'm' ) {
+                        break;
+                    }
+                    // 'm' -> 0xff
+                    *cursor = AnsiSkippingString::sentinel;
+                    // if we've read an ansi sequence, set the iterator and
+                    // return to the top of the loop
+                    it = cursor + 1;
+                }
+                if ( it != m_string.end() ) {
+                    ++m_size;
+                    ++it;
+                }
+            }
+        }
+
+        AnsiSkippingString::AnsiSkippingString( std::string const& text ):
+            m_string( text ) {
+            preprocessString();
+        }
+
+        AnsiSkippingString::AnsiSkippingString( std::string&& text ):
+            m_string( CATCH_MOVE( text ) ) {
+            preprocessString();
+        }
+
+        AnsiSkippingString::const_iterator AnsiSkippingString::begin() const {
+            return const_iterator( m_string );
+        }
+
+        AnsiSkippingString::const_iterator AnsiSkippingString::end() const {
+            return const_iterator( m_string, const_iterator::EndTag{} );
+        }
+
+        std::string AnsiSkippingString::substring( const_iterator begin,
+                                                   const_iterator end ) const {
+            // There's one caveat here to an otherwise simple substring: when
+            // making a begin iterator we might have skipped ansi sequences at
+            // the start. If `begin` here is a begin iterator, skipped over
+            // initial ansi sequences, we'll use the true beginning of the
+            // string. Lastly: We need to transform any chars we replaced with
+            // 0xff back to 'm'
+            auto str = std::string( begin == this->begin() ? m_string.begin()
+                                                           : begin.m_it,
+                                    end.m_it );
+            std::transform( str.begin(), str.end(), str.begin(), []( char c ) {
+                return c == AnsiSkippingString::sentinel ? 'm' : c;
+            } );
+            return str;
+        }
+
+        void AnsiSkippingString::const_iterator::tryParseAnsiEscapes() {
+            // check if we've landed on an ansi sequence, and if so read through
+            // it
+            while ( m_it != m_string->end() && *m_it == '\033' &&
+                    m_it + 1 != m_string->end() &&  *( m_it + 1 ) == '[' ) {
+                auto cursor = m_it + 2;
+                while ( cursor != m_string->end() &&
+                        ( isdigit( *cursor ) || *cursor == ';' ) ) {
+                    ++cursor;
+                }
+                if ( cursor == m_string->end() ||
+                     *cursor != AnsiSkippingString::sentinel ) {
+                    break;
+                }
+                // if we've read an ansi sequence, set the iterator and
+                // return to the top of the loop
+                m_it = cursor + 1;
+            }
+        }
+
+        void AnsiSkippingString::const_iterator::advance() {
+            assert( m_it != m_string->end() );
+            m_it++;
+            tryParseAnsiEscapes();
+        }
+
+        void AnsiSkippingString::const_iterator::unadvance() {
+            assert( m_it != m_string->begin() );
+            m_it--;
+            // if *m_it is 0xff, scan back to the \033 and then m_it-- once more
+            // (and repeat check)
+            while ( *m_it == AnsiSkippingString::sentinel ) {
+                while ( *m_it != '\033' ) {
+                    assert( m_it != m_string->begin() );
+                    m_it--;
+                }
+                // if this happens, we must have been a begin iterator that had
+                // skipped over ansi sequences at the start of a string
+                assert( m_it != m_string->begin() );
+                assert( *m_it == '\033' );
+                m_it--;
+            }
+        }
+
+        static bool isBoundary( AnsiSkippingString const& line,
+                                AnsiSkippingString::const_iterator it ) {
+            return it == line.end() ||
+                   ( isWhitespace( *it ) &&
+                     !isWhitespace( *it.oneBefore() ) ) ||
+                   isBreakableBefore( *it ) ||
+                   isBreakableAfter( *it.oneBefore() );
+        }
 
         void Column::const_iterator::calcLength() {
             m_addHyphen = false;
             m_parsedTo = m_lineStart;
+            AnsiSkippingString const& current_line = m_column.m_string;
 
-            std::string const& current_line = m_column.m_string;
-            if ( current_line[m_lineStart] == '\n' ) {
-                ++m_parsedTo;
+            if ( m_parsedTo == current_line.end() ) {
+                m_lineEnd = m_parsedTo;
+                return;
             }
 
+            assert( m_lineStart != current_line.end() );
+            if ( *m_lineStart == '\n' ) { ++m_parsedTo; }
+
             const auto maxLineLength = m_column.m_width - indentSize();
-            const auto maxParseTo = std::min(current_line.size(), m_lineStart + maxLineLength);
-            while ( m_parsedTo < maxParseTo &&
-                    current_line[m_parsedTo] != '\n' ) {
+            std::size_t lineLength = 0;
+            while ( m_parsedTo != current_line.end() &&
+                    lineLength < maxLineLength && *m_parsedTo != '\n' ) {
                 ++m_parsedTo;
+                ++lineLength;
             }
 
             // If we encountered a newline before the column is filled,
             // then we linebreak at the newline and consider this line
             // finished.
-            if ( m_parsedTo < m_lineStart + maxLineLength ) {
-                m_lineLength = m_parsedTo - m_lineStart;
+            if ( lineLength < maxLineLength ) {
+                m_lineEnd = m_parsedTo;
             } else {
                 // Look for a natural linebreak boundary in the column
                 // (We look from the end, so that the first found boundary is
                 // the right one)
-                size_t newLineLength = maxLineLength;
-                while ( newLineLength > 0 && !isBoundary( current_line, m_lineStart + newLineLength ) ) {
-                    --newLineLength;
+                m_lineEnd = m_parsedTo;
+                while ( lineLength > 0 &&
+                        !isBoundary( current_line, m_lineEnd ) ) {
+                    --lineLength;
+                    --m_lineEnd;
                 }
-                while ( newLineLength > 0 &&
-                        isWhitespace( current_line[m_lineStart + newLineLength - 1] ) ) {
-                    --newLineLength;
+                while ( lineLength > 0 &&
+                        isWhitespace( *m_lineEnd.oneBefore() ) ) {
+                    --lineLength;
+                    --m_lineEnd;
                 }
 
-                // If we found one, then that is where we linebreak
-                if ( newLineLength > 0 ) {
-                    m_lineLength = newLineLength;
-                } else {
-                    // Otherwise we have to split text with a hyphen
+                // If we found one, then that is where we linebreak, otherwise
+                // we have to split text with a hyphen
+                if ( lineLength == 0 ) {
                     m_addHyphen = true;
-                    m_lineLength = maxLineLength - 1;
+                    m_lineEnd = m_parsedTo.oneBefore();
                 }
             }
         }
 
         size_t Column::const_iterator::indentSize() const {
-            auto initial =
-                m_lineStart == 0 ? m_column.m_initialIndent : std::string::npos;
+            auto initial = m_lineStart == m_column.m_string.begin()
+                               ? m_column.m_initialIndent
+                               : std::string::npos;
             return initial == std::string::npos ? m_column.m_indent : initial;
         }
 
-        std::string
-        Column::const_iterator::addIndentAndSuffix( size_t position,
-                                              size_t length ) const {
+        std::string Column::const_iterator::addIndentAndSuffix(
+            AnsiSkippingString::const_iterator start,
+            AnsiSkippingString::const_iterator end ) const {
             std::string ret;
             const auto desired_indent = indentSize();
-            ret.reserve( desired_indent + length + m_addHyphen );
+            // ret.reserve( desired_indent + (end - start) + m_addHyphen );
             ret.append( desired_indent, ' ' );
-            ret.append( m_column.m_string, position, length );
-            if ( m_addHyphen ) {
-                ret.push_back( '-' );
-            }
+            // ret.append( start, end );
+            ret += m_column.m_string.substring( start, end );
+            if ( m_addHyphen ) { ret.push_back( '-' ); }
 
             return ret;
         }
 
-        Column::const_iterator::const_iterator( Column const& column ): m_column( column ) {
+        Column::const_iterator::const_iterator( Column const& column ):
+            m_column( column ),
+            m_lineStart( column.m_string.begin() ),
+            m_lineEnd( column.m_string.begin() ),
+            m_parsedTo( column.m_string.begin() ) {
             assert( m_column.m_width > m_column.m_indent );
             assert( m_column.m_initialIndent == std::string::npos ||
                     m_column.m_width > m_column.m_initialIndent );
             calcLength();
-            if ( m_lineLength == 0 ) {
-                m_lineStart = m_column.m_string.size();
+            if ( m_lineStart == m_lineEnd ) {
+                m_lineStart = m_column.m_string.end();
             }
         }
 
         std::string Column::const_iterator::operator*() const {
             assert( m_lineStart <= m_parsedTo );
-            return addIndentAndSuffix( m_lineStart, m_lineLength );
+            return addIndentAndSuffix( m_lineStart, m_lineEnd );
         }
 
         Column::const_iterator& Column::const_iterator::operator++() {
-            m_lineStart += m_lineLength;
-            std::string const& current_line = m_column.m_string;
-            if ( m_lineStart < current_line.size() && current_line[m_lineStart] == '\n' ) {
-                m_lineStart += 1;
+            m_lineStart = m_lineEnd;
+            AnsiSkippingString const& current_line = m_column.m_string;
+            if ( m_lineStart != current_line.end() && *m_lineStart == '\n' ) {
+                m_lineStart++;
             } else {
-                while ( m_lineStart < current_line.size() &&
-                        isWhitespace( current_line[m_lineStart] ) ) {
+                while ( m_lineStart != current_line.end() &&
+                        isWhitespace( *m_lineStart ) ) {
                     ++m_lineStart;
                 }
             }
 
-            if ( m_lineStart != current_line.size() ) {
-                calcLength();
-            }
+            if ( m_lineStart != current_line.end() ) { calcLength(); }
             return *this;
         }
 
@@ -7390,25 +7532,25 @@ namespace Catch {
             return os;
         }
 
-        Columns operator+(Column const& lhs, Column const& rhs) {
+        Columns operator+( Column const& lhs, Column const& rhs ) {
             Columns cols;
             cols += lhs;
             cols += rhs;
             return cols;
         }
-        Columns operator+(Column&& lhs, Column&& rhs) {
+        Columns operator+( Column&& lhs, Column&& rhs ) {
             Columns cols;
             cols += CATCH_MOVE( lhs );
             cols += CATCH_MOVE( rhs );
             return cols;
         }
 
-        Columns& operator+=(Columns& lhs, Column const& rhs) {
+        Columns& operator+=( Columns& lhs, Column const& rhs ) {
             lhs.m_columns.push_back( rhs );
             return lhs;
         }
-        Columns& operator+=(Columns& lhs, Column&& rhs) {
-            lhs.m_columns.push_back( CATCH_MOVE(rhs) );
+        Columns& operator+=( Columns& lhs, Column&& rhs ) {
+            lhs.m_columns.push_back( CATCH_MOVE( rhs ) );
             return lhs;
         }
         Columns operator+( Columns const& lhs, Column const& rhs ) {
@@ -8053,7 +8195,7 @@ namespace Detail {
 
     std::string WithinRelMatcher::describe() const {
         Catch::ReusableStringStream sstr;
-        sstr << "and " << m_target << " are within " << m_epsilon * 100. << "% of each other";
+        sstr << "and " << ::Catch::Detail::stringify(m_target) << " are within " << m_epsilon * 100. << "% of each other";
         return sstr.str();
     }
 
@@ -9099,8 +9241,8 @@ void ConsoleReporter::testRunEnded(TestRunStats const& _testRunStats) {
     m_stream << '\n' << std::flush;
     StreamingReporterBase::testRunEnded(_testRunStats);
 }
-void ConsoleReporter::testRunStarting(TestRunInfo const& _testInfo) {
-    StreamingReporterBase::testRunStarting(_testInfo);
+void ConsoleReporter::testRunStarting(TestRunInfo const& _testRunInfo) {
+    StreamingReporterBase::testRunStarting(_testRunInfo);
     if ( m_config->testSpec().hasFilters() ) {
         m_stream << m_colour->guardColour( Colour::BrightYellow ) << "Filters: "
                  << m_config->testSpec() << '\n';
@@ -9253,8 +9395,7 @@ namespace Catch {
     namespace {
         struct BySectionInfo {
             BySectionInfo( SectionInfo const& other ): m_other( other ) {}
-            BySectionInfo( BySectionInfo const& other ):
-                m_other( other.m_other ) {}
+            BySectionInfo( BySectionInfo const& other ) = default;
             bool operator()(
                 Detail::unique_ptr<CumulativeReporterBase::SectionNode> const&
                     node ) const {
@@ -9879,8 +10020,8 @@ namespace Catch {
         return "Outputs listings as JSON. Test listing is Work-in-Progress!";
     }
 
-    void JsonReporter::testRunStarting( TestRunInfo const& testInfo ) {
-        StreamingReporterBase::testRunStarting( testInfo );
+    void JsonReporter::testRunStarting( TestRunInfo const& runInfo ) {
+        StreamingReporterBase::testRunStarting( runInfo );
         endListing();
 
         assert( isInside( Writer::Object ) );
@@ -10178,7 +10319,7 @@ namespace Catch {
 
         static void normalizeNamespaceMarkers(std::string& str) {
             std::size_t pos = str.find( "::" );
-            while ( pos != str.npos ) {
+            while ( pos != std::string::npos ) {
                 str.replace( pos, 2, "." );
                 pos += 1;
                 pos = str.find( "::", pos );
