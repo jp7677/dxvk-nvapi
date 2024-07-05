@@ -271,7 +271,7 @@ namespace dxvk {
         return NV_GPU_ARCHITECTURE_GK100;
     }
 
-    bool NvapiAdapter::IsVkDeviceExtensionSupported(std::string name) const { // NOLINT(performance-unnecessary-value-param)
+    bool NvapiAdapter::IsVkDeviceExtensionSupported(const std::string& name) const {
         return m_vkExtensions.find(name) != m_vkExtensions.end();
     }
 

@@ -64,7 +64,7 @@ namespace dxvk {
 
         uint32_t m_driverVersionOverride = 0;
 
-        [[nodiscard]] bool IsVkDeviceExtensionSupported(std::string name) const;
+        [[nodiscard]] bool IsVkDeviceExtensionSupported(const std::string& name) const;
 
         constexpr static auto driverVersionEnvName = "DXVK_NVAPI_DRIVER_VERSION";
         constexpr static auto allowOtherDriversEnvName = "DXVK_NVAPI_ALLOW_OTHER_DRIVERS";
