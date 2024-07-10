@@ -16,7 +16,7 @@ class MockFactory : public dxvk::ResourceFactory {
         : m_dxgiFactoryMock(std::move(dxgiFactory1Mock)),
           m_vulkanMock(std::move(vulkanMock)),
           m_nvmlMock(std::move(nvmlMock)),
-          m_lfxMock(std::move(lfxMock)){};
+          m_lfxMock(std::move(lfxMock)) {};
 
     dxvk::Com<IDXGIFactory1> CreateDXGIFactory1() override {
         return m_dxgiFactoryMock.get();
