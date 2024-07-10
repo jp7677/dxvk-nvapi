@@ -43,6 +43,13 @@ TEST_CASE("DRS methods succeed", "[.drs]") {
         REQUIRE(NvAPI_DRS_GetCurrentGlobalProfile(handle, &profile) == NVAPI_OK);
     }
 
+    SECTION("CreateProfile returns not-supported") {
+        NvDRSSessionHandle handle{};
+        NVDRS_PROFILE profileInfo{};
+        NvDRSProfileHandle profile;
+        REQUIRE(NvAPI_DRS_CreateProfile(handle, &profileInfo, &profile) == NVAPI_NOT_SUPPORTED);
+    }
+
     SECTION("GetSetting returns setting-not-found") {
         struct Data {
             int32_t settingId;
