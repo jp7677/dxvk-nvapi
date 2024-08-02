@@ -1,5 +1,5 @@
 #include "nvapi_private.h"
-#include "../inc/nvapi_interface.h"
+#include "nvapi_interface.h"
 #include "util/util_string.h"
 #include "util/util_log.h"
 

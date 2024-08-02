@@ -38,7 +38,10 @@
 
 // Suppress deprecation warnings.
 #define NVAPI_INTERNAL 1
-#include "../inc/nvapi.h"
+#define __NVAPI_EMPTY_SAL
+#include "nvapi.h"
+#undef __NVAPI_EMPTY_SAL
+#include "nvapi_lite_salend.h"
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop

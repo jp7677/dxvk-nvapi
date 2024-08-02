@@ -1,5 +1,5 @@
 #include "nvapi_private.h"
-#include "../inc/NvApiDriverSettings.c"
+#include "NvApiDriverSettings.c"
 #include "util/util_statuscode.h"
 
 static auto drs = 1U;

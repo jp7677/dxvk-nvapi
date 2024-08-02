@@ -44,6 +44,7 @@ else
   target_suffix = ''
 endif
 
+nvapi_headers = include_directories('./external/nvapi')
 vk_headers = include_directories('./external/Vulkan-Headers/include')
 
 lib_dxgi = cpp.find_library('dxgi')
