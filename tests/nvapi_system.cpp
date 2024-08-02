@@ -1,9 +1,6 @@
-#include <iostream>
-#include <iomanip>
 #include <windows.h>
-#include "../inc/nvapi.h"
-#include "../inc/nvapi_interface.h"
-#include "../inc/catch_amalgamated.hpp"
+#include "nvapi_tests_private.h"
+#include "nvapi_interface.h"
 
 using namespace Catch::Matchers;
 

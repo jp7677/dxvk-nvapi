@@ -1,5 +1,5 @@
 #include "nvapi_tests_private.h"
-#include "../inc/NvApiDriverSettings.h"
+#include "NvApiDriverSettings.h"
 
 using namespace trompeloeil;
 

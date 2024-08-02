@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../nvapi_private.h"
-#include "../inc/nvShaderExtnEnums.h"
+#include "nvShaderExtnEnums.h"
 #include "util_string.h"
 
 namespace dxvk {
