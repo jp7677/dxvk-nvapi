@@ -24,10 +24,10 @@ namespace trompeloeil {
   class sequence_type
   {
   public:
-    sequence_type() noexcept = default;
-    sequence_type(sequence_type&&) noexcept = delete;
+    sequence_type() = default;
+    sequence_type(sequence_type&&) = delete;
     sequence_type(const sequence_type&) = delete;
-    sequence_type& operator=(sequence_type&&) noexcept = delete;
+    sequence_type& operator=(sequence_type&&) = delete;
     sequence_type& operator=(const sequence_type&) = delete;
     ~sequence_type();
 
@@ -68,7 +68,7 @@ namespace trompeloeil {
     const;
 
   private:
-    list<sequence_matcher> matchers;
+    list<sequence_matcher> matchers{};
   };
 
   class sequence
@@ -100,6 +100,10 @@ namespace trompeloeil {
       auto lock = get_lock();
       seq.add_last(this);
     }
+
+    sequence_matcher(const sequence_matcher&) = delete;
+    sequence_matcher(sequence_matcher&&) = default;
+    sequence_matcher& operator=(sequence_matcher const&) = delete;
 
     void
     validate_match(
