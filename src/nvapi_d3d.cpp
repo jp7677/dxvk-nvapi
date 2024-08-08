@@ -87,7 +87,7 @@ extern "C" {
                 pSliState->numVRSLIGpus = 0;
                 break;
             default:
-                return IncompatibleStructVersion(n);
+                return IncompatibleStructVersion(n, pSliState->version);
         }
 
         return Ok(n, alreadyLoggedOk);
@@ -135,7 +135,7 @@ extern "C" {
                 pGraphicsCaps->bVariablePixelRateShadingSupported = 0;
                 break;
             default:
-                return IncompatibleStructVersion(n);
+                return IncompatibleStructVersion(n, structVersion);
         }
 
         return Ok(n, alreadyLoggedOk);
@@ -184,7 +184,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pSetSleepModeParams->version != NV_SET_SLEEP_MODE_PARAMS_VER1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pSetSleepModeParams->version);
 
         if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
             return NoImplementation(n, alreadyLoggedNoReflex);
@@ -215,7 +215,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pGetSleepStatusParams->version != NV_GET_SLEEP_STATUS_PARAMS_VER1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pGetSleepStatusParams->version);
 
         if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
             return NoImplementation(n, alreadyLoggedNoReflex);
@@ -241,7 +241,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pGetLatencyParams->version != NV_LATENCY_RESULT_PARAMS_VER1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pGetLatencyParams->version);
 
         if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
             return NoImplementation(n, alreadyLoggedNoImpl);
@@ -268,7 +268,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pSetLatencyMarkerParams->version);
 
         if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
             return NoImplementation(n, alreadyLoggedNoImpl);

@@ -133,7 +133,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pVersion->version != NV_DISPLAY_DRIVER_VERSION_VER)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pVersion->version);
 
         // Ignore hNvDisplay and query the first adapter
         auto adapter = nvapiAdapterRegistry->GetFirstAdapter();

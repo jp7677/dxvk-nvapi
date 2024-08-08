@@ -49,7 +49,7 @@ extern "C" {
                 break;
             }
             default:
-                return IncompatibleStructVersion(n);
+                return IncompatibleStructVersion(n, pDisplayIds->version);
         }
 
         return Ok(n);
@@ -425,7 +425,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pLogicalGpuData->version != NV_LOGICAL_GPU_DATA_VER1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pLogicalGpuData->version);
 
         if (pLogicalGpuData->pOSAdapterId == nullptr)
             return InvalidArgument(n);
@@ -467,7 +467,7 @@ extern "C" {
             return ExpectedPhysicalGpuHandle(n);
 
         if (pGpuArchInfo->version != NV_GPU_ARCH_INFO_VER_1 && pGpuArchInfo->version != NV_GPU_ARCH_INFO_VER_2)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pGpuArchInfo->version);
 
         auto architectureId = adapter->GetArchitectureId();
         architectureId = env::needsGpuArchitectureSpoofing(architectureId, returnAddress).value_or(architectureId);
@@ -537,7 +537,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pComputeTopo->version != NV_COMPUTE_GPU_TOPOLOGY_VER1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pComputeTopo->version);
 
         auto cudaCapableGpus = std::vector<NvPhysicalGpuHandle>(0);
         for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++) {
@@ -581,7 +581,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pGpuInfo->version != NV_GPU_INFO_VER1 && pGpuInfo->version != NV_GPU_INFO_VER2)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pGpuInfo->version);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
@@ -604,7 +604,7 @@ extern "C" {
                 }
                 break;
             default:
-                return IncompatibleStructVersion(n);
+                return IncompatibleStructVersion(n, pGpuInfo->version); // Actually unreachable
         }
 
         return Ok(n);
@@ -665,7 +665,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pDynamicPstatesInfoEx->version != NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pDynamicPstatesInfoEx->version);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
@@ -763,7 +763,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pThermalSettings->version != NV_GPU_THERMAL_SETTINGS_VER_1 && pThermalSettings->version != NV_GPU_THERMAL_SETTINGS_VER_2)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pThermalSettings->version);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
@@ -965,7 +965,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_1 && pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_2 && pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_3)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pClkFreqs->version);
 
         // Only check for CURRENT_FREQ, and not for the other types i.e. BOOST or DEFAULT for now
         if ((pClkFreqs->version == NV_GPU_CLOCK_FREQUENCIES_VER_2 || pClkFreqs->version == NV_GPU_CLOCK_FREQUENCIES_VER_3)
