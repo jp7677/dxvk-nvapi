@@ -188,7 +188,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (structVersion != NV_D3D12_GRAPHICS_CAPS_VER1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, structVersion);
 
         pGraphicsCaps->majorSMVersion = 0;
         pGraphicsCaps->minorSMVersion = 0;
@@ -274,7 +274,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (ppExtensions[0]->baseVersion != NV_PSO_EXTENSION_DESC_VER_1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, ppExtensions[0]->baseVersion);
 
         std::string extensionNames;
         for (auto i = 0U; i < numExtensions; i++)
@@ -409,7 +409,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pParams->version != NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS_VER1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pParams->version);
 
         if (pParams->pDesc == nullptr || pParams->pInfo == nullptr)
             return InvalidArgument(n);
@@ -436,7 +436,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pParams->version != NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pParams->version);
 
         if (pParams->pDesc == nullptr || (pParams->numPostbuildInfoDescs != 0 && pParams->pPostbuildInfoDescs == nullptr))
             return InvalidArgument(n);
@@ -499,7 +499,7 @@ extern "C" {
             return InvalidPointer(n);
 
         if (pSetAsyncFrameMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pSetAsyncFrameMarkerParams->version);
 
         if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pCommandQueue))
             return NoImplementation(n);

@@ -87,7 +87,7 @@ extern "C" {
                 break;
             }
             default:
-                return IncompatibleStructVersion(n);
+                return IncompatibleStructVersion(n, pMultiGPUCaps->version);
         }
 
         return Ok(n);
@@ -352,7 +352,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pParams->version != NV_GET_GPU_VIRTUAL_ADDRESS_VER1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pParams->version);
 
         if (pParams->hResource == NVDX_OBJECT_NONE)
             return InvalidArgument(n);

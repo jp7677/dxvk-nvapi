@@ -58,7 +58,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pDriverInfo->version != NV_DISPLAY_DRIVER_INFO_VER1 && pDriverInfo->version != NV_DISPLAY_DRIVER_INFO_VER2)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pDriverInfo->version);
 
         switch (pDriverInfo->version) {
             case NV_DISPLAY_DRIVER_INFO_VER1: {
@@ -103,7 +103,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pPhysicalGPUs->version != NV_PHYSICAL_GPUS_VER1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pPhysicalGPUs->version);
 
         for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++) {
             pPhysicalGPUs->gpuHandleData[i].hPhysicalGpu = reinterpret_cast<NvPhysicalGpuHandle>(nvapiAdapterRegistry->GetAdapter(i));
@@ -128,7 +128,7 @@ extern "C" {
             return InvalidArgument(n);
 
         if (pLogicalGPUs->version != NV_LOGICAL_GPUS_VER1)
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pLogicalGPUs->version);
 
         for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++) {
             pLogicalGPUs->gpuHandleData[i].hLogicalGpu = reinterpret_cast<NvLogicalGpuHandle>(nvapiAdapterRegistry->GetAdapter(i));

@@ -106,7 +106,7 @@ extern "C" {
                 pHdrCapabilities->display_data.desired_content_max_frame_average_luminance = data.MaxFullFrameLuminance;
                 break;
             default:
-                return IncompatibleStructVersion(n);
+                return IncompatibleStructVersion(n, pHdrCapabilities->version);
         }
 
         return Ok(str::format(n, " (0x", std::hex, displayId, ")"));
@@ -188,7 +188,7 @@ extern "C" {
                     return InvalidArgument(n);
             }
         } else {
-            return IncompatibleStructVersion(n);
+            return IncompatibleStructVersion(n, pHdrColorData->version);
         }
 
         if (pHdrColorData->version == NV_HDR_COLOR_DATA_VER2) {
