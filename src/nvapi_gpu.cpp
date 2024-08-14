@@ -361,7 +361,7 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        *pSize = adapter->GetVRamSize();
+        *pSize = adapter->GetVRamSize() / 1024;
 
         return Ok(n);
     }
@@ -382,9 +382,100 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        *pSize = adapter->GetVirtualVRamSize();
+        *pSize = adapter->GetVirtualVRamSize() / 1024;
 
         return Ok(n);
+    }
+
+    NvAPI_Status __cdecl NvAPI_GPU_GetMemoryInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_DISPLAY_DRIVER_MEMORY_INFO* pMemoryInfo) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pMemoryInfo));
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pMemoryInfo == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        switch (pMemoryInfo->version) {
+            case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_1: {
+                auto pMemoryInfoV1 = reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO_V1*>(pMemoryInfo);
+                pMemoryInfoV1->dedicatedVideoMemory = adapter->GetVRamSize();
+                pMemoryInfoV1->availableDedicatedVideoMemory = 0; // Not found in DXVK
+                pMemoryInfoV1->systemVideoMemory = adapter->GetDedicatedSystemRamSize();
+                pMemoryInfoV1->sharedSystemMemory = adapter->GetSharedSystemRamSize();
+                break;
+            }
+            case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_2: {
+                auto pMemoryInfoV2 = reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO_V2*>(pMemoryInfo);
+                pMemoryInfoV2->dedicatedVideoMemory = adapter->GetVRamSize();
+                pMemoryInfoV2->availableDedicatedVideoMemory = 0; // Not found in DXVK
+                pMemoryInfoV2->systemVideoMemory = adapter->GetDedicatedSystemRamSize();
+                pMemoryInfoV2->sharedSystemMemory = adapter->GetSharedSystemRamSize();
+                pMemoryInfoV2->curAvailableDedicatedVideoMemory = 0; // Not found in DXVK
+                break;
+            }
+            case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3: {
+                auto pMemoryInfoV3 = reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO_V3*>(pMemoryInfo);
+                pMemoryInfoV3->dedicatedVideoMemory = adapter->GetVRamSize();
+                pMemoryInfoV3->availableDedicatedVideoMemory = 0; // Not found in DXVK
+                pMemoryInfoV3->systemVideoMemory = adapter->GetDedicatedSystemRamSize();
+                pMemoryInfoV3->sharedSystemMemory = adapter->GetSharedSystemRamSize();
+                pMemoryInfoV3->curAvailableDedicatedVideoMemory = 0; // Not found in DXVK
+                pMemoryInfoV3->dedicatedVideoMemoryEvictionsSize = 0;
+                pMemoryInfoV3->dedicatedVideoMemoryEvictionCount = 0;
+                break;
+            }
+            default:
+                return IncompatibleStructVersion(n, pMemoryInfo->version);
+        }
+
+        return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_GPU_GetMemoryInfoEx(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_MEMORY_INFO_EX* pMemoryInfo) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pMemoryInfo));
+
+        if (nvapiAdapterRegistry == nullptr)
+            return ApiNotInitialized(n);
+
+        if (pMemoryInfo == nullptr)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        switch (pMemoryInfo->version) {
+            case NV_GPU_MEMORY_INFO_EX_VER: {
+                auto pMemoryInfoV1 = reinterpret_cast<NV_GPU_MEMORY_INFO_EX*>(pMemoryInfo);
+                pMemoryInfoV1->dedicatedVideoMemory = adapter->GetVRamSize();
+                pMemoryInfoV1->availableDedicatedVideoMemory = 0; // Not found in DXVK
+                pMemoryInfoV1->systemVideoMemory = adapter->GetDedicatedSystemRamSize();
+                pMemoryInfoV1->sharedSystemMemory = adapter->GetSharedSystemRamSize();
+                pMemoryInfoV1->curAvailableDedicatedVideoMemory = 0; // Not found in DXVK
+                pMemoryInfoV1->dedicatedVideoMemoryEvictionsSize = 0;
+                pMemoryInfoV1->dedicatedVideoMemoryEvictionCount = 0;
+                pMemoryInfoV1->dedicatedVideoMemoryPromotionsSize = 0;
+                pMemoryInfoV1->dedicatedVideoMemoryPromotionCount = 0;
+                break;
+            }
+            default:
+                return IncompatibleStructVersion(n, pMemoryInfo->version);
+        }
+
+        return Ok(n, alreadyLoggedOk);
     }
 
     NvAPI_Status __cdecl NvAPI_GPU_GetAdapterIdFromPhysicalGpu(NvPhysicalGpuHandle hPhysicalGpu, void* pOSAdapterId) {

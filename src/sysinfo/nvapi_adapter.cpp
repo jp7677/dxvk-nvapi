@@ -201,14 +201,24 @@ namespace dxvk {
             | m_vkPciBusProperties.pciDevice;
     }
 
-    uint32_t NvapiAdapter::GetVRamSize() const {
+    uint64_t NvapiAdapter::GetVRamSize() const {
         // Report VRAM size from DXVK to honor memory overrides
-        return m_dxgiDesc.DedicatedVideoMemory / 1024;
+        return m_dxgiDesc.DedicatedVideoMemory;
     }
 
-    uint32_t NvapiAdapter::GetVirtualVRamSize() const {
+    uint64_t NvapiAdapter::GetVirtualVRamSize() const {
         // Report VRAM size from DXVK to honor memory overrides
-        return (m_dxgiDesc.DedicatedVideoMemory + m_dxgiDesc.DedicatedSystemMemory) / 1024;
+        return m_dxgiDesc.DedicatedVideoMemory + m_dxgiDesc.DedicatedSystemMemory;
+    }
+
+    uint64_t NvapiAdapter::GetDedicatedSystemRamSize() const {
+        // Report dedicated system memory size from DXVK
+        return m_dxgiDesc.DedicatedSystemMemory;
+    }
+
+    uint64_t NvapiAdapter::GetSharedSystemRamSize() const {
+        // Report shared system memory size from DXVK
+        return m_dxgiDesc.SharedSystemMemory;
     }
 
     std::optional<LUID> NvapiAdapter::GetLuid() const {
