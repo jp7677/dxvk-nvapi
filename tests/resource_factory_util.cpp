@@ -26,7 +26,7 @@ void ResetGlobals() {
     initializationCount = 0ULL;
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 22> ConfigureDefaultTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 24> ConfigureDefaultTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -52,9 +52,14 @@ void ResetGlobals() {
         NAMED_ALLOW_CALL(dxgiFactory, SetGlobalHDRState(_, _))
             .RETURN(S_OK),
 
+        NAMED_ALLOW_CALL(adapter, QueryInterface(__uuidof(IDXGIAdapter3), _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter3*>(&adapter))
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter, QueryInterface(__uuidof(IDXGIVkInteropAdapter), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter))
             .RETURN(S_OK),
+        NAMED_ALLOW_CALL(adapter, AddRef())
+            .RETURN(1),
         NAMED_ALLOW_CALL(adapter, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(adapter, GetDesc1(_))
@@ -95,7 +100,7 @@ void ResetGlobals() {
             .RETURN(false)};
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 37> ConfigureExtendedTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 41> ConfigureExtendedTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
     VulkanMock& vulkan,
     NvmlMock& nvml,
@@ -127,9 +132,14 @@ void ResetGlobals() {
         NAMED_ALLOW_CALL(dxgiFactory, SetGlobalHDRState(_, _))
             .RETURN(S_OK),
 
+        NAMED_ALLOW_CALL(adapter1, QueryInterface(__uuidof(IDXGIAdapter3), _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter3*>(&adapter1))
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter1, QueryInterface(__uuidof(IDXGIVkInteropAdapter), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter1))
             .RETURN(S_OK),
+        NAMED_ALLOW_CALL(adapter1, AddRef())
+            .RETURN(1),
         NAMED_ALLOW_CALL(adapter1, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(adapter1, GetDesc1(_))
@@ -146,9 +156,14 @@ void ResetGlobals() {
         NAMED_ALLOW_CALL(adapter1, GetVulkanHandles(_, _))
             .LR_SIDE_EFFECT(*_2 = reinterpret_cast<VkPhysicalDevice>(0x01)),
 
+        NAMED_ALLOW_CALL(adapter2, QueryInterface(__uuidof(IDXGIAdapter3), _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIAdapter3*>(&adapter2))
+            .RETURN(S_OK),
         NAMED_ALLOW_CALL(adapter2, QueryInterface(__uuidof(IDXGIVkInteropAdapter), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropAdapter*>(&adapter2))
             .RETURN(S_OK),
+        NAMED_ALLOW_CALL(adapter2, AddRef())
+            .RETURN(1),
         NAMED_ALLOW_CALL(adapter2, Release())
             .RETURN(0),
         NAMED_ALLOW_CALL(adapter2, GetDesc1(_))

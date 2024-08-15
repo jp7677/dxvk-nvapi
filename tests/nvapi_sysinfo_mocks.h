@@ -27,7 +27,7 @@ class DXGIDxvkFactoryMock final : public trompeloeil::mock_interface<IDXGIDxvkFa
     IMPLEMENT_MOCK2(SetGlobalHDRState);
 };
 
-class IDXGIDxvkAdapter : public IDXGIAdapter1, public IDXGIVkInteropAdapter {};
+class IDXGIDxvkAdapter : public IDXGIAdapter3, public IDXGIVkInteropAdapter {};
 
 class DXGIDxvkAdapterMock final : public trompeloeil::mock_interface<IDXGIDxvkAdapter> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -42,6 +42,13 @@ class DXGIDxvkAdapterMock final : public trompeloeil::mock_interface<IDXGIDxvkAd
     IMPLEMENT_MOCK2(CheckInterfaceSupport);
     IMPLEMENT_MOCK1(GetDesc1);
     IMPLEMENT_MOCK2(GetVulkanHandles);
+    IMPLEMENT_MOCK1(GetDesc2);
+    IMPLEMENT_MOCK2(RegisterHardwareContentProtectionTeardownStatusEvent);
+    IMPLEMENT_MOCK1(UnregisterHardwareContentProtectionTeardownStatus);
+    IMPLEMENT_MOCK3(QueryVideoMemoryInfo);
+    IMPLEMENT_MOCK3(SetVideoMemoryReservation);
+    IMPLEMENT_MOCK2(RegisterVideoMemoryBudgetChangeNotificationEvent);
+    IMPLEMENT_MOCK1(UnregisterVideoMemoryBudgetChangeNotification);
 };
 
 class DXGIOutput6Mock final : public trompeloeil::mock_interface<IDXGIOutput6> {
