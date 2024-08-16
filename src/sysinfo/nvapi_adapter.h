@@ -10,10 +10,20 @@ namespace dxvk {
     class NvapiAdapter {
 
       public:
-        explicit NvapiAdapter(Vulkan& vulkan, Nvml& nvml);
+        explicit NvapiAdapter(Vulkan& vulkan, Nvml& nvml, Com<IDXGIAdapter3> dxgiAdapter);
         ~NvapiAdapter();
 
-        bool Initialize(Com<IDXGIAdapter1>& dxgiAdapter, uint32_t index, std::vector<NvapiOutput*>& outputs);
+        struct MemoryInfo {
+            uint64_t DedicatedVideoMemory;
+            uint64_t DedicatedSystemMemory;
+            uint64_t SharedSystemMemory;
+        };
+        struct MemoryBudgetInfo {
+            uint64_t Budget;
+            uint64_t CurrentUsage;
+        };
+
+        bool Initialize(uint32_t index, std::vector<NvapiOutput*>& outputs);
         [[nodiscard]] std::string GetDeviceName() const;
         [[nodiscard]] bool HasNvProprietaryDriver() const;
         [[nodiscard]] bool HasNvkDriver() const;
@@ -25,13 +35,10 @@ namespace dxvk {
         [[nodiscard]] uint32_t GetPciBusId() const;
         [[nodiscard]] uint32_t GetPciDeviceId() const;
         [[nodiscard]] uint32_t GetBoardId() const;
-        [[nodiscard]] uint64_t GetVRamSize() const;
-        [[nodiscard]] uint64_t GetVirtualVRamSize() const;
-        [[nodiscard]] uint64_t GetDedicatedSystemRamSize() const;
-        [[nodiscard]] uint64_t GetSharedSystemRamSize() const;
         [[nodiscard]] std::optional<LUID> GetLuid() const;
         [[nodiscard]] NV_GPU_ARCHITECTURE_ID GetArchitectureId() const;
-
+        [[nodiscard]] const MemoryInfo& GetMemoryInfo() const;
+        [[nodiscard]] MemoryBudgetInfo GetCurrentMemoryBudgetInfo() const;
         [[nodiscard]] bool HasNvml() const;
         [[nodiscard]] bool HasNvmlDevice() const;
         [[nodiscard]] std::string GetNvmlErrorString(nvmlReturn_t result) const;
@@ -50,6 +57,7 @@ namespace dxvk {
       private:
         Vulkan& m_vulkan;
         Nvml& m_nvml;
+        Com<IDXGIAdapter3> m_dxgiAdapter;
 
         std::set<std::string> m_vkExtensions;
         VkPhysicalDeviceProperties m_vkProperties{};
@@ -60,7 +68,9 @@ namespace dxvk {
         VkPhysicalDeviceFeatures m_vkFeatures{};
         VkPhysicalDeviceDepthClipControlFeaturesEXT m_vkDepthClipControlFeatures{};
         uint32_t m_vkDriverVersion{};
-        DXGI_ADAPTER_DESC1 m_dxgiDesc{};
+        uint32_t m_dxgiVendorId{};
+        uint32_t m_dxgiDeviceId{};
+        MemoryInfo m_memoryInfo{};
 
         nvmlDevice_t m_nvmlDevice{};
 

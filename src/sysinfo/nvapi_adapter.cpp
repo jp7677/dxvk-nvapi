@@ -6,18 +6,28 @@
 #include "../util/util_version.h"
 
 namespace dxvk {
-    NvapiAdapter::NvapiAdapter(Vulkan& vulkan, Nvml& nvml)
-        : m_vulkan(vulkan), m_nvml(nvml) {}
+    NvapiAdapter::NvapiAdapter(Vulkan& vulkan, Nvml& nvml, Com<IDXGIAdapter3> dxgiAdapter)
+        : m_vulkan(vulkan), m_nvml(nvml), m_dxgiAdapter(std::move(dxgiAdapter)) {}
 
     NvapiAdapter::~NvapiAdapter() = default;
 
-    bool NvapiAdapter::Initialize(Com<IDXGIAdapter1>& dxgiAdapter, uint32_t index, std::vector<NvapiOutput*>& outputs) {
-        if (FAILED(dxgiAdapter->GetDesc1(&m_dxgiDesc)))
+    bool NvapiAdapter::Initialize(uint32_t index, std::vector<NvapiOutput*>& outputs) {
+        DXGI_ADAPTER_DESC1 dxgiDesc{};
+        if (FAILED(m_dxgiAdapter->GetDesc1(&dxgiDesc)))
             return false; // Should never happen since we already know that we are dealing with a recent DXVK version
+
+        // Report vendor / device IDs from DXVK to honor ID overrides
+        m_dxgiVendorId = dxgiDesc.VendorId;
+        m_dxgiDeviceId = dxgiDesc.DeviceId;
+
+        // Report VRAM size from DXVK to honor memory overrides
+        m_memoryInfo.DedicatedSystemMemory = dxgiDesc.DedicatedSystemMemory;
+        m_memoryInfo.DedicatedVideoMemory = dxgiDesc.DedicatedVideoMemory;
+        m_memoryInfo.SharedSystemMemory = dxgiDesc.SharedSystemMemory;
 
         // Get the Vulkan handle from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
-        if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter)))) {
+        if (FAILED(m_dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropAdapter)))) {
             log::info("Querying Vulkan handle from DXGI adapter failed, please ensure that DXVK's dxgi.dll is present");
             return false;
         }
@@ -84,7 +94,7 @@ namespace dxvk {
             return false;
 
         if ((HasNvProprietaryDriver() || HasNvkDriver())
-            && m_dxgiDesc.VendorId != NvidiaPciVendorId
+            && dxgiDesc.VendorId != NvidiaPciVendorId
             && env::getEnvVariable("DXVK_ENABLE_NVAPI") != "1")
             return false; // DXVK NVAPI-hack is enabled, skip this adapter
 
@@ -104,7 +114,7 @@ namespace dxvk {
         // Query all outputs from DXVK
         // Mosaic setup is not supported, thus one display output refers to one GPU
         Com<IDXGIOutput> dxgiOutput;
-        for (auto i = 0U; dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
+        for (auto i = 0U; m_dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND; i++) {
             auto nvapiOutput = new NvapiOutput(this, index, i);
             nvapiOutput->Initialize(dxgiOutput);
             outputs.push_back(nvapiOutput);
@@ -163,13 +173,11 @@ namespace dxvk {
     }
 
     uint32_t NvapiAdapter::GetDeviceId() const {
-        // Report vendor / device IDs from DXVK to honor ID overrides
-        return (m_dxgiDesc.DeviceId << 16) | m_dxgiDesc.VendorId;
+        return (m_dxgiDeviceId << 16) | m_dxgiVendorId;
     }
 
     uint32_t NvapiAdapter::GetExternalDeviceId() const {
-        // Report device ID from DXVK to honor ID overrides
-        return m_dxgiDesc.DeviceId;
+        return m_dxgiDeviceId;
     }
 
     uint32_t NvapiAdapter::GetSubSystemId() const {
@@ -201,24 +209,18 @@ namespace dxvk {
             | m_vkPciBusProperties.pciDevice;
     }
 
-    uint64_t NvapiAdapter::GetVRamSize() const {
-        // Report VRAM size from DXVK to honor memory overrides
-        return m_dxgiDesc.DedicatedVideoMemory;
+    const NvapiAdapter::MemoryInfo& NvapiAdapter::GetMemoryInfo() const {
+        return m_memoryInfo;
     }
 
-    uint64_t NvapiAdapter::GetVirtualVRamSize() const {
-        // Report VRAM size from DXVK to honor memory overrides
-        return m_dxgiDesc.DedicatedVideoMemory + m_dxgiDesc.DedicatedSystemMemory;
-    }
+    NvapiAdapter::MemoryBudgetInfo NvapiAdapter::GetCurrentMemoryBudgetInfo() const {
+        DXGI_QUERY_VIDEO_MEMORY_INFO dxgiMemInfo{};
+        if (FAILED(m_dxgiAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &dxgiMemInfo)))
+            return MemoryBudgetInfo{};
 
-    uint64_t NvapiAdapter::GetDedicatedSystemRamSize() const {
-        // Report dedicated system memory size from DXVK
-        return m_dxgiDesc.DedicatedSystemMemory;
-    }
-
-    uint64_t NvapiAdapter::GetSharedSystemRamSize() const {
-        // Report shared system memory size from DXVK
-        return m_dxgiDesc.SharedSystemMemory;
+        return MemoryBudgetInfo{
+            .Budget = dxgiMemInfo.Budget,
+            .CurrentUsage = dxgiMemInfo.CurrentUsage};
     }
 
     std::optional<LUID> NvapiAdapter::GetLuid() const {
