@@ -540,6 +540,125 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(size == 9205);
     }
 
+    SECTION("GetMemoryInfo succeeds") {
+        ALLOW_CALL(adapter, GetDesc1(_))
+            .SIDE_EFFECT({
+                _1->VendorId = 0x10de;
+                _1->DedicatedVideoMemory = 8191 * 1024;
+                _1->DedicatedSystemMemory = 1014 * 1024;
+                _1->SharedSystemMemory = 16382 * 1024;
+            })
+            .RETURN(S_OK);
+        ALLOW_CALL(adapter, QueryVideoMemoryInfo(_, _, _))
+            .SIDE_EFFECT({
+                _3->Budget = 4096 * 1024;
+                _3->CurrentUsage = 1024 * 1024;
+            })
+            .RETURN(S_OK);
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
+
+        SECTION("GetMemoryInfo (V1) returns OK") {
+            NV_DISPLAY_DRIVER_MEMORY_INFO_V1 info;
+            info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER_1;
+            REQUIRE(NvAPI_GPU_GetMemoryInfo(handle, reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO*>(&info)) == NVAPI_OK);
+            REQUIRE(info.dedicatedVideoMemory == 8191 * 1024);
+            REQUIRE(info.systemVideoMemory == 1014 * 1024);
+            REQUIRE(info.sharedSystemMemory == 16382 * 1024);
+            REQUIRE(info.availableDedicatedVideoMemory == 8191 * 1024);
+        }
+
+        SECTION("GetMemoryInfo (V2) returns OK") {
+            NV_DISPLAY_DRIVER_MEMORY_INFO_V2 info;
+            info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER_2;
+            REQUIRE(NvAPI_GPU_GetMemoryInfo(handle, reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO*>(&info)) == NVAPI_OK);
+            REQUIRE(info.dedicatedVideoMemory == 8191 * 1024);
+            REQUIRE(info.systemVideoMemory == 1014 * 1024);
+            REQUIRE(info.sharedSystemMemory == 16382 * 1024);
+            REQUIRE(info.availableDedicatedVideoMemory == 8191 * 1024);
+            REQUIRE(info.curAvailableDedicatedVideoMemory == 3072 * 1024);
+        }
+
+        SECTION("GetMemoryInfo (V3) returns OK") {
+            NV_DISPLAY_DRIVER_MEMORY_INFO_V3 info;
+            info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3;
+            REQUIRE(NvAPI_GPU_GetMemoryInfo(handle, &info) == NVAPI_OK);
+            REQUIRE(info.dedicatedVideoMemory == 8191 * 1024);
+            REQUIRE(info.systemVideoMemory == 1014 * 1024);
+            REQUIRE(info.sharedSystemMemory == 16382 * 1024);
+            REQUIRE(info.availableDedicatedVideoMemory == 8191 * 1024);
+            REQUIRE(info.curAvailableDedicatedVideoMemory == 3072 * 1024);
+            REQUIRE(info.dedicatedVideoMemoryEvictionsSize == 0);
+            REQUIRE(info.dedicatedVideoMemoryEvictionCount == 0);
+        }
+
+        SECTION("GetMemoryInfo with unknown struct version returns incompatible-struct-version") {
+            NV_DISPLAY_DRIVER_MEMORY_INFO info;
+            info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3 + 1;
+            REQUIRE(NvAPI_GPU_GetMemoryInfo(handle, &info) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetMemoryInfo with current struct version returns not incompatible-struct-version") {
+            NV_DISPLAY_DRIVER_MEMORY_INFO info;
+            info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER;
+            REQUIRE(NvAPI_GPU_GetMemoryInfo(handle, &info) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
+
+    SECTION("GetMemoryInfoEx succeeds") {
+        ALLOW_CALL(adapter, GetDesc1(_))
+            .SIDE_EFFECT({
+                _1->VendorId = 0x10de;
+                _1->DedicatedVideoMemory = 8191 * 1024;
+                _1->DedicatedSystemMemory = 1014 * 1024;
+                _1->SharedSystemMemory = 16382 * 1024;
+            })
+            .RETURN(S_OK);
+        ALLOW_CALL(adapter, QueryVideoMemoryInfo(_, _, _))
+            .SIDE_EFFECT({
+                _3->Budget = 4096 * 1024;
+                _3->CurrentUsage = 1024 * 1024;
+            })
+            .RETURN(S_OK);
+
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
+
+        SECTION("GetMemoryInfoEx returns OK") {
+            NV_GPU_MEMORY_INFO_EX_V1 info;
+            info.version = NV_GPU_MEMORY_INFO_EX_VER_1;
+            REQUIRE(NvAPI_GPU_GetMemoryInfoEx(handle, &info) == NVAPI_OK);
+            REQUIRE(info.dedicatedVideoMemory == 8191 * 1024);
+            REQUIRE(info.systemVideoMemory == 1014 * 1024);
+            REQUIRE(info.sharedSystemMemory == 16382 * 1024);
+            REQUIRE(info.availableDedicatedVideoMemory == 8191 * 1024);
+            REQUIRE(info.curAvailableDedicatedVideoMemory == 3072 * 1024);
+            REQUIRE(info.dedicatedVideoMemoryEvictionsSize == 0);
+            REQUIRE(info.dedicatedVideoMemoryEvictionCount == 0);
+            REQUIRE(info.dedicatedVideoMemoryPromotionsSize == 0);
+            REQUIRE(info.dedicatedVideoMemoryPromotionCount == 0);
+        }
+
+        SECTION("GetMemoryInfoEx with unknown struct version returns incompatible-struct-version") {
+            NV_GPU_MEMORY_INFO_EX info;
+            info.version = NV_GPU_MEMORY_INFO_EX_VER_1 + 1;
+            REQUIRE(NvAPI_GPU_GetMemoryInfoEx(handle, &info) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetMemoryInfoEx with current struct version returns not incompatible-struct-version") {
+            NV_GPU_MEMORY_INFO_EX info;
+            info.version = NV_GPU_MEMORY_INFO_EX_VER;
+            REQUIRE(NvAPI_GPU_GetMemoryInfoEx(handle, &info) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
+
     SECTION("GetAdapterIdFromPhysicalGpu returns OK") {
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
@@ -563,7 +682,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(luid.LowPart == 0x04030211);
     }
 
-    SECTION("GetLogicalGpuInfo returns OK") {
+    SECTION("GetLogicalGpuInfo succeeds") {
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
@@ -586,7 +705,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         REQUIRE(NvAPI_GetPhysicalGPUsFromLogicalGPU(handles[0], physicalHandles, &count) == NVAPI_OK);
         REQUIRE(count == 1);
 
-        SECTION("GetLogicalGpuInfo succeeds") {
+        SECTION("GetLogicalGpuInfo returns OK") {
             LUID luid;
             NV_LOGICAL_GPU_DATA data;
             data.pOSAdapterId = static_cast<void*>(&luid);

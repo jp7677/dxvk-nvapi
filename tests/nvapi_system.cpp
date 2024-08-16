@@ -99,7 +99,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     GETNVAPIPROCADDR(GPU_GetPCIIdentifiers);
     GETNVAPIPROCADDR(GPU_GetBusId);
     GETNVAPIPROCADDR(GPU_GetBusSlotId);
-    GETNVAPIPROCADDR(GPU_GetPhysicalFrameBufferSize);
+    GETNVAPIPROCADDR(GPU_GetMemoryInfoEx);
     GETNVAPIPROCADDR(GPU_GetAdapterIdFromPhysicalGpu);
     GETNVAPIPROCADDR(GPU_GetArchInfo);
     GETNVAPIPROCADDR(GPU_GetCurrentPCIEDownstreamWidth);
@@ -132,7 +132,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     REQUIRE(nvAPI_GPU_GetPCIIdentifiers);
     REQUIRE(nvAPI_GPU_GetBusId);
     REQUIRE(nvAPI_GPU_GetBusSlotId);
-    REQUIRE(nvAPI_GPU_GetPhysicalFrameBufferSize);
+    REQUIRE(nvAPI_GPU_GetMemoryInfoEx);
     REQUIRE(nvAPI_GPU_GetAdapterIdFromPhysicalGpu);
     REQUIRE(nvAPI_GPU_GetArchInfo);
     REQUIRE(nvAPI_GPU_GetCurrentPCIEDownstreamWidth);
@@ -215,9 +215,14 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
         REQUIRE(nvAPI_GetGPUIDfromPhysicalGPU(handle, &gpuId) == NVAPI_OK);
         std::cout << "    Board ID:                   0x" << std::hex << gpuId << std::endl;
 
-        NvU32 size;
-        REQUIRE(nvAPI_GPU_GetPhysicalFrameBufferSize(handle, &size) == NVAPI_OK);
-        std::cout << "    Physical framebuffer size:  " << std::dec << size / 1024 << "MB" << std::endl;
+        NV_GPU_MEMORY_INFO_EX memoryInfo;
+        memoryInfo.version = NV_GPU_MEMORY_INFO_EX_VER;
+        REQUIRE(nvAPI_GPU_GetMemoryInfoEx(handle, &memoryInfo) == NVAPI_OK);
+        std::cout << "    Dedicated video memory:     " << std::dec << memoryInfo.dedicatedVideoMemory / 1024 / 1024 << "MB" << std::endl;
+        std::cout << "    Available dedicated v.m.:   " << std::dec << memoryInfo.availableDedicatedVideoMemory / 1024 / 1024 << "MB" << std::endl;
+        std::cout << "    System video memory:        " << std::dec << memoryInfo.systemVideoMemory / 1024 / 1024 << "MB" << std::endl;
+        std::cout << "    Shared system memory:       " << std::dec << memoryInfo.sharedSystemMemory / 1024 / 1024 << "MB" << std::endl;
+        std::cout << "    Cur. avail. dedicated v.m.: " << std::dec << memoryInfo.curAvailableDedicatedVideoMemory / 1024 / 1024 << "MB" << std::endl;
 
         LUID luid;
         result = nvAPI_GPU_GetAdapterIdFromPhysicalGpu(handle, static_cast<void*>(&luid));
