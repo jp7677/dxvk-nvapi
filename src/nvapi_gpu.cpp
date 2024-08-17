@@ -424,7 +424,7 @@ extern "C" {
                 pMemoryInfoV2->systemVideoMemory = memoryInfo.DedicatedSystemMemory;
                 pMemoryInfoV2->sharedSystemMemory = memoryInfo.SharedSystemMemory;
                 pMemoryInfoV2->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory; // See comment above
-                pMemoryInfoV2->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget - memoryBudgetInfo.CurrentUsage;
+                pMemoryInfoV2->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget;
                 break;
             }
             case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3: {
@@ -433,7 +433,7 @@ extern "C" {
                 pMemoryInfoV3->systemVideoMemory = memoryInfo.DedicatedSystemMemory;
                 pMemoryInfoV3->sharedSystemMemory = memoryInfo.SharedSystemMemory;
                 pMemoryInfoV3->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory; // See comment above
-                pMemoryInfoV3->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget - memoryBudgetInfo.CurrentUsage;
+                pMemoryInfoV3->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget;
                 pMemoryInfoV3->dedicatedVideoMemoryEvictionsSize = 0;
                 pMemoryInfoV3->dedicatedVideoMemoryEvictionCount = 0;
                 break;
@@ -473,7 +473,7 @@ extern "C" {
                 pMemoryInfoV1->sharedSystemMemory = memoryInfo.SharedSystemMemory;
                 // See comment in NvAPI_GPU_GetMemoryInfo
                 pMemoryInfoV1->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory;
-                pMemoryInfoV1->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget - memoryBudgetInfo.CurrentUsage;
+                pMemoryInfoV1->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget;
                 pMemoryInfoV1->dedicatedVideoMemoryEvictionsSize = 0;
                 pMemoryInfoV1->dedicatedVideoMemoryEvictionCount = 0;
                 pMemoryInfoV1->dedicatedVideoMemoryPromotionsSize = 0;
