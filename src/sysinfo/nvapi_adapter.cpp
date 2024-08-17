@@ -130,9 +130,15 @@ namespace dxvk {
 
             nvmlDevice_t nvmlDevice{};
             auto result = m_nvml.DeviceGetHandleByPciBusId_v2(pciId, &nvmlDevice);
-            if (result == NVML_SUCCESS)
+            if (result == NVML_SUCCESS) {
                 m_nvmlDevice = nvmlDevice;
-            else
+
+                nvmlMemory_v2_t memory{};
+                memory.version = nvmlMemory_v2;
+                if (m_nvml.DeviceGetMemoryInfo_v2(m_nvmlDevice, &memory) == NVML_SUCCESS) {
+                    m_memoryInfo.ReservedVideoMemory = memory.reserved;
+                }
+            } else
                 log::info(str::format("NVML failed to find device with PCI BusId [", pciId, "]: ", m_nvml.ErrorString(result)));
         }
 

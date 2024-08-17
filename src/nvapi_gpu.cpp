@@ -414,9 +414,8 @@ extern "C" {
                 pMemoryInfoV1->systemVideoMemory = memoryInfo.DedicatedSystemMemory;
                 pMemoryInfoV1->sharedSystemMemory = memoryInfo.SharedSystemMemory;
 
-                // We should subtract memory reserved for system use (driver or firmware) from dedicated memory to calculate available memory,
-                // but we don't have this info. Needs NVML (nvmlDeviceGetMemoryInfo_v2) to obtain.
-                pMemoryInfoV1->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory;
+                // ReservedVideoMemory is zero unless NVML is available
+                pMemoryInfoV1->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory;
                 break;
             }
             case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_2: {
@@ -424,7 +423,7 @@ extern "C" {
                 pMemoryInfoV2->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory;
                 pMemoryInfoV2->systemVideoMemory = memoryInfo.DedicatedSystemMemory;
                 pMemoryInfoV2->sharedSystemMemory = memoryInfo.SharedSystemMemory;
-                pMemoryInfoV2->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory; // See comment above
+                pMemoryInfoV2->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory; // See comment above
                 pMemoryInfoV2->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget - memoryBudgetInfo.CurrentUsage;
                 break;
             }
@@ -433,7 +432,7 @@ extern "C" {
                 pMemoryInfoV3->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory;
                 pMemoryInfoV3->systemVideoMemory = memoryInfo.DedicatedSystemMemory;
                 pMemoryInfoV3->sharedSystemMemory = memoryInfo.SharedSystemMemory;
-                pMemoryInfoV3->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory; // See comment above
+                pMemoryInfoV3->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory; // See comment above
                 pMemoryInfoV3->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget - memoryBudgetInfo.CurrentUsage;
                 pMemoryInfoV3->dedicatedVideoMemoryEvictionsSize = 0;
                 pMemoryInfoV3->dedicatedVideoMemoryEvictionCount = 0;
@@ -472,7 +471,8 @@ extern "C" {
                 pMemoryInfoV1->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory;
                 pMemoryInfoV1->systemVideoMemory = memoryInfo.DedicatedSystemMemory;
                 pMemoryInfoV1->sharedSystemMemory = memoryInfo.SharedSystemMemory;
-                pMemoryInfoV1->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory; // See comment in NvAPI_GPU_GetMemoryInfo
+                // See comment in NvAPI_GPU_GetMemoryInfo
+                pMemoryInfoV1->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory;
                 pMemoryInfoV1->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget - memoryBudgetInfo.CurrentUsage;
                 pMemoryInfoV1->dedicatedVideoMemoryEvictionsSize = 0;
                 pMemoryInfoV1->dedicatedVideoMemoryEvictionCount = 0;

@@ -15,6 +15,7 @@ namespace dxvk {
 
         struct MemoryInfo {
             uint64_t DedicatedVideoMemory;
+            uint64_t ReservedVideoMemory;
             uint64_t DedicatedSystemMemory;
             uint64_t SharedSystemMemory;
         };

@@ -23,6 +23,7 @@ namespace dxvk {
         GETPROCADDR(nvmlShutdown);
         GETPROCADDR(nvmlErrorString);
         GETPROCADDR(nvmlDeviceGetHandleByPciBusId_v2);
+        GETPROCADDR(nvmlDeviceGetMemoryInfo_v2);
         GETPROCADDR(nvmlDeviceGetPciInfo_v3);
         GETPROCADDR(nvmlDeviceGetClockInfo);
         GETPROCADDR(nvmlDeviceGetTemperature);
@@ -74,6 +75,12 @@ namespace dxvk {
 
     nvmlReturn_t Nvml::DeviceGetHandleByPciBusId_v2(const char* pciBusId, nvmlDevice_t* device) const {
         return m_nvmlDeviceGetHandleByPciBusId_v2(pciBusId, device);
+    }
+
+    nvmlReturn_t Nvml::DeviceGetMemoryInfo_v2(nvmlDevice_t device, nvmlMemory_v2_t* memory) const {
+        return m_nvmlDeviceGetMemoryInfo_v2
+            ? m_nvmlDeviceGetMemoryInfo_v2(device, memory)
+            : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
     nvmlReturn_t Nvml::DeviceGetPciInfo_v3(nvmlDevice_t device, nvmlPciInfo_t* pci) const {

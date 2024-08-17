@@ -12,6 +12,7 @@ namespace dxvk {
         [[nodiscard]] virtual bool IsAvailable() const;
         [[nodiscard]] virtual const char* ErrorString(nvmlReturn_t result) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetHandleByPciBusId_v2(const char* pciBusId, nvmlDevice_t* device) const;
+        [[nodiscard]] virtual nvmlReturn_t DeviceGetMemoryInfo_v2(nvmlDevice_t device, nvmlMemory_v2_t* memory) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetPciInfo_v3(nvmlDevice_t device, nvmlPciInfo_t* pci) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetClockInfo(nvmlDevice_t device, nvmlClockType_t type, unsigned int* clock) const;
         [[nodiscard]] virtual nvmlReturn_t DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int* temp) const;
@@ -39,6 +40,7 @@ namespace dxvk {
         DECLARE_PFN(nvmlShutdown);
         DECLARE_PFN(nvmlErrorString);
         DECLARE_PFN(nvmlDeviceGetHandleByPciBusId_v2);
+        DECLARE_PFN(nvmlDeviceGetMemoryInfo_v2);
         DECLARE_PFN(nvmlDeviceGetPciInfo_v3);
         DECLARE_PFN(nvmlDeviceGetClockInfo);
         DECLARE_PFN(nvmlDeviceGetTemperature);

@@ -22,6 +22,9 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
         ALLOW_CALL(*nvml, DeviceGetHandleByPciBusId_v2(_, _))
             .SIDE_EFFECT(*_2 = reinterpret_cast<nvmlDevice_t>(0x1234)) // Just a non-nullptr
             .RETURN(NVML_SUCCESS);
+        ALLOW_CALL(*nvml, DeviceGetMemoryInfo_v2(_, _))
+            .SIDE_EFFECT(_2->reserved = 376)
+            .RETURN(NVML_SUCCESS);
 
         SECTION("GetCurrentPCIEDownstreamWidth returns OK") {
             auto linkWidth = 16U;
@@ -106,6 +109,33 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             NvAPI_ShortString revision;
             REQUIRE(NvAPI_GPU_GetVbiosVersionString(handle, revision) == NVAPI_OK);
             REQUIRE_THAT(revision, Equals(version));
+        }
+
+        SECTION("GetMemoryInfo/GetMemoryInfoEx returns OK") {
+            ALLOW_CALL(adapter, GetDesc1(_))
+                .SIDE_EFFECT({
+                    _1->VendorId = 0x10de;
+                    _1->DedicatedVideoMemory = 8191 * 1024;
+                })
+                .RETURN(S_OK);
+            ALLOW_CALL(adapter, QueryVideoMemoryInfo(_, _, _))
+                .RETURN(S_OK);
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
+
+            NV_DISPLAY_DRIVER_MEMORY_INFO info;
+            info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER;
+            REQUIRE(NvAPI_GPU_GetMemoryInfo(handle, &info) == NVAPI_OK);
+            REQUIRE(info.availableDedicatedVideoMemory == (8191 * 1024) - 376);
+
+            NV_GPU_MEMORY_INFO_EX infoEx;
+            infoEx.version = NV_GPU_MEMORY_INFO_EX_VER;
+            REQUIRE(NvAPI_GPU_GetMemoryInfoEx(handle, &infoEx) == NVAPI_OK);
+            REQUIRE(infoEx.availableDedicatedVideoMemory == (8191 * 1024) - 376);
         }
 
         SECTION("GetBusType returns OK") {
