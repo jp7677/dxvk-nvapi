@@ -192,8 +192,10 @@ extern "C" {
 
         pGraphicsCaps->majorSMVersion = 0;
         pGraphicsCaps->minorSMVersion = 0;
-        // all Vulkan drivers are expected to support ZBC clear without padding
+        // All Vulkan drivers are expected to support ZBC clear without padding
         pGraphicsCaps->bFastUAVClearSupported = true;
+        pGraphicsCaps->bExclusiveScissorRectsSupported = false;
+        pGraphicsCaps->bVariablePixelRateShadingSupported = false;
 
         NvapiAdapter* adapter = nullptr;
         auto luid = NvapiD3d12Device::GetLuid(pDevice);
@@ -202,6 +204,13 @@ extern "C" {
 
         if (adapter == nullptr || (!adapter->HasNvProprietaryDriver() && !adapter->HasNvkDriver()))
             return Ok(str::format(n, " (sm_0)"));
+
+        // Might be related to VK_NV_scissor_exclusive (which isn't used by VKD3D-Proton), but unknown in the context of D3D12
+        // pGraphicsCaps->bExclusiveScissorRectsSupported = adapter->IsVkDeviceExtensionSupported(VK_NV_SCISSOR_EXCLUSIVE_EXTENSION_NAME);
+
+        // Note that adapter->IsVkDeviceExtensionSupported returns the extensions supported by DXVK, not by VKD3D-Proton,
+        // so we might be wrong here in case of an old VKD3D-Proton version or when VKD3D_DISABLE_EXTENSIONS is in use
+        pGraphicsCaps->bVariablePixelRateShadingSupported = adapter->IsVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
 
         // From https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
         // Note: One might think that SM here is D3D12 Shader Model, in fact it is the "Streaming Multiprocessor" architecture name
@@ -233,11 +242,6 @@ extern "C" {
             default:
                 break;
         }
-
-        // These fields should be derivable from architecture, but not sure yet what the consequences are
-        // Currently we do not require these fields, we can implement them later.
-        // pGraphicsCaps->bExclusiveScissorRectsSupported = ;
-        // pGraphicsCaps->bVariablePixelRateShadingSupported = ; // Should be supported on Turing and newer
 
         return Ok(str::format(n, " (sm_", pGraphicsCaps->majorSMVersion, pGraphicsCaps->minorSMVersion, ")"));
     }

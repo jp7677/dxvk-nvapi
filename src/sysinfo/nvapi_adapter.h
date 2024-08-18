@@ -38,6 +38,7 @@ namespace dxvk {
         [[nodiscard]] uint32_t GetBoardId() const;
         [[nodiscard]] std::optional<LUID> GetLuid() const;
         [[nodiscard]] NV_GPU_ARCHITECTURE_ID GetArchitectureId() const;
+        [[nodiscard]] bool IsVkDeviceExtensionSupported(const std::string& name) const;
         [[nodiscard]] const MemoryInfo& GetMemoryInfo() const;
         [[nodiscard]] MemoryBudgetInfo GetCurrentMemoryBudgetInfo() const;
         [[nodiscard]] bool HasNvml() const;
@@ -76,8 +77,6 @@ namespace dxvk {
         nvmlDevice_t m_nvmlDevice{};
 
         uint32_t m_driverVersionOverride = 0;
-
-        [[nodiscard]] bool IsVkDeviceExtensionSupported(const std::string& name) const;
 
         constexpr static auto driverVersionEnvName = "DXVK_NVAPI_DRIVER_VERSION";
         constexpr static auto allowOtherDriversEnvName = "DXVK_NVAPI_ALLOW_OTHER_DRIVERS";

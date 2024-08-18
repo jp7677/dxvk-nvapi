@@ -232,17 +232,18 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 std::string extensionName;
                 uint16_t expectedMajorSMVersion;
                 uint16_t expectedMinorSMVersion;
+                bool variablePixelRateShadingSupported;
             };
             auto args = GENERATE(
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2600, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 9},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 6},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME, 7, 5},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME, 7, 0},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME, 6, 0},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, 5, 0},
-                Data{VK_DRIVER_ID_MESA_NVK, 0x2600, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 9},
-                Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, 0x2000, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 0, 0},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, "ext", 0, 0});
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2600, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 9, true},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 6, true},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME, 7, 5, false},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME, 7, 0, false},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME, 6, 0, false},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, 5, 0, false},
+                Data{VK_DRIVER_ID_MESA_NVK, 0x2600, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 9, true},
+                Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, 0x2000, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 0, 0, false},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, "ext", 0, 0, false});
 
             ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
 
@@ -268,9 +269,11 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
             NV_D3D12_GRAPHICS_CAPS graphicsCaps;
             REQUIRE(NvAPI_D3D12_GetGraphicsCapabilities(static_cast<ID3D12Device*>(&device), NV_D3D12_GRAPHICS_CAPS_VER1, &graphicsCaps) == NVAPI_OK);
-            REQUIRE(graphicsCaps.bFastUAVClearSupported == true);
             REQUIRE(graphicsCaps.majorSMVersion == args.expectedMajorSMVersion);
             REQUIRE(graphicsCaps.minorSMVersion == args.expectedMinorSMVersion);
+            REQUIRE(graphicsCaps.bFastUAVClearSupported == true);
+            REQUIRE(graphicsCaps.bExclusiveScissorRectsSupported == false);
+            REQUIRE(graphicsCaps.bVariablePixelRateShadingSupported == args.variablePixelRateShadingSupported);
             REQUIRE(deviceRefCount == 0);
         }
 
