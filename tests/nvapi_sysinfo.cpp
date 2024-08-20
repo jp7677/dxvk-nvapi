@@ -566,32 +566,32 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             NV_DISPLAY_DRIVER_MEMORY_INFO_V1 info;
             info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER_1;
             REQUIRE(NvAPI_GPU_GetMemoryInfo(handle, reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO*>(&info)) == NVAPI_OK);
-            REQUIRE(info.dedicatedVideoMemory == 8191 * 1024);
-            REQUIRE(info.systemVideoMemory == 1014 * 1024);
-            REQUIRE(info.sharedSystemMemory == 16382 * 1024);
-            REQUIRE(info.availableDedicatedVideoMemory == 8191 * 1024);
+            REQUIRE(info.dedicatedVideoMemory == 8191);
+            REQUIRE(info.systemVideoMemory == 1014);
+            REQUIRE(info.sharedSystemMemory == 16382);
+            REQUIRE(info.availableDedicatedVideoMemory == 8191);
         }
 
         SECTION("GetMemoryInfo (V2) returns OK") {
             NV_DISPLAY_DRIVER_MEMORY_INFO_V2 info;
             info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER_2;
             REQUIRE(NvAPI_GPU_GetMemoryInfo(handle, reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO*>(&info)) == NVAPI_OK);
-            REQUIRE(info.dedicatedVideoMemory == 8191 * 1024);
-            REQUIRE(info.systemVideoMemory == 1014 * 1024);
-            REQUIRE(info.sharedSystemMemory == 16382 * 1024);
-            REQUIRE(info.availableDedicatedVideoMemory == 8191 * 1024);
-            REQUIRE(info.curAvailableDedicatedVideoMemory == 4096 * 1024);
+            REQUIRE(info.dedicatedVideoMemory == 8191);
+            REQUIRE(info.systemVideoMemory == 1014);
+            REQUIRE(info.sharedSystemMemory == 16382);
+            REQUIRE(info.availableDedicatedVideoMemory == 8191);
+            REQUIRE(info.curAvailableDedicatedVideoMemory == 4096);
         }
 
         SECTION("GetMemoryInfo (V3) returns OK") {
             NV_DISPLAY_DRIVER_MEMORY_INFO_V3 info;
             info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3;
             REQUIRE(NvAPI_GPU_GetMemoryInfo(handle, &info) == NVAPI_OK);
-            REQUIRE(info.dedicatedVideoMemory == 8191 * 1024);
-            REQUIRE(info.systemVideoMemory == 1014 * 1024);
-            REQUIRE(info.sharedSystemMemory == 16382 * 1024);
-            REQUIRE(info.availableDedicatedVideoMemory == 8191 * 1024);
-            REQUIRE(info.curAvailableDedicatedVideoMemory == 4096 * 1024);
+            REQUIRE(info.dedicatedVideoMemory == 8191);
+            REQUIRE(info.systemVideoMemory == 1014);
+            REQUIRE(info.sharedSystemMemory == 16382);
+            REQUIRE(info.availableDedicatedVideoMemory == 8191);
+            REQUIRE(info.curAvailableDedicatedVideoMemory == 4096);
             REQUIRE(info.dedicatedVideoMemoryEvictionsSize == 0);
             REQUIRE(info.dedicatedVideoMemoryEvictionCount == 0);
         }

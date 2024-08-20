@@ -23,7 +23,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             .SIDE_EFFECT(*_2 = reinterpret_cast<nvmlDevice_t>(0x1234)) // Just a non-nullptr
             .RETURN(NVML_SUCCESS);
         ALLOW_CALL(*nvml, DeviceGetMemoryInfo_v2(_, _))
-            .SIDE_EFFECT(_2->reserved = 376)
+            .SIDE_EFFECT(_2->reserved = 376 * 1024)
             .RETURN(NVML_SUCCESS);
 
         SECTION("GetCurrentPCIEDownstreamWidth returns OK") {
@@ -130,12 +130,12 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             NV_DISPLAY_DRIVER_MEMORY_INFO info;
             info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER;
             REQUIRE(NvAPI_GPU_GetMemoryInfo(handle, &info) == NVAPI_OK);
-            REQUIRE(info.availableDedicatedVideoMemory == (8191 * 1024) - 376);
+            REQUIRE(info.availableDedicatedVideoMemory == 8191 - 376);
 
             NV_GPU_MEMORY_INFO_EX infoEx;
             infoEx.version = NV_GPU_MEMORY_INFO_EX_VER;
             REQUIRE(NvAPI_GPU_GetMemoryInfoEx(handle, &infoEx) == NVAPI_OK);
-            REQUIRE(infoEx.availableDedicatedVideoMemory == (8191 * 1024) - 376);
+            REQUIRE(infoEx.availableDedicatedVideoMemory == (8191 - 376) * 1024);
         }
 
         SECTION("GetBusType returns OK") {
