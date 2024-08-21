@@ -22,10 +22,10 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
-    DXGIDxvkAdapterMock adapter;
-    DXGIOutput6Mock output;
+    DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
+    DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
 
-    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter, *output);
 
     SECTION("Initialize returns OK") {
         SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
@@ -45,7 +45,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
     SECTION("Initialize returns device-not-found when DXVK NVAPI hack is enabled") {
         ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "0");
 
-        ALLOW_CALL(adapter, GetDesc1(_))
+        ALLOW_CALL(*adapter, GetDesc1(_))
             .SIDE_EFFECT(_1->VendorId = 0x1002)
             .RETURN(S_OK);
 
@@ -64,7 +64,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
 
         ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "1");
 
-        ALLOW_CALL(adapter, GetDesc1(_))
+        ALLOW_CALL(*adapter, GetDesc1(_))
             .SIDE_EFFECT(_1->VendorId = 0x1002)
             .RETURN(S_OK);
         ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
@@ -112,10 +112,10 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
-    DXGIDxvkAdapterMock adapter;
-    DXGIOutput6Mock output;
+    DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
+    DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
 
-    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter, *output);
     auto primaryDisplayId = 0x00010001;
 
     SECTION("Initialize and unloads return OK") {
@@ -382,7 +382,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetPCIIdentifiers returns OK") {
-        ALLOW_CALL(adapter, GetDesc1(_))
+        ALLOW_CALL(*adapter, GetDesc1(_))
             .SIDE_EFFECT({
                 _1->VendorId = 0x10de;
                 _1->DeviceId = 0x1234;
@@ -502,7 +502,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetPhysicalFrameBufferSize returns OK") {
-        ALLOW_CALL(adapter, GetDesc1(_))
+        ALLOW_CALL(*adapter, GetDesc1(_))
             .SIDE_EFFECT({
                 _1->VendorId = 0x10de;
                 _1->DedicatedVideoMemory = 8191 * 1024;
@@ -521,7 +521,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetVirtualFrameBufferSize returns OK") {
-        ALLOW_CALL(adapter, GetDesc1(_))
+        ALLOW_CALL(*adapter, GetDesc1(_))
             .SIDE_EFFECT({
                 _1->VendorId = 0x10de;
                 _1->DedicatedVideoMemory = 8191 * 1024;
@@ -541,7 +541,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetMemoryInfo succeeds") {
-        ALLOW_CALL(adapter, GetDesc1(_))
+        ALLOW_CALL(*adapter, GetDesc1(_))
             .SIDE_EFFECT({
                 _1->VendorId = 0x10de;
                 _1->DedicatedVideoMemory = 8191 * 1024;
@@ -549,7 +549,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 _1->SharedSystemMemory = 16382 * 1024;
             })
             .RETURN(S_OK);
-        ALLOW_CALL(adapter, QueryVideoMemoryInfo(_, _, _))
+        ALLOW_CALL(*adapter, QueryVideoMemoryInfo(_, _, _))
             .SIDE_EFFECT({
                 _3->Budget = 4096 * 1024;
                 _3->CurrentUsage = 1024 * 1024;
@@ -610,7 +610,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetMemoryInfoEx succeeds") {
-        ALLOW_CALL(adapter, GetDesc1(_))
+        ALLOW_CALL(*adapter, GetDesc1(_))
             .SIDE_EFFECT({
                 _1->VendorId = 0x10de;
                 _1->DedicatedVideoMemory = 8191 * 1024;
@@ -618,7 +618,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                 _1->SharedSystemMemory = 16382 * 1024;
             })
             .RETURN(S_OK);
-        ALLOW_CALL(adapter, QueryVideoMemoryInfo(_, _, _))
+        ALLOW_CALL(*adapter, QueryVideoMemoryInfo(_, _, _))
             .SIDE_EFFECT({
                 _3->Budget = 4096 * 1024;
                 _3->CurrentUsage = 1024 * 1024;

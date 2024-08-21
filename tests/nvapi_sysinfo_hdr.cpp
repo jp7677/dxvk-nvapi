@@ -10,10 +10,10 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
-    DXGIDxvkAdapterMock adapter;
-    DXGIOutput6Mock output;
+    DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
+    DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
 
-    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter, *output);
     auto primaryDisplayId = 0x00010001;
 
     auto desc1 = DXGI_OUTPUT_DESC1{
@@ -32,10 +32,10 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
         1499.0f,
         799.0f};
 
-    ALLOW_CALL(output, QueryInterface(__uuidof(IDXGIOutput6), _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput6*>(&output))
+    ALLOW_CALL(*output, QueryInterface(__uuidof(IDXGIOutput6), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput6*>(output))
         .RETURN(S_OK);
-    ALLOW_CALL(output, GetDesc1(_))
+    ALLOW_CALL(*output, GetDesc1(_))
         .SIDE_EFFECT(*_1 = desc1)
         .RETURN(S_OK);
 

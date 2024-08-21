@@ -34,10 +34,8 @@ class MockFactory : public dxvk::ResourceFactory {
         return std::move(m_lfxMock);
     }
 
-    [[nodiscard]] std::array<std::unique_ptr<expectation>, 1> ConfigureAllowRelease() {
-        return {
-            NAMED_ALLOW_CALL(*m_dxgiFactoryMock, Release())
-                .RETURN(0)};
+    [[nodiscard]] DXGIDxvkFactoryMock* GetDXGIDxvkFactoryMock() {
+        return m_dxgiFactoryMock.get();
     }
 
   private:

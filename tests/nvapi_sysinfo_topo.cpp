@@ -10,13 +10,13 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
     auto vulkan = std::make_unique<VulkanMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
-    DXGIDxvkAdapterMock adapter1;
-    DXGIDxvkAdapterMock adapter2;
-    DXGIOutput6Mock output1;
-    DXGIOutput6Mock output2;
-    DXGIOutput6Mock output3;
+    DXGIDxvkAdapterMock* adapter1 = CreateDXGIDxvkAdapterMock();
+    DXGIDxvkAdapterMock* adapter2 = CreateDXGIDxvkAdapterMock();
+    DXGIOutput6Mock* output1 = CreateDXGIOutput6Mock();
+    DXGIOutput6Mock* output2 = CreateDXGIOutput6Mock();
+    DXGIOutput6Mock* output3 = CreateDXGIOutput6Mock();
 
-    auto e = ConfigureExtendedTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter1, adapter2, output1, output2, output3);
+    auto e = ConfigureExtendedTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter1, *adapter2, *output1, *output2, *output3);
 
     SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
     REQUIRE(NvAPI_Initialize() == NVAPI_OK);

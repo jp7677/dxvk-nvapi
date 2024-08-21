@@ -3,6 +3,19 @@
 using namespace trompeloeil;
 using namespace dxvk;
 
+std::vector<std::unique_ptr<DXGIDxvkAdapterMock>> m_dxgiAdapterMocks;
+std::vector<std::unique_ptr<DXGIOutput6Mock>> m_dxgiOutputMocks;
+
+DXGIDxvkAdapterMock* CreateDXGIDxvkAdapterMock() {
+    auto mock = std::make_unique<DXGIDxvkAdapterMock>();
+    return m_dxgiAdapterMocks.emplace_back(std::move(mock)).get();
+}
+
+DXGIOutput6Mock* CreateDXGIOutput6Mock() {
+    auto mock = std::make_unique<DXGIOutput6Mock>();
+    return m_dxgiOutputMocks.emplace_back(std::move(mock)).get();
+}
+
 void SetupResourceFactory(
     std::unique_ptr<DXGIDxvkFactoryMock> dxgiFactory,
     std::unique_ptr<VulkanMock> vulkan,
@@ -20,11 +33,32 @@ void ResetGlobals() {
         return;
 
     auto mockFactory = reinterpret_cast<MockFactory*>(resourceFactory.get());
-    auto e = mockFactory->ConfigureAllowRelease(); // Ensure that Com<*> mocks can be deleted by destructors
+
+    // Ensure that Com<*> mocks can be deleted by destructors
+    std::vector<std::unique_ptr<expectation>> e;
+
+    e.emplace_back(
+        NAMED_ALLOW_CALL(*mockFactory->GetDXGIDxvkFactoryMock(), Release()).RETURN(0));
+
+    std::for_each(m_dxgiAdapterMocks.begin(), m_dxgiAdapterMocks.end(),
+        [&e](auto& mock) {
+            e.emplace_back(
+                NAMED_ALLOW_CALL(*mock, Release()).RETURN(0));
+        });
+
+    std::for_each(m_dxgiOutputMocks.begin(), m_dxgiOutputMocks.end(),
+        [&e](auto& mock) {
+            e.emplace_back(
+                NAMED_ALLOW_CALL(*mock, Release()).RETURN(0));
+        });
 
     nvapiD3dInstance.reset();
     nvapiAdapterRegistry.reset();
     initializationCount = 0ULL;
+    resourceFactory.reset();
+
+    m_dxgiAdapterMocks.clear();
+    m_dxgiOutputMocks.clear();
 }
 
 [[nodiscard]] std::array<std::unique_ptr<expectation>, 24> ConfigureDefaultTestEnvironment(

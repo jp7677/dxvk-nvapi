@@ -187,11 +187,11 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto vulkan = std::make_unique<VulkanMock>();
         auto nvml = std::make_unique<NvmlMock>();
         auto lfx = std::make_unique<LfxMock>();
-        DXGIDxvkAdapterMock adapter;
-        DXGIOutput6Mock output;
+        DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
+        DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
         LUID luid{};
 
-        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
+        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter, *output);
 
         ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12Device), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12Device*>(&device))
@@ -802,10 +802,10 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto vulkan = std::make_unique<VulkanMock>();
         auto nvml = std::make_unique<NvmlMock>();
         auto lfx = std::make_unique<LfxMock>();
-        DXGIDxvkAdapterMock adapter;
-        DXGIOutput6Mock output;
+        DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
+        DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
 
-        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
+        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter, *output);
 
         ALLOW_CALL(commandQueue, GetDevice(__uuidof(ID3DLowLatencyDevice), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<ID3DLowLatencyDevice*>(&lowLatencyDevice))

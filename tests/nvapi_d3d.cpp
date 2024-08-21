@@ -117,11 +117,11 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
     D3DLowLatencyDeviceMock lowLatencyDevice;
-    DXGIDxvkAdapterMock adapter;
-    DXGIOutput6Mock output;
+    DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
+    DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
     auto lowLatencyDeviceRefCount = 0;
 
-    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, adapter, output);
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter, *output);
 
     ALLOW_CALL(unknown, QueryInterface(__uuidof(ID3DLowLatencyDevice), _))
         .RETURN(E_NOINTERFACE);

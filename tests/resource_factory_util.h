@@ -5,6 +5,9 @@
 #include "nvapi_sysinfo_mocks.h"
 #include "mock_factory.h"
 
+DXGIDxvkAdapterMock* CreateDXGIDxvkAdapterMock();
+DXGIOutput6Mock* CreateDXGIOutput6Mock();
+
 void SetupResourceFactory(
     std::unique_ptr<DXGIDxvkFactoryMock> dxgiFactory,
     std::unique_ptr<VulkanMock> vulkan,
