@@ -361,7 +361,8 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        *pSize = adapter->GetMemoryInfo().DedicatedVideoMemory / 1024;
+        auto memoryInfo = adapter->GetMemoryInfo();
+        *pSize = (memoryInfo.DedicatedVideoMemory + memoryInfo.ReservedVideoMemory) / 1024;
 
         return Ok(n);
     }
@@ -382,7 +383,8 @@ extern "C" {
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        *pSize = (adapter->GetMemoryInfo().DedicatedVideoMemory + adapter->GetMemoryInfo().DedicatedSystemMemory) / 1024;
+        auto memoryInfo = adapter->GetMemoryInfo();
+        *pSize = (memoryInfo.DedicatedVideoMemory + memoryInfo.ReservedVideoMemory + memoryInfo.DedicatedSystemMemory) / 1024;
 
         return Ok(n);
     }
@@ -410,29 +412,28 @@ extern "C" {
         switch (pMemoryInfo->version) {
             case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_1: {
                 auto pMemoryInfoV1 = reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO_V1*>(pMemoryInfo);
-                pMemoryInfoV1->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
+                // ReservedVideoMemory is zero unless NVML is available
+                pMemoryInfoV1->dedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory + memoryInfo.ReservedVideoMemory) / 1024;
                 pMemoryInfoV1->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
                 pMemoryInfoV1->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
-
-                // ReservedVideoMemory is zero unless NVML is available
-                pMemoryInfoV1->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
+                pMemoryInfoV1->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
                 break;
             }
             case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_2: {
                 auto pMemoryInfoV2 = reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO_V2*>(pMemoryInfo);
-                pMemoryInfoV2->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
+                pMemoryInfoV2->dedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory + memoryInfo.ReservedVideoMemory) / 1024; // See comment above
                 pMemoryInfoV2->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
                 pMemoryInfoV2->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
-                pMemoryInfoV2->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024; // See comment above
+                pMemoryInfoV2->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
                 pMemoryInfoV2->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget / 1024;
                 break;
             }
             case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3: {
                 auto pMemoryInfoV3 = reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO_V3*>(pMemoryInfo);
-                pMemoryInfoV3->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
+                pMemoryInfoV3->dedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory + memoryInfo.ReservedVideoMemory) / 1024; // See comment above
                 pMemoryInfoV3->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
                 pMemoryInfoV3->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
-                pMemoryInfoV3->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024; // See comment above
+                pMemoryInfoV3->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
                 pMemoryInfoV3->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget / 1024;
                 pMemoryInfoV3->dedicatedVideoMemoryEvictionsSize = 0;
                 pMemoryInfoV3->dedicatedVideoMemoryEvictionCount = 0;
@@ -468,11 +469,11 @@ extern "C" {
         switch (pMemoryInfo->version) {
             case NV_GPU_MEMORY_INFO_EX_VER_1: {
                 auto pMemoryInfoV1 = reinterpret_cast<NV_GPU_MEMORY_INFO_EX*>(pMemoryInfo);
-                pMemoryInfoV1->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory;
+                // See comment in NvAPI_GPU_GetMemoryInfo
+                pMemoryInfoV1->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory + memoryInfo.ReservedVideoMemory;
                 pMemoryInfoV1->systemVideoMemory = memoryInfo.DedicatedSystemMemory;
                 pMemoryInfoV1->sharedSystemMemory = memoryInfo.SharedSystemMemory;
-                // See comment in NvAPI_GPU_GetMemoryInfo
-                pMemoryInfoV1->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory;
+                pMemoryInfoV1->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory;
                 pMemoryInfoV1->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget;
                 pMemoryInfoV1->dedicatedVideoMemoryEvictionsSize = 0;
                 pMemoryInfoV1->dedicatedVideoMemoryEvictionCount = 0;

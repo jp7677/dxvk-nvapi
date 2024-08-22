@@ -111,11 +111,12 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             REQUIRE_THAT(revision, Equals(version));
         }
 
-        SECTION("GetMemoryInfo/GetMemoryInfoEx returns OK") {
+        SECTION("GetPhysicalFrameBufferSize/GetVirtualFrameBufferSize/GetMemoryInfo/GetMemoryInfoEx returns OK") {
             ALLOW_CALL(*adapter, GetDesc1(_))
                 .SIDE_EFFECT({
                     _1->VendorId = 0x10de;
                     _1->DedicatedVideoMemory = 8191 * 1024;
+                    _1->DedicatedSystemMemory = 2048 * 1024;
                 })
                 .RETURN(S_OK);
             ALLOW_CALL(*adapter, QueryVideoMemoryInfo(_, _, _))
@@ -127,15 +128,23 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             NvPhysicalGpuHandle handle;
             REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
 
+            NvU32 size;
+            REQUIRE(NvAPI_GPU_GetPhysicalFrameBufferSize(handle, &size) == NVAPI_OK);
+            REQUIRE(size == 8191 + 376);
+
+            NvU32 vsize;
+            REQUIRE(NvAPI_GPU_GetVirtualFrameBufferSize(handle, &vsize) == NVAPI_OK);
+            REQUIRE(vsize == 8191 + 2048 + 376);
+
             NV_DISPLAY_DRIVER_MEMORY_INFO info;
             info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER;
             REQUIRE(NvAPI_GPU_GetMemoryInfo(handle, &info) == NVAPI_OK);
-            REQUIRE(info.availableDedicatedVideoMemory == 8191 - 376);
+            REQUIRE(info.dedicatedVideoMemory == 8191 + 376);
 
             NV_GPU_MEMORY_INFO_EX infoEx;
             infoEx.version = NV_GPU_MEMORY_INFO_EX_VER;
             REQUIRE(NvAPI_GPU_GetMemoryInfoEx(handle, &infoEx) == NVAPI_OK);
-            REQUIRE(infoEx.availableDedicatedVideoMemory == (8191 - 376) * 1024);
+            REQUIRE(infoEx.dedicatedVideoMemory == (8191 + 376) * 1024);
         }
 
         SECTION("GetBusType returns OK") {
