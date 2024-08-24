@@ -71,21 +71,14 @@ extern "C" {
 
         switch (pMultiGPUCaps->version) {
             case 0: // NV_MULTIGPU_CAPS_V1 has no version field
-            case NV_MULTIGPU_CAPS_VER1: {
-                auto pMultiGPUCapsV1 = reinterpret_cast<NV_MULTIGPU_CAPS_V1*>(pMultiGPUCaps);
-                *pMultiGPUCapsV1 = {};
-                // Report that SLI is not available
-                pMultiGPUCapsV1->nTotalGPUs = nvapiAdapterRegistry->GetAdapterCount();
-                pMultiGPUCapsV1->nSLIGPUs = 0;
-                break;
-            }
-            case NV_MULTIGPU_CAPS_VER2: {
+            case NV_MULTIGPU_CAPS_VER2:
+                [[fallthrough]];
+            case NV_MULTIGPU_CAPS_VER1:
                 *pMultiGPUCaps = {};
                 // Report that SLI is not available
                 pMultiGPUCaps->nTotalGPUs = nvapiAdapterRegistry->GetAdapterCount();
                 pMultiGPUCaps->nSLIGPUs = 0;
                 break;
-            }
             default:
                 return IncompatibleStructVersion(n, pMultiGPUCaps->version);
         }

@@ -65,18 +65,11 @@ extern "C" {
             return InvalidArgument(n);
 
         switch (pSliState->version) {
-            case NV_GET_CURRENT_SLI_STATE_VER1: {
-                auto pSliStateV1 = reinterpret_cast<NV_GET_CURRENT_SLI_STATE_V1*>(pSliState);
-                // Report that SLI is not available
-                pSliStateV1->maxNumAFRGroups = 1;
-                pSliStateV1->numAFRGroups = 1;
-                pSliStateV1->currentAFRIndex = 0;
-                pSliStateV1->nextFrameAFRIndex = 0;
-                pSliStateV1->previousFrameAFRIndex = 0;
-                pSliStateV1->bIsCurAFRGroupNew = false;
-                break;
-            }
             case NV_GET_CURRENT_SLI_STATE_VER2:
+                // Report that SLI is not available
+                pSliState->numVRSLIGpus = 0;
+                [[fallthrough]];
+            case NV_GET_CURRENT_SLI_STATE_VER1:
                 // Report that SLI is not available
                 pSliState->maxNumAFRGroups = 1;
                 pSliState->numAFRGroups = 1;
@@ -84,7 +77,6 @@ extern "C" {
                 pSliState->nextFrameAFRIndex = 0;
                 pSliState->previousFrameAFRIndex = 0;
                 pSliState->bIsCurAFRGroupNew = false;
-                pSliState->numVRSLIGpus = 0;
                 break;
             default:
                 return IncompatibleStructVersion(n, pSliState->version);
@@ -116,21 +108,16 @@ extern "C" {
             return InvalidArgument(n);
 
         switch (structVersion) {
-            case NV_D3D1x_GRAPHICS_CAPS_VER1: {
-                auto pGraphicsCapsV1 = reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V1*>(pGraphicsCaps);
-                *pGraphicsCapsV1 = {};
-                pGraphicsCapsV1->bExclusiveScissorRectsSupported = 0;
-                pGraphicsCapsV1->bVariablePixelRateShadingSupported = 0;
-                break;
-            }
+
             case NV_D3D1x_GRAPHICS_CAPS_VER2:
-                *pGraphicsCaps = {};
                 // bFastUAVClearSupported is reported mostly for the sake of DLSS.
                 // All NVIDIA Vulkan drivers support this.
                 pGraphicsCaps->bFastUAVClearSupported = 1;
                 // dummy SM version number (unused by DLSS):
                 pGraphicsCaps->majorSMVersion = 0;
                 pGraphicsCaps->minorSMVersion = 0;
+                [[fallthrough]];
+            case NV_D3D1x_GRAPHICS_CAPS_VER1:
                 pGraphicsCaps->bExclusiveScissorRectsSupported = 0;
                 pGraphicsCaps->bVariablePixelRateShadingSupported = 0;
                 break;

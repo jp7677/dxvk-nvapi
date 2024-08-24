@@ -37,8 +37,9 @@ extern "C" {
         }
 
         switch (pDisplayIds->version) {
-            case NV_GPU_DISPLAYIDS_VER1: // Both versions use the same NV_GPU_DISPLAYIDS struct
-            case NV_GPU_DISPLAYIDS_VER2: {
+            case NV_GPU_DISPLAYIDS_VER2:
+                [[fallthrough]];
+            case NV_GPU_DISPLAYIDS_VER1:
                 *pDisplayIds = {};
                 for (auto i = 0U; i < count; i++) {
                     auto output = nvapiAdapterRegistry->GetOutput(adapter, i);
@@ -47,7 +48,6 @@ extern "C" {
                     pDisplayIds[i].connectorType = NV_MONITOR_CONN_TYPE_UNKNOWN;
                 }
                 break;
-            }
             default:
                 return IncompatibleStructVersion(n, pDisplayIds->version);
         }
@@ -408,36 +408,21 @@ extern "C" {
         auto memoryBudgetInfo = adapter->GetCurrentMemoryBudgetInfo();
 
         switch (pMemoryInfo->version) {
-            case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_1: {
-                auto pMemoryInfoV1 = reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO_V1*>(pMemoryInfo);
-                pMemoryInfoV1->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
-                pMemoryInfoV1->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
-                pMemoryInfoV1->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
+            case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3:
+                pMemoryInfo->dedicatedVideoMemoryEvictionsSize = 0;
+                pMemoryInfo->dedicatedVideoMemoryEvictionCount = 0;
+                [[fallthrough]];
+            case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_2:
+                pMemoryInfo->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget / 1024;
+                [[fallthrough]];
+            case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_1:
+                pMemoryInfo->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
+                pMemoryInfo->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
+                pMemoryInfo->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
 
                 // ReservedVideoMemory is zero unless NVML is available
-                pMemoryInfoV1->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
+                pMemoryInfo->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
                 break;
-            }
-            case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_2: {
-                auto pMemoryInfoV2 = reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO_V2*>(pMemoryInfo);
-                pMemoryInfoV2->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
-                pMemoryInfoV2->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
-                pMemoryInfoV2->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
-                pMemoryInfoV2->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024; // See comment above
-                pMemoryInfoV2->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget / 1024;
-                break;
-            }
-            case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3: {
-                auto pMemoryInfoV3 = reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO_V3*>(pMemoryInfo);
-                pMemoryInfoV3->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
-                pMemoryInfoV3->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
-                pMemoryInfoV3->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
-                pMemoryInfoV3->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024; // See comment above
-                pMemoryInfoV3->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget / 1024;
-                pMemoryInfoV3->dedicatedVideoMemoryEvictionsSize = 0;
-                pMemoryInfoV3->dedicatedVideoMemoryEvictionCount = 0;
-                break;
-            }
             default:
                 return IncompatibleStructVersion(n, pMemoryInfo->version);
         }
@@ -466,20 +451,18 @@ extern "C" {
         auto memoryBudgetInfo = adapter->GetCurrentMemoryBudgetInfo();
 
         switch (pMemoryInfo->version) {
-            case NV_GPU_MEMORY_INFO_EX_VER_1: {
-                auto pMemoryInfoV1 = reinterpret_cast<NV_GPU_MEMORY_INFO_EX*>(pMemoryInfo);
-                pMemoryInfoV1->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory;
-                pMemoryInfoV1->systemVideoMemory = memoryInfo.DedicatedSystemMemory;
-                pMemoryInfoV1->sharedSystemMemory = memoryInfo.SharedSystemMemory;
+            case NV_GPU_MEMORY_INFO_EX_VER_1:
+                pMemoryInfo->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory;
+                pMemoryInfo->systemVideoMemory = memoryInfo.DedicatedSystemMemory;
+                pMemoryInfo->sharedSystemMemory = memoryInfo.SharedSystemMemory;
                 // See comment in NvAPI_GPU_GetMemoryInfo
-                pMemoryInfoV1->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory;
-                pMemoryInfoV1->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget;
-                pMemoryInfoV1->dedicatedVideoMemoryEvictionsSize = 0;
-                pMemoryInfoV1->dedicatedVideoMemoryEvictionCount = 0;
-                pMemoryInfoV1->dedicatedVideoMemoryPromotionsSize = 0;
-                pMemoryInfoV1->dedicatedVideoMemoryPromotionCount = 0;
+                pMemoryInfo->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory;
+                pMemoryInfo->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget;
+                pMemoryInfo->dedicatedVideoMemoryEvictionsSize = 0;
+                pMemoryInfo->dedicatedVideoMemoryEvictionCount = 0;
+                pMemoryInfo->dedicatedVideoMemoryPromotionsSize = 0;
+                pMemoryInfo->dedicatedVideoMemoryPromotionCount = 0;
                 break;
-            }
             default:
                 return IncompatibleStructVersion(n, pMemoryInfo->version);
         }
@@ -601,18 +584,12 @@ extern "C" {
             default:
                 return Error(n);
         }
-
         auto revisionId = NV_GPU_CHIP_REV_UNKNOWN;
 
         switch (pGpuArchInfo->version) {
-            case NV_GPU_ARCH_INFO_VER_1: {
-                auto pGpuArchInfoV1 = reinterpret_cast<NV_GPU_ARCH_INFO_V1*>(pGpuArchInfo);
-                pGpuArchInfoV1->architecture = architectureId;
-                pGpuArchInfoV1->implementation = implementationId;
-                pGpuArchInfoV1->revision = revisionId;
-                break;
-            }
             case NV_GPU_ARCH_INFO_VER_2:
+                [[fallthrough]];
+            case NV_GPU_ARCH_INFO_VER_1:
                 pGpuArchInfo->architecture_id = architectureId;
                 pGpuArchInfo->implementation_id = implementationId;
                 pGpuArchInfo->revision_id = revisionId;
@@ -652,15 +629,13 @@ extern "C" {
         auto flags = NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_CAPABLE | NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_ENABLE | NV_COMPUTE_GPU_TOPOLOGY_PHYSICS_RECOMMENDED;
 
         switch (pComputeTopo->version) {
-            case NV_COMPUTE_GPU_TOPOLOGY_VER1: {
-                auto pComputeTopoV1 = reinterpret_cast<NV_COMPUTE_GPU_TOPOLOGY_V1*>(pComputeTopo);
-                pComputeTopoV1->gpuCount = cudaCapableGpus.size();
+            case NV_COMPUTE_GPU_TOPOLOGY_VER1:
+                pComputeTopo->gpuCount = cudaCapableGpus.size();
                 for (auto i = 0U; i < cudaCapableGpus.size(); i++) {
-                    pComputeTopoV1->computeGpus[i].hPhysicalGpu = cudaCapableGpus[i];
-                    pComputeTopoV1->computeGpus[i].flags = flags;
+                    pComputeTopo->computeGpus[i].hPhysicalGpu = cudaCapableGpus[i];
+                    pComputeTopo->computeGpus[i].flags = flags;
                 }
                 break;
-            }
             default:
                 return Error(n); // Unreachable, but just to be sure
         }
@@ -690,17 +665,29 @@ extern "C" {
         auto architectureId = adapter->GetArchitectureId();
 
         switch (pGpuInfo->version) {
-            case NV_GPU_INFO_VER1: {
-                auto pGpuInfoV1 = reinterpret_cast<NV_GPU_INFO_V1*>(pGpuInfo);
-                *pGpuInfoV1 = {};
+            case NV_GPU_INFO_VER1:
+                *pGpuInfo = {};
                 break;
-            }
             case NV_GPU_INFO_VER2:
                 *pGpuInfo = {};
-                if (architectureId >= NV_GPU_ARCHITECTURE_TU100) {
-                    // Values are taken from RTX4080
-                    pGpuInfo->rayTracingCores = 76;
-                    pGpuInfo->tensorCores = 304;
+                switch (architectureId) {
+                    case NV_GPU_ARCHITECTURE_AD100:
+                        // Values are taken from RTX4080
+                        pGpuInfo->rayTracingCores = 76;
+                        pGpuInfo->tensorCores = 304;
+                        break;
+                    case NV_GPU_ARCHITECTURE_GA100:
+                        // Values are taken from RTX3080
+                        pGpuInfo->rayTracingCores = 68;
+                        pGpuInfo->tensorCores = 272;
+                        break;
+                    case NV_GPU_ARCHITECTURE_TU100:
+                        // Values are taken from RTX2080
+                        pGpuInfo->rayTracingCores = 46;
+                        pGpuInfo->tensorCores = 368;
+                        break;
+                    default:
+                        break;
                 }
                 break;
             default:
@@ -896,18 +883,16 @@ extern "C" {
                     ? thermalSettings.count
                     : sensorIndex < thermalSettings.count;
                 switch (pThermalSettings->version) {
-                    case NV_GPU_THERMAL_SETTINGS_VER_1: {
-                        auto pThermalSettingsV1 = reinterpret_cast<NV_GPU_THERMAL_SETTINGS_V1*>(pThermalSettings);
-                        pThermalSettingsV1->count = thermalSettings.count;
+                    case NV_GPU_THERMAL_SETTINGS_VER_1:
+                        pThermalSettings->count = thermalSettings.count;
                         for (auto i = 0U; i < sensors; i++) {
-                            pThermalSettingsV1->sensor[i].controller = Nvml::ToNvThermalController(thermalSettings.sensor[i].controller);
-                            pThermalSettingsV1->sensor[i].target = Nvml::ToNvThermalTarget(thermalSettings.sensor[i].target);
-                            pThermalSettingsV1->sensor[i].currentTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].currentTemp, 0));
-                            pThermalSettingsV1->sensor[i].defaultMaxTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].defaultMaxTemp, 0));
-                            pThermalSettingsV1->sensor[i].defaultMinTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].defaultMinTemp, 0));
+                            pThermalSettings->sensor[i].controller = Nvml::ToNvThermalController(thermalSettings.sensor[i].controller);
+                            pThermalSettings->sensor[i].target = Nvml::ToNvThermalTarget(thermalSettings.sensor[i].target);
+                            pThermalSettings->sensor[i].currentTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].currentTemp, 0));
+                            pThermalSettings->sensor[i].defaultMaxTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].defaultMaxTemp, 0));
+                            pThermalSettings->sensor[i].defaultMinTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].defaultMinTemp, 0));
                         }
                         break;
-                    }
                     case NV_GPU_THERMAL_SETTINGS_VER_2:
                         pThermalSettings->count = thermalSettings.count;
                         for (auto i = 0U; i < sensors; i++) {
@@ -930,12 +915,9 @@ extern "C" {
                 return InvalidArgument(n);
             case NVML_ERROR_NOT_SUPPORTED:
                 switch (pThermalSettings->version) {
-                    case NV_GPU_THERMAL_SETTINGS_VER_1: {
-                        auto pThermalSettingsV1 = reinterpret_cast<NV_GPU_THERMAL_SETTINGS_V1*>(pThermalSettings);
-                        pThermalSettingsV1->count = 0;
-                        break;
-                    }
                     case NV_GPU_THERMAL_SETTINGS_VER_2:
+                        [[fallthrough]];
+                    case NV_GPU_THERMAL_SETTINGS_VER_1:
                         pThermalSettings->count = 0;
                         break;
                     default:
@@ -958,16 +940,14 @@ extern "C" {
         switch (result) {
             case NVML_SUCCESS:
                 switch (pThermalSettings->version) {
-                    case NV_GPU_THERMAL_SETTINGS_VER_1: {
-                        auto pThermalSettingsV1 = reinterpret_cast<NV_GPU_THERMAL_SETTINGS_V1*>(pThermalSettings);
-                        pThermalSettingsV1->count = 1;
-                        pThermalSettingsV1->sensor[0].controller = NVAPI_THERMAL_CONTROLLER_UNKNOWN;
-                        pThermalSettingsV1->sensor[0].target = NVAPI_THERMAL_TARGET_GPU;
-                        pThermalSettingsV1->sensor[0].currentTemp = temp;
-                        pThermalSettingsV1->sensor[0].defaultMaxTemp = 127;
-                        pThermalSettingsV1->sensor[0].defaultMinTemp = 0;
+                    case NV_GPU_THERMAL_SETTINGS_VER_1:
+                        pThermalSettings->count = 1;
+                        pThermalSettings->sensor[0].controller = NVAPI_THERMAL_CONTROLLER_UNKNOWN;
+                        pThermalSettings->sensor[0].target = NVAPI_THERMAL_TARGET_GPU;
+                        pThermalSettings->sensor[0].currentTemp = temp;
+                        pThermalSettings->sensor[0].defaultMaxTemp = 127;
+                        pThermalSettings->sensor[0].defaultMinTemp = 0;
                         break;
-                    }
                     case NV_GPU_THERMAL_SETTINGS_VER_2:
                         pThermalSettings->count = 1;
                         pThermalSettings->sensor[0].controller = NVAPI_THERMAL_CONTROLLER_UNKNOWN;
@@ -984,12 +964,9 @@ extern "C" {
                 return NoImplementation(n, alreadyLoggedNoNvml);
             case NVML_ERROR_NOT_SUPPORTED:
                 switch (pThermalSettings->version) {
-                    case NV_GPU_THERMAL_SETTINGS_VER_1: {
-                        auto pThermalSettingsV1 = reinterpret_cast<NV_GPU_THERMAL_SETTINGS_V1*>(pThermalSettings);
-                        pThermalSettingsV1->count = 0;
-                        break;
-                    }
                     case NV_GPU_THERMAL_SETTINGS_VER_2:
+                        [[fallthrough]];
+                    case NV_GPU_THERMAL_SETTINGS_VER_1:
                         pThermalSettings->count = 0;
                         break;
                     default:
@@ -1102,14 +1079,11 @@ extern "C" {
         switch (resultGpu) {
             case NVML_SUCCESS:
                 switch (pClkFreqs->version) {
-                    case NV_GPU_CLOCK_FREQUENCIES_VER_1: {
-                        auto pClkFreqsV1 = reinterpret_cast<NV_GPU_CLOCK_FREQUENCIES_V1*>(pClkFreqs);
-                        pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent = 1;
-                        pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency = (clock * 1000);
-                        break;
-                    }
-                    case NV_GPU_CLOCK_FREQUENCIES_VER_2: // Both versions use the same NV_GPU_CLOCK_FREQUENCIES_V2 struct
-                    case NV_GPU_CLOCK_FREQUENCIES_VER_3:
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_3: // We are only interested in bIspresent and frequency for all versions
+                        [[fallthrough]];
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_2:
+                        [[fallthrough]];
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_1:
                         pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent = 1;
                         pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency = (clock * 1000);
                         break;
@@ -1131,14 +1105,11 @@ extern "C" {
         switch (resultMem) {
             case NVML_SUCCESS:
                 switch (pClkFreqs->version) {
-                    case NV_GPU_CLOCK_FREQUENCIES_VER_1: {
-                        auto pClkFreqsV1 = reinterpret_cast<NV_GPU_CLOCK_FREQUENCIES_V1*>(pClkFreqs);
-                        pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent = 1;
-                        pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency = (clock * 1000);
-                        break;
-                    }
-                    case NV_GPU_CLOCK_FREQUENCIES_VER_2: // Both versions use the same NV_GPU_CLOCK_FREQUENCIES_V2 struct
-                    case NV_GPU_CLOCK_FREQUENCIES_VER_3:
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_3: // We are only interested in bIspresent and frequency for all versions
+                        [[fallthrough]];
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_2:
+                        [[fallthrough]];
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_1:
                         pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent = 1;
                         pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency = (clock * 1000);
                         break;
@@ -1158,14 +1129,11 @@ extern "C" {
         switch (resultVid) {
             case NVML_SUCCESS:
                 switch (pClkFreqs->version) {
-                    case NV_GPU_CLOCK_FREQUENCIES_VER_1: {
-                        auto pClkFreqsV1 = reinterpret_cast<NV_GPU_CLOCK_FREQUENCIES_V1*>(pClkFreqs);
-                        pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent = 1;
-                        pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency = (clock * 1000);
-                        break;
-                    }
-                    case NV_GPU_CLOCK_FREQUENCIES_VER_2: // Both versions use the same NV_GPU_CLOCK_FREQUENCIES_V2 struct
-                    case NV_GPU_CLOCK_FREQUENCIES_VER_3:
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_3: // We are only interested in bIspresent and frequency for all versions
+                        [[fallthrough]];
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_2:
+                        [[fallthrough]];
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_1:
                         pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent = 1;
                         pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency = (clock * 1000);
                         break;

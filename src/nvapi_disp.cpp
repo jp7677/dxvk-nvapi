@@ -56,41 +56,11 @@ extern "C" {
         const auto& data = output->GetColorData();
 
         switch (pHdrCapabilities->version) {
-            case NV_HDR_CAPABILITIES_VER1: {
-                auto pHdrCapabilitiesV1 = reinterpret_cast<NV_HDR_CAPABILITIES_V1*>(pHdrCapabilities);
-                *pHdrCapabilitiesV1 = {};
-                pHdrCapabilitiesV1->isST2084EotfSupported = data.HasST2084Support;
-                pHdrCapabilitiesV1->display_data.displayPrimary_x0 = data.RedPrimaryX;
-                pHdrCapabilitiesV1->display_data.displayPrimary_y0 = data.RedPrimaryY;
-                pHdrCapabilitiesV1->display_data.displayPrimary_x1 = data.GreenPrimaryX;
-                pHdrCapabilitiesV1->display_data.displayPrimary_y1 = data.GreenPrimaryY;
-                pHdrCapabilitiesV1->display_data.displayPrimary_x2 = data.BluePrimaryX;
-                pHdrCapabilitiesV1->display_data.displayPrimary_y2 = data.BluePrimaryY;
-                pHdrCapabilitiesV1->display_data.displayWhitePoint_x = data.WhitePointX;
-                pHdrCapabilitiesV1->display_data.displayWhitePoint_y = data.WhitePointY;
-                pHdrCapabilitiesV1->display_data.desired_content_min_luminance = data.MinLuminance;
-                pHdrCapabilitiesV1->display_data.desired_content_max_luminance = data.MaxLuminance;
-                pHdrCapabilitiesV1->display_data.desired_content_max_frame_average_luminance = data.MaxFullFrameLuminance;
-                break;
-            }
-            case NV_HDR_CAPABILITIES_VER2: {
-                auto pHdrCapabilitiesV2 = reinterpret_cast<NV_HDR_CAPABILITIES_V2*>(pHdrCapabilities);
-                *pHdrCapabilitiesV2 = {};
-                pHdrCapabilitiesV2->isST2084EotfSupported = data.HasST2084Support;
-                pHdrCapabilitiesV2->display_data.displayPrimary_x0 = data.RedPrimaryX;
-                pHdrCapabilitiesV2->display_data.displayPrimary_y0 = data.RedPrimaryY;
-                pHdrCapabilitiesV2->display_data.displayPrimary_x1 = data.GreenPrimaryX;
-                pHdrCapabilitiesV2->display_data.displayPrimary_y1 = data.GreenPrimaryY;
-                pHdrCapabilitiesV2->display_data.displayPrimary_x2 = data.BluePrimaryX;
-                pHdrCapabilitiesV2->display_data.displayPrimary_y2 = data.BluePrimaryY;
-                pHdrCapabilitiesV2->display_data.displayWhitePoint_x = data.WhitePointX;
-                pHdrCapabilitiesV2->display_data.displayWhitePoint_y = data.WhitePointY;
-                pHdrCapabilitiesV2->display_data.desired_content_min_luminance = data.MinLuminance;
-                pHdrCapabilitiesV2->display_data.desired_content_max_luminance = data.MaxLuminance;
-                pHdrCapabilitiesV2->display_data.desired_content_max_frame_average_luminance = data.MaxFullFrameLuminance;
-                break;
-            }
             case NV_HDR_CAPABILITIES_VER3:
+                [[fallthrough]];
+            case NV_HDR_CAPABILITIES_VER2:
+                [[fallthrough]];
+            case NV_HDR_CAPABILITIES_VER1:
                 *pHdrCapabilities = {};
                 pHdrCapabilities->isST2084EotfSupported = data.HasST2084Support;
                 pHdrCapabilities->display_data.displayPrimary_x0 = data.RedPrimaryX;
@@ -192,14 +162,13 @@ extern "C" {
         }
 
         if (pHdrColorData->version == NV_HDR_COLOR_DATA_VER2) {
-            auto pHDRColorDataV2 = reinterpret_cast<NV_HDR_COLOR_DATA_V2*>(pHdrColorData);
-            if (pHDRColorDataV2->cmd == NV_HDR_CMD_GET) {
-                pHDRColorDataV2->hdrColorFormat = NV_COLOR_FORMAT_RGB;
+            if (pHdrColorData->cmd == NV_HDR_CMD_GET) {
+                pHdrColorData->hdrColorFormat = NV_COLOR_FORMAT_RGB;
                 // NV_DYNAMIC_RANGE_VESA is RGB full range
                 // NV_DYNAMIC_RANGE_CEA is RGB/YCbCr limited range
                 // NV_DYNAMIC_RANGE_AUTO automatically chooses something (probably reads some EDID/CTA-861 entries)
-                pHDRColorDataV2->hdrDynamicRange = NV_DYNAMIC_RANGE_VESA;
-                pHDRColorDataV2->hdrBpc = data.BitsPerColor;
+                pHdrColorData->hdrDynamicRange = NV_DYNAMIC_RANGE_VESA;
+                pHdrColorData->hdrBpc = data.BitsPerColor;
             } else {
                 // Ignoring some extended properties of HDRColorDataV2.
                 // Nothing to set. It's all random useless garbage that you would NEVER trust an app to set.
