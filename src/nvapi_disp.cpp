@@ -59,6 +59,7 @@ extern "C" {
             case NV_HDR_CAPABILITIES_VER1: {
                 auto pHdrCapabilitiesV1 = reinterpret_cast<NV_HDR_CAPABILITIES_V1*>(pHdrCapabilities);
                 *pHdrCapabilitiesV1 = {};
+                pHdrCapabilitiesV1->version = NV_HDR_CAPABILITIES_VER1;
                 pHdrCapabilitiesV1->isST2084EotfSupported = data.HasST2084Support;
                 pHdrCapabilitiesV1->display_data.displayPrimary_x0 = data.RedPrimaryX;
                 pHdrCapabilitiesV1->display_data.displayPrimary_y0 = data.RedPrimaryY;
@@ -76,6 +77,7 @@ extern "C" {
             case NV_HDR_CAPABILITIES_VER2: {
                 auto pHdrCapabilitiesV2 = reinterpret_cast<NV_HDR_CAPABILITIES_V2*>(pHdrCapabilities);
                 *pHdrCapabilitiesV2 = {};
+                pHdrCapabilitiesV2->version = NV_HDR_CAPABILITIES_VER2;
                 pHdrCapabilitiesV2->isST2084EotfSupported = data.HasST2084Support;
                 pHdrCapabilitiesV2->display_data.displayPrimary_x0 = data.RedPrimaryX;
                 pHdrCapabilitiesV2->display_data.displayPrimary_y0 = data.RedPrimaryY;
@@ -92,6 +94,7 @@ extern "C" {
             }
             case NV_HDR_CAPABILITIES_VER3:
                 *pHdrCapabilities = {};
+                pHdrCapabilities->version = NV_HDR_CAPABILITIES_VER3;
                 pHdrCapabilities->isST2084EotfSupported = data.HasST2084Support;
                 pHdrCapabilities->display_data.displayPrimary_x0 = data.RedPrimaryX;
                 pHdrCapabilities->display_data.displayPrimary_y0 = data.RedPrimaryY;
