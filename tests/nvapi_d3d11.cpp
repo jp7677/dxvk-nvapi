@@ -453,6 +453,7 @@ TEST_CASE("D3D11 MultiGPU methods succeed", "[.d3d11]") {
         NV_MULTIGPU_CAPS_V1 multiGPUCaps{};
 
         REQUIRE(NvAPI_D3D11_MultiGPU_GetCaps(reinterpret_cast<PNV_MULTIGPU_CAPS>(&multiGPUCaps)) == NVAPI_OK);
+        REQUIRE(multiGPUCaps.multiGPUVersion == 3);
         REQUIRE(multiGPUCaps.nTotalGPUs == 1);
         REQUIRE(multiGPUCaps.nSLIGPUs == 0);
     }
@@ -462,21 +463,9 @@ TEST_CASE("D3D11 MultiGPU methods succeed", "[.d3d11]") {
         multiGPUCaps.version = NV_MULTIGPU_CAPS_VER2;
 
         REQUIRE(NvAPI_D3D11_MultiGPU_GetCaps(&multiGPUCaps) == NVAPI_OK);
+        REQUIRE(multiGPUCaps.multiGPUVersion == 3);
         REQUIRE(multiGPUCaps.nTotalGPUs == 1);
         REQUIRE(multiGPUCaps.nSLIGPUs == 0);
-    }
-
-    SECTION("MultiGPU_GetCaps with unknown struct version returns incompatible-struct-version") {
-        NV_MULTIGPU_CAPS multiGPUCaps{};
-        multiGPUCaps.version = NV_MULTIGPU_CAPS_VER2 + 1;
-        REQUIRE(NvAPI_D3D11_MultiGPU_GetCaps(&multiGPUCaps) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-    }
-
-    SECTION("MultiGPU_GetCaps with current struct version returns not incompatible-struct-version") {
-        // This test fails when a header update provides a newer not yet implemented struct version
-        NV_MULTIGPU_CAPS multiGPUCaps{};
-        multiGPUCaps.version = NV_MULTIGPU_CAPS_VER;
-        REQUIRE(NvAPI_D3D11_MultiGPU_GetCaps(&multiGPUCaps) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
     }
 
     SECTION("MultiGPU_Init returns OK") {

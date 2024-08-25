@@ -69,25 +69,26 @@ extern "C" {
         if (pMultiGPUCaps == nullptr)
             return InvalidArgument(n);
 
-        switch (pMultiGPUCaps->version) {
-            case 0: // NV_MULTIGPU_CAPS_V1 has no version field
-            case NV_MULTIGPU_CAPS_VER1: {
+        auto version = pMultiGPUCaps->version;
+        switch (version) { // NOLINT(*-multiway-paths-covered)
+            case NV_MULTIGPU_CAPS_VER2:
+                *pMultiGPUCaps = {};
+                pMultiGPUCaps->version = version;
+                pMultiGPUCaps->multiGPUVersion = 3; // Observed on Windows
+                pMultiGPUCaps->nTotalGPUs = nvapiAdapterRegistry->GetAdapterCount();
+                // Report on purpose that no SLI GPUs are available by
+                // keeping pMultiGPUCaps->nSLIGPUs at zero
+                break;
+            default: {
+                // NV_MULTIGPU_CAPS_V1 has no version field
                 auto pMultiGPUCapsV1 = reinterpret_cast<NV_MULTIGPU_CAPS_V1*>(pMultiGPUCaps);
                 *pMultiGPUCapsV1 = {};
-                // Report that SLI is not available
+                pMultiGPUCapsV1->reserved = version;  // This is a union field with version in V2
+                pMultiGPUCapsV1->multiGPUVersion = 3; // Observed on Windows
                 pMultiGPUCapsV1->nTotalGPUs = nvapiAdapterRegistry->GetAdapterCount();
-                pMultiGPUCapsV1->nSLIGPUs = 0;
+                // See above about reporting no SLI
                 break;
             }
-            case NV_MULTIGPU_CAPS_VER2: {
-                *pMultiGPUCaps = {};
-                // Report that SLI is not available
-                pMultiGPUCaps->nTotalGPUs = nvapiAdapterRegistry->GetAdapterCount();
-                pMultiGPUCaps->nSLIGPUs = 0;
-                break;
-            }
-            default:
-                return IncompatibleStructVersion(n, pMultiGPUCaps->version);
         }
 
         return Ok(n);
