@@ -36,10 +36,12 @@ extern "C" {
             return InsufficientBuffer(n);
         }
 
-        switch (pDisplayIds->version) {
+        auto version = pDisplayIds->version;
+        switch (version) {
             case NV_GPU_DISPLAYIDS_VER1: // Both versions use the same NV_GPU_DISPLAYIDS struct
             case NV_GPU_DISPLAYIDS_VER2: {
                 *pDisplayIds = {};
+                pDisplayIds->version = version;
                 for (auto i = 0U; i < count; i++) {
                     auto output = nvapiAdapterRegistry->GetOutput(adapter, i);
                     pDisplayIds[i].displayId = output->GetId();
@@ -693,10 +695,12 @@ extern "C" {
             case NV_GPU_INFO_VER1: {
                 auto pGpuInfoV1 = reinterpret_cast<NV_GPU_INFO_V1*>(pGpuInfo);
                 *pGpuInfoV1 = {};
+                pGpuInfoV1->version = NV_GPU_INFO_VER1;
                 break;
             }
             case NV_GPU_INFO_VER2:
                 *pGpuInfo = {};
+                pGpuInfo->version = NV_GPU_INFO_VER2;
                 if (architectureId >= NV_GPU_ARCHITECTURE_TU100) {
                     // Values are taken from RTX4080
                     pGpuInfo->rayTracingCores = 76;
