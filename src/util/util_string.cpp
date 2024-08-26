@@ -40,4 +40,8 @@ namespace dxvk::str {
         str.resize(NVAPI_SHORT_STRING_MAX - 1);
         strcpy(nvss, str.c_str());
     }
+
+    std::string fromnullable(const char* str) {
+        return str ? std::string(str) : std::string();
+    }
 }

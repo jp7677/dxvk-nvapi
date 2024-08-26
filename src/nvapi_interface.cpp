@@ -6,6 +6,9 @@
 extern "C" {
     using namespace dxvk;
 
+    static const auto disabledString = str::fromnullable(std::getenv("DXVK_NVAPI_DISABLE_ENTRYPOINTS"));
+    static const auto disabled = str::split<std::unordered_set<std::string_view>>(disabledString, std::regex(","));
+
     static std::unordered_map<NvU32, void*> registry;
 
     __declspec(dllexport) void* __cdecl nvapi_QueryInterface(NvU32 id) {
@@ -23,8 +26,15 @@ extern "C" {
             return registry.insert({id, nullptr}).first->second;
         }
 
+        auto name = std::string_view(it->func);
+
+        if (disabled.contains(name)) {
+            log::info(str::format("NvAPI_QueryInterface (", name, "): Disabled"));
+            return registry.insert({id, nullptr}).first->second;
+        }
+
 #define INSERT_AND_RETURN_WHEN_EQUALS(method) \
-    if (std::string(it->func) == #method)     \
+    if (name == #method)                      \
         return registry.insert({id, (void*)method}).first->second;
 
         // This block will be validated for completeness when running package-release.sh. Do not remove the comments.
@@ -149,7 +159,7 @@ extern "C" {
 
 #undef INSERT_AND_RETURN_WHEN_EQUALS
 
-        log::info(str::format("NvAPI_QueryInterface ", it->func, ": Not implemented method"));
+        log::info(str::format("NvAPI_QueryInterface ", name, ": Not implemented method"));
         return registry.insert({id, nullptr}).first->second;
     }
 }

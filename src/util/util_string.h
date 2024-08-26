@@ -38,4 +38,33 @@ namespace dxvk::str {
         append(stream, args...);
         return stream.str();
     }
+
+    std::string fromnullable(const char* str);
+
+    template <typename T>
+        requires std::default_initializable<T>
+        && std::constructible_from<typename T::value_type, std::string::const_iterator, std::string::const_iterator>
+        && requires(T t, T::iterator it, T::value_type&& s) {
+               requires std::input_iterator<typename T::iterator>;
+               { t.end() } -> std::same_as<typename T::iterator>;
+               { t.insert(it, s) } -> std::same_as<typename T::iterator>;
+           }
+    T split(const std::string& str, const std::regex& separator) {
+        static const std::sregex_token_iterator end;
+
+        T result;
+
+        if (str.empty())
+            return result;
+
+        std::transform(
+            std::sregex_token_iterator(str.begin(), str.end(), separator, -1),
+            end,
+            std::inserter(result, result.end()),
+            [](const std::ssub_match& match) {
+                return typename T::value_type(match.first, match.second);
+            });
+
+        return result;
+    }
 }
