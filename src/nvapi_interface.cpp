@@ -3,8 +3,24 @@
 #include "util/util_string.h"
 #include "util/util_log.h"
 
+static std::set<std::string> SplitEnvironmentVariable(const char* env) {
+    static const std::regex comma(",");
+    static const std::sregex_token_iterator end;
+
+    auto value = std::getenv(env);
+
+    if (!value || !*value)
+        return {};
+
+    auto str = std::string(value);
+
+    return std::set<std::string>(std::sregex_token_iterator(str.begin(), str.end(), comma, -1), end);
+}
+
 extern "C" {
     using namespace dxvk;
+
+    static const std::set<std::string> disabled = SplitEnvironmentVariable("DXVK_NVAPI_DISABLE_INTERFACES");
 
     static std::unordered_map<NvU32, void*> registry;
 
@@ -23,8 +39,15 @@ extern "C" {
             return registry.insert({id, nullptr}).first->second;
         }
 
+        auto name = std::string(it->func);
+
+        if (disabled.contains(name)) {
+            log::info(str::format("NvAPI_QueryInterface (", name, "): Disabled"));
+            return registry.insert({id, nullptr}).first->second;
+        }
+
 #define INSERT_AND_RETURN_WHEN_EQUALS(method) \
-    if (std::string(it->func) == #method)     \
+    if (name == #method)                      \
         return registry.insert({id, (void*)method}).first->second;
 
         // This block will be validated for completeness when running package-release.sh. Do not remove the comments.
@@ -149,7 +172,7 @@ extern "C" {
 
 #undef INSERT_AND_RETURN_WHEN_EQUALS
 
-        log::info(str::format("NvAPI_QueryInterface ", it->func, ": Not implemented method"));
+        log::info(str::format("NvAPI_QueryInterface ", name, ": Not implemented method"));
         return registry.insert({id, nullptr}).first->second;
     }
 }

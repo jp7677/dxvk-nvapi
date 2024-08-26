@@ -16,6 +16,7 @@
 #include <optional>
 #include <set>
 #include <sstream>
+#include <regex>
 #include <unordered_map>
 #include <utility>
 #include <vector>
