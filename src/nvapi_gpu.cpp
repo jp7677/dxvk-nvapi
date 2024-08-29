@@ -682,14 +682,9 @@ extern "C" {
         if (pGpuInfo == nullptr)
             return InvalidArgument(n);
 
-        if (pGpuInfo->version != NV_GPU_INFO_VER1 && pGpuInfo->version != NV_GPU_INFO_VER2)
-            return IncompatibleStructVersion(n, pGpuInfo->version);
-
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
-
-        auto architectureId = adapter->GetArchitectureId();
 
         switch (pGpuInfo->version) {
             case NV_GPU_INFO_VER1: {
@@ -701,14 +696,14 @@ extern "C" {
             case NV_GPU_INFO_VER2:
                 *pGpuInfo = {};
                 pGpuInfo->version = NV_GPU_INFO_VER2;
-                if (architectureId >= NV_GPU_ARCHITECTURE_TU100) {
+                if (adapter->GetArchitectureId() >= NV_GPU_ARCHITECTURE_TU100) {
                     // Values are taken from RTX4080
                     pGpuInfo->rayTracingCores = 76;
                     pGpuInfo->tensorCores = 304;
                 }
                 break;
             default:
-                return IncompatibleStructVersion(n, pGpuInfo->version); // Actually unreachable
+                return IncompatibleStructVersion(n, pGpuInfo->version);
         }
 
         return Ok(n);
