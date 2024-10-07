@@ -32,8 +32,15 @@
 #include "trompeloeil/matcher/any.hpp"
 #include "trompeloeil/matcher/compare.hpp"
 #include "trompeloeil/matcher/deref.hpp"
+#if TROMPELOEIL_CPLUSPLUS >= 201402L
+#include "trompeloeil/matcher/member_is.hpp"
+#endif
 #include "trompeloeil/matcher/not.hpp"
+#if TROMPELOEIL_CPLUSPLUS >= 201402L
+#include "trompeloeil/matcher/range.hpp"
+#endif
 #include "trompeloeil/matcher/re.hpp"
+#include "trompeloeil/matcher/set_predicate.hpp"
 #include "trompeloeil/sequence.hpp"
 #include "trompeloeil/stream_tracer.hpp"
 #ifdef __cpp_impl_coroutine
