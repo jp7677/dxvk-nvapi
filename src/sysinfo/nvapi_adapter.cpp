@@ -255,9 +255,7 @@ namespace dxvk {
 
         // KHR_fragment_shading_rate's
         // primitiveFragmentShadingRateWithMultipleViewports is supported on Ampere and newer
-        // TODO: We haven't found a way yet to identify Ampere on NVK
-        if (HasNvProprietaryDriver()
-            && IsVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
+        if (IsVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
             && m_vkFragmentShadingRateProperties.primitiveFragmentShadingRateWithMultipleViewports)
             return NV_GPU_ARCHITECTURE_GA100;
 
