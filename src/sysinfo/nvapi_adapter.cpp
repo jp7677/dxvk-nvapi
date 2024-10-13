@@ -73,19 +73,6 @@ namespace dxvk {
         m_vulkan.GetPhysicalDeviceProperties2(vkInstance, vkDevice, &deviceProperties2);
         m_vkProperties = deviceProperties2.properties;
 
-        VkPhysicalDeviceFeatures2 deviceFeatures2{};
-        deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-        deviceFeatures2.pNext = nullptr;
-
-        if (IsVkDeviceExtensionSupported(VK_EXT_DEPTH_CLIP_CONTROL_EXTENSION_NAME)) {
-            m_vkDepthClipControlFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT;
-            m_vkDepthClipControlFeatures.pNext = deviceFeatures2.pNext;
-            deviceFeatures2.pNext = &m_vkDepthClipControlFeatures;
-        }
-
-        m_vulkan.GetPhysicalDeviceFeatures2(vkInstance, vkDevice, &deviceFeatures2);
-        m_vkFeatures = deviceFeatures2.features;
-
         auto allowOtherDrivers = env::getEnvVariable(allowOtherDriversEnvName);
         if (allowOtherDrivers == "1")
             log::info(str::format(allowOtherDriversEnvName, " is set, reporting also GPUs with non-NVIDIA proprietary driver"));
@@ -264,11 +251,9 @@ namespace dxvk {
             return NV_GPU_ARCHITECTURE_TU100;
 
         // VK_NVX_image_view_handle is supported on Volta and newer on the NVIDIA proprietary driver
-        // VK_EXT_depth_clip_control's depthClipControl is supported on Volta and newer on NVK
+        // VK_EXT_depth_range_unrestricted is supported on Volta and newer on NVK
         if ((HasNvProprietaryDriver() && IsVkDeviceExtensionSupported(VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME))
-            || (HasNvkDriver()
-                && IsVkDeviceExtensionSupported(VK_EXT_DEPTH_CLIP_CONTROL_EXTENSION_NAME)
-                && m_vkDepthClipControlFeatures.depthClipControl))
+            || (HasNvkDriver() && IsVkDeviceExtensionSupported(VK_EXT_DEPTH_RANGE_UNRESTRICTED_EXTENSION_NAME)))
             return NV_GPU_ARCHITECTURE_GV100;
 
         // VK_NV_clip_space_w_scaling is supported on Pascal and newer on the NVIDIA proprietary driver
