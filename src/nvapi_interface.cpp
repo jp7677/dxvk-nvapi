@@ -159,7 +159,7 @@ extern "C" {
 
 #undef INSERT_AND_RETURN_WHEN_EQUALS
 
-        log::info(str::format("NvAPI_QueryInterface ", name, ": Not implemented method"));
+        log::info(str::format("NvAPI_QueryInterface (", name, "): Not implemented method"));
         return registry.insert({id, nullptr}).first->second;
     }
 }
