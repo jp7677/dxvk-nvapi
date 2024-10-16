@@ -49,6 +49,12 @@ TEST_CASE("String", "[.util]") {
         dxvk::str::tonvss(ss, std::string("Longer-Than-Short-String-Longer-Than-Short-String-Longer-Than-Short-String"));
         REQUIRE_THAT(ss, SizeIs(64));
     }
+
+    SECTION("std::string") {
+        REQUIRE(dxvk::str::fromnullable(nullptr) == std::string());
+        REQUIRE(dxvk::str::fromnullable("") == std::string());
+        REQUIRE(dxvk::str::fromnullable("string") == std::string("string"));
+    }
 }
 
 TEST_CASE("Version", "[.util]") {
