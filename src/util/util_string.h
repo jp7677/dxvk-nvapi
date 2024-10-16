@@ -86,4 +86,28 @@ namespace dxvk::str {
                 });
         }
     };
+
+    template <typename T>
+        requires requires(T t) {
+            requires std::input_iterator<typename T::iterator>;
+            { t.begin() } -> std::same_as<typename T::iterator>;
+            { t.end() } -> std::same_as<typename T::iterator>;
+        }
+    std::string implode(const std::string_view& separator, const T& items) {
+        auto first = items.begin();
+        auto last = items.end();
+
+        if (first == last)
+            return {};
+
+        auto init = *first++;
+
+        return std::accumulate(
+            first,
+            last,
+            std::string{init},
+            [&separator](std::string&& lhs, const auto& rhs) {
+                return lhs.append(separator).append(rhs);
+            });
+    }
 }
