@@ -6,8 +6,38 @@
 extern "C" {
     using namespace dxvk;
 
-    static const auto disabledString = str::fromnullable(std::getenv("DXVK_NVAPI_DISABLE_ENTRYPOINTS"));
+    static const auto disabledEnvName = "DXVK_NVAPI_DISABLE_ENTRYPOINTS";
+    static const auto disabledString = str::fromnullable(std::getenv(disabledEnvName));
     static const auto disabled = str::split<std::set<std::string_view, str::CaseInsensitiveCompare<std::string_view>>>(disabledString, std::regex(","));
+
+    static std::once_flag logDisabledOnceFlag;
+
+    static void logDisabled() {
+        std::set<std::string_view, str::CaseInsensitiveCompare<std::string_view>> known;
+        std::vector<std::string_view> recognized, unrecognized;
+
+        std::transform(
+            std::begin(nvapi_interface_table),
+            std::end(nvapi_interface_table),
+            std::inserter(known, known.begin()),
+            [](const auto& iface) { return std::string_view(iface.func); });
+
+        for (const auto& name : disabled) {
+            if (name.empty())
+                continue;
+
+            if (known.contains(name))
+                recognized.push_back(name);
+            else
+                unrecognized.push_back(name);
+        }
+
+        if (!recognized.empty())
+            log::info(str::format("NvAPI_QueryInterface: Disabling entrypoints from ", disabledEnvName, ": ", str::implode(", ", recognized)));
+
+        if (!unrecognized.empty())
+            log::info(str::format("NvAPI_QueryInterface: Ignoring unrecognized entrypoints from ", disabledEnvName, ": ", str::implode(", ", unrecognized)));
+    }
 
     static std::unordered_map<NvU32, void*> registry;
 
@@ -15,6 +45,8 @@ extern "C" {
         auto entry = registry.find(id);
         if (entry != registry.end())
             return entry->second;
+
+        std::call_once(logDisabledOnceFlag, logDisabled);
 
         auto it = std::find_if(
             std::begin(nvapi_interface_table),
