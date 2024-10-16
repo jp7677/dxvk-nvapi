@@ -67,4 +67,23 @@ namespace dxvk::str {
 
         return result;
     }
+
+    template <typename T>
+        requires requires(T t) {
+            requires std::input_iterator<typename T::iterator>;
+            { t.begin() } -> std::same_as<typename T::iterator>;
+            { t.end() } -> std::same_as<typename T::iterator>;
+        }
+    struct CaseInsensitiveCompare {
+        bool operator()(const T& lhs, const T& rhs) const {
+            return std::lexicographical_compare(
+                lhs.begin(),
+                lhs.end(),
+                rhs.begin(),
+                rhs.end(),
+                [](const auto& l, const auto& r) {
+                    return std::toupper(l, std::locale::classic()) < std::toupper(r, std::locale::classic());
+                });
+        }
+    };
 }

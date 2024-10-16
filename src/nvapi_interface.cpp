@@ -7,7 +7,7 @@ extern "C" {
     using namespace dxvk;
 
     static const auto disabledString = str::fromnullable(std::getenv("DXVK_NVAPI_DISABLE_ENTRYPOINTS"));
-    static const auto disabled = str::split<std::unordered_set<std::string_view>>(disabledString, std::regex(","));
+    static const auto disabled = str::split<std::set<std::string_view, str::CaseInsensitiveCompare<std::string_view>>>(disabledString, std::regex(","));
 
     static std::unordered_map<NvU32, void*> registry;
 
