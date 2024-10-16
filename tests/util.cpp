@@ -35,12 +35,12 @@ TEST_CASE("Log", "[.util]") {
 }
 
 TEST_CASE("String", "[.util]") {
-    SECTION("NVAPI Unicode-String") {
+    SECTION("fromnvus") {
         NvAPI_UnicodeString us = {'U', 'n', 'i', 'c', 'o', 'd', 'e'};
         REQUIRE(dxvk::str::fromnvus(us) == std::string("Unicode"));
     }
 
-    SECTION("NVAPI Short-String") {
+    SECTION("tonvss") {
         NvAPI_ShortString ss{};
 
         dxvk::str::tonvss(ss, std::string("Short-String"));
@@ -50,7 +50,7 @@ TEST_CASE("String", "[.util]") {
         REQUIRE_THAT(ss, SizeIs(64));
     }
 
-    SECTION("std::string") {
+    SECTION("fromnullable") {
         REQUIRE(dxvk::str::fromnullable(nullptr) == std::string());
         REQUIRE(dxvk::str::fromnullable("") == std::string());
         REQUIRE(dxvk::str::fromnullable("string") == std::string("string"));
