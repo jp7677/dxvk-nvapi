@@ -56,6 +56,17 @@ TEST_CASE("String", "[.util]") {
         REQUIRE(dxvk::str::fromnullable("string") == std::string("string"));
     }
 
+    SECTION("split") {
+        REQUIRE(dxvk::str::split<std::set<std::string>>("", std::regex(",")).size() == 0);
+
+        auto result = dxvk::str::split<std::set<std::string>>("foo,bar,baz", std::regex(","));
+
+        REQUIRE(result.size() == 3);
+        REQUIRE(result.contains("foo"));
+        REQUIRE(result.contains("bar"));
+        REQUIRE(result.contains("baz"));
+    }
+
     SECTION("CaseInsensitiveCompare") {
         dxvk::str::CaseInsensitiveCompare<std::string_view> compare;
 
