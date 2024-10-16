@@ -84,6 +84,13 @@ TEST_CASE("String", "[.util]") {
         REQUIRE(set.contains("nvapi_initialize"));
         REQUIRE(set.contains("NVAPI_INITIALIZE"));
     }
+
+    SECTION("implode") {
+        REQUIRE(dxvk::str::implode(",", std::vector<std::string_view>{}) == std::string());
+        REQUIRE(dxvk::str::implode(",", std::vector<std::string_view>{"foo"}) == std::string("foo"));
+        REQUIRE(dxvk::str::implode(" ", std::vector<std::string_view>{"foo", "bar"}) == std::string("foo bar"));
+        REQUIRE(dxvk::str::implode(", ", std::vector<std::string_view>{"foo", "bar", "baz"}) == std::string("foo, bar, baz"));
+    }
 }
 
 TEST_CASE("Version", "[.util]") {
