@@ -55,6 +55,35 @@ TEST_CASE("String", "[.util]") {
         REQUIRE(dxvk::str::fromnullable("") == std::string());
         REQUIRE(dxvk::str::fromnullable("string") == std::string("string"));
     }
+
+    SECTION("CaseInsensitiveCompare") {
+        dxvk::str::CaseInsensitiveCompare<std::string_view> compare;
+
+        struct Data {
+            const char* lhs;
+            const char* rhs;
+            bool result;
+        };
+
+        auto args = GENERATE(
+            Data{"aa", "aa", false},
+            Data{"ab", "aa", false},
+            Data{"aa", "ab", true},
+            Data{"AA", "aa", false},
+            Data{"AB", "aa", false},
+            Data{"AA", "ab", true},
+            Data{"aa", "AA", false},
+            Data{"ab", "AA", false},
+            Data{"aa", "AB", true});
+
+        REQUIRE(compare(args.lhs, args.rhs) == args.result);
+
+        std::set<std::string_view, dxvk::str::CaseInsensitiveCompare<std::string_view>> set{"NvAPI_Initialize"};
+
+        REQUIRE(set.contains("NvAPI_Initialize"));
+        REQUIRE(set.contains("nvapi_initialize"));
+        REQUIRE(set.contains("NVAPI_INITIALIZE"));
+    }
 }
 
 TEST_CASE("Version", "[.util]") {
