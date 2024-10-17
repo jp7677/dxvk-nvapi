@@ -44,7 +44,7 @@ namespace dxvk::str {
     template <typename T>
 #if __cpp_concepts >= 201907L
         requires std::default_initializable<T>
-        && std::constructible_from<typename T::value_type, std::string::const_iterator, std::string::const_iterator>
+        && std::constructible_from<typename T::value_type, const char*, size_t>
         && requires(T t, T::iterator it, T::value_type&& s) {
                requires std::input_iterator<typename T::iterator>;
                { t.end() } -> std::same_as<typename T::iterator>;
@@ -64,7 +64,7 @@ namespace dxvk::str {
             end,
             std::inserter(result, result.end()),
             [](const std::ssub_match& match) {
-                return typename T::value_type(match.first, match.second);
+                return typename T::value_type(&*match.first, match.length());
             });
 
         return result;
@@ -112,7 +112,7 @@ namespace dxvk::str {
             first,
             last,
             std::string{init},
-            [&separator](std::string&& lhs, const auto& rhs) {
+            [&separator](auto lhs, const auto& rhs) {
                 return lhs.append(separator).append(rhs);
             });
     }

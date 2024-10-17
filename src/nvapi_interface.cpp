@@ -26,7 +26,7 @@ extern "C" {
             if (name.empty())
                 continue;
 
-            if (known.contains(name))
+            if (known.find(name) != known.end())
                 recognized.push_back(name);
             else
                 unrecognized.push_back(name);
@@ -60,7 +60,7 @@ extern "C" {
 
         auto name = std::string_view(it->func);
 
-        if (disabled.contains(name)) {
+        if (disabled.find(name) != disabled.end()) {
             log::info(str::format("NvAPI_QueryInterface (", name, "): Disabled"));
             return registry.insert({id, nullptr}).first->second;
         }
