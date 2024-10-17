@@ -31,3 +31,19 @@ nvapi_dll = shared_library('nvapi'+target_suffix, [ nvapi_src, dxvk_nvapi_versio
   dependencies        : [ lib_dxgi, lib_d3d11, lib_version ],
   include_directories : [ nvapi_headers, vk_headers ],
   install             : true)
+
+nvofapi_src = files([
+  'util/util_string.cpp',
+  'util/util_env.cpp',
+  'util/util_log.cpp',
+  'nvofapi/nvofapi_common.cpp',
+  'nvofapi/nvofapi_d3d12.cpp',
+  'nvofapi/nvofapi_vulkan.cpp',
+  'nvofapi/nvofapi_entrypoints.cpp'
+])
+
+nvofapi_dll = shared_library('nvofapi'+target_suffix, [ nvofapi_src, dxvk_nvapi_version ],
+  name_prefix         : '',
+  dependencies        : [ lib_version ],
+  include_directories : [ nvapi_headers, vk_headers ],
+  install             : true)
