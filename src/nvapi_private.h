@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <array>
 #include <cctype>
+#if __cpp_concepts >= 201907L
 #include <concepts>
+#endif
 #include <cstddef>
 #include <cstdint>
 #include <ctime>

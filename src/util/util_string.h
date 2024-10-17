@@ -42,6 +42,7 @@ namespace dxvk::str {
     std::string fromnullable(const char* str);
 
     template <typename T>
+#if __cpp_concepts >= 201907L
         requires std::default_initializable<T>
         && std::constructible_from<typename T::value_type, std::string::const_iterator, std::string::const_iterator>
         && requires(T t, T::iterator it, T::value_type&& s) {
@@ -49,6 +50,7 @@ namespace dxvk::str {
                { t.end() } -> std::same_as<typename T::iterator>;
                { t.insert(it, s) } -> std::same_as<typename T::iterator>;
            }
+#endif
     T split(const std::string& str, const std::regex& separator) {
         static const std::sregex_token_iterator end;
 
@@ -69,11 +71,13 @@ namespace dxvk::str {
     }
 
     template <typename T>
+#if __cpp_concepts >= 201907L
         requires requires(T t) {
             requires std::input_iterator<typename T::iterator>;
             { t.begin() } -> std::same_as<typename T::iterator>;
             { t.end() } -> std::same_as<typename T::iterator>;
         }
+#endif
     struct CaseInsensitiveCompare {
         bool operator()(const T& lhs, const T& rhs) const {
             return std::lexicographical_compare(
@@ -88,11 +92,13 @@ namespace dxvk::str {
     };
 
     template <typename T>
+#if __cpp_concepts >= 201907L
         requires requires(T t) {
             requires std::input_iterator<typename T::iterator>;
             { t.begin() } -> std::same_as<typename T::iterator>;
             { t.end() } -> std::same_as<typename T::iterator>;
         }
+#endif
     std::string implode(const std::string_view& separator, const T& items) {
         auto first = items.begin();
         auto last = items.end();
