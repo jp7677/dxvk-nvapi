@@ -11,6 +11,7 @@ static auto initializationMutex = std::mutex{};
 
 extern "C" {
     using namespace dxvk;
+    using namespace dxvk::status::nvapi;
 
     NvAPI_Status __cdecl NvAPI_EnumLogicalGPUs(NvLogicalGpuHandle nvGPUHandle[NVAPI_MAX_LOGICAL_GPUS], NvU32* pGpuCount) {
         constexpr auto n = __func__;

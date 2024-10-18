@@ -3,6 +3,7 @@
 
 extern "C" {
     using namespace dxvk;
+    using namespace dxvk::status::nvapi;
 
     NvAPI_Status __cdecl NvAPI_Mosaic_GetDisplayViewportsByResolution(NvU32 displayId, NvU32 srcWidth, NvU32 srcHeight, NV_RECT viewports[NV_MOSAIC_MAX_DISPLAYS], NvU8* bezelCorrected) {
         constexpr auto n = __func__;

@@ -1,10 +1,11 @@
 #pragma once
 
 #include "../nvapi_private.h"
+#include "../inc/nvofapi/nvOpticalFlowCommon.h"
 #include "util_string.h"
 #include "util_log.h"
 
-namespace dxvk {
+namespace dxvk::status::nvapi {
     inline NvAPI_Status Ok() {
         return NVAPI_OK;
     }
@@ -150,5 +151,34 @@ namespace dxvk {
     inline NvAPI_Status InsufficientBuffer(const std::string& logMessage) {
         log::info(str::format("<-", logMessage, ": Insufficient Buffer"));
         return NVAPI_INSUFFICIENT_BUFFER;
+    }
+}
+
+namespace dxvk::status::nvofapi {
+    inline NV_OF_STATUS Success() {
+        return NV_OF_SUCCESS;
+    }
+
+    inline NV_OF_STATUS Success(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Success"));
+        return NV_OF_SUCCESS;
+    }
+
+    inline NV_OF_STATUS ErrGeneric() {
+        return NV_OF_ERR_GENERIC;
+    }
+
+    inline NV_OF_STATUS ErrGeneric(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Generic Error"));
+        return NV_OF_ERR_GENERIC;
+    }
+
+    inline NV_OF_STATUS ErrInvalidParameter() {
+        return NV_OF_ERR_INVALID_PARAM;
+    }
+
+    inline NV_OF_STATUS ErrInvalidParameter(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Invalid Parameter"));
+        return NV_OF_ERR_INVALID_PARAM;
     }
 }

@@ -9,6 +9,7 @@
 
 extern "C" {
     using namespace dxvk;
+    using namespace dxvk::status::nvapi;
 
     NvAPI_Status __cdecl NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device* pDevice, NvU32 opCode, bool* pSupported) {
         constexpr auto n = __func__;

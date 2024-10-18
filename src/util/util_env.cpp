@@ -186,8 +186,12 @@ namespace dxvk::env {
         constexpr auto gpuArchEnvName = "DXVK_NVAPI_GPU_ARCH";
         NV_GPU_ARCHITECTURE_ID override{};
 
-        if (auto overrideStr = env::getEnvVariable(gpuArchEnvName); !overrideStr.empty()) {
-            std::for_each(overrideStr.begin(), overrideStr.end(), [](char& c) { c = std::toupper(c, std::locale::classic()); });
+        auto overrideStr = env::getEnvVariable(gpuArchEnvName);
+        if (!overrideStr.empty()) {
+            std::for_each(
+                overrideStr.begin(),
+                overrideStr.end(),
+                [](char& c) { c = std::toupper(c, std::locale::classic()); });
 
 #define CHECK_ARCH(arch)      \
     if (overrideStr == #arch) \

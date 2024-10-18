@@ -6,6 +6,7 @@
 
 extern "C" {
     using namespace dxvk;
+    using namespace dxvk::status::nvapi;
 
     NvAPI_Status __cdecl NvAPI_D3D_GetObjectHandleForResource(IUnknown* pDevice, IUnknown* pResource, NVDX_ObjectHandle* pHandle) {
         constexpr auto n = __func__;

@@ -8,6 +8,7 @@ static auto nvapiDrsProfile = reinterpret_cast<NvDRSProfileHandle>(&drs);
 
 extern "C" {
     using namespace dxvk;
+    using namespace dxvk::status::nvapi;
 
     NvAPI_Status __cdecl NvAPI_DRS_CreateSession(NvDRSSessionHandle* phSession) {
         constexpr auto n = __func__;

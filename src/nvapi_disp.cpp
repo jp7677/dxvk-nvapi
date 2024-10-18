@@ -5,6 +5,7 @@
 
 extern "C" {
     using namespace dxvk;
+    using namespace dxvk::status::nvapi;
 
     static DXGI_COLOR_SPACE_TYPE HDRModeToColorSpace(NV_HDR_MODE mode) {
         switch (mode) {
