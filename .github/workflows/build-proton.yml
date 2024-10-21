@@ -1,0 +1,26 @@
+name: Build with Proton SDK
+
+on:
+  push:
+    branches: [ master ]
+    tags: [ v* ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-proton:
+    runs-on: ubuntu-latest
+    container:
+      image: registry.gitlab.steamos.cloud/proton/sniper/sdk:latest
+      options: --user 1001 # to match GHA's "runner" user: https://github.com/actions/runner/blob/3d34a3c6d6dfd7599e489b3c04fcf95a8a428434/images/Dockerfile#L52
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Build
+      run: ./package-release.sh master build
