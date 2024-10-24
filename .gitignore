@@ -1,6 +1,7 @@
 build
 buildDir
 out
+winsysroot
 .idea/**
 .vscode/**
 version.h
