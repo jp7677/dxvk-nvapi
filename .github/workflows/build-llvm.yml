@@ -1,0 +1,72 @@
+name: Build with LLVM against MSVCRT and Windows SDK
+
+on:
+  push:
+    branches: [ master ]
+    tags: [ v* ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-llvm:
+    runs-on: ubuntu-latest
+    container: docker.io/archlinux/archlinux:base
+
+    steps:
+    - name: Install packages
+      run: pacman -Syu --needed --noconfirm clang curl git jq lld llvm meson ninja
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Suppress repository ownership mismatch errors
+      run: git config --global --add safe.directory '*'
+
+    - name: Prepare MSVCRT and Windows SDK
+      run: |
+        xwin_version=$(curl -s https://api.github.com/repos/Jake-Shadle/xwin/releases/latest | jq -r .tag_name)
+        curl -sL "https://github.com/Jake-Shadle/xwin/releases/download/${xwin_version}/xwin-${xwin_version}-x86_64-unknown-linux-musl.tar.gz" | bsdtar -xf-
+        "./xwin-${xwin_version}-x86_64-unknown-linux-musl/xwin" \
+          --accept-license \
+          --arch x86_64,x86 \
+          splat \
+          --preserve-ms-arch-notation \
+          --use-winsysroot-style \
+          --output ./winsysroot
+        cd './winsysroot/Windows Kits/10'
+        test -e ./Include || mv ./include ./Include
+        test -e ./Lib || mv ./lib ./Lib
+
+    - name: Build x86
+      shell: bash
+      run: |
+        meson setup build32 . \
+          --cross-file ./build-win32-llvm.txt \
+          --buildtype release \
+          --prefix ~+/install \
+          --bindir bin \
+          --libdir lib \
+          --strip
+        ninja -C build32 install
+
+    - name: Build x64
+      shell: bash
+      run: |
+        meson setup build64 . \
+          --cross-file ./build-win64-llvm.txt \
+          --buildtype release \
+          --prefix ~+/install \
+          --bindir bin \
+          --libdir lib \
+          --strip -Denable_tests=true
+        ninja -C build64 install
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dxvk-nvapi-llvm
+        path: install/bin/*
