@@ -1,0 +1,20 @@
+[constants]
+winsysroot = '@GLOBAL_SOURCE_ROOT@/winsysroot'
+
+[binaries]
+cpp = ['clang-cl', '/clang:--target=i686-pc-windows-msvc', '/clang:-fuse-ld=lld-link', '/winsysroot', winsysroot]
+strip = 'llvm-strip'
+ar = 'llvm-ar'
+
+[built-in options]
+cpp_args = ['/MT', '-Wno-c++11-narrowing']
+cpp_link_args = ['/winsysroot:' + winsysroot]
+
+[properties]
+needs_exe_wrapper = true
+
+[host_machine]
+system = 'windows'
+cpu_family = 'x86'
+cpu = 'x86'
+endian = 'little'
