@@ -1,0 +1,57 @@
+name: Build with LLVM against MSVC CRT and Windows SDK
+
+on:
+  push:
+    branches: [ master ]
+    tags: [ v* ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-llvm:
+    runs-on: ubuntu-latest
+    container: docker.io/archlinux/archlinux:base
+
+    steps:
+    - name: Install packages
+      run: pacman -Syu --needed --noconfirm clang curl git lld llvm meson ninja
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Prepare MSVC CRT and Windows SDK
+      run: |
+        xwin_version=0.6.6-rc.2
+        curl -sL "https://github.com/Jake-Shadle/xwin/releases/download/${xwin_version}/xwin-${xwin_version}-x86_64-unknown-linux-musl.tar.gz" | bsdtar -xf-
+        "xwin-${xwin_version}-x86_64-unknown-linux-musl/xwin" \
+          --accept-license \
+          --arch x86_64 \
+          splat \
+          --preserve-ms-arch-notation \
+          --use-winsysroot-style \
+          --output ./winsysroot
+        cd './winsysroot/Windows Kits/10'
+        ln -s include Include
+        ln -s lib Lib
+
+    - name: Build
+      shell: bash
+      run: |
+        meson setup build-llvm . \
+          --cross-file ./build-win64-llvm.txt \
+          --buildtype release \
+          --prefix ~+/install \
+          --bindir x64 \
+          --libdir x64 \
+          --strip
+        ninja -C build-llvm install
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dxvk-nvapi-llvm
+        path: install/**/*.dll
