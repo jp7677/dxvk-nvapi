@@ -116,6 +116,7 @@ Once the debug session has started, use `c` to start/continue execution and a.o.
 - [VKD3D-Proton](https://github.com/HansKristian-Work/vkd3d-proton)
 - [NVAPI](https://docs.nvidia.com/gameworks/content/gameworkslibrary/coresdk/nvapi/index.html)
 - [NVAPI Open Source SDK](https://download.nvidia.com/XFree86/nvapi-open-source-sdk/)
+- [NVAPI GitHub Project](https://github.com/NVIDIA/nvapi)
 - [NVAPI (wine-staging) standalone](https://github.com/SveSop/nvapi_standalone)
 
 Many thanks to the corresponding authors!
