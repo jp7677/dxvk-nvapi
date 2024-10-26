@@ -6,6 +6,7 @@
 #include "util/util_env.h"
 #include "util/util_log.h"
 #include "../version.h"
+#include "../config.h"
 
 static auto initializationMutex = std::mutex{};
 
@@ -359,7 +360,13 @@ extern "C" {
         if (++initializationCount > 1)
             return Ok(n);
 
-        log::info(str::format("DXVK-NVAPI ", DXVK_NVAPI_VERSION, " (", env::getExecutableName(), ")"));
+        log::info(str::format(
+            "DXVK-NVAPI ", DXVK_NVAPI_VERSION,
+            " ", DXVK_NVAPI_BUILD_COMPILER,
+            " ", DXVK_NVAPI_BUILD_COMPILER_VERSION,
+            " ", DXVK_NVAPI_BUILD_TARGET,
+            " ", DXVK_NVAPI_BUILD_TYPE,
+            " (", env::getExecutableName(), ")"));
 
         if (resourceFactory == nullptr)
             resourceFactory = std::make_unique<ResourceFactory>();
