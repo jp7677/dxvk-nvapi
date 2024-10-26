@@ -56,6 +56,16 @@ dxvk_nvapi_version = vcs_tag(
   input:  'version.h.in',
   output: 'version.h')
 
+conf_data = configuration_data()
+conf_data.set('BUILD_COMPILER', cpp.get_id())
+conf_data.set('BUILD_COMPILER_VERSION', cpp.version())
+conf_data.set('BUILD_TARGET', dxvk_cpu_family)
+conf_data.set('BUILD_TYPE', get_option('buildtype'))
+configure_file(
+  input : 'config.h.in',
+  output : 'config.h',
+  configuration : conf_data)
+
 subdir('src')
 
 enable_tests = get_option('enable_tests')

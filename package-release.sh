@@ -56,15 +56,14 @@ function prepare {
     src/nvapi_d3d12.cpp       \
     src/nvapi_interface.cpp   \
     external/nvapi/nvapi_interface.h
-
-  # remove existing version.h, because otherwise the existing one gets into the build instead of the generated one
-  if [ -e version.h ]; then
-    rm version.h
-  fi
 }
 
 function build_arch {
   cd "$SRC_DIR"
+
+  # remove generated files, because otherwise the existing
+  # files get into the build instead of the generated ones
+  rm -f version.h config.h
 
   meson setup                                \
     --cross-file "$SRC_DIR/$crossfile$1.txt" \
@@ -80,6 +79,7 @@ function build_arch {
   ninja install
 
   cp version.h "$SRC_DIR"
+  cp config.h "$SRC_DIR"
 
   if [ $opt_devbuild -eq 0 ]; then
     # get rid of some useless .a files
