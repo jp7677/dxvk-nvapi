@@ -39,7 +39,7 @@ jobs:
           | % { , ($_ -Split '=', 2) } `
           | % { [System.Environment]::SetEnvironmentVariable($_[0], $_[1]) }
         meson setup --buildtype release --backend vs2022 build-msvc-x86 -Denable_tests=true
-        msbuild -m build-msvc-x86/dxvk-nvapi.sln
+        msbuild -m build-msvc-x86\dxvk-nvapi.sln
 
     - name: Build MSVC x64
       shell: pwsh
@@ -48,9 +48,17 @@ jobs:
           | % { , ($_ -Split '=', 2) } `
           | % { [System.Environment]::SetEnvironmentVariable($_[0], $_[1]) }
         meson setup --buildtype release --backend vs2022 build-msvc-x64 -Denable_tests=true
-        msbuild -m build-msvc-x64/dxvk-nvapi.sln
+        msbuild -m build-msvc-x64\dxvk-nvapi.sln
 
     - name: Test MSVC x64
       shell: pwsh
       run: |
         & .\build-msvc-x64\tests\nvapi64-tests.exe [@unit-tests]
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dxvk-nvapi-msvc
+        path: |
+          .\build-msvc-*\src\*.dll
+          .\build-msvc-*\tests\*.exe
