@@ -22,77 +22,102 @@
  */
 
 #include "nvofapi/nvofapi_entrypoints.h"
+#include "nvofapi/nvofapi_image.h"
 #include "d3d12/nvofapi_d3d12_instance.h"
 
 #include "util/util_env.h"
 #include "util/util_log.h"
 #include "util/util_string.h"
+#include "util/util_statuscode.h"
 #include "../version.h"
 
+using namespace dxvk;
 extern "C" {
 
     // D3D12 entrypoints
     NV_OF_STATUS NVOFAPI CreateOpticalFlowD3D12(ID3D12Device* pD3D12Device, NvOFHandle* hOFInstance) {
-        dxvk::log::info("CreateOpticalFlowD3D12 called");
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pD3D12Device), log::fmt::ptr(hOFInstance));
 
         nvofapi::NvOFInstanceD3D12* nvOF = nullptr;
         try {
             nvOF = new nvofapi::NvOFInstanceD3D12(pD3D12Device);
-        } catch (std::exception e) {
-            dxvk::log::info(dxvk::str::format("CreateOpticalFlowD3D12 exception, %s", e.what()));
+        } catch (std::exception const& e) {
+            log::info(str::format("CreateOpticalFlowD3D12 exception, %s", e.what()));
         }
 
         if (!nvOF) {
-            dxvk::log::info(dxvk::str::format("CreateOpticalFlowD3D12 failed allocation"));
-            return NV_OF_ERR_GENERIC;
+            return ErrorGeneric(n);
         }
 
         if (!nvOF->Initialize()) {
-            dxvk::log::info(dxvk::str::format("CreateOpticalFlowD3D12 failed creation"));
             delete nvOF;
-            return NV_OF_ERR_GENERIC;
+            return ErrorGeneric(n);
         }
 
         *hOFInstance = reinterpret_cast<NvOFHandle>(nvOF);
-        dxvk::log::info(dxvk::str::format("CreateOpticalFlowD3D12 end"));
-        return NV_OF_SUCCESS;
+        return Success(n);
     }
 
     NV_OF_STATUS NVOFAPI GetSurfaceFormatCountD3D12(NvOFHandle hOf, const NV_OF_BUFFER_USAGE bufferUsage, const NV_OF_MODE ofMode, uint32_t* const pCount) {
-        dxvk::log::info("GetSurfaceFormatCountD3D12 called");
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hOf), bufferUsage, ofMode, log::fmt::ptr(pCount));
+
         *pCount = 1;
-        return NV_OF_SUCCESS;
+        return Success(n);
     }
 
     NV_OF_STATUS NVOFAPI GetSurfaceFormatD3D12(NvOFHandle hOf, const NV_OF_BUFFER_USAGE bufferUsage, const NV_OF_MODE ofMode, DXGI_FORMAT* const pFormat) {
-        dxvk::log::info("GetSurfaceFormatD3D12 called");
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hOf), bufferUsage, ofMode, log::fmt::ptr(pFormat));
+
         if (bufferUsage == NV_OF_BUFFER_USAGE_INPUT)
             *pFormat = DXGI_FORMAT_R8_UNORM;
         else
             *pFormat = DXGI_FORMAT_R16G16_SINT;
-        return NV_OF_SUCCESS;
+        return Success(n);
     }
 
     NV_OF_STATUS NVOFAPI RegisterResourceD3D12(NvOFHandle hOf, NV_OF_REGISTER_RESOURCE_PARAMS_D3D12* registerParams) {
-        dxvk::log::info("RegisterResourceD3D12 called");
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(registerParams));
+
         nvofapi::NvOFInstanceD3D12* nvOF = reinterpret_cast<nvofapi::NvOFInstanceD3D12*>(hOf);
 
-        return nvOF->RegisterBuffer(registerParams);
+        nvOF->RegisterBuffer(registerParams);
+        return Success(n);
     }
 
     NV_OF_STATUS NVOFAPI UnregisterResourceD3D12(NV_OF_UNREGISTER_RESOURCE_PARAMS_D3D12* registerParams) {
-        dxvk::log::info("UnregisterResourceD3D12 called");
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(registerParams));
+
         nvofapi::NvOFImage* nvRes = reinterpret_cast<nvofapi::NvOFImage*>(registerParams->hOFGpuBuffer);
         delete nvRes;
-        return NV_OF_SUCCESS;
+        return Success(n);
     }
 
     NV_OF_STATUS NVOFAPI ExecuteD3D12(NvOFHandle hOf, const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* executeInParams, NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* executeOutParams) {
-        dxvk::log::info("ExecuteD3D12 called");
-        dxvk::log::info(dxvk::str::format("handle: %p", hOf));
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(executeInParams), log::fmt::ptr(executeOutParams));
+
         nvofapi::NvOFInstanceD3D12* nvOF = reinterpret_cast<nvofapi::NvOFInstanceD3D12*>(hOf);
 
-        return nvOF->Execute(executeInParams, executeOutParams);
+        nvOF->Execute(executeInParams, executeOutParams);
+        return Success(n, alreadyLoggedOk);
     }
 
     // ETBLs
@@ -101,11 +126,14 @@ extern "C" {
         uint32_t apiVerMinor = (apiVer & 0xf);
         constexpr auto n = __func__;
 
-        dxvk::log::info(dxvk::str::format("DXVK-NVOFAPI ", DXVK_NVAPI_VERSION, " (", dxvk::env::getExecutableName(), ") D3D12"));
-        dxvk::log::info(dxvk::str::format("OFAPI Client Version: ", apiVerMajor, ".", apiVerMinor));
+        if (log::tracing())
+            log::trace(n, apiVer, log::fmt::ptr(functionList));
+
+        log::info(str::format("DXVK-NVOFAPI ", DXVK_NVAPI_VERSION, " (", env::getExecutableName(), ") D3D12"));
+        log::info(str::format("OFAPI Client Version: ", apiVerMajor, ".", apiVerMinor));
 
         if (apiVerMajor != 5)
-            return NV_OF_ERR_INVALID_VERSION;
+            return InvalidVersion(n);
 
         functionList->nvCreateOpticalFlowD3D12 = CreateOpticalFlowD3D12;
         functionList->nvOFInit = OFSessionInit;
@@ -118,6 +146,6 @@ extern "C" {
         functionList->nvOFGetLastError = OFSessionGetLastError;
         functionList->nvOFGetCaps = OFSessionGetCaps;
 
-        return NV_OF_SUCCESS;
+        return Success(n);
     }
 }

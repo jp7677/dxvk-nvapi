@@ -23,12 +23,14 @@
 
 #include "util/util_log.h"
 #include "util/util_string.h"
+#include "util/util_statuscode.h"
 
 #include "../inc/nvofapi/nvOpticalFlowVulkan.h"
 
 #include "nvofapi_image.h"
 #include "nvofapi_instance.h"
 
+using namespace dxvk;
 namespace nvofapi {
 
     typedef struct NV_OF_PRIV_DATA {
@@ -51,7 +53,7 @@ namespace nvofapi {
         VkQueueFamilyProperties* queueFamProps = (VkQueueFamilyProperties*)calloc(sizeof(VkQueueFamilyProperties), count);
         m_vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysicalDevice, &count, queueFamProps);
 
-        for (int i = 0; i < count; i++) {
+        for (uint32_t i = 0; i < count; i++) {
             if (queueFamProps[i].queueFlags & VK_QUEUE_OPTICAL_FLOW_BIT_NV) {
                 free(queueFamProps);
                 return i;
@@ -62,23 +64,26 @@ namespace nvofapi {
     }
 
     NV_OF_STATUS NvOFInstance::InitSession(const NV_OF_INIT_PARAMS* initParams) {
-        dxvk::log::info(
-            dxvk::str::format("OFSessionInit params:",
-                " width: ", initParams->width,
-                " height: ", initParams->height,
-                " outGrid: ", initParams->outGridSize,
-                " hintGrid: ", initParams->hintGridSize,
-                " mode: ", initParams->mode,
-                " perfLevel: ", initParams->perfLevel,
-                " enableExternalHints: ", initParams->enableExternalHints,
-                " enableOutputCost: ", initParams->enableOutputCost,
-                " hPrivData: ", initParams->hPrivData,
-                " enableRoi: ", initParams->enableRoi,
-                " predDirection: ", initParams->predDirection,
-                " enableGlobalFlow: ", initParams->enableGlobalFlow,
-                " inputBufferFormat: ", initParams->inputBufferFormat));
+        constexpr auto n = __func__;
 
-        VkOpticalFlowSessionCreateInfoNV createInfo = {VK_STRUCTURE_TYPE_OPTICAL_FLOW_SESSION_CREATE_INFO_NV};
+        if (log::tracing())
+            log::trace(n,
+                initParams->width,
+                initParams->height,
+                initParams->outGridSize,
+                initParams->hintGridSize,
+                initParams->mode,
+                initParams->perfLevel,
+                initParams->enableExternalHints,
+                initParams->enableOutputCost,
+                log::fmt::hnd(initParams->hPrivData),
+                initParams->enableRoi,
+                initParams->predDirection,
+                initParams->enableGlobalFlow,
+                initParams->inputBufferFormat);
+
+        VkOpticalFlowSessionCreateInfoNV createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_OPTICAL_FLOW_SESSION_CREATE_INFO_NV;
         createInfo.width = initParams->width;
         createInfo.height = initParams->height;
         createInfo.outputGridSize = VK_OPTICAL_FLOW_GRID_SIZE_4X4_BIT_NV;
@@ -108,10 +113,14 @@ namespace nvofapi {
             case NV_OF_BUFFER_FORMAT_ABGR8:
                 createInfo.imageFormat = VK_FORMAT_B8G8R8A8_UNORM;
                 break;
+            default:
+                createInfo.imageFormat = VK_FORMAT_UNDEFINED;
+                break;
         }
 
         // Need to get the size/id for the private data to pass it along to VK...
-        VkOpticalFlowSessionCreatePrivateDataInfoNV privData = {VK_STRUCTURE_TYPE_OPTICAL_FLOW_SESSION_CREATE_PRIVATE_DATA_INFO_NV};
+        VkOpticalFlowSessionCreatePrivateDataInfoNV privData{};
+        privData.sType = VK_STRUCTURE_TYPE_OPTICAL_FLOW_SESSION_CREATE_PRIVATE_DATA_INFO_NV;
         privData.size = ((NV_OF_PRIV_DATA*)initParams->hPrivData)->size;
         privData.id = ((NV_OF_PRIV_DATA*)initParams->hPrivData)->id;
         privData.pPrivateData = ((NV_OF_PRIV_DATA*)initParams->hPrivData)->data;
@@ -121,17 +130,17 @@ namespace nvofapi {
         auto ret = m_vkCreateOpticalFlowSessionNV(m_vkDevice, &createInfo, NULL, &m_vkOfaSession);
 
         if (ret == VK_SUCCESS) {
-            return NV_OF_SUCCESS;
+            return Success();
         }
 
-        return NV_OF_ERR_GENERIC;
+        return ErrorGeneric();
     }
 
     NV_OF_STATUS NvOFInstance::BindImageToSession(NvOFImage* image, VkOpticalFlowSessionBindingPointNV bindingPoint) {
         VkImageLayout layout = VK_IMAGE_LAYOUT_GENERAL;
 
         if (!image)
-            return NV_OF_ERR_GENERIC;
+            return ErrorGeneric();
 
         auto ret = m_vkBindOpticalFlowSessionImageNV(m_vkDevice,
             m_vkOfaSession,
@@ -139,9 +148,9 @@ namespace nvofapi {
             image->ImageView(),
             layout);
         if (ret != VK_SUCCESS) {
-            return NV_OF_ERR_GENERIC;
+            return ErrorGeneric();
         }
-        return NV_OF_SUCCESS;
+        return Success();
     }
 
     NV_OF_STATUS NvOFInstance::getCaps(NV_OF_CAPS param, uint32_t* capsVal, uint32_t* size) {
@@ -152,19 +161,18 @@ namespace nvofapi {
             }
 
             // XXX[ljm] query VkPhysicalDevice for actual support
-            return NV_OF_SUCCESS;
+            return Success();
         }
-        return NV_OF_ERR_GENERIC;
+        return ErrorGeneric();
     }
 
-    NV_OF_STATUS NvOFInstance::RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_VK* registerParams) {
+    void NvOFInstance::RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_VK* registerParams) {
         NvOFImage* nvOFImage = new NvOFImage(m_vkDevice, registerParams->image, registerParams->format);
         nvOFImage->Initialize(m_vkCreateImageView, m_vkDestroyImageView);
         *registerParams->hOFGpuBuffer = reinterpret_cast<NvOFGPUBufferHandle>(nvOFImage);
-        return NV_OF_SUCCESS;
     }
 
-    NV_OF_STATUS NvOFInstance::RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf) {
+    void NvOFInstance::RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf) {
         BindImageToSession(reinterpret_cast<NvOFImage*>(inParams->inputFrame), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_INPUT_NV);
         BindImageToSession(reinterpret_cast<NvOFImage*>(inParams->referenceFrame), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_REFERENCE_NV);
         BindImageToSession(reinterpret_cast<NvOFImage*>(outParams->outputBuffer), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_FLOW_VECTOR_NV);
@@ -175,7 +183,7 @@ namespace nvofapi {
         // Support INPUT_MIPS execute priv data
         if (((NV_OF_PRIV_DATA*)inParams->hPrivData)->id == NV_OF_EXECUTE_PRIV_DATA_ID_INPUT_MIPS) {
             NV_OF_EXECUTE_PRIV_DATA_INPUT_MIPS* mipData = ((NV_OF_EXECUTE_PRIV_DATA_INPUT_MIPS*)((NV_OF_PRIV_DATA*)inParams->hPrivData)->data);
-            for (int i = 0; i < 6; i++) {
+            for (uint32_t i = 0; i < 6; i++) {
                 if (mipData->input[i] && mipData->reference[i]) {
                     BindImageToSession(reinterpret_cast<NvOFImage*>(mipData->input[i]), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_INPUT_NV);
                     BindImageToSession(reinterpret_cast<NvOFImage*>(mipData->reference[i]), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_REFERENCE_NV);
@@ -186,7 +194,7 @@ namespace nvofapi {
 
         if (inParams->numRois) {
             regions = (VkRect2D*)calloc(sizeof(VkRect2D), inParams->numRois);
-            for (int i = 0; i < inParams->numRois; i++) {
+            for (uint32_t i = 0; i < inParams->numRois; i++) {
                 regions[i].offset.x = inParams->roiData[i].start_x;
                 regions[i].offset.y = inParams->roiData[i].start_y;
                 regions[i].extent.width = inParams->roiData[i].width;
@@ -194,7 +202,8 @@ namespace nvofapi {
             }
         }
 
-        VkOpticalFlowExecuteInfoNV ofaExecuteInfo = {VK_STRUCTURE_TYPE_OPTICAL_FLOW_EXECUTE_INFO_NV};
+        VkOpticalFlowExecuteInfoNV ofaExecuteInfo{};
+        ofaExecuteInfo.sType = VK_STRUCTURE_TYPE_OPTICAL_FLOW_EXECUTE_INFO_NV;
         ofaExecuteInfo.regionCount = inParams->numRois;
         ofaExecuteInfo.pRegions = regions;
 
@@ -205,6 +214,5 @@ namespace nvofapi {
         m_vkCmdOpticalFlowExecuteNV(cmdBuf, m_vkOfaSession, &ofaExecuteInfo);
 
         free(regions);
-        return NV_OF_SUCCESS;
     }
 }

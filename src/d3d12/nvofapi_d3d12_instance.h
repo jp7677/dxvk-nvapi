@@ -42,7 +42,7 @@ namespace nvofapi {
         bool Initialize();
         NvOFInstanceD3D12(ID3D12Device* pD3D12Device);
         virtual ~NvOFInstanceD3D12() {
-            for (int i = 0; i < CMDS_IN_FLIGHT; i++) {
+            for (uint32_t i = 0; i < CMDS_IN_FLIGHT; i++) {
                 if (m_cmdList[i])
                     m_cmdList[i]->Release();
             }
@@ -62,8 +62,8 @@ namespace nvofapi {
                 m_device->Release();
         }
 
-        NV_OF_STATUS RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_D3D12* registerParams);
+        void RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_D3D12* registerParams);
 
-        NV_OF_STATUS Execute(const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* outParams);
+        void Execute(const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* outParams);
     };
 }

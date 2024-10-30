@@ -26,52 +26,73 @@
 #include "util/util_env.h"
 #include "util/util_log.h"
 #include "util/util_string.h"
+#include "util/util_statuscode.h"
 #include "../version.h"
+
+using namespace dxvk;
 
 extern "C" {
     // Common entrypoints
     NV_OF_STATUS NVOFAPI OFSessionInit(NvOFHandle hOf, const NV_OF_INIT_PARAMS* initParams) {
-        dxvk::log::info("OFSessionInit called");
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(initParams));
+
         nvofapi::NvOFInstance* nvOF = reinterpret_cast<nvofapi::NvOFInstance*>(hOf);
 
         if (!nvOF) {
-            dxvk::log::info(dxvk::str::format("OFSessionInit failed!"));
-            return NV_OF_ERR_GENERIC;
+            return ErrorGeneric(n);
         }
 
         return nvOF->InitSession(initParams);
     }
 
     NV_OF_STATUS NVOFAPI OFSessionDestroy(NvOFHandle hOf) {
-        dxvk::log::info("OFSessionDestroy called");
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hOf));
+
         nvofapi::NvOFInstance* nvOF = reinterpret_cast<nvofapi::NvOFInstance*>(hOf);
         if (!nvOF) {
-            dxvk::log::info(dxvk::str::format("OFSessionDestroy failed!"));
-            return NV_OF_ERR_GENERIC;
+            return ErrorGeneric(n);
         }
 
         delete nvOF;
-        return NV_OF_SUCCESS;
+        return Success(n);
     }
 
     NV_OF_STATUS NVOFAPI OFSessionGetLastError(NvOFHandle hOf, char lastError[], uint32_t* size) {
-        dxvk::log::info("OFSessionGetLastError called");
-        dxvk::log::info(dxvk::str::format("OFSessionGetLastError failed!"));
-        return NV_OF_ERR_GENERIC;
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(lastError), log::fmt::ptr(size));
+
+        return ErrorGeneric(n);
     }
 
     NV_OF_STATUS NVOFAPI OFSessionGetCaps(NvOFHandle hOf, NV_OF_CAPS capsParam, uint32_t* capsVal, uint32_t* size) {
-        dxvk::log::info("OFSessionGetCaps called");
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hOf), capsParam, log::fmt::ptr(capsVal), log::fmt::ptr(size));
+
         nvofapi::NvOFInstance* nvOF = reinterpret_cast<nvofapi::NvOFInstance*>(hOf);
 
         return nvOF->getCaps(capsParam, capsVal, size);
     }
 
-    NV_OF_STATUS __cdecl NvOFGetMaxSupportedApiVersion(uint32_t* version) {
+    NV_OF_STATUS NVOFAPI NvOFGetMaxSupportedApiVersion(uint32_t* version) {
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(version));
+
         if (!version)
-            return NV_OF_ERR_INVALID_PTR;
+            return InvalidPtr(n);
 
         *version = NV_OF_API_VERSION;
-        return NV_OF_SUCCESS;
+        return Success(n);
     }
 }
