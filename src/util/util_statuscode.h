@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../nvapi_private.h"
+#include "../inc/nvofapi/nvOpticalFlowCommon.h"
 #include "util_string.h"
 #include "util_log.h"
 
@@ -150,5 +151,188 @@ namespace dxvk {
     inline NvAPI_Status InsufficientBuffer(const std::string& logMessage) {
         log::info(str::format("<-", logMessage, ": Insufficient Buffer"));
         return NVAPI_INSUFFICIENT_BUFFER;
+    }
+
+    inline NV_OF_STATUS Success() {
+        return NV_OF_SUCCESS;
+    }
+
+    inline NV_OF_STATUS Success(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Success"));
+        return NV_OF_SUCCESS;
+    }
+
+    inline NV_OF_STATUS Success(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Success"));
+
+        return NV_OF_SUCCESS;
+    }
+
+    inline NV_OF_STATUS OFNotAvailable() {
+        return NV_OF_ERR_OF_NOT_AVAILABLE;
+    }
+
+    inline NV_OF_STATUS OFNotAvailable(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": OpticalFlow Not Available"));
+        return NV_OF_ERR_OF_NOT_AVAILABLE;
+    }
+
+    inline NV_OF_STATUS OFNotAvailable(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": OpticalFlow Not Available"));
+
+        return NV_OF_ERR_OF_NOT_AVAILABLE;
+    }
+
+    inline NV_OF_STATUS UnsupportedDevice() {
+        return NV_OF_ERR_UNSUPPORTED_DEVICE;
+    }
+
+    inline NV_OF_STATUS UnsupportedDevice(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Unsupported Device"));
+        return NV_OF_ERR_UNSUPPORTED_DEVICE;
+    }
+
+    inline NV_OF_STATUS UnsupportedDevice(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Unsupported Device"));
+
+        return NV_OF_ERR_UNSUPPORTED_DEVICE;
+    }
+
+    inline NV_OF_STATUS DeviceDoesNotExist() {
+        return NV_OF_ERR_DEVICE_DOES_NOT_EXIST;
+    }
+
+    inline NV_OF_STATUS DeviceDoesNotExist(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Device Does Not Exist"));
+        return NV_OF_ERR_DEVICE_DOES_NOT_EXIST;
+    }
+
+    inline NV_OF_STATUS DeviceDoesNotExist(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Device Does Not Exist"));
+        return NV_OF_ERR_DEVICE_DOES_NOT_EXIST;
+    }
+
+    inline NV_OF_STATUS InvalidPtr() {
+        return NV_OF_ERR_INVALID_PTR;
+    }
+
+    inline NV_OF_STATUS InvalidPtr(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Invalid Pointer"));
+        return NV_OF_ERR_INVALID_PTR;
+    }
+
+    inline NV_OF_STATUS InvalidPtr(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Invalid Pointer"));
+        return NV_OF_ERR_INVALID_PTR;
+    }
+
+    inline NV_OF_STATUS InvalidParam() {
+        return NV_OF_ERR_INVALID_PARAM;
+    }
+
+    inline NV_OF_STATUS InvalidParam(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Invalid Parameter"));
+        return NV_OF_ERR_INVALID_PARAM;
+    }
+
+    inline NV_OF_STATUS InvalidParam(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Invalid Parameter"));
+        return NV_OF_ERR_INVALID_PARAM;
+    }
+
+    inline NV_OF_STATUS InvalidCall() {
+        return NV_OF_ERR_INVALID_CALL;
+    }
+
+    inline NV_OF_STATUS InvalidCall(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Invalid Call"));
+        return NV_OF_ERR_INVALID_CALL;
+    }
+
+    inline NV_OF_STATUS InvalidCall(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Invalid Call"));
+        return NV_OF_ERR_INVALID_CALL;
+    }
+
+    inline NV_OF_STATUS InvalidVersion() {
+        return NV_OF_ERR_INVALID_VERSION;
+    }
+
+    inline NV_OF_STATUS InvalidVersion(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Invalid Version"));
+        return NV_OF_ERR_INVALID_VERSION;
+    }
+
+    inline NV_OF_STATUS InvalidVersion(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Invalid Version"));
+        return NV_OF_ERR_INVALID_VERSION;
+    }
+
+    inline NV_OF_STATUS OutOfMemory() {
+        return NV_OF_ERR_OUT_OF_MEMORY;
+    }
+
+    inline NV_OF_STATUS OutOfMemory(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Out of Memory"));
+        return NV_OF_ERR_OUT_OF_MEMORY;
+    }
+
+    inline NV_OF_STATUS OutOfMemory(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Out of Memory"));
+        return NV_OF_ERR_OUT_OF_MEMORY;
+    }
+
+    inline NV_OF_STATUS NotInitialized() {
+        return NV_OF_ERR_NOT_INITIALIZED;
+    }
+
+    inline NV_OF_STATUS NotInitialized(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Not Initialized"));
+        return NV_OF_ERR_NOT_INITIALIZED;
+    }
+
+    inline NV_OF_STATUS NotInitialized(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Not Initialized"));
+        return NV_OF_ERR_NOT_INITIALIZED;
+    }
+
+    inline NV_OF_STATUS UnsupportedFeature() {
+        return NV_OF_ERR_UNSUPPORTED_FEATURE;
+    }
+
+    inline NV_OF_STATUS UnsupportedFeature(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Unsupported Feature"));
+        return NV_OF_ERR_UNSUPPORTED_FEATURE;
+    }
+
+    inline NV_OF_STATUS UnsupportedFeature(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Unsupported Feature"));
+        return NV_OF_ERR_UNSUPPORTED_FEATURE;
+    }
+
+    inline NV_OF_STATUS GenericError() {
+        return NV_OF_ERR_GENERIC;
+    }
+
+    inline NV_OF_STATUS GenericError(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Generic Error"));
+        return NV_OF_ERR_GENERIC;
+    }
+
+    inline NV_OF_STATUS GenericError(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Generic Error"));
+        return NV_OF_ERR_GENERIC;
     }
 }
