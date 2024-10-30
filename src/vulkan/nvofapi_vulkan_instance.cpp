@@ -26,7 +26,7 @@
 
 #include "../inc/nvofapi/nvOpticalFlowVulkan.h"
 
-#include "nvofapi.h"
+#include "vulkan/nvofapi_vulkan_instance.h"
 
 namespace nvofapi {
 
@@ -81,26 +81,6 @@ namespace nvofapi {
             return false;
         }
 
-        return true;
-    }
-
-    bool NvOFImageVk::Initialize(PFN_vkCreateImageView fpCreateImageView,
-        PFN_vkDestroyImageView fpDestroyImageView) {
-        m_vkDestroyImageView = fpDestroyImageView;
-        VkOpticalFlowSessionBindingPointNV bindingPoint;
-        VkImageViewCreateInfo viewInfo = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
-        viewInfo.image = m_image;
-        viewInfo.format = m_format;
-
-        // XXX[ljm] remaining or 1???
-        viewInfo.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS};
-        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        viewInfo.flags = 0;
-
-        auto ret = fpCreateImageView(m_ofInstance->GetVkDevice(), &viewInfo, NULL, &m_imageView);
-        if (ret != VK_SUCCESS) {
-            return false;
-        }
         return true;
     }
 

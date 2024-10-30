@@ -36,10 +36,13 @@ nvofapi_src = files([
   'util/util_string.cpp',
   'util/util_env.cpp',
   'util/util_log.cpp',
+  'nvofapi.cpp',
+  'nvofapi_d3d12.cpp',
+  'nvofapi_vulkan.cpp',
+  'd3d12/nvofapi_d3d12_instance.cpp',
+  'vulkan/nvofapi_vulkan_instance.cpp',
   'nvofapi/nvofapi_common.cpp',
-  'nvofapi/nvofapi_d3d12.cpp',
-  'nvofapi/nvofapi_vulkan.cpp',
-  'nvofapi/nvofapi_entrypoints.cpp'
+  'nvofapi/nvofapi_image.cpp',
 ])
 
 nvofapi_dll = shared_library('nvofapi'+target_suffix, [ nvofapi_src, dxvk_nvapi_version ],

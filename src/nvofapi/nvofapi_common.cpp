@@ -26,7 +26,8 @@
 
 #include "../inc/nvofapi/nvOpticalFlowVulkan.h"
 
-#include "nvofapi.h"
+#include "nvofapi_image.h"
+#include "nvofapi_instance.h"
 
 namespace nvofapi {
 
@@ -126,7 +127,7 @@ namespace nvofapi {
         return NV_OF_ERR_GENERIC;
     }
 
-    NV_OF_STATUS NvOFInstance::BindImageToSession(NvOFImageVk* image, VkOpticalFlowSessionBindingPointNV bindingPoint) {
+    NV_OF_STATUS NvOFInstance::BindImageToSession(NvOFImage* image, VkOpticalFlowSessionBindingPointNV bindingPoint) {
         VkImageLayout layout = VK_IMAGE_LAYOUT_GENERAL;
 
         if (!image)
@@ -157,27 +158,27 @@ namespace nvofapi {
     }
 
     NV_OF_STATUS NvOFInstance::RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_VK* registerParams) {
-        NvOFImageVk* nvOFImage = new NvOFImageVk(this, registerParams->image, registerParams->format);
+        NvOFImage* nvOFImage = new NvOFImage(m_vkDevice, registerParams->image, registerParams->format);
         nvOFImage->Initialize(m_vkCreateImageView, m_vkDestroyImageView);
         *registerParams->hOFGpuBuffer = reinterpret_cast<NvOFGPUBufferHandle>(nvOFImage);
         return NV_OF_SUCCESS;
     }
 
     NV_OF_STATUS NvOFInstance::RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf) {
-        BindImageToSession(reinterpret_cast<NvOFImageVk*>(inParams->inputFrame), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_INPUT_NV);
-        BindImageToSession(reinterpret_cast<NvOFImageVk*>(inParams->referenceFrame), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_REFERENCE_NV);
-        BindImageToSession(reinterpret_cast<NvOFImageVk*>(outParams->outputBuffer), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_FLOW_VECTOR_NV);
-        BindImageToSession(reinterpret_cast<NvOFImageVk*>(outParams->outputCostBuffer), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_COST_NV);
-        BindImageToSession(reinterpret_cast<NvOFImageVk*>(outParams->bwdOutputBuffer), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_BACKWARD_FLOW_VECTOR_NV);
-        BindImageToSession(reinterpret_cast<NvOFImageVk*>(outParams->bwdOutputCostBuffer), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_BACKWARD_COST_NV);
-        BindImageToSession(reinterpret_cast<NvOFImageVk*>(outParams->globalFlowBuffer), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_GLOBAL_FLOW_NV);
+        BindImageToSession(reinterpret_cast<NvOFImage*>(inParams->inputFrame), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_INPUT_NV);
+        BindImageToSession(reinterpret_cast<NvOFImage*>(inParams->referenceFrame), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_REFERENCE_NV);
+        BindImageToSession(reinterpret_cast<NvOFImage*>(outParams->outputBuffer), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_FLOW_VECTOR_NV);
+        BindImageToSession(reinterpret_cast<NvOFImage*>(outParams->outputCostBuffer), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_COST_NV);
+        BindImageToSession(reinterpret_cast<NvOFImage*>(outParams->bwdOutputBuffer), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_BACKWARD_FLOW_VECTOR_NV);
+        BindImageToSession(reinterpret_cast<NvOFImage*>(outParams->bwdOutputCostBuffer), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_BACKWARD_COST_NV);
+        BindImageToSession(reinterpret_cast<NvOFImage*>(outParams->globalFlowBuffer), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_GLOBAL_FLOW_NV);
         // Support INPUT_MIPS execute priv data
         if (((NV_OF_PRIV_DATA*)inParams->hPrivData)->id == NV_OF_EXECUTE_PRIV_DATA_ID_INPUT_MIPS) {
             NV_OF_EXECUTE_PRIV_DATA_INPUT_MIPS* mipData = ((NV_OF_EXECUTE_PRIV_DATA_INPUT_MIPS*)((NV_OF_PRIV_DATA*)inParams->hPrivData)->data);
             for (int i = 0; i < 6; i++) {
                 if (mipData->input[i] && mipData->reference[i]) {
-                    BindImageToSession(reinterpret_cast<NvOFImageVk*>(mipData->input[i]), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_INPUT_NV);
-                    BindImageToSession(reinterpret_cast<NvOFImageVk*>(mipData->reference[i]), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_REFERENCE_NV);
+                    BindImageToSession(reinterpret_cast<NvOFImage*>(mipData->input[i]), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_INPUT_NV);
+                    BindImageToSession(reinterpret_cast<NvOFImage*>(mipData->reference[i]), VK_OPTICAL_FLOW_SESSION_BINDING_POINT_REFERENCE_NV);
                 }
             }
         }
