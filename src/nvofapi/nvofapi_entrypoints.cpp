@@ -184,9 +184,15 @@ extern "C" {
 
     // ETBLs
     NV_OF_STATUS __cdecl NvOFAPICreateInstanceVk(uint32_t apiVer, NV_OF_VK_API_FUNCTION_LIST* functionList) {
+        uint32_t apiVerMajor = (apiVer & 0xfffffff0) >> 4;
+        uint32_t apiVerMinor = (apiVer & 0xf);
         constexpr auto n = __func__;
 
         dxvk::log::info(dxvk::str::format("DXVK-NVOFAPI ", DXVK_NVAPI_VERSION, " (", dxvk::env::getExecutableName(), ") VK"));
+        dxvk::log::info(dxvk::str::format("OFAPI Client Version: ", apiVerMajor, ".", apiVerMinor));
+
+        if (apiVerMajor != 5)
+            return NV_OF_ERR_INVALID_VERSION;
 
         functionList->nvCreateOpticalFlowVk = CreateOpticalFlowVk;
         functionList->nvOFInit = OFSessionInit;
@@ -203,9 +209,15 @@ extern "C" {
     }
 
     NV_OF_STATUS __stdcall NvOFAPICreateInstanceD3D12(uint32_t apiVer, NV_OF_D3D12_API_FUNCTION_LIST* functionList) {
+        uint32_t apiVerMajor = (apiVer & 0xfffffff0) >> 4;
+        uint32_t apiVerMinor = (apiVer & 0xf);
         constexpr auto n = __func__;
 
         dxvk::log::info(dxvk::str::format("DXVK-NVOFAPI ", DXVK_NVAPI_VERSION, " (", dxvk::env::getExecutableName(), ") D3D12"));
+        dxvk::log::info(dxvk::str::format("OFAPI Client Version: ", apiVerMajor, ".", apiVerMinor));
+
+        if (apiVerMajor != 5)
+            return NV_OF_ERR_INVALID_VERSION;
 
         functionList->nvCreateOpticalFlowD3D12 = CreateOpticalFlowD3D12;
         functionList->nvOFInit = OFSessionInit;
@@ -218,6 +230,14 @@ extern "C" {
         functionList->nvOFGetLastError = OFSessionGetLastError;
         functionList->nvOFGetCaps = OFSessionGetCaps;
 
+        return NV_OF_SUCCESS;
+    }
+
+    NV_OF_STATUS __cdecl NvOFGetMaxSupportedApiVersion(uint32_t *version) {
+        if (!version)
+            return NV_OF_ERR_INVALID_PTR;
+
+        *version = NV_OF_API_VERSION;
         return NV_OF_SUCCESS;
     }
 }

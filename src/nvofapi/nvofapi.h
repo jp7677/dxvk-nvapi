@@ -29,7 +29,7 @@
 #include "../inc/nvofapi/nvOpticalFlowVulkan.h"
 
 namespace nvofapi {
-    constexpr uint32_t CMDS_IN_FLIGHT = 1;
+    constexpr uint32_t CMDS_IN_FLIGHT = 8;
     class NvOFInstance;
     class NvOFImageVk;
 
@@ -107,7 +107,7 @@ namespace nvofapi {
         }
         virtual ~NvOFInstanceVk() {
             // free cmdbuffers
-            m_vkFreeCommandBuffers(m_vkDevice, m_commandPool, 8, m_commandBuffers);
+            m_vkFreeCommandBuffers(m_vkDevice, m_commandPool, CMDS_IN_FLIGHT, m_commandBuffers);
             m_vkDestroyCommandPool(m_vkDevice, m_commandPool, nullptr);
         }
         bool Initialize();
@@ -119,8 +119,7 @@ namespace nvofapi {
         VkCommandPool m_commandPool;
         PFN_vkCreateCommandPool m_vkCreateCommandPool;
         PFN_vkDestroyCommandPool m_vkDestroyCommandPool;
-        VkCommandBuffer m_commandBuffers[CMDS_IN_FLIGHT]; // eight ought to be more than
-                                                          // enough for anybody ;)
+        VkCommandBuffer m_commandBuffers[CMDS_IN_FLIGHT];
 
         PFN_vkAllocateCommandBuffers m_vkAllocateCommandBuffers;
         PFN_vkFreeCommandBuffers m_vkFreeCommandBuffers;
