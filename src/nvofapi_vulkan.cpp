@@ -22,63 +22,90 @@
  */
 
 #include "nvofapi/nvofapi_entrypoints.h"
+#include "nvofapi/nvofapi_image.h"
 #include "vulkan/nvofapi_vulkan_instance.h"
 
 #include "util/util_env.h"
 #include "util/util_log.h"
 #include "util/util_string.h"
+#include "util/util_statuscode.h"
 #include "../version.h"
 
+using namespace dxvk;
 extern "C" {
     // VK entrypoints
     NV_OF_STATUS NVOFAPI CreateOpticalFlowVk(VkInstance vkInstance, VkPhysicalDevice vkPhysicalDevice, VkDevice vkDevice, NvOFHandle* hOFInstance) {
-        dxvk::log::info("CreateOpticalFlowVk called");
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(vkInstance), log::fmt::hnd(vkPhysicalDevice), log::fmt::hnd(vkDevice), log::fmt::ptr(hOFInstance));
+
         nvofapi::NvOFInstanceVk* nvOF = new nvofapi::NvOFInstanceVk(vkInstance, vkPhysicalDevice, vkDevice);
 
         if (!nvOF) {
-            dxvk::log::info(dxvk::str::format("CreateOpticalFlowVK failed allocation"));
-            return NV_OF_ERR_GENERIC;
+            return ErrorGeneric(n);
         }
 
         if (!nvOF->Initialize()) {
-            dxvk::log::info(dxvk::str::format("CreateOpticalFlowVK failed creation"));
             delete nvOF;
-            return NV_OF_ERR_GENERIC;
+            return ErrorGeneric(n);
         }
 
         *hOFInstance = reinterpret_cast<NvOFHandle>(nvOF);
-        return NV_OF_SUCCESS;
+        return Success(n);
     }
 
     NV_OF_STATUS NVOFAPI GetSurfaceFormatCountVk(NvOFHandle hOf, const NV_OF_BUFFER_USAGE bufferUsage, const NV_OF_MODE ofMode, uint32_t* const pCount) {
-        dxvk::log::info("GetSurfaceFormatCountVk called");
-        dxvk::log::info(dxvk::str::format("GetSurfaceFormatCountVk failed!"));
-        return NV_OF_ERR_GENERIC;
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hOf), bufferUsage, ofMode, log::fmt::ptr(pCount));
+
+        return ErrorGeneric(n);
     }
 
     NV_OF_STATUS NVOFAPI GetSurfaceFormatVk(NvOFHandle hOf, const NV_OF_BUFFER_USAGE bufferUsage, const NV_OF_MODE ofMode, VkFormat* const pFormat) {
-        dxvk::log::info("GetSurfaceFormatVk called");
-        dxvk::log::info(dxvk::str::format("GetSurfaceFormatVk failed!"));
-        return NV_OF_ERR_GENERIC;
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hOf), bufferUsage, ofMode, log::fmt::ptr(pFormat));
+
+        return ErrorGeneric(n);
     }
 
     NV_OF_STATUS NVOFAPI RegisterResourceVk(NvOFHandle hOf, NV_OF_REGISTER_RESOURCE_PARAMS_VK* registerParams) {
-        dxvk::log::info("RegisterResourceVk called");
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(registerParams));
+
         nvofapi::NvOFInstanceVk* nvOF = reinterpret_cast<nvofapi::NvOFInstanceVk*>(hOf);
-        return nvOF->RegisterBuffer(registerParams);
+        nvOF->RegisterBuffer(registerParams);
+        return Success(n);
     }
 
     NV_OF_STATUS NVOFAPI UnregisterResourceVk(NV_OF_UNREGISTER_RESOURCE_PARAMS_VK* registerParams) {
-        dxvk::log::info("UnregisterResourceVk called");
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(registerParams));
+
         nvofapi::NvOFImage* nvRes = reinterpret_cast<nvofapi::NvOFImage*>(registerParams->hOFGpuBuffer);
         delete nvRes;
-        return NV_OF_SUCCESS;
+        return ErrorGeneric(n);
     }
 
     NV_OF_STATUS NVOFAPI ExecuteVk(NvOFHandle hOf, const NV_OF_EXECUTE_INPUT_PARAMS_VK* executeInParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* executeOutParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(executeInParams), log::fmt::ptr(executeOutParams));
+
         nvofapi::NvOFInstanceVk* nvOF = reinterpret_cast<nvofapi::NvOFInstanceVk*>(hOf);
 
-        return nvOF->Execute(executeInParams, executeOutParams);
+        nvOF->Execute(executeInParams, executeOutParams);
+        return Success(n, alreadyLoggedOk);
     }
 
     NV_OF_STATUS __cdecl NvOFAPICreateInstanceVk(uint32_t apiVer, NV_OF_VK_API_FUNCTION_LIST* functionList) {
@@ -86,11 +113,14 @@ extern "C" {
         uint32_t apiVerMinor = (apiVer & 0xf);
         constexpr auto n = __func__;
 
-        dxvk::log::info(dxvk::str::format("DXVK-NVOFAPI ", DXVK_NVAPI_VERSION, " (", dxvk::env::getExecutableName(), ") VK"));
-        dxvk::log::info(dxvk::str::format("OFAPI Client Version: ", apiVerMajor, ".", apiVerMinor));
+        if (log::tracing())
+            log::trace(n, apiVer, log::fmt::ptr(functionList));
+
+        log::info(str::format("DXVK-NVOFAPI ", DXVK_NVAPI_VERSION, " (", env::getExecutableName(), ") VK"));
+        log::info(str::format("OFAPI Client Version: ", apiVerMajor, ".", apiVerMinor));
 
         if (apiVerMajor != 5)
-            return NV_OF_ERR_INVALID_VERSION;
+            return InvalidVersion(n);
 
         functionList->nvCreateOpticalFlowVk = CreateOpticalFlowVk;
         functionList->nvOFInit = OFSessionInit;
@@ -103,6 +133,6 @@ extern "C" {
         functionList->nvOFGetLastError = OFSessionGetLastError;
         functionList->nvOFGetCaps = OFSessionGetCaps;
 
-        return NV_OF_SUCCESS;
+        return Success(n);
     }
 }

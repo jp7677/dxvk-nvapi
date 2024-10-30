@@ -27,8 +27,8 @@ namespace nvofapi {
     bool NvOFImage::Initialize(PFN_vkCreateImageView fpCreateImageView,
         PFN_vkDestroyImageView fpDestroyImageView) {
         m_vkDestroyImageView = fpDestroyImageView;
-        VkOpticalFlowSessionBindingPointNV bindingPoint;
-        VkImageViewCreateInfo viewInfo = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         viewInfo.image = m_image;
         viewInfo.format = m_format;
 

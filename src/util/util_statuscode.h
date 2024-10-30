@@ -321,18 +321,18 @@ namespace dxvk {
         return NV_OF_ERR_UNSUPPORTED_FEATURE;
     }
 
-    inline NV_OF_STATUS GenericError() {
+    inline NV_OF_STATUS ErrorGeneric() {
         return NV_OF_ERR_GENERIC;
     }
 
-    inline NV_OF_STATUS GenericError(const std::string& logMessage) {
-        log::info(str::format("<-", logMessage, ": Generic Error"));
+    inline NV_OF_STATUS ErrorGeneric(const std::string& logMessage) {
+        log::info(str::format("<-", logMessage, ": Error"));
         return NV_OF_ERR_GENERIC;
     }
 
-    inline NV_OF_STATUS GenericError(const std::string& logMessage, bool& alreadyLogged) {
+    inline NV_OF_STATUS ErrorGeneric(const std::string& logMessage, bool& alreadyLogged) {
         if (log::tracing() || !std::exchange(alreadyLogged, true))
-            log::info(str::format("<-", logMessage, ": Generic Error"));
+            log::info(str::format("<-", logMessage, ": Error"));
         return NV_OF_ERR_GENERIC;
     }
 }

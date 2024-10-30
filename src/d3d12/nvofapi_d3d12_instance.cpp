@@ -68,7 +68,7 @@ namespace nvofapi {
             return false;
         }
 
-        m_vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)GetProcAddress(m_library, "vkGetInstanceProcAddr");
+        m_vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr) reinterpret_cast<void*>(GetProcAddress(m_library, "vkGetInstanceProcAddr"));
         m_vkGetDeviceProcAddr = (PFN_vkGetDeviceProcAddr)m_vkGetInstanceProcAddr(m_vkInstance, "vkGetDeviceProcAddr");
         m_vkGetPhysicalDeviceQueueFamilyProperties = (PFN_vkGetPhysicalDeviceQueueFamilyProperties)m_vkGetInstanceProcAddr(m_vkInstance, "vkGetPhysicalDeviceQueueFamilyProperties");
 
@@ -94,7 +94,7 @@ namespace nvofapi {
             != S_OK) {
             return false;
         }
-        for (int i = 0; i < CMDS_IN_FLIGHT; i++) {
+        for (uint32_t i = 0; i < CMDS_IN_FLIGHT; i++) {
             if (m_d3ddevice->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, (D3D12_COMMAND_LIST_FLAGS)0, IID_PPV_ARGS(&m_cmdList[i]))
                 != S_OK) {
                 return false;
@@ -103,7 +103,7 @@ namespace nvofapi {
         return true;
     }
 
-    NV_OF_STATUS NvOFInstanceD3D12::RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_D3D12* registerParams) {
+    void NvOFInstanceD3D12::RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_D3D12* registerParams) {
         NV_OF_REGISTER_RESOURCE_PARAMS_VK vkParams{};
         dxvk::log::info(
             dxvk::str::format("RegisterBuffer DX: resource: ",
@@ -124,10 +124,10 @@ namespace nvofapi {
         assert(registerParams->inputFencePoint.value == 0);
         assert(registerParams->outputFencePoint.fence == nullptr);
         assert(registerParams->outputFencePoint.value == 0);
-        return ((NvOFInstance*)this)->RegisterBuffer(&vkParams);
+        ((NvOFInstance*)this)->RegisterBuffer(&vkParams);
     }
 
-    NV_OF_STATUS NvOFInstanceD3D12::Execute(const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* outParams) {
+    void NvOFInstanceD3D12::Execute(const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* outParams) {
         // Convert the D3D12 parameters to VK parameters
         NV_OF_EXECUTE_INPUT_PARAMS_VK vkInputParams{};
         NV_OF_EXECUTE_OUTPUT_PARAMS_VK vkOutputParams{};
@@ -152,7 +152,7 @@ namespace nvofapi {
         // happens using D3D12.
         m_cmdList[m_cmdListIndex]->Reset(m_cmdAllocator, nullptr);
 
-        for (int i = 0; i < inParams->numFencePoints; i++) {
+        for (uint32_t i = 0; i < inParams->numFencePoints; i++) {
             m_commandQueue->Wait(inParams->fencePoint[i].fence, inParams->fencePoint[i].value);
         }
 
@@ -171,8 +171,6 @@ namespace nvofapi {
         m_cmdListIndex++;
         if (m_cmdListIndex >= CMDS_IN_FLIGHT)
             m_cmdListIndex = 0;
-
-        return NV_OF_SUCCESS;
     }
 
 }

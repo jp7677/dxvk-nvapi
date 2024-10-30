@@ -73,10 +73,10 @@ namespace nvofapi {
 
         NV_OF_STATUS InitSession(const NV_OF_INIT_PARAMS* initParams);
 
-        NV_OF_STATUS RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_VK* registerParams);
+        void RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_VK* registerParams);
 
         NV_OF_STATUS BindImageToSession(NvOFImage* image, VkOpticalFlowSessionBindingPointNV bindingPoint);
 
-        NV_OF_STATUS RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf);
+        void RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf);
     };
 }

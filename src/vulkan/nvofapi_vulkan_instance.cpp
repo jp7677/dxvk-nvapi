@@ -36,7 +36,7 @@ namespace nvofapi {
             return false;
         }
 
-        m_vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)GetProcAddress(m_library, "vkGetInstanceProcAddr");
+        m_vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr) reinterpret_cast<void*>(GetProcAddress(m_library, "vkGetInstanceProcAddr"));
         m_vkGetDeviceProcAddr = (PFN_vkGetDeviceProcAddr)m_vkGetInstanceProcAddr(m_vkInstance, "vkGetDeviceProcAddr");
         m_vkGetPhysicalDeviceQueueFamilyProperties = (PFN_vkGetPhysicalDeviceQueueFamilyProperties)m_vkGetInstanceProcAddr(m_vkInstance, "vkGetPhysicalDeviceQueueFamilyProperties");
 
@@ -62,7 +62,8 @@ namespace nvofapi {
         m_vkCmdOpticalFlowExecuteNV = (PFN_vkCmdOpticalFlowExecuteNV)m_vkGetDeviceProcAddr(m_vkDevice, "vkCmdOpticalFlowExecuteNV");
 
         // Get the OFA queue
-        VkCommandPoolCreateInfo createInfo = {VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
+        VkCommandPoolCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         createInfo.queueFamilyIndex = GetVkOFAQueue();
         m_vkGetDeviceQueue(m_vkDevice, createInfo.queueFamilyIndex, 0, &m_queue);
 
@@ -72,7 +73,8 @@ namespace nvofapi {
         }
 
         // ALlocate command buffers
-        VkCommandBufferAllocateInfo allocInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
+        VkCommandBufferAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = m_commandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = CMDS_IN_FLIGHT; // more than enough for anybody ;)
@@ -84,7 +86,7 @@ namespace nvofapi {
         return true;
     }
 
-    NV_OF_STATUS NvOFInstanceVk::Execute(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams) {
+    void NvOFInstanceVk::Execute(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams) {
         dxvk::log::info(
             dxvk::str::format("OFExecuteVK params:",
                 " inputFrame: ", inParams->inputFrame,
@@ -101,7 +103,7 @@ namespace nvofapi {
 
         if (inParams->numWaitSyncs) {
             waitSyncs = (VkSemaphoreSubmitInfo*)calloc(sizeof(VkSemaphoreSubmitInfo), inParams->numWaitSyncs);
-            for (int i = 0; i < inParams->numWaitSyncs; i++) {
+            for (uint32_t i = 0; i < inParams->numWaitSyncs; i++) {
                 waitSyncs[i].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
                 waitSyncs[i].semaphore = inParams->pWaitSyncs[i].semaphore;
                 waitSyncs[i].value = inParams->pWaitSyncs[i].value;
@@ -109,18 +111,21 @@ namespace nvofapi {
             }
         }
 
-        VkSemaphoreSubmitInfo signalSync = {VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO};
+        VkSemaphoreSubmitInfo signalSync{};
+        signalSync.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
         if (outParams->pSignalSync) {
             signalSync.semaphore = outParams->pSignalSync->semaphore;
             signalSync.value = outParams->pSignalSync->value;
             signalSync.stageMask = VK_PIPELINE_STAGE_2_OPTICAL_FLOW_BIT_NV;
         }
 
-        VkCommandBufferSubmitInfo cmdbufInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO};
+        VkCommandBufferSubmitInfo cmdbufInfo{};
+        cmdbufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
         cmdbufInfo.commandBuffer = m_commandBuffers[m_cmdBufIndex];
         cmdbufInfo.deviceMask = 1;
 
-        VkCommandBufferBeginInfo begInfo = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+        VkCommandBufferBeginInfo begInfo{};
+        begInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         m_vkResetCommandBuffer(m_commandBuffers[m_cmdBufIndex], 0);
         m_vkBeginCommandBuffer(m_commandBuffers[m_cmdBufIndex], &begInfo);
 
@@ -128,7 +133,8 @@ namespace nvofapi {
 
         m_vkEndCommandBuffer(m_commandBuffers[m_cmdBufIndex]);
 
-        VkSubmitInfo2 submit = {VK_STRUCTURE_TYPE_SUBMIT_INFO_2};
+        VkSubmitInfo2 submit{};
+        submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
         submit.waitSemaphoreInfoCount = inParams->numWaitSyncs;
         submit.pWaitSemaphoreInfos = waitSyncs;
         submit.commandBufferInfoCount = 1;
@@ -143,6 +149,5 @@ namespace nvofapi {
         m_cmdBufIndex++;
         if (m_cmdBufIndex >= CMDS_IN_FLIGHT)
             m_cmdBufIndex = 0;
-        return NV_OF_SUCCESS;
     }
 }

@@ -37,7 +37,7 @@ namespace nvofapi {
         }
         bool Initialize();
 
-        NV_OF_STATUS Execute(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams);
+        void Execute(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams);
 
       private:
         VkQueue m_queue;
