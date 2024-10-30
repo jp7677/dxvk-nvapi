@@ -31,7 +31,9 @@
 namespace nvofapi {
 
     bool NvOFInstanceVk::Initialize() {
-        m_library = LoadLibraryA("winevulkan.dll");
+        // For VK we cannot load winevulkan directly or we may break handle
+        // opacity.
+        m_library = LoadLibraryA("vulkan-1.dll");
         if (!m_library) {
             return false;
         }
