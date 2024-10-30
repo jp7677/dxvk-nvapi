@@ -26,10 +26,7 @@
 #include "util/util_log.h"
 #include "util/util_string.h"
 
-#include "vkd3d-proton/vkd3d-proton_interfaces.h"
-#include "../inc/nvofapi/nvOpticalFlowD3D12.h"
-
-#include "nvofapi.h"
+#include "d3d12/nvofapi_d3d12_instance.h"
 
 namespace nvofapi {
 
