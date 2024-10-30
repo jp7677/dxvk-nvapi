@@ -181,7 +181,7 @@ namespace nvofapi {
                 }
             }
         }
-        VkRect2D* regions;
+        VkRect2D* regions = nullptr;
 
         if (inParams->numRois) {
             regions = (VkRect2D*)calloc(sizeof(VkRect2D), inParams->numRois);
