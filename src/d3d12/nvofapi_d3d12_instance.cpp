@@ -84,7 +84,7 @@ namespace nvofapi {
             return false;
 
         for (uint32_t i = 0; i < CMDS_IN_FLIGHT; i++) {
-            if (FAILED(m_d3ddevice->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, (D3D12_COMMAND_LIST_FLAGS)0, IID_PPV_ARGS(&m_cmdList[i]))))
+            if (FAILED(m_d3ddevice->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, (D3D12_COMMAND_LIST_FLAGS)0, IID_PPV_ARGS(&m_cmdLists[i]))))
                 return false;
         }
         return true;
@@ -137,21 +137,21 @@ namespace nvofapi {
         // Use vkd3d-proton's interop functionality to grab a VkCommandBuffer
         // that we record our commands into. Work submission and syncrhonization
         // happens using D3D12.
-        m_cmdList[m_cmdListIndex]->Reset(m_cmdAllocator, nullptr);
+        m_cmdLists[m_cmdListIndex]->Reset(m_cmdAllocator, nullptr);
 
         for (uint32_t i = 0; i < inParams->numFencePoints; i++) {
             m_commandQueue->Wait(inParams->fencePoint[i].fence, inParams->fencePoint[i].value);
         }
 
         VkCommandBuffer vkCmdBuf;
-        m_device->BeginVkCommandBufferInterop(m_cmdList[m_cmdListIndex], &vkCmdBuf);
+        m_device->BeginVkCommandBufferInterop(m_cmdLists[m_cmdListIndex], &vkCmdBuf);
 
         this->RecordCmdBuf(&vkInputParams, &vkOutputParams, vkCmdBuf);
 
-        m_device->EndVkCommandBufferInterop(m_cmdList[m_cmdListIndex]);
-        m_cmdList[m_cmdListIndex]->Close();
+        m_device->EndVkCommandBufferInterop(m_cmdLists[m_cmdListIndex]);
+        m_cmdLists[m_cmdListIndex]->Close();
 
-        m_commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&m_cmdList[m_cmdListIndex]);
+        m_commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&m_cmdLists[m_cmdListIndex]);
 
         m_commandQueue->Signal(outParams->fencePoint->fence, outParams->fencePoint->value);
 

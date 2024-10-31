@@ -32,9 +32,9 @@ namespace nvofapi {
         NvOFInstanceD3D12(ID3D12Device* pD3D12Device);
 
         virtual ~NvOFInstanceD3D12() {
-            for (uint32_t i = 0; i < CMDS_IN_FLIGHT; i++) {
-                if (m_cmdList[i])
-                    m_cmdList[i]->Release();
+            for (auto& cmdList : m_cmdLists) {
+                if (cmdList)
+                    cmdList->Release();
             }
             if (m_cmdAllocator)
                 m_cmdAllocator->Release();
@@ -63,7 +63,7 @@ namespace nvofapi {
         ID3D12DeviceExt* m_deviceExt{};
         ID3D12Device4* m_d3ddevice{};
         ID3D12CommandQueue* m_commandQueue{};
-        ID3D12GraphicsCommandList* m_cmdList[CMDS_IN_FLIGHT]{};
+        std::array<ID3D12GraphicsCommandList*, CMDS_IN_FLIGHT> m_cmdLists;
         uint32_t m_cmdListIndex = 0;
         ID3D12CommandAllocator* m_cmdAllocator{};
 

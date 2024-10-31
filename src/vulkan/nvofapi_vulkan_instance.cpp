@@ -81,7 +81,7 @@ namespace nvofapi {
         allocInfo.commandPool = m_commandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = CMDS_IN_FLIGHT; // more than enough for anybody ;)
-        if (m_vkAllocateCommandBuffers(m_vkDevice, &allocInfo, m_commandBuffers)
+        if (m_vkAllocateCommandBuffers(m_vkDevice, &allocInfo, m_commandBuffers.data())
             != VK_SUCCESS) {
             return false;
         }
