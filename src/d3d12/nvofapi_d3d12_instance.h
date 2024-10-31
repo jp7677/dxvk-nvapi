@@ -27,20 +27,10 @@
 
 namespace nvofapi {
     class NvOFInstanceD3D12 : public NvOFInstance {
-      private:
-        ID3D12DXVKInteropDevice1* m_device{};
-        ID3D12DeviceExt* m_deviceExt{};
-        ID3D12Device4* m_d3ddevice{};
-        ID3D12CommandQueue* m_commandQueue{};
-        ID3D12GraphicsCommandList* m_cmdList[CMDS_IN_FLIGHT]{};
-        uint32_t m_cmdListIndex = 0;
-        ID3D12CommandAllocator* m_cmdAllocator{};
-
-        uint32_t m_vkQueueFamilyIndex = 0;
 
       public:
-        bool Initialize();
         NvOFInstanceD3D12(ID3D12Device* pD3D12Device);
+
         virtual ~NvOFInstanceD3D12() {
             for (uint32_t i = 0; i < CMDS_IN_FLIGHT; i++) {
                 if (m_cmdList[i])
@@ -62,8 +52,21 @@ namespace nvofapi {
                 m_device->Release();
         }
 
+        void Execute(const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* outParams);
+
+        bool Initialize();
+
         void RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_D3D12* registerParams);
 
-        void Execute(const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* outParams);
+      private:
+        ID3D12DXVKInteropDevice1* m_device{};
+        ID3D12DeviceExt* m_deviceExt{};
+        ID3D12Device4* m_d3ddevice{};
+        ID3D12CommandQueue* m_commandQueue{};
+        ID3D12GraphicsCommandList* m_cmdList[CMDS_IN_FLIGHT]{};
+        uint32_t m_cmdListIndex = 0;
+        ID3D12CommandAllocator* m_cmdAllocator{};
+
+        uint32_t m_vkQueueFamilyIndex = 0;
     };
 }

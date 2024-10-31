@@ -39,7 +39,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(initParams));
 
-        nvofapi::NvOFInstance* nvOF = reinterpret_cast<nvofapi::NvOFInstance*>(hOf);
+        auto nvOF = reinterpret_cast<nvofapi::NvOFInstance*>(hOf);
 
         if (!nvOF) {
             return ErrorGeneric(n);
@@ -54,7 +54,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hOf));
 
-        nvofapi::NvOFInstance* nvOF = reinterpret_cast<nvofapi::NvOFInstance*>(hOf);
+        auto nvOF = reinterpret_cast<nvofapi::NvOFInstance*>(hOf);
         if (!nvOF) {
             return ErrorGeneric(n);
         }
@@ -78,7 +78,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hOf), capsParam, log::fmt::ptr(capsVal), log::fmt::ptr(size));
 
-        nvofapi::NvOFInstance* nvOF = reinterpret_cast<nvofapi::NvOFInstance*>(hOf);
+        auto nvOF = reinterpret_cast<nvofapi::NvOFInstance*>(hOf);
 
         return nvOF->getCaps(capsParam, capsVal, size);
     }

@@ -25,22 +25,24 @@
 
 namespace nvofapi {
     class NvOFImage {
-      private:
-        VkDevice m_vkDevice;
-        VkImage m_image;
-        VkImageView m_imageView;
-        VkFormat m_format;
-        PFN_vkDestroyImageView m_vkDestroyImageView{};
-
       public:
-        VkImageView ImageView() { return m_imageView; }
         NvOFImage(VkDevice device, VkImage image, VkFormat format) : m_vkDevice(device), m_image(image), m_format(format) {
         }
+
         ~NvOFImage() {
             m_vkDestroyImageView(m_vkDevice, m_imageView, nullptr);
         }
 
+        VkImageView ImageView() { return m_imageView; }
+
         bool Initialize(PFN_vkCreateImageView CreateImageView,
             PFN_vkDestroyImageView DestroyImageView);
+
+      private:
+        VkDevice m_vkDevice{};
+        VkImage m_image{};
+        VkImageView m_imageView{};
+        VkFormat m_format{};
+        PFN_vkDestroyImageView m_vkDestroyImageView{};
     };
 }

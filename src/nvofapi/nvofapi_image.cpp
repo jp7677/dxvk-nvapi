@@ -37,7 +37,7 @@ namespace nvofapi {
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
         viewInfo.flags = 0;
 
-        auto ret = fpCreateImageView(m_vkDevice, &viewInfo, NULL, &m_imageView);
+        auto ret = fpCreateImageView(m_vkDevice, &viewInfo, nullptr, &m_imageView);
         if (ret != VK_SUCCESS) {
             return false;
         }

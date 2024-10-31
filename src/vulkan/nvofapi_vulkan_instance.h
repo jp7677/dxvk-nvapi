@@ -35,9 +35,10 @@ namespace nvofapi {
             m_vkFreeCommandBuffers(m_vkDevice, m_commandPool, CMDS_IN_FLIGHT, m_commandBuffers);
             m_vkDestroyCommandPool(m_vkDevice, m_commandPool, nullptr);
         }
-        bool Initialize();
 
         void Execute(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams);
+
+        bool Initialize();
 
       private:
         VkQueue m_queue;
