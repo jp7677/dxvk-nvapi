@@ -45,8 +45,11 @@ nvofapi_src = files([
   'nvofapi/nvofapi_image.cpp',
 ])
 
-nvofapi_dll = shared_library('nvofapi'+target_suffix, [ nvofapi_src, dxvk_nvapi_version ],
-  name_prefix         : '',
-  dependencies        : [ lib_version ],
-  include_directories : [ nvapi_headers, vk_headers ],
-  install             : true)
+# Only build 64-bit versions of nvofapi
+if dxvk_cpu_family == 'x86_64'
+  nvofapi_dll = shared_library('nvofapi'+target_suffix, [ nvofapi_src, dxvk_nvapi_version ],
+    name_prefix         : '',
+    dependencies        : [ lib_version ],
+    include_directories : [ nvapi_headers, vk_headers ],
+    install             : true)
+endif
