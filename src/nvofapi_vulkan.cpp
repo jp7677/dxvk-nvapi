@@ -40,9 +40,9 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(vkInstance), log::fmt::hnd(vkPhysicalDevice), log::fmt::hnd(vkDevice), log::fmt::ptr(hOFInstance));
 
-        nvofapi::NvOFInstanceVk* nvOF = nullptr;
+        NvOFInstanceVk* nvOF = nullptr;
         try {
-            nvOF = new nvofapi::NvOFInstanceVk(vkInstance, vkPhysicalDevice, vkDevice);
+            nvOF = new NvOFInstanceVk(vkInstance, vkPhysicalDevice, vkDevice);
         } catch (std::exception const& e) {
             log::info(str::format("CreateOpticalFlowD3D12 exception, %s", e.what()));
             return ErrorGeneric(n);
@@ -81,7 +81,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(registerParams));
 
-        auto nvOF = reinterpret_cast<nvofapi::NvOFInstanceVk*>(hOf);
+        auto nvOF = reinterpret_cast<NvOFInstanceVk*>(hOf);
         nvOF->RegisterBuffer(registerParams);
         return Success(n);
     }
@@ -92,7 +92,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(registerParams));
 
-        nvofapi::NvOFImage* nvRes = reinterpret_cast<nvofapi::NvOFImage*>(registerParams->hOFGpuBuffer);
+        NvOFImage* nvRes = reinterpret_cast<NvOFImage*>(registerParams->hOFGpuBuffer);
         delete nvRes;
         return ErrorGeneric(n);
     }
@@ -104,7 +104,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(executeInParams), log::fmt::ptr(executeOutParams));
 
-        auto nvOF = reinterpret_cast<nvofapi::NvOFInstanceVk*>(hOf);
+        auto nvOF = reinterpret_cast<NvOFInstanceVk*>(hOf);
 
         nvOF->Execute(executeInParams, executeOutParams);
         return Success(n, alreadyLoggedOk);

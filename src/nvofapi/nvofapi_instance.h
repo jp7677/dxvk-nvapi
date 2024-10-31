@@ -27,7 +27,7 @@
 #include "../inc/nvofapi/nvOpticalFlowD3D12.h"
 #include "../inc/nvofapi/nvOpticalFlowVulkan.h"
 
-namespace nvofapi {
+namespace dxvk {
     constexpr uint32_t CMDS_IN_FLIGHT = 8;
 
     class NvOFInstance {

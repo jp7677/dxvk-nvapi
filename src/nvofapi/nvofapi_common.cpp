@@ -30,8 +30,7 @@
 #include "nvofapi_image.h"
 #include "nvofapi_instance.h"
 
-using namespace dxvk;
-namespace nvofapi {
+namespace dxvk {
 
     typedef struct NV_OF_PRIV_DATA {
         uint32_t size;

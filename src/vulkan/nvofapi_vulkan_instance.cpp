@@ -28,7 +28,7 @@
 
 #include "vulkan/nvofapi_vulkan_instance.h"
 
-namespace nvofapi {
+namespace dxvk {
 
     bool NvOFInstanceVk::Initialize() {
         // For VK we cannot load winevulkan directly or we may break handle
@@ -90,8 +90,8 @@ namespace nvofapi {
     }
 
     void NvOFInstanceVk::Execute(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams) {
-        dxvk::log::info(
-            dxvk::str::format("OFExecuteVK params:",
+        log::info(
+            str::format("OFExecuteVK params:",
                 " inputFrame: ", inParams->inputFrame,
                 " referenceFrame: ", inParams->referenceFrame,
                 " externalHints: ", inParams->externalHints,

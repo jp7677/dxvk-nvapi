@@ -23,7 +23,7 @@
 
 #include "nvofapi_image.h"
 
-namespace nvofapi {
+namespace dxvk {
     bool NvOFImage::Initialize(PFN_vkCreateImageView fpCreateImageView,
         PFN_vkDestroyImageView fpDestroyImageView) {
         m_vkDestroyImageView = fpDestroyImageView;

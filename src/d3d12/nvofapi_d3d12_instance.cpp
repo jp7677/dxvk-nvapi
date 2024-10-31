@@ -28,7 +28,7 @@
 
 #include "d3d12/nvofapi_d3d12_instance.h"
 
-namespace nvofapi {
+namespace dxvk {
 
     NvOFInstanceD3D12::NvOFInstanceD3D12(ID3D12Device* pD3D12Device) {
         // Query for the extension interface
@@ -55,7 +55,7 @@ namespace nvofapi {
 
         // Confirm that OPTICAL_FLOW extension is available
         if (!m_deviceExt->GetExtensionSupport(D3D12_VK_NV_OPTICAL_FLOW)) {
-            dxvk::log::info("Missing VK_NV_optical_flow extension!");
+            log::info("Missing VK_NV_optical_flow extension!");
             return false;
         }
 
@@ -92,8 +92,8 @@ namespace nvofapi {
 
     void NvOFInstanceD3D12::RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_D3D12* registerParams) {
         NV_OF_REGISTER_RESOURCE_PARAMS_VK vkParams{};
-        dxvk::log::info(
-            dxvk::str::format("RegisterBuffer DX: resource: ",
+        log::info(
+            str::format("RegisterBuffer DX: resource: ",
                 registerParams->resource, " inputFencePoint: ",
                 registerParams->inputFencePoint.fence, " outputFencePoint: ",
                 registerParams->outputFencePoint.fence));
