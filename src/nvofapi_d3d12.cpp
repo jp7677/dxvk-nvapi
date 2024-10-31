@@ -41,9 +41,9 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pD3D12Device), log::fmt::ptr(hOFInstance));
 
-        nvofapi::NvOFInstanceD3D12* nvOF = nullptr;
+        NvOFInstanceD3D12* nvOF = nullptr;
         try {
-            nvOF = new nvofapi::NvOFInstanceD3D12(pD3D12Device);
+            nvOF = new NvOFInstanceD3D12(pD3D12Device);
         } catch (std::exception const& e) {
             log::info(str::format("CreateOpticalFlowD3D12 exception, %s", e.what()));
             return ErrorGeneric(n);
@@ -87,7 +87,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(registerParams));
 
-        auto nvOF = reinterpret_cast<nvofapi::NvOFInstanceD3D12*>(hOf);
+        auto nvOF = reinterpret_cast<NvOFInstanceD3D12*>(hOf);
 
         nvOF->RegisterBuffer(registerParams);
         return Success(n);
@@ -99,7 +99,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(registerParams));
 
-        nvofapi::NvOFImage* nvRes = reinterpret_cast<nvofapi::NvOFImage*>(registerParams->hOFGpuBuffer);
+        NvOFImage* nvRes = reinterpret_cast<NvOFImage*>(registerParams->hOFGpuBuffer);
         delete nvRes;
         return Success(n);
     }
@@ -111,7 +111,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(executeInParams), log::fmt::ptr(executeOutParams));
 
-        auto nvOF = reinterpret_cast<nvofapi::NvOFInstanceD3D12*>(hOf);
+        auto nvOF = reinterpret_cast<NvOFInstanceD3D12*>(hOf);
 
         nvOF->Execute(executeInParams, executeOutParams);
         return Success(n, alreadyLoggedOk);

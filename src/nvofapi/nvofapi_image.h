@@ -23,7 +23,7 @@
 
 #include <vulkan/vulkan_core.h>
 
-namespace nvofapi {
+namespace dxvk {
     class NvOFImage {
       public:
         NvOFImage(VkDevice device, VkImage image, VkFormat format) : m_vkDevice(device), m_image(image), m_format(format) {

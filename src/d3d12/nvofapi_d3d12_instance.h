@@ -25,7 +25,7 @@
 
 #include "nvofapi/nvofapi_instance.h"
 
-namespace nvofapi {
+namespace dxvk {
     class NvOFInstanceD3D12 : public NvOFInstance {
 
       public:

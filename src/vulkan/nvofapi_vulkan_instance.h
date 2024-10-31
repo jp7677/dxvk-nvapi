@@ -25,7 +25,7 @@
 
 #include "nvofapi/nvofapi_instance.h"
 
-namespace nvofapi {
+namespace dxvk {
     class NvOFInstanceVk : public NvOFInstance {
       public:
         NvOFInstanceVk(VkInstance vkInstance, VkPhysicalDevice vkPhysicalDevice, VkDevice vkDevice) : NvOFInstance(vkInstance, vkPhysicalDevice, vkDevice) {
