@@ -40,9 +40,11 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(vkInstance), log::fmt::hnd(vkPhysicalDevice), log::fmt::hnd(vkDevice), log::fmt::ptr(hOFInstance));
 
-        auto nvOF = new nvofapi::NvOFInstanceVk(vkInstance, vkPhysicalDevice, vkDevice);
-
-        if (!nvOF) {
+        nvofapi::NvOFInstanceVk* nvOF = nullptr;
+        try {
+            nvOF = new nvofapi::NvOFInstanceVk(vkInstance, vkPhysicalDevice, vkDevice);
+        } catch (std::exception const& e) {
+            log::info(str::format("CreateOpticalFlowD3D12 exception, %s", e.what()));
             return ErrorGeneric(n);
         }
 

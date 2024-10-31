@@ -46,9 +46,6 @@ extern "C" {
             nvOF = new nvofapi::NvOFInstanceD3D12(pD3D12Device);
         } catch (std::exception const& e) {
             log::info(str::format("CreateOpticalFlowD3D12 exception, %s", e.what()));
-        }
-
-        if (!nvOF) {
             return ErrorGeneric(n);
         }
 
