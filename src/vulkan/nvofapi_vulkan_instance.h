@@ -32,7 +32,7 @@ namespace nvofapi {
         }
         virtual ~NvOFInstanceVk() {
             // free cmdbuffers
-            m_vkFreeCommandBuffers(m_vkDevice, m_commandPool, CMDS_IN_FLIGHT, m_commandBuffers);
+            m_vkFreeCommandBuffers(m_vkDevice, m_commandPool, CMDS_IN_FLIGHT, m_commandBuffers.data());
             m_vkDestroyCommandPool(m_vkDevice, m_commandPool, nullptr);
         }
 
@@ -45,7 +45,7 @@ namespace nvofapi {
         VkCommandPool m_commandPool;
         PFN_vkCreateCommandPool m_vkCreateCommandPool;
         PFN_vkDestroyCommandPool m_vkDestroyCommandPool;
-        VkCommandBuffer m_commandBuffers[CMDS_IN_FLIGHT];
+        std::array<VkCommandBuffer, CMDS_IN_FLIGHT> m_commandBuffers;
 
         PFN_vkAllocateCommandBuffers m_vkAllocateCommandBuffers;
         PFN_vkFreeCommandBuffers m_vkFreeCommandBuffers;
