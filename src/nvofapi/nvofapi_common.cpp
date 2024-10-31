@@ -50,16 +50,14 @@ namespace nvofapi {
     uint32_t NvOFInstance::GetVkOFAQueue() {
         uint32_t count = 0;
         m_vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysicalDevice, &count, nullptr);
-        VkQueueFamilyProperties* queueFamProps = (VkQueueFamilyProperties*)calloc(sizeof(VkQueueFamilyProperties), count);
-        m_vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysicalDevice, &count, queueFamProps);
+        auto queueFamProps = std::vector<VkQueueFamilyProperties>(count);
+        m_vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysicalDevice, &count, queueFamProps.data());
 
         for (uint32_t i = 0; i < count; i++) {
             if (queueFamProps[i].queueFlags & VK_QUEUE_OPTICAL_FLOW_BIT_NV) {
-                free(queueFamProps);
                 return i;
             }
         }
-        free(queueFamProps);
         return -1;
     }
 
@@ -193,29 +191,23 @@ namespace nvofapi {
                 }
             }
         }
-        VkRect2D* regions = nullptr;
-
-        if (inParams->numRois) {
-            regions = (VkRect2D*)calloc(sizeof(VkRect2D), inParams->numRois);
-            for (uint32_t i = 0; i < inParams->numRois; i++) {
-                regions[i].offset.x = inParams->roiData[i].start_x;
-                regions[i].offset.y = inParams->roiData[i].start_y;
-                regions[i].extent.width = inParams->roiData[i].width;
-                regions[i].extent.height = inParams->roiData[i].height;
-            }
+        auto regions = std::vector<VkRect2D>(inParams->numRois);
+        for (uint32_t i = 0; i < inParams->numRois; i++) {
+            regions[i].offset.x = inParams->roiData[i].start_x;
+            regions[i].offset.y = inParams->roiData[i].start_y;
+            regions[i].extent.width = inParams->roiData[i].width;
+            regions[i].extent.height = inParams->roiData[i].height;
         }
 
         VkOpticalFlowExecuteInfoNV ofaExecuteInfo{};
         ofaExecuteInfo.sType = VK_STRUCTURE_TYPE_OPTICAL_FLOW_EXECUTE_INFO_NV;
         ofaExecuteInfo.regionCount = inParams->numRois;
-        ofaExecuteInfo.pRegions = regions;
+        ofaExecuteInfo.pRegions = regions.data();
 
         if (inParams->disableTemporalHints) {
             ofaExecuteInfo.flags |= VK_OPTICAL_FLOW_EXECUTE_DISABLE_TEMPORAL_HINTS_BIT_NV;
         }
 
         m_vkCmdOpticalFlowExecuteNV(cmdBuf, m_vkOfaSession, &ofaExecuteInfo);
-
-        free(regions);
     }
 }

@@ -102,16 +102,12 @@ namespace nvofapi {
                 " numWaitSync: ", inParams->numWaitSyncs,
                 " pWaitSyncs: ", inParams->pWaitSyncs));
 
-        VkSemaphoreSubmitInfo* waitSyncs = nullptr;
-
-        if (inParams->numWaitSyncs) {
-            waitSyncs = (VkSemaphoreSubmitInfo*)calloc(sizeof(VkSemaphoreSubmitInfo), inParams->numWaitSyncs);
-            for (uint32_t i = 0; i < inParams->numWaitSyncs; i++) {
-                waitSyncs[i].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-                waitSyncs[i].semaphore = inParams->pWaitSyncs[i].semaphore;
-                waitSyncs[i].value = inParams->pWaitSyncs[i].value;
-                waitSyncs[i].stageMask = VK_PIPELINE_STAGE_2_OPTICAL_FLOW_BIT_NV;
-            }
+        auto waitSyncs = std::vector<VkSemaphoreSubmitInfo>(inParams->numWaitSyncs);
+        for (uint32_t i = 0; i < inParams->numWaitSyncs; i++) {
+            waitSyncs[i].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+            waitSyncs[i].semaphore = inParams->pWaitSyncs[i].semaphore;
+            waitSyncs[i].value = inParams->pWaitSyncs[i].value;
+            waitSyncs[i].stageMask = VK_PIPELINE_STAGE_2_OPTICAL_FLOW_BIT_NV;
         }
 
         VkSemaphoreSubmitInfo signalSync{};
@@ -138,16 +134,14 @@ namespace nvofapi {
 
         VkSubmitInfo2 submit{};
         submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
-        submit.waitSemaphoreInfoCount = inParams->numWaitSyncs;
-        submit.pWaitSemaphoreInfos = waitSyncs;
+        submit.waitSemaphoreInfoCount = waitSyncs.size();
+        submit.pWaitSemaphoreInfos = waitSyncs.data();
         submit.commandBufferInfoCount = 1;
         submit.pCommandBufferInfos = &cmdbufInfo;
         submit.signalSemaphoreInfoCount = (outParams->pSignalSync) ? 1 : 0;
         submit.pSignalSemaphoreInfos = &signalSync;
 
         m_vkQueueSubmit2(m_queue, 1, &submit, VK_NULL_HANDLE);
-
-        free(waitSyncs);
 
         m_cmdBufIndex++;
         if (m_cmdBufIndex >= CMDS_IN_FLIGHT)
