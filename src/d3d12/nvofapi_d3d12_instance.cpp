@@ -33,27 +33,18 @@ namespace nvofapi {
     NvOFInstanceD3D12::NvOFInstanceD3D12(ID3D12Device* pD3D12Device) {
         // Query for the extension interface
         // Grab the vk triad
-        HRESULT status = pD3D12Device->QueryInterface(IID_PPV_ARGS(&m_device));
-
-        if (S_OK != status) {
+        if (FAILED(pD3D12Device->QueryInterface(IID_PPV_ARGS(&m_device))))
             throw std::invalid_argument("Failed to query interface for m_device");
-        }
 
         m_device->GetVulkanHandles(&m_vkInstance,
             &m_vkPhysicalDevice,
             &m_vkDevice);
 
-        status = pD3D12Device->QueryInterface(IID_PPV_ARGS(&m_d3ddevice));
-
-        if (S_OK != status) {
+        if (FAILED(pD3D12Device->QueryInterface(IID_PPV_ARGS(&m_d3ddevice))))
             throw std::invalid_argument("Failed to query interface for m_d3ddevice");
-        }
 
-        status = pD3D12Device->QueryInterface(IID_PPV_ARGS(&m_deviceExt));
-
-        if (S_OK != status) {
+        if (FAILED(pD3D12Device->QueryInterface(IID_PPV_ARGS(&m_deviceExt))))
             throw std::invalid_argument("Failed to query interface for m_deviceExt");
-        }
     }
 
     bool NvOFInstanceD3D12::Initialize() {
@@ -86,19 +77,15 @@ namespace nvofapi {
         m_vkQueueFamilyIndex = GetVkOFAQueue();
 
         D3D12_COMMAND_QUEUE_DESC desc{};
-        if (m_device->CreateInteropCommandQueue(&desc, m_vkQueueFamilyIndex, &m_commandQueue)
-            != S_OK) {
+        if (FAILED(m_device->CreateInteropCommandQueue(&desc, m_vkQueueFamilyIndex, &m_commandQueue)))
             return false;
-        }
-        if (m_device->CreateInteropCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, m_vkQueueFamilyIndex, &m_cmdAllocator)
-            != S_OK) {
+
+        if (FAILED(m_device->CreateInteropCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, m_vkQueueFamilyIndex, &m_cmdAllocator)))
             return false;
-        }
+
         for (uint32_t i = 0; i < CMDS_IN_FLIGHT; i++) {
-            if (m_d3ddevice->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, (D3D12_COMMAND_LIST_FLAGS)0, IID_PPV_ARGS(&m_cmdList[i]))
-                != S_OK) {
+            if (FAILED(m_d3ddevice->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, (D3D12_COMMAND_LIST_FLAGS)0, IID_PPV_ARGS(&m_cmdList[i]))))
                 return false;
-            }
         }
         return true;
     }
@@ -108,14 +95,14 @@ namespace nvofapi {
         dxvk::log::info(
             dxvk::str::format("RegisterBuffer DX: resource: ",
                 registerParams->resource, " inputFencePoint: ",
-                registerParams->inputFencePoint.fence, " ouputFencePoint: ",
+                registerParams->inputFencePoint.fence, " outputFencePoint: ",
                 registerParams->outputFencePoint.fence));
         // Convert D3D12 params to VK params
         //
         // ID3D12Resource -> VK Image / VkFormat pair
         vkParams.hOFGpuBuffer = registerParams->hOFGpuBuffer;
         uint64_t offset;
-        m_device->GetVulkanResourceInfo1(registerParams->resource, (UINT64*)&vkParams.image, &offset, &vkParams.format);
+        m_device->GetVulkanResourceInfo1(registerParams->resource, reinterpret_cast<UINT64*>(&vkParams.image), &offset, &vkParams.format);
 
         // ID3D12 fence to timeline semaphore
         // no inputFencePoint/outputFencePoint equivalents for VK, leaving as
@@ -124,7 +111,7 @@ namespace nvofapi {
         assert(registerParams->inputFencePoint.value == 0);
         assert(registerParams->outputFencePoint.fence == nullptr);
         assert(registerParams->outputFencePoint.value == 0);
-        ((NvOFInstance*)this)->RegisterBuffer(&vkParams);
+        NvOFInstance::RegisterBuffer(&vkParams);
     }
 
     void NvOFInstanceD3D12::Execute(const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* outParams) {

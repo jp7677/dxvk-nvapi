@@ -40,7 +40,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(vkInstance), log::fmt::hnd(vkPhysicalDevice), log::fmt::hnd(vkDevice), log::fmt::ptr(hOFInstance));
 
-        nvofapi::NvOFInstanceVk* nvOF = new nvofapi::NvOFInstanceVk(vkInstance, vkPhysicalDevice, vkDevice);
+        auto nvOF = new nvofapi::NvOFInstanceVk(vkInstance, vkPhysicalDevice, vkDevice);
 
         if (!nvOF) {
             return ErrorGeneric(n);
@@ -79,7 +79,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(registerParams));
 
-        nvofapi::NvOFInstanceVk* nvOF = reinterpret_cast<nvofapi::NvOFInstanceVk*>(hOf);
+        auto nvOF = reinterpret_cast<nvofapi::NvOFInstanceVk*>(hOf);
         nvOF->RegisterBuffer(registerParams);
         return Success(n);
     }
@@ -102,7 +102,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(executeInParams), log::fmt::ptr(executeOutParams));
 
-        nvofapi::NvOFInstanceVk* nvOF = reinterpret_cast<nvofapi::NvOFInstanceVk*>(hOf);
+        auto nvOF = reinterpret_cast<nvofapi::NvOFInstanceVk*>(hOf);
 
         nvOF->Execute(executeInParams, executeOutParams);
         return Success(n, alreadyLoggedOk);

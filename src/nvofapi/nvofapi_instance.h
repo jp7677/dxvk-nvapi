@@ -29,10 +29,34 @@
 
 namespace nvofapi {
     constexpr uint32_t CMDS_IN_FLIGHT = 8;
-    class NvOFInstance;
-    class NvOFImage;
 
     class NvOFInstance {
+      public:
+        NvOFInstance(VkInstance vkInstance,
+            VkPhysicalDevice vkPhysicalDevice,
+            VkDevice vkDevice) : m_vkInstance(vkInstance),
+                                 m_vkPhysicalDevice(vkPhysicalDevice), m_vkDevice(vkDevice) {
+        }
+
+        NvOFInstance() {};
+
+        virtual ~NvOFInstance() {
+            m_vkDestroyOpticalFlowSessionNV(m_vkDevice, m_vkOfaSession, nullptr);
+            FreeLibrary(m_library);
+        }
+
+        VkDevice GetVkDevice() { return m_vkDevice; }
+        VkOpticalFlowSessionNV GetOfaSession() { return m_vkOfaSession; }
+
+        NV_OF_STATUS getCaps(NV_OF_CAPS param, uint32_t* capsVal, uint32_t* size);
+
+        NV_OF_STATUS InitSession(const NV_OF_INIT_PARAMS* initParams);
+
+        void RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_VK* registerParams);
+
+        NV_OF_STATUS BindImageToSession(NvOFGPUBufferHandle hBuffer, VkOpticalFlowSessionBindingPointNV bindingPoint);
+
+        void RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf);
 
       protected:
         VkInstance m_vkInstance;
@@ -52,31 +76,5 @@ namespace nvofapi {
         HMODULE m_library;
 
         uint32_t GetVkOFAQueue();
-
-      public:
-        VkDevice GetVkDevice() { return m_vkDevice; }
-        VkOpticalFlowSessionNV GetOfaSession() { return m_vkOfaSession; }
-
-        NvOFInstance(VkInstance vkInstance,
-            VkPhysicalDevice vkPhysicalDevice,
-            VkDevice vkDevice) : m_vkInstance(vkInstance),
-                                 m_vkPhysicalDevice(vkPhysicalDevice), m_vkDevice(vkDevice) {
-        }
-
-        NvOFInstance() {};
-        virtual ~NvOFInstance() {
-            m_vkDestroyOpticalFlowSessionNV(m_vkDevice, m_vkOfaSession, nullptr);
-            FreeLibrary(m_library);
-        }
-
-        NV_OF_STATUS getCaps(NV_OF_CAPS param, uint32_t* capsVal, uint32_t* size);
-
-        NV_OF_STATUS InitSession(const NV_OF_INIT_PARAMS* initParams);
-
-        void RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_VK* registerParams);
-
-        NV_OF_STATUS BindImageToSession(NvOFImage* image, VkOpticalFlowSessionBindingPointNV bindingPoint);
-
-        void RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf);
     };
 }

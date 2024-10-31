@@ -90,7 +90,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(registerParams));
 
-        nvofapi::NvOFInstanceD3D12* nvOF = reinterpret_cast<nvofapi::NvOFInstanceD3D12*>(hOf);
+        auto nvOF = reinterpret_cast<nvofapi::NvOFInstanceD3D12*>(hOf);
 
         nvOF->RegisterBuffer(registerParams);
         return Success(n);
@@ -114,7 +114,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hOf), log::fmt::ptr(executeInParams), log::fmt::ptr(executeOutParams));
 
-        nvofapi::NvOFInstanceD3D12* nvOF = reinterpret_cast<nvofapi::NvOFInstanceD3D12*>(hOf);
+        auto nvOF = reinterpret_cast<nvofapi::NvOFInstanceD3D12*>(hOf);
 
         nvOF->Execute(executeInParams, executeOutParams);
         return Success(n, alreadyLoggedOk);

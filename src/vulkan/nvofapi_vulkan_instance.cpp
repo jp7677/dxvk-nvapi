@@ -69,7 +69,7 @@ namespace nvofapi {
         createInfo.queueFamilyIndex = GetVkOFAQueue();
         m_vkGetDeviceQueue(m_vkDevice, createInfo.queueFamilyIndex, 0, &m_queue);
 
-        if (m_vkCreateCommandPool(m_vkDevice, &createInfo, NULL, &m_commandPool)
+        if (m_vkCreateCommandPool(m_vkDevice, &createInfo, nullptr, &m_commandPool)
             != VK_SUCCESS) {
             return false;
         }
