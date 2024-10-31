@@ -67,6 +67,7 @@ namespace nvofapi {
         VkCommandPoolCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         createInfo.queueFamilyIndex = GetVkOFAQueue();
+        createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
         m_vkGetDeviceQueue(m_vkDevice, createInfo.queueFamilyIndex, 0, &m_queue);
 
         if (m_vkCreateCommandPool(m_vkDevice, &createInfo, nullptr, &m_commandPool)
