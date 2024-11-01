@@ -89,7 +89,9 @@ namespace dxvk {
         return true;
     }
 
-    void NvOFInstanceVk::Execute(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams) {
+    bool NvOFInstanceVk::Execute(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams) {
+        VkResult status = VK_SUCCESS;
+
         log::info(
             str::format("OFExecuteVK params:",
                 " inputFrame: ", inParams->inputFrame,
@@ -141,10 +143,12 @@ namespace dxvk {
         submit.signalSemaphoreInfoCount = (outParams->pSignalSync) ? 1 : 0;
         submit.pSignalSemaphoreInfos = &signalSync;
 
-        m_vkQueueSubmit2(m_queue, 1, &submit, VK_NULL_HANDLE);
+        status = m_vkQueueSubmit2(m_queue, 1, &submit, VK_NULL_HANDLE);
 
         m_cmdBufIndex++;
         if (m_cmdBufIndex >= CMDS_IN_FLIGHT)
             m_cmdBufIndex = 0;
+
+        return status == VK_SUCCESS;
     }
 }
