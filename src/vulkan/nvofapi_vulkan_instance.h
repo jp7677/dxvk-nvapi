@@ -41,21 +41,21 @@ namespace dxvk {
         bool Initialize();
 
       private:
-        VkQueue m_queue;
-        VkCommandPool m_commandPool;
-        PFN_vkCreateCommandPool m_vkCreateCommandPool;
-        PFN_vkDestroyCommandPool m_vkDestroyCommandPool;
-        std::array<VkCommandBuffer, CMDS_IN_FLIGHT> m_commandBuffers;
+        VkQueue m_queue{};
+        VkCommandPool m_commandPool{};
+        PFN_vkCreateCommandPool m_vkCreateCommandPool{};
+        PFN_vkDestroyCommandPool m_vkDestroyCommandPool{};
+        std::array<VkCommandBuffer, CMDS_IN_FLIGHT> m_commandBuffers{};
 
-        PFN_vkAllocateCommandBuffers m_vkAllocateCommandBuffers;
-        PFN_vkFreeCommandBuffers m_vkFreeCommandBuffers;
+        PFN_vkAllocateCommandBuffers m_vkAllocateCommandBuffers{};
+        PFN_vkFreeCommandBuffers m_vkFreeCommandBuffers{};
 
-        uint32_t m_cmdBufIndex = 0;
-        PFN_vkResetCommandBuffer m_vkResetCommandBuffer;
-        PFN_vkBeginCommandBuffer m_vkBeginCommandBuffer;
-        PFN_vkEndCommandBuffer m_vkEndCommandBuffer;
+        uint32_t m_cmdBufIndex{0};
+        PFN_vkResetCommandBuffer m_vkResetCommandBuffer{};
+        PFN_vkBeginCommandBuffer m_vkBeginCommandBuffer{};
+        PFN_vkEndCommandBuffer m_vkEndCommandBuffer{};
 
-        PFN_vkGetDeviceQueue m_vkGetDeviceQueue;
+        PFN_vkGetDeviceQueue m_vkGetDeviceQueue{};
         PFN_vkQueueSubmit2 m_vkQueueSubmit2{};
     };
 }

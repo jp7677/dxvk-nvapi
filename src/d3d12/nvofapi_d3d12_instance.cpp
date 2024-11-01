@@ -135,7 +135,7 @@ namespace dxvk {
         vkOutputParams.globalFlowBuffer = outParams->globalFlowBuffer;
 
         // Use vkd3d-proton's interop functionality to grab a VkCommandBuffer
-        // that we record our commands into. Work submission and syncrhonization
+        // that we record our commands into. Work submission and synchronization
         // happens using D3D12.
         m_cmdLists[m_cmdListIndex]->Reset(m_cmdAllocator, nullptr);
 
@@ -151,7 +151,7 @@ namespace dxvk {
         m_device->EndVkCommandBufferInterop(m_cmdLists[m_cmdListIndex]);
         m_cmdLists[m_cmdListIndex]->Close();
 
-        m_commandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&m_cmdLists[m_cmdListIndex]);
+        m_commandQueue->ExecuteCommandLists(1, reinterpret_cast<ID3D12CommandList**>(&m_cmdLists[m_cmdListIndex]));
 
         m_commandQueue->Signal(outParams->fencePoint->fence, outParams->fencePoint->value);
 

@@ -153,7 +153,7 @@ namespace dxvk {
         return Success();
     }
 
-    NV_OF_STATUS NvOFInstance::getCaps(NV_OF_CAPS param, uint32_t* capsVal, uint32_t* size) {
+    NV_OF_STATUS NvOFInstance::GetCaps(NV_OF_CAPS param, uint32_t* capsVal, uint32_t* size) {
         if (param == NV_OF_CAPS_SUPPORTED_OUTPUT_GRID_SIZES) {
             *size = 1;
             if (capsVal) {
