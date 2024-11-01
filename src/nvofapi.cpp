@@ -80,7 +80,7 @@ extern "C" {
 
         auto nvOF = reinterpret_cast<NvOFInstance*>(hOf);
 
-        return nvOF->getCaps(capsParam, capsVal, size);
+        return nvOF->GetCaps(capsParam, capsVal, size);
     }
 
     NV_OF_STATUS NVOFAPI NvOFGetMaxSupportedApiVersion(uint32_t* version) {

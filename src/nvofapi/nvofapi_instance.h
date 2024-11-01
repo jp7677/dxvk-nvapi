@@ -48,7 +48,7 @@ namespace dxvk {
         VkDevice GetVkDevice() { return m_vkDevice; }
         VkOpticalFlowSessionNV GetOfaSession() { return m_vkOfaSession; }
 
-        NV_OF_STATUS getCaps(NV_OF_CAPS param, uint32_t* capsVal, uint32_t* size);
+        NV_OF_STATUS GetCaps(NV_OF_CAPS param, uint32_t* capsVal, uint32_t* size);
 
         NV_OF_STATUS InitSession(const NV_OF_INIT_PARAMS* initParams);
 
@@ -59,9 +59,9 @@ namespace dxvk {
         void RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf);
 
       protected:
-        VkInstance m_vkInstance;
-        VkPhysicalDevice m_vkPhysicalDevice;
-        VkDevice m_vkDevice;
+        VkInstance m_vkInstance{};
+        VkPhysicalDevice m_vkPhysicalDevice{};
+        VkDevice m_vkDevice{};
         VkOpticalFlowSessionNV m_vkOfaSession{};
         PFN_vkGetInstanceProcAddr m_vkGetInstanceProcAddr{};
         PFN_vkGetDeviceProcAddr m_vkGetDeviceProcAddr{};
@@ -72,8 +72,8 @@ namespace dxvk {
         PFN_vkBindOpticalFlowSessionImageNV m_vkBindOpticalFlowSessionImageNV{};
         PFN_vkCmdOpticalFlowExecuteNV m_vkCmdOpticalFlowExecuteNV{};
 
-        PFN_vkGetPhysicalDeviceQueueFamilyProperties m_vkGetPhysicalDeviceQueueFamilyProperties;
-        HMODULE m_library;
+        PFN_vkGetPhysicalDeviceQueueFamilyProperties m_vkGetPhysicalDeviceQueueFamilyProperties{};
+        HMODULE m_library{};
 
         uint32_t GetVkOFAQueue();
     };

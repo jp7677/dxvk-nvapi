@@ -63,10 +63,10 @@ namespace dxvk {
         ID3D12DeviceExt* m_deviceExt{};
         ID3D12Device4* m_d3ddevice{};
         ID3D12CommandQueue* m_commandQueue{};
-        std::array<ID3D12GraphicsCommandList*, CMDS_IN_FLIGHT> m_cmdLists;
-        uint32_t m_cmdListIndex = 0;
+        std::array<ID3D12GraphicsCommandList*, CMDS_IN_FLIGHT> m_cmdLists{};
+        uint32_t m_cmdListIndex{0};
         ID3D12CommandAllocator* m_cmdAllocator{};
 
-        uint32_t m_vkQueueFamilyIndex = 0;
+        uint32_t m_vkQueueFamilyIndex{0};
     };
 }
