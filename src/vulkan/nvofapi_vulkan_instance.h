@@ -36,7 +36,7 @@ namespace dxvk {
             m_vkDestroyCommandPool(m_vkDevice, m_commandPool, nullptr);
         }
 
-        void Execute(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams);
+        bool Execute(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams);
 
         bool Initialize();
 

@@ -106,8 +106,10 @@ extern "C" {
 
         auto nvOF = reinterpret_cast<NvOFInstanceVk*>(hOf);
 
-        nvOF->Execute(executeInParams, executeOutParams);
-        return Success(n, alreadyLoggedOk);
+        if (nvOF->Execute(executeInParams, executeOutParams))
+            return Success(n, alreadyLoggedOk);
+
+        return ErrorGeneric(n);
     }
 
     NV_OF_STATUS __cdecl NvOFAPICreateInstanceVk(uint32_t apiVer, NV_OF_VK_API_FUNCTION_LIST* functionList) {
