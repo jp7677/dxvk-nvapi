@@ -30,6 +30,7 @@
 #include "util/util_string.h"
 #include "util/util_statuscode.h"
 #include "../version.h"
+#include "../config.h"
 
 using namespace dxvk;
 extern "C" {
@@ -126,7 +127,14 @@ extern "C" {
         if (log::tracing())
             log::trace(n, apiVer, log::fmt::ptr(functionList));
 
-        log::info(str::format("DXVK-NVOFAPI ", DXVK_NVAPI_VERSION, " (", env::getExecutableName(), ") D3D12"));
+        log::info(str::format(
+            "DXVK-NVAPI ", DXVK_NVAPI_VERSION,
+            " NVOFAPI/D3D12",
+            " ", DXVK_NVAPI_BUILD_COMPILER,
+            " ", DXVK_NVAPI_BUILD_COMPILER_VERSION,
+            " ", DXVK_NVAPI_BUILD_TARGET,
+            " ", DXVK_NVAPI_BUILD_TYPE,
+            " (", env::getExecutableName(), ")"));
         log::info(str::format("OFAPI Client Version: ", apiVerMajor, ".", apiVerMinor));
 
         if (apiVerMajor != 5)

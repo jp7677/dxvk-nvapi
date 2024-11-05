@@ -362,6 +362,7 @@ extern "C" {
 
         log::info(str::format(
             "DXVK-NVAPI ", DXVK_NVAPI_VERSION,
+            " NVAPI",
             " ", DXVK_NVAPI_BUILD_COMPILER,
             " ", DXVK_NVAPI_BUILD_COMPILER_VERSION,
             " ", DXVK_NVAPI_BUILD_TARGET,
