@@ -21,7 +21,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <vulkan/vulkan_core.h>
+#include "../nvofapi_private.h"
 
 namespace dxvk {
     class NvOFImage {

@@ -1,7 +1,6 @@
-#include "dxvk/dxvk_interfaces.h"
-#include "d3d/nvapi_d3d_low_latency_device.h"
 #include "nvapi_private.h"
 #include "nvapi_globals.h"
+#include "d3d/nvapi_d3d_low_latency_device.h"
 #include "util/util_statuscode.h"
 
 extern "C" {

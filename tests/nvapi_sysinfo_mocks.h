@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nvapi_tests_private.h"
-#include "../src/dxvk/dxvk_interfaces.h"
+#include "../src/interfaces/dxvk_interfaces.h"
 #include "../src/sysinfo/vulkan.h"
 #include "../src/sysinfo/nvml.h"
 

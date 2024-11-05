@@ -23,9 +23,8 @@
 
 #pragma once
 
-#include "vkd3d-proton/vkd3d-proton_interfaces.h"
-#include "../inc/nvofapi/nvOpticalFlowD3D12.h"
-#include "../inc/nvofapi/nvOpticalFlowVulkan.h"
+#include "../nvofapi_private.h"
+#include "../interfaces/vkd3d-proton_interfaces.h"
 
 namespace dxvk {
     constexpr uint32_t CMDS_IN_FLIGHT = 8;

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <cctype>
 #if __cpp_concepts >= 201907L
 #include <concepts>

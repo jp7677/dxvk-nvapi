@@ -21,12 +21,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "util/util_log.h"
-#include "util/util_string.h"
-
-#include "../inc/nvofapi/nvOpticalFlowVulkan.h"
-
-#include "vulkan/nvofapi_vulkan_instance.h"
+#include "nvofapi_vulkan_instance.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
 

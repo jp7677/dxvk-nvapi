@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../nvapi_private.h"
-#include "../vkd3d-proton/vkd3d-proton_interfaces.h"
+#include "../interfaces/vkd3d-proton_interfaces.h"
 #include "../util/com_pointer.h"
 
 namespace dxvk {

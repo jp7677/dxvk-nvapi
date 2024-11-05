@@ -21,12 +21,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <cassert>
-
+#include "nvofapi_d3d12_instance.h"
 #include "util/util_log.h"
-#include "util/util_string.h"
-
-#include "d3d12/nvofapi_d3d12_instance.h"
 
 namespace dxvk {
 

@@ -1,5 +1,4 @@
 #include "lfx.h"
-
 #include "../util/util_string.h"
 #include "../util/util_log.h"
 

@@ -1,6 +1,6 @@
-#include "../util/util_log.h"
 #include "nvapi_d3d_low_latency_device.h"
 #include "nvapi_d3d_instance.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
     NvapiD3dInstance::NvapiD3dInstance(ResourceFactory& resourceFactory)

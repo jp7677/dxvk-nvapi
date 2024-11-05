@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nvapi_tests_private.h"
-#include "../src/shared/shared_interfaces.h"
+#include "../src/interfaces/shared_interfaces.h"
 #include "../src/d3d/lfx.h"
 
 class UnknownMock : public trompeloeil::mock_interface<IUnknown> {

@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "nvofapi_instance.h"
+#include "nvofapi_private.h"
 
 extern "C" {
     // Common entrypoints

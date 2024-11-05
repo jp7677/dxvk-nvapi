@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../nvapi_private.h"
-#include "../shared/shared_interfaces.h"
+#include "../interfaces/shared_interfaces.h"
 #include "../util/com_pointer.h"
 
 namespace dxvk {

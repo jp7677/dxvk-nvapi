@@ -6,7 +6,7 @@
 #include "nvapi_output.h"
 #include "vulkan.h"
 #include "nvml.h"
-#include "../dxvk/dxvk_interfaces.h"
+#include "../interfaces/dxvk_interfaces.h"
 
 namespace dxvk {
     class NvapiAdapterRegistry {

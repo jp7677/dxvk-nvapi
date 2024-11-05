@@ -21,13 +21,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "nvofapi/nvofapi_entrypoints.h"
-
-#include "util/util_env.h"
+#include "nvofapi/nvofapi_instance.h"
+#include "nvofapi_entrypoints.h"
 #include "util/util_log.h"
-#include "util/util_string.h"
 #include "util/util_statuscode.h"
-#include "../version.h"
 
 using namespace dxvk;
 

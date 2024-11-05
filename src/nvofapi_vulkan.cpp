@@ -21,10 +21,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "nvofapi/nvofapi_entrypoints.h"
-#include "nvofapi/nvofapi_image.h"
 #include "vulkan/nvofapi_vulkan_instance.h"
-
+#include "nvofapi/nvofapi_image.h"
+#include "nvofapi_entrypoints.h"
 #include "util/util_env.h"
 #include "util/util_log.h"
 #include "util/util_string.h"

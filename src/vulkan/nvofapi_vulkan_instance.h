@@ -23,7 +23,8 @@
 
 #pragma once
 
-#include "nvofapi/nvofapi_instance.h"
+#include "../nvofapi_private.h"
+#include "../nvofapi/nvofapi_instance.h"
 
 namespace dxvk {
     class NvOFInstanceVk : public NvOFInstance {
