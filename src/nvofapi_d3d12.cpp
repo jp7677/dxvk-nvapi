@@ -100,7 +100,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(registerParams));
 
-        NvOFImage* nvRes = reinterpret_cast<NvOFImage*>(registerParams->hOFGpuBuffer);
+        auto nvRes = reinterpret_cast<NvOFImage*>(registerParams->hOFGpuBuffer);
         delete nvRes;
         return Success(n);
     }
