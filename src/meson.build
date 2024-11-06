@@ -37,7 +37,7 @@ nvofapi_src = files([
   'util/util_env.cpp',
   'util/util_log.cpp',
   'nvofapi/nvofapi_image.cpp',
-  'nvofapi/nvofapi_common.cpp',
+  'nvofapi/nvofapi_instance.cpp',
   'nvofapi/nvofapi_d3d12_instance.cpp',
   'nvofapi/nvofapi_vulkan_instance.cpp',
   'nvofapi.cpp',
