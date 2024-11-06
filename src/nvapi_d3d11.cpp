@@ -1,6 +1,6 @@
 #include "nvapi_private.h"
 #include "nvapi_globals.h"
-#include "d3d11/nvapi_d3d11_device.h"
+#include "nvapi/nvapi_d3d11_device.h"
 #include "util/util_statuscode.h"
 #include "util/util_op_code.h"
 #include "util/util_string.h"

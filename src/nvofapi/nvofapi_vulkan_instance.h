@@ -24,50 +24,39 @@
 #pragma once
 
 #include "../nvofapi_private.h"
-#include "../nvofapi/nvofapi_instance.h"
+#include "nvofapi_instance.h"
 
 namespace dxvk {
-    class NvOFInstanceD3D12 : public NvOFInstance {
-
+    class NvOFInstanceVk : public NvOFInstance {
       public:
-        NvOFInstanceD3D12(ID3D12Device* pD3D12Device);
-
-        virtual ~NvOFInstanceD3D12() {
-            for (auto& cmdList : m_cmdLists) {
-                if (cmdList)
-                    cmdList->Release();
-            }
-            if (m_cmdAllocator)
-                m_cmdAllocator->Release();
-
-            if (m_commandQueue)
-                m_commandQueue->Release();
-
-            if (m_deviceExt)
-                m_deviceExt->Release();
-
-            if (m_d3ddevice)
-                m_d3ddevice->Release();
-
-            if (m_device)
-                m_device->Release();
+        NvOFInstanceVk(VkInstance vkInstance, VkPhysicalDevice vkPhysicalDevice, VkDevice vkDevice) : NvOFInstance(vkInstance, vkPhysicalDevice, vkDevice) {
+        }
+        virtual ~NvOFInstanceVk() {
+            // free cmdbuffers
+            m_vkFreeCommandBuffers(m_vkDevice, m_commandPool, CMDS_IN_FLIGHT, m_commandBuffers.data());
+            m_vkDestroyCommandPool(m_vkDevice, m_commandPool, nullptr);
         }
 
-        void Execute(const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* outParams);
+        bool Execute(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams);
 
         bool Initialize();
 
-        void RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_D3D12* registerParams);
-
       private:
-        ID3D12DXVKInteropDevice1* m_device{};
-        ID3D12DeviceExt* m_deviceExt{};
-        ID3D12Device4* m_d3ddevice{};
-        ID3D12CommandQueue* m_commandQueue{};
-        std::array<ID3D12GraphicsCommandList*, CMDS_IN_FLIGHT> m_cmdLists{};
-        uint32_t m_cmdListIndex{0};
-        ID3D12CommandAllocator* m_cmdAllocator{};
+        VkQueue m_queue{};
+        VkCommandPool m_commandPool{};
+        PFN_vkCreateCommandPool m_vkCreateCommandPool{};
+        PFN_vkDestroyCommandPool m_vkDestroyCommandPool{};
+        std::array<VkCommandBuffer, CMDS_IN_FLIGHT> m_commandBuffers{};
 
-        uint32_t m_vkQueueFamilyIndex{0};
+        PFN_vkAllocateCommandBuffers m_vkAllocateCommandBuffers{};
+        PFN_vkFreeCommandBuffers m_vkFreeCommandBuffers{};
+
+        uint32_t m_cmdBufIndex{0};
+        PFN_vkResetCommandBuffer m_vkResetCommandBuffer{};
+        PFN_vkBeginCommandBuffer m_vkBeginCommandBuffer{};
+        PFN_vkEndCommandBuffer m_vkEndCommandBuffer{};
+
+        PFN_vkGetDeviceQueue m_vkGetDeviceQueue{};
+        PFN_vkQueueSubmit2 m_vkQueueSubmit2{};
     };
 }

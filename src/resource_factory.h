@@ -2,9 +2,9 @@
 
 #include "nvapi_private.h"
 #include "util/com_pointer.h"
-#include "sysinfo/vulkan.h"
-#include "sysinfo/nvml.h"
-#include "d3d/lfx.h"
+#include "nvapi/vulkan.h"
+#include "nvapi/nvml.h"
+#include "nvapi/lfx.h"
 
 namespace dxvk {
     class ResourceFactory {

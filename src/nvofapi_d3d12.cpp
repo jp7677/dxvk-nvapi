@@ -22,7 +22,7 @@
  */
 
 #include "nvofapi/nvofapi_image.h"
-#include "d3d12/nvofapi_d3d12_instance.h"
+#include "nvofapi/nvofapi_d3d12_instance.h"
 #include "nvofapi_entrypoints.h"
 #include "util/util_env.h"
 #include "util/util_log.h"
