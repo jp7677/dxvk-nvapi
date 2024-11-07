@@ -100,13 +100,15 @@ namespace dxvk {
         uint64_t offset;
         m_device->GetVulkanResourceInfo1(registerParams->resource, reinterpret_cast<UINT64*>(&vkParams.image), &offset, &vkParams.format);
 
-        // ID3D12 fence to timeline semaphore
-        // no inputFencePoint/outputFencePoint equivalents for VK, leaving as
-        // no-op :(
-        assert(registerParams->inputFencePoint.fence == nullptr);
-        assert(registerParams->inputFencePoint.value == 0);
-        assert(registerParams->outputFencePoint.fence == nullptr);
-        assert(registerParams->outputFencePoint.value == 0);
+        // no inputFencePoint/outputFencePoint equivalents for VK buffer
+        // registration, but forward progress is necessary, so wait+signal to
+        // keep momentum.
+        if (registerParams->inputFencePoint.fence)
+            m_commandQueue->Wait(registerParams->inputFencePoint.fence, registerParams->inputFencePoint.value);
+
+        if (registerParams->outputFencePoint.fence)
+            m_commandQueue->Signal(registerParams->outputFencePoint.fence, registerParams->outputFencePoint.value);
+
         NvOFInstance::RegisterBuffer(&vkParams);
     }
 
