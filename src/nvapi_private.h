@@ -36,7 +36,7 @@
 #else
 #include "../inc/d3d12.h"
 #endif
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 #include "../inc/nvml.h"
 
 #ifdef __GNUC__
