@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nvapi_tests_private.h"
-#include "../src/resource_factory.h"
+#include "../src/nvapi/resource_factory.h"
 
 using namespace trompeloeil;
 

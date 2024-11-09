@@ -1,10 +1,10 @@
 #pragma once
 
-#include "nvapi_private.h"
-#include "util/com_pointer.h"
-#include "nvapi/vulkan.h"
-#include "nvapi/nvml.h"
-#include "nvapi/lfx.h"
+#include "../nvapi_private.h"
+#include "../util/com_pointer.h"
+#include "vulkan.h"
+#include "nvml.h"
+#include "lfx.h"
 
 namespace dxvk {
     class ResourceFactory {

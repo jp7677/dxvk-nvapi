@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../nvapi_private.h"
-#include "../resource_factory.h"
+#include "resource_factory.h"
 
 namespace dxvk {
     class NvapiD3dInstance {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../nvapi_private.h"
-#include "../resource_factory.h"
+#include "resource_factory.h"
 #include "nvapi_adapter.h"
 #include "nvapi_output.h"
 #include "vulkan.h"

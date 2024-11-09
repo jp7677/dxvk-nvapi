@@ -1,7 +1,7 @@
 #include "resource_factory.h"
-#include "interfaces/dxvk_interfaces.h"
-#include "util/util_string.h"
-#include "util/util_log.h"
+#include "../interfaces/dxvk_interfaces.h"
+#include "../util/util_string.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
     ResourceFactory::ResourceFactory() = default;
