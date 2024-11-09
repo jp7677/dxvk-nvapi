@@ -25,48 +25,27 @@
 
 #include "../nvofapi_private.h"
 #include "nvofapi_instance.h"
+#include "../util/com_pointer.h"
 
 namespace dxvk {
     class NvOFInstanceD3D12 : public NvOFInstance {
 
       public:
         NvOFInstanceD3D12(ID3D12Device* pD3D12Device);
-
-        virtual ~NvOFInstanceD3D12() {
-            for (auto& cmdList : m_cmdLists) {
-                if (cmdList)
-                    cmdList->Release();
-            }
-            if (m_cmdAllocator)
-                m_cmdAllocator->Release();
-
-            if (m_commandQueue)
-                m_commandQueue->Release();
-
-            if (m_deviceExt)
-                m_deviceExt->Release();
-
-            if (m_d3ddevice)
-                m_d3ddevice->Release();
-
-            if (m_device)
-                m_device->Release();
-        }
-
-        void Execute(const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* outParams);
+        ~NvOFInstanceD3D12() override = default;
 
         bool Initialize();
-
+        void Execute(const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* outParams);
         void RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_D3D12* registerParams);
 
       private:
-        ID3D12DXVKInteropDevice1* m_device{};
-        ID3D12DeviceExt* m_deviceExt{};
-        ID3D12Device4* m_d3ddevice{};
-        ID3D12CommandQueue* m_commandQueue{};
-        std::array<ID3D12GraphicsCommandList*, CMDS_IN_FLIGHT> m_cmdLists{};
+        Com<ID3D12DXVKInteropDevice1> m_device{};
+        Com<ID3D12Device4> m_d3ddevice{};
+        Com<ID3D12DeviceExt> m_deviceExt{};
+        Com<ID3D12CommandQueue> m_commandQueue{};
+        Com<ID3D12CommandAllocator> m_cmdAllocator{};
+        std::array<Com<ID3D12GraphicsCommandList>, CMDS_IN_FLIGHT> m_cmdLists{};
         uint32_t m_cmdListIndex{0};
-        ID3D12CommandAllocator* m_cmdAllocator{};
 
         uint32_t m_vkQueueFamilyIndex{0};
     };
