@@ -39,10 +39,10 @@ nvofapi_src = files([
   'nvofapi/nvofapi_image.cpp',
   'nvofapi/nvofapi_instance.cpp',
   'nvofapi/nvofapi_d3d12_instance.cpp',
-  'nvofapi/nvofapi_vulkan_instance.cpp',
+  'nvofapi/nvofapi_vk_instance.cpp',
   'nvofapi.cpp',
   'nvofapi_d3d12.cpp',
-  'nvofapi_vulkan.cpp',
+  'nvofapi_vk.cpp',
 ])
 
 # Only build 64-bit versions of nvofapi
