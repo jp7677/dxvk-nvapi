@@ -19,7 +19,7 @@ While originally being developed for usage with Unreal Engine 4, most notably fo
 
 ## Requirements
 
-This implementation is supposed to be used on Linux using Wine or derivatives like Proton. Usage on Windows is discouraged. Please do not replace `nvapi.dll`/`nvapi64.dll` on Windows from NVIDIA's driver package with this version. DXVK-NVAPI uses several DXVK and VKD3D-Proton extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI implementation will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, though the default behavior is to skip GPUs not running the NVIDIA proprietary driver or Mesa NVK. Some entry points offer no functionality or make no sense when a different GPU vendor is detected. DLSS requires an NVIDIA GPU, Turing or newer, running the proprietary driver.
+This implementation is supposed to be used on Linux using Wine or derivatives like Proton. Usage on Windows is discouraged. Please do not replace `nvapi.dll`/`nvapi64.dll`/`nvofapi64.dll` on Windows from NVIDIA's driver package with this version. DXVK-NVAPI uses several DXVK and VKD3D-Proton extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI implementation will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, though the default behavior is to skip GPUs not running the NVIDIA proprietary driver or Mesa NVK. Some entry points offer no functionality or make no sense when a different GPU vendor is detected. DLSS requires an NVIDIA GPU, Turing or newer, running the proprietary driver.
 
 When available, DXVK-NVAPI uses NVIDIA's NVML management library to query temperature, utilization and others for NVIDIA GPUs. See [wine-nvml](https://github.com/Saancreed/wine-nvml) how to add NVML support to Wine/Proton.
 
@@ -44,7 +44,7 @@ Support for DXVK-NVAPI has been added to popular game launchers. See their respe
 
 Proton 9.0 includes DXVK-NVAPI and enables it by default for all titles with a few exceptions. Proton 9.0 can force-enable DXVK-NVAPI for titles that have DXVK-NVAPI disabled by default and also for non-NVIDIA GPUs when setting `PROTON_FORCE_NVAPI=1`. Contrary, `PROTON_DISABLE_NVAPI` disables DXVK-NVAPI.
 
-- Copy and replace `nvapi.dll`/`nvapi64.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 9.0/` for manually updating the included version.
+- Copy and replace `nvapi.dll`/`nvapi64.dll`/`nvofapi64.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 9.0/` for manually updating the included version.
 
 Proton Experimental Bleeding Edge additionally always contains the latest DXVK-NVAPI development (master) version.
 
@@ -54,7 +54,7 @@ Proton 8.0 includes DXVK-NVAPI and enables it by default for a lot of titles. Us
 
 Wine does not includes DXVK-NVAPI.
 
-- Copy `nvapi.dll`/`nvapi64.dll` into the `syswow64`/`system32` folder of your x86/x64 Wine prefix.
+- Copy `nvapi.dll`/`nvapi64.dll`/`nvofapi64.dll` into the `syswow64`/`system32` folder of your x86/x64 Wine prefix.
 - Ensure that Wine uses the native version of `nvapi`/`nvapi64`, e.g. with `WINEDLLOVERRIDES=nvapi,nvapi64=n`. This applies only to Wine versions that ship their own NVAPI implementation, e.g. Wine-Staging older than 7.22. Generally this is no longer needed nowadays.
 - Ensure that DXVK is installed in your x86/x64 Wine prefix.
 - Ensure that Wine uses DXVK's `dxgi.dll`, e.g. with `WINEDLLOVERRIDES=dxgi=n`.
@@ -86,7 +86,11 @@ The following environment variables tweak DXVK-NVAPI's runtime behavior:
   - `GA100` (Ampere)
   - `AD100` (Ada)
 - `DXVK_NVAPI_LOG_LEVEL` set to `info` prints log statements. The default behavior omits any logging. Please fill an issue if using log servery `info` creates log spam. Setting severity to `trace` logs all entry points enter and exits, this has a severe effect on performance. All other log levels will be interpreted as `none`.
-- `DXVK_NVAPI_LOG_PATH` enables file logging additionally to console output and sets the path where the log file `dxvk-nvapi.log` should be written to. Log statements are appended to an existing file. Please remove this file once in a while to prevent excessive grow. This requires `DXVK_NVAPI_LOG_LEVEL` set to `info`.
+- `DXVK_NVAPI_LOG_PATH` enables file logging additionally to console output and sets the path where the log file `dxvk-nvapi.log` should be written to. Log statements are appended to an existing file. Please remove this file once in a while to prevent excessive grow. This requires `DXVK_NVAPI_LOG_LEVEL` set to `info` or `trace`.
+
+Additionally, GitHub Actions provide build artifacts from different toolchains. In very rare situations a non-gcc build might provide better results.
+
+Using those tweaks is exclusively meant for troubleshooting. Regular usage is discouraged and may result in unwanted side effects. Please open an issue if using one of the tweaks is mandatory for a specific title/scenario.     
 
 This project provides a test suite. Run the package script with `--enable-tests` (see above) to build `nvapi64-tests.exe`. Running the tests executable without arguments queries the local system and provides system information about visible GPUs:
 
@@ -101,7 +105,7 @@ The actual unit tests can be run with `nvapi64-tests.exe [@unit-tests]` to valid
 Producing a debug build and starting a debugging session with the test suite can be achieved with the following snippet:
 
 ```bash
-meson setup --cross-file "./build-win64.txt" --buildtype "debugoptimized" -Denable_tests=True build
+meson setup --reconfigure --cross-file "./build-win64.txt" --buildtype "debugoptimized" -Denable_tests=True build
 meson compile -C build
 
 DXVK_LOG_LEVEL=none DXVK_NVAPI_LOG_LEVEL=none WINEDEBUG=-all WINEDLLOVERRIDES=nvapi64=n WINEPATH=build/src winedbg --gdb build/tests/nvapi64-tests.exe [@all]
