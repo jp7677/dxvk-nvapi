@@ -339,7 +339,7 @@ extern "C" {
             }
         }
 
-        if (adapter->GetArchitectureId() >= NV_GPU_ARCHITECTURE_GM200)
+        if (adapter->GetArchitectureId() >= NV_GPU_ARCHITECTURE_GM000)
             *pBusType = NVAPI_GPU_BUS_TYPE_PCI_EXPRESS; // Assume PCIe on Maxwell like generation and newer
         else
             *pBusType = NVAPI_GPU_BUS_TYPE_UNDEFINED;
@@ -595,6 +595,7 @@ extern "C" {
                 implementationId = NV_GPU_ARCH_IMPLEMENTATION_GP102;
                 break;
             case NV_GPU_ARCHITECTURE_GM200:
+            case NV_GPU_ARCHITECTURE_GM000:
                 implementationId = NV_GPU_ARCH_IMPLEMENTATION_GM204;
                 break;
             case NV_GPU_ARCHITECTURE_GK100:
@@ -644,7 +645,7 @@ extern "C" {
         auto cudaCapableGpus = std::vector<NvPhysicalGpuHandle>(0);
         for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++) {
             auto adapter = nvapiAdapterRegistry->GetAdapter(i);
-            if (!adapter->HasNvProprietaryDriver() || adapter->GetArchitectureId() < NV_GPU_ARCHITECTURE_GM200) // Maxwell is the oldest generation we can detect
+            if (!adapter->HasNvProprietaryDriver() || adapter->GetArchitectureId() < NV_GPU_ARCHITECTURE_GM000) // Maxwell is the oldest generation we can detect
                 continue;
 
             cudaCapableGpus.push_back(reinterpret_cast<NvPhysicalGpuHandle>(adapter));
