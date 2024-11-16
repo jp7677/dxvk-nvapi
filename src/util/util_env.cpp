@@ -184,6 +184,7 @@ namespace dxvk::env {
     if (overrideStr == #arch) \
         override = NV_GPU_ARCHITECTURE_##arch;
             CHECK_ARCH(GK100)
+            CHECK_ARCH(GM000)
             CHECK_ARCH(GM200)
             CHECK_ARCH(GP100)
             CHECK_ARCH(GV100)
