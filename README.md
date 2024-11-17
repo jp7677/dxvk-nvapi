@@ -79,7 +79,8 @@ The following environment variables tweak DXVK-NVAPI's runtime behavior:
 - `DXVK_NVAPI_DISABLE_ENTRYPOINTS`, when set to a comma-separated list of NVAPI entrypoint names, will hide their implementation from the application. For example, `DXVK_NVAPI_DISABLE_ENTRYPOINTS=NvAPI_D3D11_BeginUAVOverlap,NvAPI_D3D11_EndUAVOverlap` will report D3D11 barrier control extensions as not available.
 - `DXVK_NVAPI_GPU_ARCH`, when set to one of supported NVIDIA GPU architecture IDs will override reported GPU architecture. Currently supported values are:
   - `GK100` (Kepler)
-  - `GM200` (Maxwell)
+  - `GM000` (Maxwell Gen1)
+  - `GM200` (Maxwell Gen2)
   - `GP100` (Pascal)
   - `GV100` (Volta)
   - `TU100` (Turing)
