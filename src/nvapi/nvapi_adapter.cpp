@@ -268,6 +268,10 @@ namespace dxvk {
             || (HasNvkDriver() && IsVkDeviceExtensionSupported(VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME)))
             return NV_GPU_ARCHITECTURE_GM200;
 
+        // VK_EXT_shader_image_atomic_int64 is supported on Maxwell 1 (GM10x) and newer
+        if (IsVkDeviceExtensionSupported(VK_EXT_SHADER_IMAGE_ATOMIC_INT64_EXTENSION_NAME))
+            return NV_GPU_ARCHITECTURE_GM000;
+
         // Fall back to Kepler
         return NV_GPU_ARCHITECTURE_GK100;
     }

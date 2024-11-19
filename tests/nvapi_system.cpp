@@ -42,8 +42,9 @@ static std::string ToGpuArchitecture(NV_GPU_ARCHITECTURE_ID id) {
         case NV_GPU_ARCHITECTURE_GP100:
             return "Pascal";
         case NV_GPU_ARCHITECTURE_GM000:
+            return "Maxwell Gen1";
         case NV_GPU_ARCHITECTURE_GM200:
-            return "Maxwell";
+            return "Maxwell Gen2";
         case NV_GPU_ARCHITECTURE_GK100:
         case NV_GPU_ARCHITECTURE_GK110:
         case NV_GPU_ARCHITECTURE_GK200:
