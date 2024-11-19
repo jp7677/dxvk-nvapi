@@ -237,6 +237,10 @@ extern "C" {
                 break;
             case NV_GPU_ARCHITECTURE_GM200:
                 pGraphicsCaps->majorSMVersion = 5;
+                pGraphicsCaps->minorSMVersion = 2;
+                break;
+            case NV_GPU_ARCHITECTURE_GM000:
+                pGraphicsCaps->majorSMVersion = 5;
                 pGraphicsCaps->minorSMVersion = 0;
                 break;
             default:
