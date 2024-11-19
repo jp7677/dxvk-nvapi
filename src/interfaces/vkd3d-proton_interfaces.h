@@ -130,7 +130,6 @@ ID3D12DXVKInteropDevice : public IUnknown {
 };
 MIDL_INTERFACE("902d8115-59eb-4406-9518-fe00f991ee65")
 ID3D12DXVKInteropDevice1 : public ID3D12DXVKInteropDevice {
-
     virtual HRESULT STDMETHODCALLTYPE GetVulkanResourceInfo1(ID3D12Resource * resource, UINT64 * vk_handle, UINT64 * buffer_offset, VkFormat * format);
     virtual HRESULT STDMETHODCALLTYPE CreateInteropCommandQueue(const D3D12_COMMAND_QUEUE_DESC* pDesc, UINT32 vk_queue_family_index, ID3D12CommandQueue** ppQueue);
     virtual HRESULT STDMETHODCALLTYPE CreateInteropCommandAllocator(D3D12_COMMAND_LIST_TYPE type, UINT32 vk_queue_family_index, ID3D12CommandAllocator * *ppAllocator);
