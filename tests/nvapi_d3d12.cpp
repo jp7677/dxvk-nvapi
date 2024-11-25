@@ -859,7 +859,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             SECTION("SetAsyncFrameMarker returns OK") {
                 SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
 
-                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(1ULL, OUT_OF_BAND_RENDERSUBMIT_START))
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(1ULL, VK_LATENCY_MARKER_OUT_OF_BAND_RENDERSUBMIT_START_NV))
                     .RETURN(S_OK);
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
@@ -868,6 +868,20 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 params.version = NV_ASYNC_FRAME_MARKER_PARAMS_VER1;
                 params.frameID = 123ULL;
                 params.markerType = OUT_OF_BAND_RENDERSUBMIT_START;
+                REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(&commandQueue, &params) == NVAPI_OK);
+            }
+
+            SECTION("SetAsyncFrameMarker drops PC_LATENCY_PING and returns OK") {
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+
+                FORBID_CALL(lowLatencyDevice, SetLatencyMarker(_, _));
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_ASYNC_FRAME_MARKER_PARAMS params{};
+                params.version = NV_ASYNC_FRAME_MARKER_PARAMS_VER1;
+                params.frameID = 123ULL;
+                params.markerType = PC_LATENCY_PING;
                 REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(&commandQueue, &params) == NVAPI_OK);
             }
 
