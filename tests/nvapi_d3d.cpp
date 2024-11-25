@@ -383,7 +383,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
                     .RETURN(S_OK);
                 REQUIRE_CALL(lowLatencyDevice, LatencySleep())
                     .RETURN(S_OK);
-                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(1ULL, SIMULATION_START))
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(1ULL, VK_LATENCY_MARKER_SIMULATION_START_NV))
                     .RETURN(S_OK);
 
                 SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
@@ -399,6 +399,19 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
                 latencyMarkerParams.markerType = SIMULATION_START;
                 REQUIRE(NvAPI_D3D_SetSleepMode(&unknown, &sleepModeParams) == NVAPI_OK);
                 REQUIRE(NvAPI_D3D_Sleep(&unknown) == NVAPI_OK);
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
+            }
+
+            SECTION("SetLatencyMarker drops PC_LATENCY_PING and returns OK") {
+                FORBID_CALL(lowLatencyDevice, SetLatencyMarker(_, _));
+
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_LATENCY_MARKER_PARAMS latencyMarkerParams{};
+                latencyMarkerParams.version = NV_LATENCY_MARKER_PARAMS_VER1;
+                latencyMarkerParams.frameID = 123ULL;
+                latencyMarkerParams.markerType = PC_LATENCY_PING;
                 REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
             }
 

@@ -256,6 +256,7 @@ extern "C" {
         thread_local bool alreadyLoggedNoImpl = false;
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedMarkerTypeNotSupported = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDev), log::fmt::nv_latency_marker_params(pSetLatencyMarkerParams));
@@ -272,7 +273,16 @@ extern "C" {
         if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
             return NoImplementation(n, alreadyLoggedNoImpl);
 
-        if (!NvapiD3dLowLatencyDevice::SetLatencyMarker(pDev, pSetLatencyMarkerParams->frameID, pSetLatencyMarkerParams->markerType))
+        auto markerType = NvapiD3dLowLatencyDevice::ToMarkerType(pSetLatencyMarkerParams->markerType);
+        if (!markerType.has_value()) {
+            // Silently drop unsupported marker types
+            if (!std::exchange(alreadyLoggedMarkerTypeNotSupported, true))
+                log::info(str::format("Not supported NV_LATENCY_MARKER_TYPE: ", pSetLatencyMarkerParams->markerType));
+
+            return Ok(n, alreadyLoggedOk);
+        }
+
+        if (!NvapiD3dLowLatencyDevice::SetLatencyMarker(pDev, pSetLatencyMarkerParams->frameID, markerType.value()))
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);

@@ -33,6 +33,8 @@ namespace dxvk {
         static bool SetLatencyMarker(IUnknown* device, uint64_t frameID, uint32_t markerType);
         static bool SetLatencyMarker(ID3D12CommandQueue* commandQueue, uint64_t frameID, uint32_t markerType);
 
+        [[nodiscard]] static std::optional<uint32_t> ToMarkerType(NV_LATENCY_MARKER_TYPE markerType);
+
         static void ClearCacheMaps();
 
       private:

@@ -1,4 +1,6 @@
 #include "nvapi_d3d_low_latency_device.h"
+#include "../util/util_string.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
     LowLatencyFrameIdGenerator::LowLatencyFrameIdGenerator()
@@ -108,6 +110,32 @@ namespace dxvk {
 
         return SUCCEEDED(d3dLowLatencyDevice->SetLatencyMarker(
             GetFrameIdGenerator(d3dLowLatencyDevice.ptr())->GetLowLatencyDeviceFrameId(frameID), markerType));
+    }
+
+    std::optional<uint32_t> NvapiD3dLowLatencyDevice::ToMarkerType(NV_LATENCY_MARKER_TYPE markerType) {
+        switch (markerType) {
+            case (SIMULATION_START):
+            case (SIMULATION_END):
+            case (RENDERSUBMIT_START):
+            case (RENDERSUBMIT_END):
+            case (PRESENT_START):
+            case (PRESENT_END):
+            case (INPUT_SAMPLE):
+            case (TRIGGER_FLASH):
+                return markerType;
+            // VkLatencyMarkerNV misses PC_LATENCY_PING and all following enum values are offset
+            // See https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#VUID-VkSetLatencyMarkerInfoNV-marker-parameter
+            case (PC_LATENCY_PING):
+                return {};
+            case (OUT_OF_BAND_RENDERSUBMIT_START):
+            case (OUT_OF_BAND_RENDERSUBMIT_END):
+            case (OUT_OF_BAND_PRESENT_START):
+            case (OUT_OF_BAND_PRESENT_END):
+                return markerType - 1;
+        }
+
+        log::info(str::format("Unknown NV_LATENCY_MARKER_TYPE: ", markerType));
+        return {};
     }
 
     void NvapiD3dLowLatencyDevice::ClearCacheMaps() {
