@@ -113,6 +113,19 @@ namespace dxvk {
     }
 
     std::optional<uint32_t> NvapiD3dLowLatencyDevice::ToMarkerType(NV_LATENCY_MARKER_TYPE markerType) {
+        static_assert(static_cast<int>(SIMULATION_START) == static_cast<int>(VK_LATENCY_MARKER_SIMULATION_START_NV));
+        static_assert(static_cast<int>(SIMULATION_END) == static_cast<int>(VK_LATENCY_MARKER_SIMULATION_END_NV));
+        static_assert(static_cast<int>(RENDERSUBMIT_START) == static_cast<int>(VK_LATENCY_MARKER_RENDERSUBMIT_START_NV));
+        static_assert(static_cast<int>(RENDERSUBMIT_END) == static_cast<int>(VK_LATENCY_MARKER_RENDERSUBMIT_END_NV));
+        static_assert(static_cast<int>(PRESENT_START) == static_cast<int>(VK_LATENCY_MARKER_PRESENT_START_NV));
+        static_assert(static_cast<int>(PRESENT_END) == static_cast<int>(VK_LATENCY_MARKER_PRESENT_END_NV));
+        static_assert(static_cast<int>(INPUT_SAMPLE) == static_cast<int>(VK_LATENCY_MARKER_INPUT_SAMPLE_NV));
+        static_assert(static_cast<int>(TRIGGER_FLASH) == static_cast<int>(VK_LATENCY_MARKER_TRIGGER_FLASH_NV));
+        static_assert(static_cast<int>(OUT_OF_BAND_RENDERSUBMIT_START) - 1 == static_cast<int>(VK_LATENCY_MARKER_OUT_OF_BAND_RENDERSUBMIT_START_NV));
+        static_assert(static_cast<int>(OUT_OF_BAND_RENDERSUBMIT_END) - 1 == static_cast<int>(VK_LATENCY_MARKER_OUT_OF_BAND_RENDERSUBMIT_END_NV));
+        static_assert(static_cast<int>(OUT_OF_BAND_PRESENT_START) - 1 == static_cast<int>(VK_LATENCY_MARKER_OUT_OF_BAND_PRESENT_START_NV));
+        static_assert(static_cast<int>(OUT_OF_BAND_PRESENT_END) - 1 == static_cast<int>(VK_LATENCY_MARKER_OUT_OF_BAND_PRESENT_END_NV));
+
         switch (markerType) {
             case (SIMULATION_START):
             case (SIMULATION_END):
