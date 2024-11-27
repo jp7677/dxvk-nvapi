@@ -82,7 +82,7 @@ namespace dxvk::log {
             std::setfill('0'), std::setw(4), std::hex, ::GetCurrentProcessId(), ":",
             std::setfill('0'), std::setw(4), std::hex, ::GetCurrentThreadId(), ":",
             level, ":",
-            "dxvk-nvapi:",
+            DXVK_NVAPI_TARGET_NAME, ":",
             message);
 
         print(logMessage);

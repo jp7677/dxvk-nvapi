@@ -26,7 +26,9 @@ nvapi_src = files([
   'nvapi_interface.cpp',
 ])
 
-nvapi_dll = shared_library('nvapi'+target_suffix, [ nvapi_src, dxvk_nvapi_version ],
+target_name = 'nvapi'+target_suffix
+nvapi_dll = shared_library(target_name, [ nvapi_src, dxvk_nvapi_version ],
+  cpp_args            : '-DDXVK_NVAPI_TARGET_NAME="'+target_name+'"',
   name_prefix         : '',
   dependencies        : [ lib_dxgi, lib_d3d11, lib_version ],
   include_directories : [ nvapi_headers, vk_headers ],
@@ -47,7 +49,9 @@ nvofapi_src = files([
 
 # Only build 64-bit versions of nvofapi
 if dxvk_cpu_family == 'x86_64'
-  nvofapi_dll = shared_library('nvofapi'+target_suffix, [ nvofapi_src, dxvk_nvapi_version ],
+  target_name = 'nvofapi'+target_suffix
+  nvofapi_dll = shared_library(target_name, [ nvofapi_src, dxvk_nvapi_version ],
+    cpp_args            : '-DDXVK_NVAPI_TARGET_NAME="'+target_name+'"',
     name_prefix         : '',
     dependencies        : [ lib_version ],
     include_directories : [ nvapi_headers, vk_headers ],
