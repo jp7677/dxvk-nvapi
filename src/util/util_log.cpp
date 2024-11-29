@@ -26,7 +26,7 @@ namespace dxvk::log {
 
         constexpr auto logLevelEnvName = "DXVK_NVAPI_LOG_LEVEL";
         constexpr auto logPathEnvName = "DXVK_NVAPI_LOG_PATH";
-        constexpr auto logFileName = "dxvk-nvapi.log";
+        constexpr auto logFileName = DXVK_NVAPI_TARGET_NAME ".log";
 
         auto logLevel = env::getEnvVariable(logLevelEnvName);
         if (logLevel != "info" && logLevel != "trace") {
@@ -81,8 +81,7 @@ namespace dxvk::log {
             std::setfill('0'), std::setw(3), milliseconds, ":",
             std::setfill('0'), std::setw(4), std::hex, ::GetCurrentProcessId(), ":",
             std::setfill('0'), std::setw(4), std::hex, ::GetCurrentThreadId(), ":",
-            level, ":",
-            DXVK_NVAPI_TARGET_NAME, ":",
+            level, ":" DXVK_NVAPI_TARGET_NAME ":",
             message);
 
         print(logMessage);

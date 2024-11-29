@@ -27,7 +27,7 @@ Please describe your issue as accurately as possible including expected and actu
 ### Log files
 
 Please attach DXVK-NVAPI log files as a text file :
-- When using Proton, set the Steam launch options for your game to `DXVK_NVAPI_LOG_PATH=/tmp/ DXVK_NVAPI_LOG_LEVEL=info %command%` and attach the corresponding `dxvk-nvapi.log` file in your `/tmp/` directory.
+- When using Proton, set the Steam launch options for your game to `DXVK_NVAPI_LOG_PATH=/tmp/ DXVK_NVAPI_LOG_LEVEL=info %command%` and attach the corresponding `nvapi.log`/`nvapi64.log`/`nvofapi64.log` file in your `/tmp/` directory.
 - See [Tweaks, debugging and troubleshooting](https://github.com/jp7677/dxvk-nvapi/blob/master/README.md#tweaks-debugging-and-troubleshooting) for general information.
 
 Alternatively attach Proton logs as a text file:
