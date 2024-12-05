@@ -86,6 +86,7 @@ The following environment variables tweak DXVK-NVAPI's runtime behavior:
   - `TU100` (Turing)
   - `GA100` (Ampere)
   - `AD100` (Ada)
+  - `GB200` (Blackwell)
 - `DXVK_NVAPI_LOG_LEVEL` set to `info` prints log statements. The default behavior omits any logging. Please fill an issue if using log servery `info` creates log spam. Setting severity to `trace` logs all entry points enter and exits, this has a severe effect on performance. All other log levels will be interpreted as `none`.
 - `DXVK_NVAPI_LOG_PATH` enables file logging additionally to console output and sets the path where the log file `nvapi.log`/`nvapi64.log`/`nvofapi64.log` should be written to. Log statements are appended to an existing file. Please remove this file once in a while to prevent excessive grow. This requires `DXVK_NVAPI_LOG_LEVEL` set to `info` or `trace`.
 

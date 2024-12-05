@@ -579,6 +579,9 @@ extern "C" {
         // usage.
         NV_GPU_ARCH_IMPLEMENTATION_ID implementationId;
         switch (architectureId) {
+            case NV_GPU_ARCHITECTURE_GB200:
+                implementationId = NV_GPU_ARCH_IMPLEMENTATION_GB202;
+                break;
             case NV_GPU_ARCHITECTURE_AD100:
                 implementationId = NV_GPU_ARCH_IMPLEMENTATION_AD102;
                 break;

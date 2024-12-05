@@ -66,6 +66,12 @@ namespace dxvk {
             deviceProperties2.pNext = &m_vkFragmentShadingRateProperties;
         }
 
+        if (IsVkDeviceExtensionSupported(VK_KHR_COMPUTE_SHADER_DERIVATIVES_EXTENSION_NAME)) {
+            m_vkComputeShaderDerivativesProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_PROPERTIES_KHR;
+            m_vkComputeShaderDerivativesProperties.pNext = deviceProperties2.pNext;
+            deviceProperties2.pNext = &m_vkComputeShaderDerivativesProperties;
+        }
+
         m_vkIdProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
         m_vkIdProperties.pNext = deviceProperties2.pNext;
         deviceProperties2.pNext = &m_vkIdProperties;
@@ -231,6 +237,11 @@ namespace dxvk {
             log::info(str::format(allowOtherDriversEnvName, " is set, using Pascal architecture for non-NVIDIA GPUs by default"));
             return NV_GPU_ARCHITECTURE_GP100;
         }
+
+        // GB20x supports mesh+task derivatives
+        if (IsVkDeviceExtensionSupported(VK_KHR_COMPUTE_SHADER_DERIVATIVES_EXTENSION_NAME)
+            && m_vkComputeShaderDerivativesProperties.meshAndTaskShaderDerivatives)
+            return NV_GPU_ARCHITECTURE_GB200;
 
         // In lieu of a more idiomatic Vulkan-based solution, check the PCI
         // DeviceID to determine if an Ada card is present

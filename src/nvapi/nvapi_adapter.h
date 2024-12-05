@@ -67,6 +67,7 @@ namespace dxvk {
         VkPhysicalDevicePCIBusInfoPropertiesEXT m_vkPciBusProperties{};
         VkPhysicalDeviceDriverPropertiesKHR m_vkDriverProperties{};
         VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_vkFragmentShadingRateProperties{};
+        VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR m_vkComputeShaderDerivativesProperties{};
         uint32_t m_vkDriverVersion{};
         uint32_t m_dxgiVendorId{};
         uint32_t m_dxgiDeviceId{};

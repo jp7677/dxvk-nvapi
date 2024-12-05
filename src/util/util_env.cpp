@@ -201,6 +201,7 @@ namespace dxvk::env {
             CHECK_ARCH(TU100)
             CHECK_ARCH(GA100)
             CHECK_ARCH(AD100)
+            CHECK_ARCH(GB200)
 #undef CHECK_ARCH
 
             if (override) {
