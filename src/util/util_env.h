@@ -9,6 +9,8 @@ namespace dxvk::env {
 
     std::string getCurrentDateTime();
 
+    bool isDLSSVersion20(void* returnAddress);
+
     bool needsSucceededGpuQuery();
 
     std::optional<NV_GPU_ARCHITECTURE_ID> needsGpuArchitectureSpoofing(NV_GPU_ARCHITECTURE_ID architectureId, void* returnAddress);
