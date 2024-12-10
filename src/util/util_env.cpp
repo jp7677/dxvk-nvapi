@@ -113,6 +113,11 @@ namespace dxvk::env {
         return majorVersion == 2 && minorVersion < 4;
     }
 
+    bool isDLSSVersion20(void* returnAddress) {
+        auto [majorVersion, minorVersion] = getDLSSVersion(returnAddress).value_or(std::make_pair(0, 0));
+        return majorVersion == 2 && minorVersion == 0;
+    }
+
     bool isTheGreatCircle() {
         static constexpr auto name = std::string_view("TheGreatCircle.exe");
         return getExecutableName() == name;
