@@ -23,6 +23,7 @@ nvapi_src = files([
   'nvapi_gpu.cpp',
   'nvapi_mosaic.cpp',
   'nvapi_sys.cpp',
+  'nvapi_vkreflex.cpp',
   'nvapi_interface.cpp',
 ])
 
