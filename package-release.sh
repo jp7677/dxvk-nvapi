@@ -54,6 +54,7 @@ function prepare {
     src/nvapi_d3d.cpp         \
     src/nvapi_d3d11.cpp       \
     src/nvapi_d3d12.cpp       \
+    src/nvapi_vulkan.cpp      \
     src/nvapi_interface.cpp   \
     external/nvapi/nvapi_interface.h
 }

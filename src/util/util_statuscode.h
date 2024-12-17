@@ -31,6 +31,11 @@ namespace dxvk {
         return NVAPI_ERROR;
     }
 
+    inline NvAPI_Status Error(const std::string& logMessage, VkResult vkResult) {
+        log::info(str::format("<-", logMessage, ": Error (vr: ", vkResult, ")"));
+        return NVAPI_ERROR;
+    }
+
     inline NvAPI_Status Error(const std::string& logMessage, bool& alreadyLogged) {
         if (log::tracing() || !std::exchange(alreadyLogged, true))
             log::info(str::format("<-", logMessage, ": Error"));
