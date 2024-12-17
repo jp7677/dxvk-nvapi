@@ -3,7 +3,7 @@
 #include "nvapi_tests_private.h"
 #include "../src/interfaces/vkd3d-proton_interfaces.h"
 
-class ID3D12Vkd3dDevice : public ID3D12Device5, public ID3D12DeviceExt {};
+class ID3D12Vkd3dDevice : public ID3D12Device5, public ID3D12DeviceExt2 {};
 
 class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3dDevice> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -91,9 +91,15 @@ class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3
     IMPLEMENT_MOCK3(GetCudaTextureObject);
     IMPLEMENT_MOCK2(GetCudaSurfaceObject);
     IMPLEMENT_MOCK1(CaptureUAVInfo);
+    IMPLEMENT_MOCK3(CreateResourceFromBorrowedHandle);
+    IMPLEMENT_MOCK5(GetVulkanQueueInfoEx);
+    IMPLEMENT_MOCK1(SetCreatePipelineStateOptions);
+    IMPLEMENT_MOCK1(CheckDriverMatchingIdentifierEx);
+    IMPLEMENT_MOCK1(GetRaytracingAccelerationStructurePrebuildInfoEx);
+    IMPLEMENT_MOCK1(GetRaytracingOpacityMicromapArrayPrebuildInfo);
 };
 
-class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList4, public ID3D12GraphicsCommandListExt1 {};
+class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList4, public ID3D12GraphicsCommandListExt2 {};
 
 class D3D12Vkd3dGraphicsCommandListMock final : public trompeloeil::mock_interface<ID3D12Vkd3dGraphicsCommandList> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -176,6 +182,10 @@ class D3D12Vkd3dGraphicsCommandListMock final : public trompeloeil::mock_interfa
     IMPLEMENT_MOCK1(GetVulkanHandle);
     IMPLEMENT_MOCK6(LaunchCubinShader);
     IMPLEMENT_MOCK9(LaunchCubinShaderEx);
+    IMPLEMENT_MOCK1(BuildRaytracingAccelerationStructureEx);
+    IMPLEMENT_MOCK1(BuildRaytracingOpacityMicromapArray);
+    IMPLEMENT_MOCK1(RelocateRaytracingOpacityMicromapArray);
+    IMPLEMENT_MOCK1(EmitRaytracingOpacityMicromapArrayPostbuildInfo);
 };
 
 class ID3D12Vkd3dCommandQueue : public ID3D12CommandQueue, public ID3D12CommandQueueExt {};
