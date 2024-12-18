@@ -4,3 +4,6 @@
 [submodule "external/nvapi"]
 	path = external/nvapi
 	url = https://github.com/NVIDIA/nvapi
+[submodule "external/vkroots"]
+	path = external/vkroots
+	url = https://github.com/misyltoad/vkroots
