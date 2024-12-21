@@ -7,7 +7,7 @@ using namespace Catch::Matchers;
 
 TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
     auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-    auto vulkan = std::make_unique<VulkanMock>();
+    auto vk = std::make_unique<VkMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
     DXGIDxvkAdapterMock* adapter1 = CreateDXGIDxvkAdapterMock();
@@ -16,9 +16,9 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
     DXGIOutput6Mock* output2 = CreateDXGIOutput6Mock();
     DXGIOutput6Mock* output3 = CreateDXGIOutput6Mock();
 
-    auto e = ConfigureExtendedTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter1, *adapter2, *output1, *output2, *output3);
+    auto e = ConfigureExtendedTestEnvironment(*dxgiFactory, *vk, *nvml, *lfx, *adapter1, *adapter2, *output1, *output2, *output3);
 
-    SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+    SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
     REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
     SECTION("EnumLogicalGPUs succeeds") {

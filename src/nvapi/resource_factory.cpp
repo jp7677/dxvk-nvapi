@@ -18,19 +18,29 @@ namespace dxvk {
         return dxgiFactory;
     }
 
-    std::unique_ptr<Vulkan> ResourceFactory::CreateVulkan(Com<IDXGIFactory1>& dxgiFactory) {
+    std::unique_ptr<Vk> ResourceFactory::CreateVulkan(Com<IDXGIFactory1>& dxgiFactory) {
         Com<IDXGIVkInteropFactory> dxgiVkFactory;
         if (FAILED(dxgiFactory->QueryInterface(IID_PPV_ARGS(&dxgiVkFactory)))) {
             log::info("Querying Vulkan entry point from DXGI factory failed, please ensure that DXVK's dxgi.dll (version 2.1 or newer) is present");
             return nullptr;
         }
 
-        VkInstance vkInstance = VK_NULL_HANDLE;
-        PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr{};
-        dxgiVkFactory->GetVulkanInstance(&vkInstance, &vkGetInstanceProcAddr);
+        return std::make_unique<Vk>(std::move(dxgiVkFactory));
+    }
 
-        log::info(str::format("Successfully acquired Vulkan vkGetInstanceProcAddr @ 0x", std::hex, reinterpret_cast<uintptr_t>(vkGetInstanceProcAddr)));
-        return std::make_unique<Vulkan>(dxgiFactory, vkGetInstanceProcAddr);
+    std::unique_ptr<Vk> ResourceFactory::CreateVulkan(const char* moduleName) {
+        auto module = GetModuleHandleA(moduleName);
+        if (!module) {
+            log::info(str::format("Module ", moduleName, " not loaded into current process"));
+            return nullptr;
+        }
+
+#define GET_PROC_ADDRESS(proc) auto proc = reinterpret_cast<PFN_##proc>(reinterpret_cast<void*>(GetProcAddress(module, #proc)));
+
+        GET_PROC_ADDRESS(vkGetInstanceProcAddr);
+        GET_PROC_ADDRESS(vkGetDeviceProcAddr);
+
+        return std::make_unique<Vk>(vkGetInstanceProcAddr, vkGetDeviceProcAddr);
     }
 
     std::unique_ptr<Nvml> ResourceFactory::CreateNvml() {

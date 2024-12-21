@@ -2,7 +2,7 @@
 
 #include "../nvapi_private.h"
 #include "../util/com_pointer.h"
-#include "vulkan.h"
+#include "vk.h"
 #include "nvml.h"
 #include "nvapi_output.h"
 
@@ -10,7 +10,7 @@ namespace dxvk {
     class NvapiAdapter {
 
       public:
-        explicit NvapiAdapter(Vulkan& vulkan, Nvml& nvml, Com<IDXGIAdapter3> dxgiAdapter);
+        explicit NvapiAdapter(Vk& vk, Nvml& nvml, Com<IDXGIAdapter3> dxgiAdapter);
         ~NvapiAdapter();
 
         struct MemoryInfo {
@@ -57,7 +57,7 @@ namespace dxvk {
         [[nodiscard]] nvmlReturn_t GetNvmlDeviceDynamicPstatesInfo(nvmlGpuDynamicPstatesInfo_t* pDynamicPstatesInfo) const;
 
       private:
-        Vulkan& m_vulkan;
+        Vk& m_vk;
         Nvml& m_nvml;
         Com<IDXGIAdapter3> m_dxgiAdapter;
 

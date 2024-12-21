@@ -7,13 +7,13 @@ using namespace Catch::Matchers;
 
 TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
     auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-    auto vulkan = std::make_unique<VulkanMock>();
+    auto vk = std::make_unique<VkMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
     DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
     DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
 
-    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter, *output);
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *lfx, *adapter, *output);
     auto primaryDisplayId = 0x00010001;
 
     SECTION("NVML depending methods succeed when NVML is available") {
@@ -32,7 +32,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 .LR_SIDE_EFFECT(*_2 = linkWidth)
                 .RETURN(NVML_SUCCESS);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
@@ -49,7 +49,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 .LR_SIDE_EFFECT(*_2 = irqNum)
                 .RETURN(NVML_SUCCESS);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
@@ -66,7 +66,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 .LR_SIDE_EFFECT(*_2 = cores)
                 .RETURN(NVML_SUCCESS);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
@@ -83,7 +83,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 .LR_SIDE_EFFECT(_2->pciSubSystemId = id)
                 .RETURN(NVML_SUCCESS);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
@@ -100,7 +100,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 .LR_SIDE_EFFECT(strcpy(_2, version))
                 .RETURN(NVML_SUCCESS);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
@@ -121,7 +121,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             ALLOW_CALL(*adapter, QueryVideoMemoryInfo(_, _, _))
                 .RETURN(S_OK);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
@@ -154,7 +154,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 .LR_SIDE_EFFECT(*_2 = args.nvmlBusType)
                 .RETURN(NVML_SUCCESS);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
@@ -188,7 +188,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 })
                 .RETURN(NVML_SUCCESS);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
@@ -222,7 +222,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 })
                 .RETURN(NVML_SUCCESS);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
@@ -264,7 +264,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 .LR_SIDE_EFFECT(*_3 = temp + 1)
                 .RETURN(NVML_SUCCESS);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
@@ -316,7 +316,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 .LR_SIDE_EFFECT(*_3 = temp)
                 .RETURN(NVML_SUCCESS);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
@@ -365,7 +365,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 .LR_SIDE_EFFECT(*_2 = NVML_PSTATE_2)
                 .RETURN(NVML_SUCCESS);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
@@ -390,7 +390,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                 .LR_SIDE_EFFECT(*_3 = videoClock)
                 .RETURN(NVML_SUCCESS);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NvPhysicalGpuHandle handle;
@@ -476,7 +476,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
         ALLOW_CALL(*nvml, IsAvailable())
             .RETURN(false);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -518,7 +518,7 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
         ALLOW_CALL(*nvml, ErrorString(_))
             .RETURN("error");
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;

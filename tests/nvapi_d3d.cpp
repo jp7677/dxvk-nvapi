@@ -113,7 +113,7 @@ TEST_CASE("D3D methods succeed", "[.d3d]") {
 TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
     UnknownMock unknown;
     auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-    auto vulkan = std::make_unique<VulkanMock>();
+    auto vk = std::make_unique<VkMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
     D3DLowLatencyDeviceMock lowLatencyDevice;
@@ -121,7 +121,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
     DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
     auto lowLatencyDeviceRefCount = 0;
 
-    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter, *output);
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *lfx, *adapter, *output);
 
     ALLOW_CALL(unknown, QueryInterface(__uuidof(ID3DLowLatencyDevice), _))
         .RETURN(E_NOINTERFACE);
@@ -130,7 +130,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
         .RETURN(false);
 
     SECTION("Reflex methods fail when given null device") {
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         SECTION("GetSleepStatus returns invalid-argument") {
@@ -167,7 +167,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
             .RETURN(true);
 
         SECTION("GetSleepStatus returns OK") {
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_GET_SLEEP_STATUS_PARAMS_V1 params{};
@@ -178,7 +178,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
         SECTION("SetSleepMode returns OK") {
             REQUIRE_CALL(*lfx, SetTargetFrameTime(250ULL * 1000));
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_SET_SLEEP_MODE_PARAMS_V1 params{};
@@ -192,7 +192,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
             REQUIRE_CALL(*lfx, SetTargetFrameTime(500ULL * 1000));
             REQUIRE_CALL(*lfx, WaitAndBeginFrame());
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_SET_SLEEP_MODE_PARAMS params{};
@@ -204,7 +204,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
         }
 
         SECTION("GetSleepStatus with unknown struct version returns incompatible-struct-version") {
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_GET_SLEEP_STATUS_PARAMS params{};
@@ -214,7 +214,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
 
         SECTION("GetSleepStatus with current struct version returns not incompatible-struct-version") {
             // This test should fail when a header update provides a newer not yet implemented struct version
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_GET_SLEEP_STATUS_PARAMS params{};
@@ -223,7 +223,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
         }
 
         SECTION("SetSleepMode with unknown struct version returns incompatible-struct-version") {
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_SET_SLEEP_MODE_PARAMS params{};
@@ -233,7 +233,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
 
         SECTION("SetSleepMode with current struct version returns not incompatible-struct-version") {
             // This test should fail when a header update provides a newer not yet implemented struct version
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_SET_SLEEP_MODE_PARAMS params{};
@@ -243,7 +243,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
     }
 
     SECTION("LatencyFleX depending methods succeed when LFX is unavailable") {
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         SECTION("GetSleepStatus returns NoImplementation") {
@@ -291,7 +291,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
             .RETURN(false);
 
         SECTION("D3DLowLatencyDevice does not support low latency") {
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             SECTION("GetSleepStatus returns NoImplementation") {
@@ -334,7 +334,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
                 REQUIRE_CALL(lowLatencyDevice, SupportsLowLatency())
                     .RETURN(true);
 
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
                 NV_GET_SLEEP_STATUS_PARAMS_V1 params{};
@@ -348,7 +348,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
                 REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(true, false, 250U))
                     .RETURN(S_OK);
 
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
                 NV_SET_SLEEP_MODE_PARAMS_V1 params{};
@@ -367,7 +367,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
                 REQUIRE_CALL(lowLatencyDevice, LatencySleep())
                     .RETURN(S_OK);
 
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
                 NV_SET_SLEEP_MODE_PARAMS sleepModeParams{};
@@ -386,7 +386,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
                 REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(1ULL, VK_LATENCY_MARKER_SIMULATION_START_NV))
                     .RETURN(S_OK);
 
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
                 NV_SET_SLEEP_MODE_PARAMS sleepModeParams{};
@@ -405,7 +405,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
             SECTION("SetLatencyMarker drops PC_LATENCY_PING and returns OK") {
                 FORBID_CALL(lowLatencyDevice, SetLatencyMarker(_, _));
 
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
                 NV_LATENCY_MARKER_PARAMS latencyMarkerParams{};
@@ -419,7 +419,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
                 REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(true, false, 750U))
                     .RETURN(S_OK);
 
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
                 NV_SET_SLEEP_MODE_PARAMS sleepModeParams{};
@@ -462,7 +462,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
                 REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(true, false, 750U))
                     .RETURN(S_OK);
 
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
                 NV_SET_SLEEP_MODE_PARAMS sleepModeParams{};
@@ -513,7 +513,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
             }
 
             SECTION("SetLatencyMarker with unknown struct version returns incompatible-struct-version") {
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
@@ -523,7 +523,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
             }
 
             SECTION("SetLatencyMarker with current struct version returns not incompatible-struct-version") {
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
 
                 ALLOW_CALL(lowLatencyDevice, SetLatencyMarker(_, _))
                     .RETURN(S_OK);
@@ -541,7 +541,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
                 REQUIRE_CALL(lowLatencyDevice, GetLatencyInfo(_))
                     .RETURN(S_OK);
 
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
                 NV_SET_SLEEP_MODE_PARAMS sleepModeParams{};
@@ -566,7 +566,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
 
                 FORBID_CALL(lowLatencyDevice, SetLatencySleepMode(_, _, _));
 
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
                 NV_SET_SLEEP_MODE_PARAMS_V1 params{};
@@ -583,7 +583,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
                 FORBID_CALL(lowLatencyDevice, SetLatencySleepMode(_, _, _));
                 FORBID_CALL(lowLatencyDevice, LatencySleep());
 
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
                 NV_SET_SLEEP_MODE_PARAMS params{};
@@ -595,7 +595,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
             }
 
             SECTION("GetLatency returns no-implementation") {
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
                 NV_LATENCY_RESULT_PARAMS params;
@@ -604,7 +604,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
             }
 
             SECTION("SetLatencyMarker returns no-implementation") {
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
                 NV_LATENCY_MARKER_PARAMS params;

@@ -4,7 +4,7 @@
 #include "resource_factory.h"
 #include "nvapi_adapter.h"
 #include "nvapi_output.h"
-#include "vulkan.h"
+#include "vk.h"
 #include "nvml.h"
 #include "../interfaces/dxvk_interfaces.h"
 
@@ -37,7 +37,7 @@ namespace dxvk {
         ResourceFactory& m_resourceFactory;
         Com<IDXGIFactory1> m_dxgiFactory;
         Com<IDXGIVkInteropFactory1> m_dxgiVkInterop;
-        std::unique_ptr<Vulkan> m_vulkan;
+        std::unique_ptr<Vk> m_vk;
         std::unique_ptr<Nvml> m_nvml;
         std::vector<NvapiAdapter*> m_nvapiAdapters;
         std::vector<NvapiOutput*> m_nvapiOutputs;

@@ -438,15 +438,15 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
 
 TEST_CASE("D3D11 MultiGPU methods succeed", "[.d3d11]") {
     auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-    auto vulkan = std::make_unique<VulkanMock>();
+    auto vk = std::make_unique<VkMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
     DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
     DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
 
-    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter, *output);
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *lfx, *adapter, *output);
 
-    SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+    SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
     REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
     SECTION("MultiGPU_GetCaps (V1) returns OK") {

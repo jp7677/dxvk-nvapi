@@ -6,8 +6,8 @@
 #include "../util/util_version.h"
 
 namespace dxvk {
-    NvapiAdapter::NvapiAdapter(Vulkan& vulkan, Nvml& nvml, Com<IDXGIAdapter3> dxgiAdapter)
-        : m_vulkan(vulkan), m_nvml(nvml), m_dxgiAdapter(std::move(dxgiAdapter)) {}
+    NvapiAdapter::NvapiAdapter(Vk& vk, Nvml& nvml, Com<IDXGIAdapter3> dxgiAdapter)
+        : m_vk(vk), m_nvml(nvml), m_dxgiAdapter(std::move(dxgiAdapter)) {}
 
     NvapiAdapter::~NvapiAdapter() = default;
 
@@ -36,7 +36,7 @@ namespace dxvk {
         VkPhysicalDevice vkDevice = VK_NULL_HANDLE;
         dxgiVkInteropAdapter->GetVulkanHandles(&vkInstance, &vkDevice);
 
-        m_vkExtensions = m_vulkan.GetDeviceExtensions(vkInstance, vkDevice);
+        m_vkExtensions = m_vk.GetDeviceExtensions(vkInstance, vkDevice);
         if (m_vkExtensions.empty())
             return false;
 
@@ -70,7 +70,7 @@ namespace dxvk {
         m_vkIdProperties.pNext = deviceProperties2.pNext;
         deviceProperties2.pNext = &m_vkIdProperties;
 
-        m_vulkan.GetPhysicalDeviceProperties2(vkInstance, vkDevice, &deviceProperties2);
+        m_vk.GetPhysicalDeviceProperties2(vkInstance, vkDevice, &deviceProperties2);
         m_vkProperties = deviceProperties2.properties;
 
         auto allowOtherDrivers = env::getEnvVariable(allowOtherDriversEnvName);
@@ -183,7 +183,7 @@ namespace dxvk {
     }
 
     NV_GPU_TYPE NvapiAdapter::GetGpuType() const {
-        return Vulkan::ToNvGpuType(m_vkProperties.deviceType);
+        return Vk::ToNvGpuType(m_vkProperties.deviceType);
     }
 
     uint32_t NvapiAdapter::GetPciBusId() const {

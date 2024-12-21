@@ -3,14 +3,13 @@
 #include "nvapi_tests_private.h"
 #include "nvapi_d3d_mocks.h"
 #include "nvapi_sysinfo_mocks.h"
-#include "mock_factory.h"
 
 DXGIDxvkAdapterMock* CreateDXGIDxvkAdapterMock();
 DXGIOutput6Mock* CreateDXGIOutput6Mock();
 
 void SetupResourceFactory(
     std::unique_ptr<DXGIDxvkFactoryMock> dxgiFactory,
-    std::unique_ptr<VulkanMock> vulkan,
+    std::unique_ptr<VkMock> vk,
     std::unique_ptr<NvmlMock> nvml,
     std::unique_ptr<LfxMock> lfx);
 
@@ -18,7 +17,7 @@ void ResetGlobals();
 
 [[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 23> ConfigureDefaultTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
-    VulkanMock& vulkan,
+    VkMock& vk,
     NvmlMock& nvml,
     LfxMock& lfx,
     DXGIDxvkAdapterMock& adapter,
@@ -26,7 +25,7 @@ void ResetGlobals();
 
 [[nodiscard]] std::array<std::unique_ptr<trompeloeil::expectation>, 40> ConfigureExtendedTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
-    VulkanMock& vulkan,
+    VkMock& vk,
     NvmlMock& nvml,
     LfxMock& lfx,
     DXGIDxvkAdapterMock& adapter1,

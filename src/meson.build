@@ -11,7 +11,7 @@ nvapi_src = files([
   'nvapi/nvapi_adapter_registry.cpp',
   'nvapi/nvapi_adapter.cpp',
   'nvapi/nvapi_output.cpp',
-  'nvapi/vulkan.cpp',
+  'nvapi/vk.cpp',
   'nvapi/nvml.cpp',
   'nvapi_globals.cpp',
   'nvapi.cpp',
