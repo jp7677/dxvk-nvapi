@@ -1,4 +1,5 @@
 #include "resource_factory_util.h"
+#include "mock_factory.h"
 
 using namespace trompeloeil;
 using namespace dxvk;
@@ -18,10 +19,10 @@ DXGIOutput6Mock* CreateDXGIOutput6Mock() {
 
 void SetupResourceFactory(
     std::unique_ptr<DXGIDxvkFactoryMock> dxgiFactory,
-    std::unique_ptr<VulkanMock> vulkan,
+    std::unique_ptr<VkMock> vk,
     std::unique_ptr<NvmlMock> nvml,
     std::unique_ptr<LfxMock> lfx) {
-    resourceFactory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+    resourceFactory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
 }
 
 void ResetGlobals() {
@@ -63,7 +64,7 @@ void ResetGlobals() {
 
 [[nodiscard]] std::array<std::unique_ptr<expectation>, 23> ConfigureDefaultTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
-    VulkanMock& vulkan,
+    VkMock& vk,
     NvmlMock& nvml,
     LfxMock& lfx,
     DXGIDxvkAdapterMock& adapter,
@@ -115,11 +116,11 @@ void ResetGlobals() {
         NAMED_ALLOW_CALL(output, QueryInterface(__uuidof(IDXGIOutput6), _))
             .RETURN(E_FAIL),
 
-        NAMED_ALLOW_CALL(vulkan, IsAvailable())
+        NAMED_ALLOW_CALL(vk, IsAvailable())
             .RETURN(true),
-        NAMED_ALLOW_CALL(vulkan, GetDeviceExtensions(_, _))
+        NAMED_ALLOW_CALL(vk, GetDeviceExtensions(_, _))
             .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME}),
-        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceProperties2(_, _, _))
+        NAMED_ALLOW_CALL(vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -136,7 +137,7 @@ void ResetGlobals() {
 
 [[nodiscard]] std::array<std::unique_ptr<expectation>, 40> ConfigureExtendedTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
-    VulkanMock& vulkan,
+    VkMock& vk,
     NvmlMock& nvml,
     LfxMock& lfx,
     DXGIDxvkAdapterMock& adapter1,
@@ -235,11 +236,11 @@ void ResetGlobals() {
         NAMED_ALLOW_CALL(output3, QueryInterface(__uuidof(IDXGIOutput6), _))
             .RETURN(E_FAIL),
 
-        NAMED_ALLOW_CALL(vulkan, IsAvailable())
+        NAMED_ALLOW_CALL(vk, IsAvailable())
             .RETURN(true),
-        NAMED_ALLOW_CALL(vulkan, GetDeviceExtensions(_, _))
+        NAMED_ALLOW_CALL(vk, GetDeviceExtensions(_, _))
             .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME}),
-        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceProperties2(_, reinterpret_cast<VkPhysicalDevice>(0x01), _))
+        NAMED_ALLOW_CALL(vk, GetPhysicalDeviceProperties2(_, reinterpret_cast<VkPhysicalDevice>(0x01), _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -247,7 +248,7 @@ void ResetGlobals() {
                         props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
                         driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
-        NAMED_ALLOW_CALL(vulkan, GetPhysicalDeviceProperties2(_, reinterpret_cast<VkPhysicalDevice>(0x02), _))
+        NAMED_ALLOW_CALL(vk, GetPhysicalDeviceProperties2(_, reinterpret_cast<VkPhysicalDevice>(0x02), _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
                     [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -276,11 +277,7 @@ void ConfigureGetPhysicalDeviceProperties2(
     VkPhysicalDeviceDriverPropertiesKHR* driverProps = nullptr;
     VkPhysicalDeviceFragmentShadingRatePropertiesKHR* fragmentShadingRateProps = nullptr;
 
-    struct VkStructure {
-        VkStructureType sType;
-        void* pNext;
-    };
-    auto next = reinterpret_cast<VkStructure*>(props);
+    auto next = reinterpret_cast<VkBaseOutStructure*>(props);
     while (next != nullptr) {
         switch (next->sType) {
             case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES: {
@@ -303,7 +300,7 @@ void ConfigureGetPhysicalDeviceProperties2(
                 break;
         }
 
-        next = reinterpret_cast<VkStructure*>(next->pNext);
+        next = next->pNext;
     }
 
     configure(&props->properties, idProps, pciBusInfoProps, driverProps, fragmentShadingRateProps);

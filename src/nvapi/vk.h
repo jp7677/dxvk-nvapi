@@ -1,15 +1,17 @@
 #pragma once
 
 #include "../nvapi_private.h"
+#include "../interfaces/dxvk_interfaces.h"
 #include "../util/com_pointer.h"
 
 namespace dxvk {
-    class Vulkan {
+    class Vk {
 
       public:
-        Vulkan();
-        explicit Vulkan(Com<IDXGIFactory1> dxgiFactory, PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr);
-        virtual ~Vulkan();
+        Vk();
+        explicit Vk(Com<IDXGIVkInteropFactory>&& dxgiVkInteropFactory);
+        explicit Vk(PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr, PFN_vkGetDeviceProcAddr vkGetDeviceProcAddr);
+        virtual ~Vk();
 
         [[nodiscard]] virtual bool IsAvailable() const;
         [[nodiscard]] virtual std::set<std::string> GetDeviceExtensions(VkInstance vkInstance, VkPhysicalDevice vkDevice) const;
@@ -18,8 +20,9 @@ namespace dxvk {
         [[nodiscard]] static NV_GPU_TYPE ToNvGpuType(VkPhysicalDeviceType vkDeviceType);
 
       private:
-        Com<IDXGIFactory1> m_dxgiFactory;
+        Com<IDXGIVkInteropFactory> m_dxgiVkInteropFactory;
         PFN_vkGetInstanceProcAddr m_vkGetInstanceProcAddr{};
+        PFN_vkGetDeviceProcAddr m_vkGetDeviceProcAddr{};
 
         template <typename T>
         T GetInstanceProcAddress(VkInstance vkInstance, const char* name) const;

@@ -2,7 +2,7 @@
 
 #include "nvapi_tests_private.h"
 #include "../src/interfaces/dxvk_interfaces.h"
-#include "../src/nvapi/vulkan.h"
+#include "../src/nvapi/vk.h"
 #include "../src/nvapi/nvml.h"
 
 class IDXGIDxvkFactoryMock : public IDXGIFactory1, public IDXGIVkInteropFactory1 {};
@@ -83,7 +83,7 @@ class DXGIOutput6Mock final : public trompeloeil::mock_interface<IDXGIOutput6> {
     IMPLEMENT_MOCK1(CheckHardwareCompositionSupport);
 };
 
-class VulkanMock final : public trompeloeil::mock_interface<dxvk::Vulkan> {
+class VkMock final : public trompeloeil::mock_interface<dxvk::Vk> {
     IMPLEMENT_CONST_MOCK0(IsAvailable);
     IMPLEMENT_CONST_MOCK2(GetDeviceExtensions);
     IMPLEMENT_CONST_MOCK3(GetPhysicalDeviceProperties2);

@@ -184,14 +184,14 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
     SECTION("GetGraphicsCapabilities succeeds") {
         auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-        auto vulkan = std::make_unique<VulkanMock>();
+        auto vk = std::make_unique<VkMock>();
         auto nvml = std::make_unique<NvmlMock>();
         auto lfx = std::make_unique<LfxMock>();
         DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
         DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
         LUID luid{};
 
-        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter, *output);
+        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *lfx, *adapter, *output);
 
         ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12Device), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12Device*>(&device))
@@ -214,7 +214,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 #endif
 
         SECTION("GetGraphicsCapabilities without matching adapter returns OK with sm_0") {
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_D3D12_GRAPHICS_CAPS graphicsCaps{};
@@ -251,9 +251,9 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             luid.HighPart = 0x00000002;
             luid.LowPart = 0x00000001;
 
-            ALLOW_CALL(*vulkan, GetDeviceExtensions(_, _))
+            ALLOW_CALL(*vk, GetDeviceExtensions(_, _))
                 .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, args.extensionName});
-            ALLOW_CALL(*vulkan, GetPhysicalDeviceProperties2(_, _, _))
+            ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
                 .SIDE_EFFECT(
                     ConfigureGetPhysicalDeviceProperties2(_3,
                         [&args, &luid](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
@@ -265,7 +265,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                                 fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
                         }));
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_D3D12_GRAPHICS_CAPS graphicsCaps;
@@ -279,7 +279,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         }
 
         SECTION("GetGraphicsCapabilities with unknown struct version returns incompatible-struct-version") {
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_D3D12_GRAPHICS_CAPS graphicsCaps{};
@@ -288,7 +288,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
         SECTION("GetGraphicsCapabilities with current struct version returns not incompatible-struct-version") {
             // This test should fail when a header update provides a newer not yet implemented struct version
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_D3D12_GRAPHICS_CAPS graphicsCaps{};
@@ -800,13 +800,13 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
     SECTION("D3DLowLatencyDevice methods succeed") {
         auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-        auto vulkan = std::make_unique<VulkanMock>();
+        auto vk = std::make_unique<VkMock>();
         auto nvml = std::make_unique<NvmlMock>();
         auto lfx = std::make_unique<LfxMock>();
         DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
         DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
 
-        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter, *output);
+        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *lfx, *adapter, *output);
 
         ALLOW_CALL(commandQueue, GetDevice(__uuidof(ID3DLowLatencyDevice), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<ID3DLowLatencyDevice*>(&lowLatencyDevice))
@@ -828,7 +828,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
         SECTION("NotifyOutOfBandCommandQueue succeeds") {
             SECTION("NotifyOutOfBandCommandQueue returns OK") {
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
 
                 REQUIRE_CALL(commandQueue, NotifyOutOfBandCommandQueue(static_cast<D3D12_OUT_OF_BAND_CQ_TYPE>(OUT_OF_BAND_RENDER)))
                     .RETURN(S_OK);
@@ -841,14 +841,14 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 ALLOW_CALL(*lfx, IsAvailable())
                     .RETURN(true);
 
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
                 REQUIRE(NvAPI_D3D12_NotifyOutOfBandCommandQueue(&commandQueue, OUT_OF_BAND_RENDER) == NVAPI_NO_IMPLEMENTATION);
             }
 
             SECTION("NotifyOutOfBandCommandQueue with null command queue returns invalid-pointer") {
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
                 REQUIRE(NvAPI_D3D12_NotifyOutOfBandCommandQueue(nullptr, OUT_OF_BAND_RENDER) == NVAPI_INVALID_POINTER);
@@ -857,7 +857,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
         SECTION("SetAsyncFrameMarker succeeds") {
             SECTION("SetAsyncFrameMarker returns OK") {
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
 
                 REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(1ULL, VK_LATENCY_MARKER_OUT_OF_BAND_RENDERSUBMIT_START_NV))
                     .RETURN(S_OK);
@@ -872,7 +872,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             }
 
             SECTION("SetAsyncFrameMarker drops PC_LATENCY_PING and returns OK") {
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
 
                 FORBID_CALL(lowLatencyDevice, SetLatencyMarker(_, _));
 
@@ -889,7 +889,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 ALLOW_CALL(*lfx, IsAvailable())
                     .RETURN(true);
 
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
@@ -899,7 +899,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             }
 
             SECTION("SetAsyncFrameMarker with unknown struct version returns incompatible-struct-version") {
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
@@ -909,7 +909,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             }
 
             SECTION("SetAsyncFrameMarker with current struct version returns not incompatible-struct-version") {
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
 
                 ALLOW_CALL(lowLatencyDevice, SetLatencyMarker(_, _))
                     .RETURN(S_OK);
@@ -922,7 +922,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             }
 
             SECTION("SetAsyncFrameMarker with null command queue returns invalid-pointer") {
-                SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 

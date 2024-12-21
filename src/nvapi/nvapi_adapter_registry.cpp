@@ -29,8 +29,8 @@ namespace dxvk {
         if (m_dxgiFactory == nullptr)
             return false;
 
-        m_vulkan = m_resourceFactory.CreateVulkan(m_dxgiFactory);
-        if (m_vulkan == nullptr || !m_vulkan->IsAvailable())
+        m_vk = m_resourceFactory.CreateVulkan(m_dxgiFactory);
+        if (m_vk == nullptr || !m_vk->IsAvailable())
             return false;
 
         m_nvml = m_resourceFactory.CreateNvml();
@@ -48,7 +48,7 @@ namespace dxvk {
             if (FAILED(dxgiAdapter->QueryInterface(IID_PPV_ARGS(&dxgiAdapter3))))
                 continue;
 
-            auto nvapiAdapter = new NvapiAdapter(*m_vulkan, *m_nvml, dxgiAdapter3);
+            auto nvapiAdapter = new NvapiAdapter(*m_vk, *m_nvml, dxgiAdapter3);
             if (nvapiAdapter->Initialize(i, m_nvapiOutputs))
                 m_nvapiAdapters.push_back(nvapiAdapter);
             else

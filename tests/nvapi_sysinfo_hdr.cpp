@@ -7,13 +7,13 @@ using namespace Catch::Matchers;
 
 TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
     auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-    auto vulkan = std::make_unique<VulkanMock>();
+    auto vk = std::make_unique<VkMock>();
     auto nvml = std::make_unique<NvmlMock>();
     auto lfx = std::make_unique<LfxMock>();
     DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
     DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
 
-    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vulkan, *nvml, *lfx, *adapter, *output);
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *lfx, *adapter, *output);
     auto primaryDisplayId = 0x00010001;
 
     auto desc1 = DXGI_OUTPUT_DESC1{
@@ -40,7 +40,7 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
         .RETURN(S_OK);
 
     SECTION("GetHdrCapabilities succeeds") {
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         SECTION("GetHdrCapabilities (V1) returns OK") {
@@ -151,7 +151,7 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
             })
             .RETURN(S_OK);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         SECTION("HdrColorControl (V1) with get command returns OK") {
@@ -285,7 +285,7 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
         ALLOW_CALL(*dxgiFactory, GetGlobalHDRState(_, _))
             .RETURN(E_FAIL);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         SECTION("HdrColorControl (V1) with get command returns OK") {
@@ -338,7 +338,7 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
         ALLOW_CALL(*dxgiFactory, QueryInterface(__uuidof(IDXGIVkInteropFactory1), _))
             .RETURN(E_NOINTERFACE);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vulkan), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         SECTION("HdrColorControl (V1) returns no-implementation") {

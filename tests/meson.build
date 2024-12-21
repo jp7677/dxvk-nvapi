@@ -3,7 +3,7 @@ nvapi_src = files([
   '../src/util/util_env.cpp',
   '../src/util/util_log.cpp',
   '../src/nvapi/resource_factory.cpp',
-  '../src/nvapi/vulkan.cpp',
+  '../src/nvapi/vk.cpp',
   '../src/nvapi/nvml.cpp',
   '../src/nvapi/lfx.cpp',
   '../src/nvapi/nvapi_d3d_instance.cpp',

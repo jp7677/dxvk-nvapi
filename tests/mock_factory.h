@@ -1,6 +1,8 @@
 #pragma once
 
 #include "nvapi_tests_private.h"
+#include "nvapi_d3d_mocks.h"
+#include "nvapi_sysinfo_mocks.h"
 #include "../src/nvapi/resource_factory.h"
 
 using namespace trompeloeil;
@@ -10,11 +12,11 @@ class MockFactory : public dxvk::ResourceFactory {
   public:
     MockFactory(
         std::unique_ptr<DXGIDxvkFactoryMock> dxgiFactory1Mock,
-        std::unique_ptr<VulkanMock> vulkanMock,
+        std::unique_ptr<VkMock> vkMock,
         std::unique_ptr<NvmlMock> nvmlMock,
         std::unique_ptr<LfxMock> lfxMock)
         : m_dxgiFactoryMock(std::move(dxgiFactory1Mock)),
-          m_vulkanMock(std::move(vulkanMock)),
+          m_vkMock(std::move(vkMock)),
           m_nvmlMock(std::move(nvmlMock)),
           m_lfxMock(std::move(lfxMock)) {};
 
@@ -22,8 +24,8 @@ class MockFactory : public dxvk::ResourceFactory {
         return m_dxgiFactoryMock.get();
     };
 
-    std::unique_ptr<dxvk::Vulkan> CreateVulkan(dxvk::Com<IDXGIFactory1>& dxgiFactory) override {
-        return std::move(m_vulkanMock);
+    std::unique_ptr<dxvk::Vk> CreateVulkan(dxvk::Com<IDXGIFactory1>& dxgiFactory) override {
+        return std::move(m_vkMock);
     }
 
     std::unique_ptr<dxvk::Nvml> CreateNvml() override {
@@ -40,7 +42,7 @@ class MockFactory : public dxvk::ResourceFactory {
 
   private:
     std::unique_ptr<DXGIDxvkFactoryMock> m_dxgiFactoryMock;
-    std::unique_ptr<VulkanMock> m_vulkanMock;
+    std::unique_ptr<VkMock> m_vkMock;
     std::unique_ptr<NvmlMock> m_nvmlMock;
     std::unique_ptr<LfxMock> m_lfxMock;
 };
