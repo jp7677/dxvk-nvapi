@@ -6,6 +6,7 @@ nvapi_src = files([
   'nvapi/lfx.cpp',
   'nvapi/nvapi_d3d_instance.cpp',
   'nvapi/nvapi_d3d_low_latency_device.cpp',
+  'nvapi/nvapi_vulkan_low_latency_device.cpp',
   'nvapi/nvapi_d3d11_device.cpp',
   'nvapi/nvapi_d3d12_device.cpp',
   'nvapi/nvapi_adapter_registry.cpp',
