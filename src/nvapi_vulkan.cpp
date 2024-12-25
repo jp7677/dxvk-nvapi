@@ -204,14 +204,17 @@ extern "C" {
         if (!lowLatencyDevice)
             return HandleInvalidated(n);
 
-        auto marker = NvapiVulkanLowLatencyDevice::ToVkLatencyMarkerNV(pSetLatencyMarkerParams->markerType);
+        auto markerType = pSetLatencyMarkerParams->markerType;
+        auto marker = NvapiVulkanLowLatencyDevice::ToVkLatencyMarkerNV(markerType);
 
-        if (marker == VK_LATENCY_MARKER_MAX_ENUM_NV) {
-            log::info(str::format("unsupported NV_VULKAN_LATENCY_MARKER_TYPE (", pSetLatencyMarkerParams->markerType, "), frameID = ", pSetLatencyMarkerParams->frameID, ", ignoring"));
-            return Ok(n);
+        if (marker != VK_LATENCY_MARKER_MAX_ENUM_NV) {
+            lowLatencyDevice->SetLatencyMarker(pSetLatencyMarkerParams->frameID, marker);
+        } else {
+            thread_local std::unordered_set<NV_VULKAN_LATENCY_MARKER_TYPE> unsupportedMarkerTypes{};
+
+            if (auto [it, inserted] = unsupportedMarkerTypes.insert(markerType); inserted)
+                log::info(str::format("unsupported NV_VULKAN_LATENCY_MARKER_TYPE (", markerType, "), ignoring"));
         }
-
-        lowLatencyDevice->SetLatencyMarker(pSetLatencyMarkerParams->frameID, marker);
 
         return Ok(n, alreadyLoggedOk);
     }
