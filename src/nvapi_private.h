@@ -57,7 +57,7 @@
 #endif // __GNUC__
 
 #if defined(__GNUC__)
-#define _ReturnAddress() __builtin_return_address(0);
+#define _ReturnAddress() __builtin_return_address(0)
 #elif defined(_MSC_VER)
 #include <intrin.h>
 #endif
