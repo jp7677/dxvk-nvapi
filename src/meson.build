@@ -51,6 +51,7 @@ nvofapi_src = files([
   'nvofapi.cpp',
   'nvofapi_d3d12.cpp',
   'nvofapi_vk.cpp',
+  'nvofapi_cuda.cpp',
 ])
 
 # Only build 64-bit versions of nvofapi

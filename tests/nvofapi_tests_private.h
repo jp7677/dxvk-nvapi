@@ -5,6 +5,7 @@
 #endif // defined(__GNUC__) || defined(__clang__)
 
 #include "../src/nvofapi_private.h"
+#include "../src/nvofapi_entrypoints.h"
 #include "../src/nvofapi_globals.h"
 
 #include "../inc/catch_amalgamated.hpp"

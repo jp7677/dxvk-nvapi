@@ -34,4 +34,7 @@ extern "C" {
     NV_OF_STATUS NVOFAPI OFSessionGetLastError(NvOFHandle hOf, char lastError[], uint32_t* size);
 
     NV_OF_STATUS NVOFAPI OFSessionGetCaps(NvOFHandle hOf, NV_OF_CAPS capsParam, uint32_t* capsVal, uint32_t* size);
+
+    // Overwrite CUDA entrypoint to avoid dependency to cuda.h
+    NV_OF_STATUS NVOFAPI NvOFAPICreateInstanceCuda(uint32_t apiVer, void* functionList);
 }
