@@ -67,12 +67,14 @@ nvofapi_src = files([
   '../src/nvofapi.cpp',
   '../src/nvofapi_d3d12.cpp',
   '../src/nvofapi_vk.cpp',
+  '../src/nvofapi_cuda.cpp',
 ])
 
 nvofapi_tests_src = files([
   'nvofapi_main.cpp',
   'nvofapi_d3d12.cpp',
   'nvofapi_vk.cpp',
+  'nvofapi_cuda.cpp',
 ])
 
 target_name = 'nvofapi'+target_suffix+'-tests'
