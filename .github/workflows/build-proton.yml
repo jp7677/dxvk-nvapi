@@ -23,4 +23,4 @@ jobs:
         fetch-depth: 0
 
     - name: Build
-      run: ./package-release.sh master build
+      run: ./package-release.sh master build --disable-layer
