@@ -13,6 +13,8 @@
 
 #define LOG_CHANNEL "vkreflex_layer"
 #include "log.h"
+#include "config.h"
+#include "version.h"
 
 using namespace std::literals;
 
@@ -62,6 +64,13 @@ static bool allowFallbackToSimulationFrameID = true;
 static void Init() {
     ::InitLogger("DXVK_NVAPI_VKREFLEX_LAYER_LOG_LEVEL");
 
+    INFO("dxvk-nvapi-vkreflex-layer %s (%s %s, %s, %s)",
+        DXVK_NVAPI_VERSION,
+        DXVK_NVAPI_BUILD_COMPILER,
+        DXVK_NVAPI_BUILD_COMPILER_VERSION,
+        DXVK_NVAPI_BUILD_TARGET,
+        DXVK_NVAPI_BUILD_TYPE);
+
 #define READ_FLAG(var, env) var = ::GetFlag("DXVK_NVAPI_VKREFLEX_" env).value_or(var)
     READ_FLAG(exposeExtension, "EXPOSE_EXTENSION");
     READ_FLAG(injectSubmitFrameIDs, "INJECT_SUBMIT_FRAME_IDS");
@@ -71,6 +80,16 @@ static void Init() {
     READ_FLAG(allowFallbackToPresentFrameID, "ALLOW_FALLBACK_TO_PRESENT_FRAME_ID");
     READ_FLAG(allowFallbackToSimulationFrameID, "ALLOW_FALLBACK_TO_SIMULATION_FRAME_ID");
 #undef READ_FLAG
+
+#define LOG_FLAG(var) DBG("%s = %s", #var, var ? "1" : "0")
+    LOG_FLAG(exposeExtension);
+    LOG_FLAG(injectSubmitFrameIDs);
+    LOG_FLAG(injectPresentFrameIDs);
+    LOG_FLAG(injectFrameIDs);
+    LOG_FLAG(allowFallbackToOutOfBandFrameID);
+    LOG_FLAG(allowFallbackToPresentFrameID);
+    LOG_FLAG(allowFallbackToSimulationFrameID);
+#undef LOG_FLAG
 }
 
 static uint64_t GetFrameId(const ReflexDeviceContextData* deviceContext, bool present, bool outOfBand) {
