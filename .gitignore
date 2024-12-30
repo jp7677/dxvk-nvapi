@@ -1,9 +1,12 @@
 build
 buildDir
+build.layer
 out
 winsysroot
 .idea/**
 .vscode/**
 version.h
 config.h
+layer/version.h
+layer/config.h
 compile_commands.json
