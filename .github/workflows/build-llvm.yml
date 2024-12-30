@@ -37,6 +37,7 @@ jobs:
           --preserve-ms-arch-notation \
           --use-winsysroot-style \
           --output ./winsysroot
+        ln -s ../winsysroot ./layer/winsysroot
         cd './winsysroot/Windows Kits/10'
         test -e ./Include || mv ./include ./Include
         test -e ./Lib || mv ./lib ./Lib
@@ -44,26 +45,36 @@ jobs:
     - name: Build x86
       shell: bash
       run: |
-        meson setup build32 . \
+        meson setup build/32 . \
           --cross-file ./build-win32-llvm.txt \
           --buildtype release \
           --prefix ~+/install \
           --bindir bin \
           --libdir lib \
           --strip
-        ninja -C build32 install
+        ninja -C build/32 install
 
     - name: Build x64
       shell: bash
       run: |
-        meson setup build64 . \
+        meson setup build/64 . \
           --cross-file ./build-win64-llvm.txt \
           --buildtype release \
           --prefix ~+/install \
           --bindir bin \
           --libdir lib \
           --strip -Denable_tests=true
-        ninja -C build64 install
+        ninja -C build/64 install
+
+    - name: Build vkreflex layer
+      shell: bash
+      run: |
+        meson setup build/layer layer \
+          --cross-file ./build-win64-llvm.txt \
+          --buildtype release \
+          --prefix ~+/install/bin/layer \
+          --strip
+        ninja -C build/layer install
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4

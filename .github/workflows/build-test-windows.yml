@@ -55,10 +55,21 @@ jobs:
       run: |
         & .\build-msvc-x64\tests\nvapi64-tests.exe [@unit-tests]
 
+    - name: Build MSVC layer
+      shell: pwsh
+      run: |
+        & "${Env:COMSPEC}" /s /c "`"${Env:VSDEVCMD}`" -arch=x64 -host_arch=x64 -no_logo && set" `
+          | % { , ($_ -Split '=', 2) } `
+          | % { [System.Environment]::SetEnvironmentVariable($_[0], $_[1]) }
+        meson setup --buildtype release --backend vs2022 build-msvc-layer layer -Dcpp_args=/Zc:preprocessor
+        msbuild -m build-msvc-layer\dxvk-nvapi-vkreflex-layer.sln
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: dxvk-nvapi-msvc
         path: |
+          .\build-msvc-layer\VkLayer_*.json
+          .\build-msvc-layer\*.dll
           .\build-msvc-*\src\*.dll
           .\build-msvc-*\tests\*.exe
