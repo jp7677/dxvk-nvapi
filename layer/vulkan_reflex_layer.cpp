@@ -9,6 +9,29 @@
 #include <utility>
 #include <vector>
 
+#define VK_NO_PROTOTYPES
+
+#include <vulkan/vulkan.h>
+
+// hijack VKAPI_ATTR before vk_layer.h is included to make sure that vkNegotiateLoaderLayerInterfaceVersion
+// has appropriate visibility attribute in its initial declaration / prototype, otherwise MSVC will complain
+
+#undef VKAPI_ATTR
+
+#if defined(_WIN32)
+#define VKAPI_ATTR __declspec(dllexport)
+#elif defined(__GNUC__)
+#define VKAPI_ATTR [[gnu::visibility("default")]]
+#else
+#error No known visibility attribute
+#endif
+
+#include <vulkan/vk_layer.h>
+
+#undef VKAPI_ATTR
+// hopefully nobody is going to build this for 32-bit ARM Android
+#define VKAPI_ATTR
+
 #include "vkroots.h"
 
 #define LOG_CHANNEL "vkreflex_layer"
