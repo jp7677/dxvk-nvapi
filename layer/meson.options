@@ -1,0 +1,20 @@
+option(
+    'absolute_library_path',
+    type: 'boolean',
+    value: true,
+    description: 'Prepend full install dir to library_path in the layer manifest',
+)
+
+option(
+    'library_path_prefix',
+    type: 'string',
+    value: '',
+    description: 'Custom prefix to prepend to library_path in the layer manifest, ignored when absolute_library_path is set to true',
+)
+
+option(
+    'manifest_install_dir',
+    type: 'string',
+    value: 'share/vulkan/implicit_layer.d',
+    description: 'Path to directory where the layer manifest should be installed',
+)
