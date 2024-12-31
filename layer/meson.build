@@ -1,4 +1,10 @@
-project('dxvk-nvapi-vkreflex-layer', ['cpp'], default_options: ['cpp_std=c++20'])
+project(
+    'dxvk-nvapi-vkreflex-layer',
+    ['cpp'],
+    default_options: ['cpp_std=c++20'],
+    version: 'v0.8.0',
+    meson_version: '>= 1.1',
+)
 
 version = vcs_tag(
     command: ['git', 'describe', '--always', '--tags', '--dirty=+'],
@@ -32,9 +38,12 @@ vkreflex_layer = shared_library(
 fs = import('fs')
 
 configure_file(
-    configuration: {'vkreflex_library_name': fs.name(vkreflex_layer.full_path())},
+    configuration: {
+        'library_path_prefix': get_option('absolute_library_path') ? (fs.as_posix(get_option('prefix') / get_option('libdir')) + '/') : get_option('library_path_prefix'),
+        'vkreflex_library_name': fs.name(vkreflex_layer.full_path()),
+    },
     input: 'VkLayer_DXVK_NVAPI_reflex.json.in',
     output: 'VkLayer_DXVK_NVAPI_reflex.json',
     install: true,
-    install_dir: 'share/vulkan/implicit_layer.d',
+    install_dir: get_option('manifest_install_dir'),
 )

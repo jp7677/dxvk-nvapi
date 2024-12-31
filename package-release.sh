@@ -98,11 +98,15 @@ function build_layer {
   # files get into the build instead of the generated ones
   rm -f "$SRC_DIR"/layer/{version,config}.h
 
-  meson setup                   \
-    --buildtype "release"       \
-    --prefix "$BUILD_DIR/layer" \
-    --strip                     \
-    "$BUILD_DIR/build.layer"    \
+  meson setup                     \
+    --buildtype "release"         \
+    --prefix "$BUILD_DIR/layer"   \
+    --libdir ''                   \
+    --strip                       \
+    -Dabsolute_library_path=false \
+    -Dlibrary_path_prefix=./      \
+    -Dmanifest_install_dir=.      \
+    "$BUILD_DIR/build.layer"      \
     "$SRC_DIR/layer"
 
   ninja -C "$BUILD_DIR/build.layer" install

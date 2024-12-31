@@ -61,7 +61,14 @@ jobs:
         & "${Env:COMSPEC}" /s /c "`"${Env:VSDEVCMD}`" -arch=x64 -host_arch=x64 -no_logo && set" `
           | % { , ($_ -Split '=', 2) } `
           | % { [System.Environment]::SetEnvironmentVariable($_[0], $_[1]) }
-        meson setup --buildtype release --backend vs2022 build-msvc-layer layer -Dcpp_args=/Zc:preprocessor
+        meson setup `
+          --buildtype release `
+          --backend vs2022 `
+          '-Dcpp_args=/Zc:preprocessor' `
+          '-Dabsolute_library_path=false' `
+          '-Dlibrary_path_prefix=./' `
+          '-Dmanifest_install_dir=.' `
+          build-msvc-layer layer
         msbuild -m build-msvc-layer\dxvk-nvapi-vkreflex-layer.sln
 
     - name: Upload artifact
