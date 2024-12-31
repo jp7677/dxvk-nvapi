@@ -4,7 +4,7 @@
         "name": "VK_LAYER_DXVK_NVAPI_reflex",
         "type": "GLOBAL",
         "api_version": "1.3.295",
-        "library_path": "@vkreflex_library_name@",
+        "library_path": "@library_path_prefix@@vkreflex_library_name@",
         "library_arch": "64",
         "implementation_version": "1",
         "description": "DXVK-NVAPI Vulkan Reflex compatibility layer",
