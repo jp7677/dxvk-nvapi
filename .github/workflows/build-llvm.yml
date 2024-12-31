@@ -73,8 +73,13 @@ jobs:
           --cross-file ./build-win64-llvm.txt \
           --buildtype release \
           --prefix ~+/install/bin/layer \
-          --strip
+          --bindir '' \
+          --strip \
+          -Dabsolute_library_path=false \
+          -Dlibrary_path_prefix=./ \
+          -Dmanifest_install_dir=.
         ninja -C build/layer install
+        rm -R install/bin/layer/lib
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
