@@ -29,11 +29,18 @@ extern "C" {
 
         auto [lowLatencyDevice, vr] = NvapiVulkanLowLatencyDevice::GetOrCreate(device);
 
-        if (vr == VK_ERROR_INITIALIZATION_FAILED || vr == VK_ERROR_INCOMPATIBLE_DRIVER || vr == VK_ERROR_EXTENSION_NOT_PRESENT)
-            return NotSupported(n, vr);
-
-        if (!lowLatencyDevice)
-            return Error(n, vr);
+        if (!lowLatencyDevice) {
+            switch (vr) {
+                case VK_ERROR_EXTENSION_NOT_PRESENT:
+                    log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 commands in VkDevice's dispatch table, please ensure that DXVK-NVAPI's Vulkan layer is present");
+                    return NotSupported(n);
+                case VK_ERROR_INITIALIZATION_FAILED:
+                    log::info("Initializing Vulkan Low-Latency failed: could not find usable Vulkan loader (or winevulkan) module in the current process");
+                    [[fallthrough]];
+                default:
+                    return Error(n, vr);
+            }
+        }
 
         *semaphore = lowLatencyDevice->GetSemaphore();
 

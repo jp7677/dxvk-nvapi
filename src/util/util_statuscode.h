@@ -116,11 +116,6 @@ namespace dxvk {
         return NVAPI_NOT_SUPPORTED;
     }
 
-    inline NvAPI_Status NotSupported(const std::string& logMessage, VkResult vkResult) {
-        log::info(str::format("<-", logMessage, ": Not supported (vr: ", vkResult, ")"));
-        return NVAPI_NOT_SUPPORTED;
-    }
-
     inline NvAPI_Status NotSupported(const std::string& logMessage, bool& alreadyLogged) {
         if (log::tracing() || !std::exchange(alreadyLogged, true))
             log::info(str::format("<-", logMessage, ": Not supported"));
