@@ -8,7 +8,7 @@ This implementation currently offers entry points for supporting the following f
 
 - NVIDIA DLSS for Vulkan, by supporting the relevant adapter information by querying from [Vulkan](https://www.vulkan.org/).
 - NVIDIA DLSS for D3D11 and D3D12, by querying from Vulkan and forwarding the relevant calls into DXVK / VKD3D-Proton.
-- NVIDIA Reflex, by forwarding the relevant calls into either DXVK / VKD3D-Proton or [LatencyFleX](https://github.com/ishitatsuyuki/LatencyFleX).
+- NVIDIA Reflex, by forwarding the relevant calls into either DXVK / VKD3D-Proton, its custom Vulkan layer or [LatencyFleX](https://github.com/ishitatsuyuki/LatencyFleX).
 - Several NVAPI D3D11 extensions, among others `SetDepthBoundsTest` and `UAVOverlap`, by forwarding the relevant calls into DXVK.
 - NVIDIA PhysX, by supporting entry points for querying PhysX capabilities.
 - Several GPU topology related methods for adapter and display information, by querying from DXVK and Vulkan.
@@ -21,16 +21,20 @@ While originally being developed for usage with Unreal Engine 4, most notably fo
 
 This implementation is supposed to be used on Linux using Wine or derivatives like Proton. Usage on Windows is discouraged. Please do not replace `nvapi.dll`/`nvapi64.dll`/`nvofapi64.dll` on Windows from NVIDIA's driver package with this version. DXVK-NVAPI uses several DXVK and VKD3D-Proton extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI implementation will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, though the default behavior is to skip GPUs not running the NVIDIA proprietary driver or Mesa NVK. Some entry points offer no functionality or make no sense when a different GPU vendor is detected. DLSS requires an NVIDIA GPU, Turing or newer, running the proprietary driver.
 
+In order to support Vulkan flavor of NVIDIA Reflex, an [additional Vulkan layer](./layer) is required which intercepts (technically invalid) Vulkan calls made by DXVK-NVAPI, enriches them with extra data, and forwards to a Vulkan driver that supports [`VK_NV_low_latency2`](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_NV_low_latency2.html) device extension.
+
 When available, DXVK-NVAPI uses NVIDIA's NVML management library to query temperature, utilization and others for NVIDIA GPUs. See [wine-nvml](https://github.com/Saancreed/wine-nvml) how to add NVML support to Wine/Proton.
 
 ## How to build
 
 Like DXVK, this library is being built as a Windows DLL using MinGW. DXVK-NVAPI requires MinGW-w64 compiler and headers version 9 or newer, the Meson build system at least version 0.58 and Python 3 (needed for a prebuild validation script). This project uses git submodules. Ensure to fetch the submodules while or after cloning the repository, e.g. with `git clone --recurse-submodules git@github.com:jp7677/dxvk-nvapi.git`.
 
+The Vulkan Reflex layer has higher requirements: Meson 1.1 and a C++ compiler that supports C++20 standard. It is recommended (and assumed) that the layer is built as Linux-side library, and as such this compiler should target Linux and not be a cross-compiler like MinGW.
+
 Run:
 
 ```bash
-./package-release.sh master /your/path [--enable-tests]
+./package-release.sh master /your/path [--disable-layer] [--enable-tests]
 ```
 
 Alternatively [DXVK-Docker](https://github.com/jp7677/dxvk-docker) provides a way for a build setup using docker/podman.
@@ -68,6 +72,33 @@ Using DXVK-NVAPI with other GPU vendors / drivers has very limited use. Outside 
 
 Setting `DXVK_NVAPI_ALLOW_OTHER_DRIVERS=1` is needed for successful DXVK-NVAPI initialization when using a driver other than the NVIDIA proprietary driver or Mesa NVK. The reported driver version on drivers other than the NVIDIA proprietary driver will be 999.99. Overriding the reported driver version is still recommended. The reported GPU arrchitecture for other vendors is always Pascal to prevent attempts to initialize DLSS. This behavior cannot be changed without modifying the source code.
 
+### Vulkan Reflex layer
+
+The Vulkan Reflex layer, when built as a Linux-side layer, is not installed into a Wine prefix. Instead it's installed like any other Vulkan implicit layer. It is distributed as a pair of files:
+
+- `VkLayer_DXVK_NVAPI_reflex.json` (the layer manifest)
+- `libdxvk_nvapi_vkreflex_layer.so` (the layer library)
+
+To make it discoverable by your Vulkan loader:
+
+1. Do one of the following:
+    - Export full path to the directory containing the layer manifest in `VK_ADD_IMPLICIT_LAYER_PATH` environment variable (e.g. `VK_ADD_IMPLICIT_LAYER_PATH="${HOME}/dxvk-nvapi/layer"`)
+        - Note that `VK_ADD_IMPLICIT_LAYER_PATH` works only with Vulkan loader v1.3.296 or newer
+        - If you already have `VK_ADD_IMPLICIT_LAYER_PATH` set and pointing to a directory with some other implicit layer manifest, it is possible to pass multiple paths by separating them with `:`
+    - Install the layer manifest into one of default implicit layer search paths (e.g. `${XDG_DATA_HOME}/vulkan/implicit_layer.d` where Steam usually installs its layers)
+2. If needed, edit the layer manifest to ensure that its `library_path` points to the layer library
+     - For example, if the layer library is in the same directory as the layer manifest, the path should be `./libdxvk_nvapi_vkreflex_layer.so`
+         - Note that the distributed layer manifest by default assumes this scenario; therefore there is no need to edit the manifest if the layer library is kept in the same directory as the manifest file
+     - For other scenarios where the layer library is nearby, relative paths work as well (e.g. `../../../lib/libdxvk_nvapi_vkreflex_layer.so`)
+     - It's also possible to provide full path to the layer library (e.g. `/home/user/dxvk-nvapi/layer/libdxvk_nvapi_vkreflex_layer.so`)
+     - Finally, if the layer library is in one of the paths searched by dynamic linker (like `/usr/lib`, this depends on the distro), it's possible to set the library path to just the name of the layer library: `"library_path": "libdxvk_nvapi_vkreflex_layer.so"`
+
+Because the layer could interfere with other Vulkan applications that don't use Reflex, it is currently _disabled by default_ even when installed. To enable it, export `DXVK_NVAPI_VKREFLEX=1` as environment variable. When an application attempts to use Vulkan Reflex and the layer isn't installed and enabled, the following message should be logged at `info` log level: `info:nvapi64:<-NvAPI_Vulkan_InitLowLatencyDevice: Not supported`, with an explanation directing the user to verify the layer's setup.
+
+Running `env DXVK_NVAPI_VKREFLEX=1 vulkaninfo` can serve as a quick setup check to verify that both files are in correct locations. If the layer manifest was found, there will be an entry like `VK_LAYER_DXVK_NVAPI_reflex (DXVK-NVAPI Vulkan Reflex compatibility layer)` on the list of discovered Vulkan layers. Additionally, if the layer manifest was found but the layer library couldn't be loaded (perhaps due to incorrect `library_path` in the manifest), an error similar to `ERROR: [Loader Message] Code 0 : /home/user/.local/share/vulkan/implicit_layer.d/./libdxvk_nvapi_vkreflex_layer.so: cannot open shared object file: No such file or directory` will be logged on stderr before any standard output.
+
+Like any other (glibc-based) Linux shared library, layer compiled on a system with newer version of glibc will _not_ run on systems with older version of glibc. If you are running a distro with older glibc than the ones prebuilt binaries are distributed for, it is likely that building your own library from source will be required.
+
 ## Tweaks, debugging and troubleshooting
 
 See the [DXVK-NVAPI Wiki](https://github.com/jp7677/dxvk-nvapi/wiki) for common issues and workarounds.
@@ -89,6 +120,17 @@ The following environment variables tweak DXVK-NVAPI's runtime behavior:
   - `GB200` (Blackwell)
 - `DXVK_NVAPI_LOG_LEVEL` set to `info` prints log statements. The default behavior omits any logging. Please fill an issue if using log servery `info` creates log spam. Setting severity to `trace` logs all entry points enter and exits, this has a severe effect on performance. All other log levels will be interpreted as `none`.
 - `DXVK_NVAPI_LOG_PATH` enables file logging additionally to console output and sets the path where the log file `nvapi.log`/`nvapi64.log`/`nvofapi64.log` should be written to. Log statements are appended to an existing file. Please remove this file once in a while to prevent excessive grow. This requires `DXVK_NVAPI_LOG_LEVEL` set to `info` or `trace`.
+
+The following environment variables tweak DXVK-NVAPI's Vulkan Reflex layer's runtime behavior:
+
+- `DXVK_NVAPI_VKREFLEX=1` enables the layer; the layer is disabled by default when this isn't set
+- `DISABLE_DXVK_NVAPI_VKREFLEX` disables the layer (overriding `DXVK_NVAPI_VKREFLEX=1`) when set to any nonempty value
+- `DXVK_NVAPI_VKREFLEX_LAYER_LOG_LEVEL` configures logging verbosity, supported values are `none` (default), `error`, `warn`, `info`, `trace`, `debug` and integer values from `0` to `5` inclusive that correspond to named log levels
+- `DXVK_NVAPI_VKREFLEX_EXPOSE_EXTENSION=1` causes the layer to report support for `VK_NV_low_latency` device extension, this is usually unnecessary as modern NVIDIA drivers already claim support for it and exposing it from the layer can cause issues in some games (notably Indiana Jones and the Great Circle)
+- `DXVK_NVAPI_VKREFLEX_INJECT_SUBMIT_FRAME_IDS=1` and `DXVK_NVAPI_VKREFLEX_INJECT_PRESENT_FRAME_IDS=1` cause the layer to inject frame IDs into `vkQueueSubmit*` and `vkQueuePresentKHR` Vulkan commands respectively based on the latency markers set by the application with `NvAPI_Vulkan_SetLatencyMarker`, possibly helping the driver correlate the calls but could interfere with application's own present IDs; enabling either enables `VK_KHR_present_id` device extension and related `presentID` feature
+  - `DXVK_NVAPI_VKREFLEX_ALLOW_FALLBACK_TO_OOB_FRAME_ID=0` disables fallback to out-of-band frame IDs in submit and present calls
+  - `DXVK_NVAPI_VKREFLEX_ALLOW_FALLBACK_TO_PRESENT_FRAME_ID=0` disables fallback to present frame IDs in submit calls
+  - `DXVK_NVAPI_VKREFLEX_ALLOW_FALLBACK_TO_SIMULATION_FRAME_ID=0` disables fallback to simulation frame IDs in submit calls
 
 Additionally, GitHub Actions provide build artifacts from different toolchains. In very rare situations a non-gcc build might provide better results.
 
