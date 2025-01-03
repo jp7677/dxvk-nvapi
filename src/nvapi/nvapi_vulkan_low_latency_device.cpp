@@ -81,7 +81,10 @@ namespace dxvk {
                 vkSetLatencyMarkerNV,
                 vkQueueNotifyOutOfBandNV));
 
-        return {inserted ? &it->second : nullptr, vr};
+        if (!inserted)
+            return {nullptr, VK_ERROR_UNKNOWN};
+
+        return {&it->second, vr};
     }
 
     NvapiVulkanLowLatencyDevice* NvapiVulkanLowLatencyDevice::Get(VkDevice device) {
