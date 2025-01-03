@@ -48,7 +48,7 @@ Proton 9.0 includes DXVK-NVAPI and enables it by default for all titles with a f
 
 Proton Experimental Bleeding Edge additionally always contains the latest DXVK-NVAPI development (master) version.
 
-Proton 8.0 includes DXVK-NVAPI and enables it by default for a lot of titles. Use `PROTON_ENABLE_NVAPI=1` for that version as game launch argument in Steam to enable DXVK-NVAPI for other titles. 
+Proton 8.0 includes DXVK-NVAPI and enables it by default for a lot of titles. Use `PROTON_ENABLE_NVAPI=1` for that version as game launch argument in Steam to enable DXVK-NVAPI for other titles.
 
 ### Wine / Wine-Staging
 
@@ -64,7 +64,7 @@ DXVK 1.10 and older does not support `DXVK_ENABLE_NVAPI`. Disable the `nvapiHack
 
 ### Non-NVIDIA GPU
 
-Using DXVK-NVAPI with other GPU vendors / drivers has very limited use. Outside of testing, only Reflex (LatencyFlex) or HDR entry points provide benefits. This requires DXVK to see the GPU as an NVIDIA GPU. Use `DXVK_CONFIG="dxgi.hideAmdGpu = True"` to spoof an AMD GPU as NVIDIA GPU. Use `DXVK_CONFIG="dxgi.customVendorId = 10de"` for generally spoofing an NVIDIA GPU. 
+Using DXVK-NVAPI with other GPU vendors / drivers has very limited use. Outside of testing, only Reflex (LatencyFlex) or HDR entry points provide benefits. This requires DXVK to see the GPU as an NVIDIA GPU. Use `DXVK_CONFIG="dxgi.hideAmdGpu = True"` to spoof an AMD GPU as NVIDIA GPU. Use `DXVK_CONFIG="dxgi.customVendorId = 10de"` for generally spoofing an NVIDIA GPU.
 
 Setting `DXVK_NVAPI_ALLOW_OTHER_DRIVERS=1` is needed for successful DXVK-NVAPI initialization when using a driver other than the NVIDIA proprietary driver or Mesa NVK. The reported driver version on drivers other than the NVIDIA proprietary driver will be 999.99. Overriding the reported driver version is still recommended. The reported GPU arrchitecture for other vendors is always Pascal to prevent attempts to initialize DLSS. This behavior cannot be changed without modifying the source code.
 
@@ -92,7 +92,7 @@ The following environment variables tweak DXVK-NVAPI's runtime behavior:
 
 Additionally, GitHub Actions provide build artifacts from different toolchains. In very rare situations a non-gcc build might provide better results.
 
-Using those tweaks is exclusively meant for troubleshooting. Regular usage is discouraged and may result in unwanted side effects. Please open an issue if using one of the tweaks is mandatory for a specific title/scenario.     
+Using those tweaks is exclusively meant for troubleshooting. Regular usage is discouraged and may result in unwanted side effects. Please open an issue if using one of the tweaks is mandatory for a specific title/scenario.
 
 This project provides a test suite. Run the package script with `--enable-tests` (see above) to build `nvapi64-tests.exe`. Running the tests executable without arguments queries the local system and provides system information about visible GPUs:
 
