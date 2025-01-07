@@ -30,6 +30,8 @@ static std::string ToGpuType(NV_GPU_TYPE type) {
 
 static std::string ToGpuArchitecture(NV_GPU_ARCHITECTURE_ID id) {
     switch (id) {
+        case NV_GPU_ARCHITECTURE_GB200:
+            return "Blackwell";
         case NV_GPU_ARCHITECTURE_AD100:
             return "Ada";
         case NV_GPU_ARCHITECTURE_GA100:
