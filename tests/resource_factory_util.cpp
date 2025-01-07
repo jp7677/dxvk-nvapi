@@ -123,10 +123,10 @@ void ResetGlobals() {
         NAMED_ALLOW_CALL(vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        strcpy(props->deviceName, "Device1");
-                        props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                    [](auto vkProps) {
+                        strcpy(vkProps.props->deviceName, "Device1");
+                        vkProps.props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
 
         NAMED_ALLOW_CALL(nvml, IsAvailable())
@@ -243,18 +243,18 @@ void ResetGlobals() {
         NAMED_ALLOW_CALL(vk, GetPhysicalDeviceProperties2(_, reinterpret_cast<VkPhysicalDevice>(0x01), _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        strcpy(props->deviceName, "Device1");
-                        props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                    [](auto vkProps) {
+                        strcpy(vkProps.props->deviceName, "Device1");
+                        vkProps.props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
         NAMED_ALLOW_CALL(vk, GetPhysicalDeviceProperties2(_, reinterpret_cast<VkPhysicalDevice>(0x02), _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        strcpy(props->deviceName, "Device2");
-                        props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                    [](auto vkProps) {
+                        strcpy(vkProps.props->deviceName, "Device2");
+                        vkProps.props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     })),
 
         NAMED_ALLOW_CALL(nvml, IsAvailable())
@@ -265,35 +265,36 @@ void ResetGlobals() {
 
 void ConfigureGetPhysicalDeviceProperties2(
     VkPhysicalDeviceProperties2* props,
-    std::function<void(
-        VkPhysicalDeviceProperties*,
-        VkPhysicalDeviceIDProperties*,
-        VkPhysicalDevicePCIBusInfoPropertiesEXT*,
-        VkPhysicalDeviceDriverPropertiesKHR*,
-        VkPhysicalDeviceFragmentShadingRatePropertiesKHR*)>
-        configure) { // NOLINT(performance-unnecessary-value-param)
-    VkPhysicalDeviceIDProperties* idProps = nullptr;
-    VkPhysicalDevicePCIBusInfoPropertiesEXT* pciBusInfoProps = nullptr;
-    VkPhysicalDeviceDriverPropertiesKHR* driverProps = nullptr;
-    VkPhysicalDeviceFragmentShadingRatePropertiesKHR* fragmentShadingRateProps = nullptr;
+    std::function<void(ConfigureProps)> configure) { // NOLINT(performance-unnecessary-value-param)
+    auto vkProps = ConfigureProps{
+        .props = &props->properties,
+        .idProps = nullptr,
+        .pciBusInfoProps = nullptr,
+        .driverProps = nullptr,
+        .fragmentShadingRateProps = nullptr,
+        .computeShaderDerivativesProps = nullptr};
 
     auto next = reinterpret_cast<VkBaseOutStructure*>(props);
     while (next != nullptr) {
         switch (next->sType) {
             case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES: {
-                idProps = reinterpret_cast<VkPhysicalDeviceIDProperties*>(next);
+                vkProps.idProps = reinterpret_cast<VkPhysicalDeviceIDProperties*>(next);
                 break;
             }
             case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT: {
-                pciBusInfoProps = reinterpret_cast<VkPhysicalDevicePCIBusInfoPropertiesEXT*>(next);
+                vkProps.pciBusInfoProps = reinterpret_cast<VkPhysicalDevicePCIBusInfoPropertiesEXT*>(next);
                 break;
             }
             case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR: {
-                driverProps = reinterpret_cast<VkPhysicalDeviceDriverPropertiesKHR*>(next);
+                vkProps.driverProps = reinterpret_cast<VkPhysicalDeviceDriverPropertiesKHR*>(next);
                 break;
             }
             case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR: {
-                fragmentShadingRateProps = reinterpret_cast<VkPhysicalDeviceFragmentShadingRatePropertiesKHR*>(next);
+                vkProps.fragmentShadingRateProps = reinterpret_cast<VkPhysicalDeviceFragmentShadingRatePropertiesKHR*>(next);
+                break;
+            }
+            case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_PROPERTIES_KHR: {
+                vkProps.computeShaderDerivativesProps = reinterpret_cast<VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR*>(next);
                 break;
             }
             default:
@@ -303,5 +304,5 @@ void ConfigureGetPhysicalDeviceProperties2(
         next = next->pNext;
     }
 
-    configure(&props->properties, idProps, pciBusInfoProps, driverProps, fragmentShadingRateProps);
+    configure(vkProps);
 }

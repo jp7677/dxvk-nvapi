@@ -70,8 +70,8 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = args.driverId;
+                    [&args](auto vkProps) {
+                        vkProps.driverProps->driverID = args.driverId;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -84,8 +84,8 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_MESA_NVK;
+                    [](auto vkProps) {
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_MESA_NVK;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -97,8 +97,8 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_MESA_RADV;
+                    [](auto vkProps) {
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_MESA_RADV;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -128,9 +128,9 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
-                        props->driverVersion = (470 << 22) | (35 << 14) | 1 << 6;
+                    [](auto vkProps) {
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        vkProps.props->driverVersion = (470 << 22) | (35 << 14) | 1 << 6;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -147,9 +147,9 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
-                        props->driverVersion = (470 << 22) | (35 << 14) | 1 << 6;
+                    [](auto vkProps) {
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        vkProps.props->driverVersion = (470 << 22) | (35 << 14) | 1 << 6;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -208,13 +208,13 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = args.driverId;
-                        strcpy(props->deviceName, "GPU0");
+                    [&args](auto vkProps) {
+                        vkProps.driverProps->driverID = args.driverId;
+                        strcpy(vkProps.props->deviceName, "GPU0");
                         if (args.driverId == VK_DRIVER_ID_NVIDIA_PROPRIETARY)
-                            props->driverVersion = (args.major << 22) | (args.minor << 14) | (args.patch << 6);
+                            vkProps.props->driverVersion = (args.major << 22) | (args.minor << 14) | (args.patch << 6);
                         else
-                            props->driverVersion = (args.major << 22) | (args.minor << 12) | args.patch;
+                            vkProps.props->driverVersion = (args.major << 22) | (args.minor << 12) | args.patch;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -250,9 +250,9 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
-                        props->driverVersion = (470 << 22) | (45 << 14) | (0 << 6);
+                    [](auto vkProps) {
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        vkProps.props->driverVersion = (470 << 22) | (45 << 14) | (0 << 6);
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -273,11 +273,11 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .LR_SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
-                        pciBusInfoProps->pciDomain = 0x01;
-                        pciBusInfoProps->pciBus = 0x02;
-                        pciBusInfoProps->pciDevice = 0x03;
+                    [](auto vkProps) {
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        vkProps.pciBusInfoProps->pciDomain = 0x01;
+                        vkProps.pciBusInfoProps->pciBus = 0x02;
+                        vkProps.pciBusInfoProps->pciDevice = 0x03;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -319,10 +319,10 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = args.driverId;
+                    [args](auto vkProps) {
+                        vkProps.driverProps->driverID = args.driverId;
                         if (args.extensionName == VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
-                            fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
+                            vkProps.fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -353,9 +353,9 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
-                        props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+                    [](auto vkProps) {
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        vkProps.props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -408,9 +408,9 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .LR_SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [&name](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
-                        strcpy(props->deviceName, name);
+                    [&name](auto vkProps) {
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        strcpy(vkProps.props->deviceName, name);
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -431,9 +431,9 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .LR_SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [&id](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
-                        pciBusInfoProps->pciBus = id;
+                    [&id](auto vkProps) {
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        vkProps.pciBusInfoProps->pciBus = id;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -454,9 +454,9 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .LR_SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [&id](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
-                        pciBusInfoProps->pciDevice = id;
+                    [&id](auto vkProps) {
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        vkProps.pciBusInfoProps->pciDevice = id;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -486,8 +486,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                    [](auto vkProps) {
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -663,11 +663,11 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                    [](auto vkProps) {
                         auto luid = LUID{0x04030211, 0x08070655};
-                        memcpy(&idProps->deviceLUID, &luid, sizeof(luid));
-                        idProps->deviceLUIDValid = VK_TRUE;
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        memcpy(&vkProps.idProps->deviceLUID, &luid, sizeof(luid));
+                        vkProps.idProps->deviceLUIDValid = VK_TRUE;
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -686,11 +686,11 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
+                    [](auto vkProps) {
                         auto luid = LUID{0x04030211, 0x08070655};
-                        memcpy(&idProps->deviceLUID, &luid, sizeof(luid));
-                        idProps->deviceLUIDValid = VK_TRUE;
-                        driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                        memcpy(&vkProps.idProps->deviceLUID, &luid, sizeof(luid));
+                        vkProps.idProps->deviceLUIDValid = VK_TRUE;
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -749,6 +749,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             NV_GPU_ARCH_IMPLEMENTATION_ID expectedImplId;
         };
         auto args = GENERATE(
+            Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2600, VK_KHR_COMPUTE_SHADER_DERIVATIVES_EXTENSION_NAME, 0x8000, NV_GPU_ARCHITECTURE_GB200, NV_GPU_ARCH_IMPLEMENTATION_GB202},
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2600, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 0x8000, NV_GPU_ARCHITECTURE_AD100, NV_GPU_ARCH_IMPLEMENTATION_AD102},
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 0x8000, NV_GPU_ARCHITECTURE_GA100, NV_GPU_ARCH_IMPLEMENTATION_GA102},
             Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME, 0x8000, NV_GPU_ARCHITECTURE_TU100, NV_GPU_ARCH_IMPLEMENTATION_TU102},
@@ -773,12 +774,14 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        props->deviceID = args.deviceId;
-                        props->limits.maxFramebufferHeight = args.maxFramebufferHeight;
-                        driverProps->driverID = args.driverId;
+                    [&args](auto vkProps) {
+                        vkProps.props->deviceID = args.deviceId;
+                        vkProps.props->limits.maxFramebufferHeight = args.maxFramebufferHeight;
+                        vkProps.driverProps->driverID = args.driverId;
                         if (args.extensionName == VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
-                            fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
+                            vkProps.fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
+                        if (args.extensionName == VK_KHR_COMPUTE_SHADER_DERIVATIVES_EXTENSION_NAME)
+                            vkProps.computeShaderDerivativesProps->meshAndTaskShaderDerivatives = VK_TRUE;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -837,8 +840,8 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = VK_DRIVER_ID_MESA_RADV;
+                    [](auto vkProps) {
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_MESA_RADV;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
@@ -890,11 +893,11 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
             .SIDE_EFFECT(
                 ConfigureGetPhysicalDeviceProperties2(_3,
-                    [&args](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                        driverProps->driverID = args.driverId;
-                        props->deviceID = args.deviceId;
+                    [&args](auto vkProps) {
+                        vkProps.driverProps->driverID = args.driverId;
+                        vkProps.props->deviceID = args.deviceId;
                         if (args.extensionName == VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
-                            fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
+                            vkProps.fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
                     }));
 
         SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));

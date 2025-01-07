@@ -34,12 +34,15 @@ void ResetGlobals();
     DXGIOutput6Mock& output2,
     DXGIOutput6Mock& output3);
 
+struct ConfigureProps {
+    VkPhysicalDeviceProperties* props;
+    VkPhysicalDeviceIDProperties* idProps;
+    VkPhysicalDevicePCIBusInfoPropertiesEXT* pciBusInfoProps;
+    VkPhysicalDeviceDriverPropertiesKHR* driverProps;
+    VkPhysicalDeviceFragmentShadingRatePropertiesKHR* fragmentShadingRateProps;
+    VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR* computeShaderDerivativesProps;
+};
+
 void ConfigureGetPhysicalDeviceProperties2(
     VkPhysicalDeviceProperties2* props,
-    std::function<void(
-        VkPhysicalDeviceProperties*,
-        VkPhysicalDeviceIDProperties*,
-        VkPhysicalDevicePCIBusInfoPropertiesEXT*,
-        VkPhysicalDeviceDriverPropertiesKHR*,
-        VkPhysicalDeviceFragmentShadingRatePropertiesKHR*)>
-        configure);
+    std::function<void(ConfigureProps)> configure);

@@ -256,13 +256,13 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
                 .SIDE_EFFECT(
                     ConfigureGetPhysicalDeviceProperties2(_3,
-                        [&args, &luid](auto props, auto idProps, auto pciBusInfoProps, auto driverProps, auto fragmentShadingRateProps) {
-                            memcpy(&idProps->deviceLUID, &luid, sizeof(luid));
-                            idProps->deviceLUIDValid = VK_TRUE;
-                            driverProps->driverID = args.driverId;
-                            props->deviceID = args.deviceId;
-                            if (args.extensionName == VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)
-                                fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
+                        [&args, &luid](auto vkProps) {
+                            memcpy(&vkProps.idProps->deviceLUID, &luid, sizeof(luid));
+                            vkProps.idProps->deviceLUIDValid = VK_TRUE;
+                            vkProps.driverProps->driverID = args.driverId;
+                            vkProps.props->deviceID = args.deviceId;
+                            if (args.extensionNames.contains(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME))
+                                vkProps.fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
                         }));
 
             SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
