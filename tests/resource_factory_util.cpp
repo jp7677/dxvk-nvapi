@@ -272,7 +272,8 @@ void ConfigureGetPhysicalDeviceProperties2(
         .pciBusInfoProps = nullptr,
         .driverProps = nullptr,
         .fragmentShadingRateProps = nullptr,
-        .computeShaderDerivativesProps = nullptr};
+        .computeShaderDerivativesProps = nullptr,
+        .cudaKernelLaunchProperties = nullptr};
 
     auto next = reinterpret_cast<VkBaseOutStructure*>(props);
     while (next != nullptr) {
@@ -295,6 +296,10 @@ void ConfigureGetPhysicalDeviceProperties2(
             }
             case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_PROPERTIES_KHR: {
                 vkProps.computeShaderDerivativesProps = reinterpret_cast<VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR*>(next);
+                break;
+            }
+            case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_PROPERTIES_NV: {
+                vkProps.cudaKernelLaunchProperties = reinterpret_cast<VkPhysicalDeviceCudaKernelLaunchPropertiesNV*>(next);
                 break;
             }
             default:

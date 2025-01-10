@@ -202,8 +202,15 @@ extern "C" {
         if (luid.has_value())
             adapter = nvapiAdapterRegistry->FindAdapter(luid.value());
 
-        if (adapter == nullptr || (!adapter->HasNvProprietaryDriver() && !adapter->HasNvkDriver()))
+        if (adapter == nullptr)
             return Ok(str::format(n, " (sm_0)"));
+
+        // From https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/ and https://en.wikipedia.org/wiki/CUDA#GPUs_supported
+        // Note: One might think that SM here is D3D12 Shader Model, in fact it is the "Streaming Multiprocessor" architecture version
+        // Values are valid for Turing and newer only, due to VK_NV_cuda_kernel_launch not being supported by earlier generations
+        auto computeCapability = adapter->GetComputeCapability();
+        pGraphicsCaps->majorSMVersion = computeCapability.first;
+        pGraphicsCaps->minorSMVersion = computeCapability.second;
 
         // Might be related to VK_NV_scissor_exclusive (which isn't used by VKD3D-Proton), but unknown in the context of D3D12
         // pGraphicsCaps->bExclusiveScissorRectsSupported = adapter->IsVkDeviceExtensionSupported(VK_NV_SCISSOR_EXCLUSIVE_EXTENSION_NAME);
@@ -211,41 +218,6 @@ extern "C" {
         // Note that adapter->IsVkDeviceExtensionSupported returns the extensions supported by DXVK, not by VKD3D-Proton,
         // so we might be wrong here in case of an old VKD3D-Proton version or when VKD3D_DISABLE_EXTENSIONS is in use
         pGraphicsCaps->bVariablePixelRateShadingSupported = adapter->IsVkDeviceExtensionSupported(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
-
-        // From https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
-        // Note: One might think that SM here is D3D12 Shader Model, in fact it is the "Streaming Multiprocessor" architecture name
-        switch (adapter->GetArchitectureId()) {
-            case NV_GPU_ARCHITECTURE_AD100:
-                pGraphicsCaps->majorSMVersion = 8;
-                pGraphicsCaps->minorSMVersion = 9;
-                break;
-            case NV_GPU_ARCHITECTURE_GA100:
-                pGraphicsCaps->majorSMVersion = 8;
-                pGraphicsCaps->minorSMVersion = 6; // Take the risk that no one uses an NVIDIA A100 with this implementation
-                break;
-            case NV_GPU_ARCHITECTURE_TU100:
-                pGraphicsCaps->majorSMVersion = 7;
-                pGraphicsCaps->minorSMVersion = 5;
-                break;
-            case NV_GPU_ARCHITECTURE_GV100:
-                pGraphicsCaps->majorSMVersion = 7;
-                pGraphicsCaps->minorSMVersion = 0;
-                break;
-            case NV_GPU_ARCHITECTURE_GP100:
-                pGraphicsCaps->majorSMVersion = 6;
-                pGraphicsCaps->minorSMVersion = 0;
-                break;
-            case NV_GPU_ARCHITECTURE_GM200:
-                pGraphicsCaps->majorSMVersion = 5;
-                pGraphicsCaps->minorSMVersion = 2;
-                break;
-            case NV_GPU_ARCHITECTURE_GM000:
-                pGraphicsCaps->majorSMVersion = 5;
-                pGraphicsCaps->minorSMVersion = 0;
-                break;
-            default:
-                break;
-        }
 
         return Ok(str::format(n, " (sm_", pGraphicsCaps->majorSMVersion, pGraphicsCaps->minorSMVersion, ")"));
     }

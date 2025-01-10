@@ -229,30 +229,30 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             struct Data {
                 VkDriverId driverId;
                 uint32_t deviceId;
-                std::string extensionName;
+                std::set<std::string> extensionNames;
                 uint16_t expectedMajorSMVersion;
                 uint16_t expectedMinorSMVersion;
                 bool variablePixelRateShadingSupported;
             };
             auto args = GENERATE(
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2600, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 9, true},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 6, true},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME, 7, 5, false},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NVX_IMAGE_VIEW_HANDLE_EXTENSION_NAME, 7, 0, false},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NV_CLIP_SPACE_W_SCALING_EXTENSION_NAME, 6, 0, false},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, 5, 2, false},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, VK_EXT_SHADER_IMAGE_ATOMIC_INT64_EXTENSION_NAME, 5, 0, false},
-                Data{VK_DRIVER_ID_MESA_NVK, 0x2600, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 8, 9, true},
-                Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, 0x2000, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, 0, 0, false},
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, "ext", 0, 0, false});
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, {VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, VK_NV_CUDA_KERNEL_LAUNCH_EXTENSION_NAME}, 8, 6, true},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, {VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME}, 0, 0, true},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, {}, 0, 0, false},
+                Data{VK_DRIVER_ID_MESA_NVK, 0x2600, {VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME}, 0, 0, true},
+                Data{VK_DRIVER_ID_MESA_NVK, 0x2600, {}, 0, 0, false},
+                Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, 0x2000, {}, 0, 0, false},
+                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, {}, 0, 0, false});
 
             ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
+
+            auto extensionNames = std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME};
+            extensionNames.insert(args.extensionNames.begin(), args.extensionNames.end());
 
             luid.HighPart = 0x00000002;
             luid.LowPart = 0x00000001;
 
             ALLOW_CALL(*vk, GetDeviceExtensions(_, _))
-                .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, args.extensionName});
+                .RETURN(extensionNames);
             ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
                 .SIDE_EFFECT(
                     ConfigureGetPhysicalDeviceProperties2(_3,
@@ -261,8 +261,10 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                             vkProps.idProps->deviceLUIDValid = VK_TRUE;
                             vkProps.driverProps->driverID = args.driverId;
                             vkProps.props->deviceID = args.deviceId;
-                            if (args.extensionNames.contains(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME))
-                                vkProps.fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
+                            if (args.extensionNames.contains(VK_NV_CUDA_KERNEL_LAUNCH_EXTENSION_NAME)) {
+                                vkProps.cudaKernelLaunchProperties->computeCapabilityMajor = 8;
+                                vkProps.cudaKernelLaunchProperties->computeCapabilityMinor = 6;
+                            }
                         }));
 
             SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));

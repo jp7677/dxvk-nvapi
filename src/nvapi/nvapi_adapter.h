@@ -38,6 +38,7 @@ namespace dxvk {
         [[nodiscard]] uint32_t GetBoardId() const;
         [[nodiscard]] std::optional<LUID> GetLuid() const;
         [[nodiscard]] NV_GPU_ARCHITECTURE_ID GetArchitectureId() const;
+        [[nodiscard]] std::pair<uint32_t, uint32_t> GetComputeCapability() const;
         [[nodiscard]] bool IsVkDeviceExtensionSupported(const std::string& name) const;
         [[nodiscard]] const MemoryInfo& GetMemoryInfo() const;
         [[nodiscard]] MemoryBudgetInfo GetCurrentMemoryBudgetInfo() const;
@@ -68,6 +69,7 @@ namespace dxvk {
         VkPhysicalDeviceDriverPropertiesKHR m_vkDriverProperties{};
         VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_vkFragmentShadingRateProperties{};
         VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR m_vkComputeShaderDerivativesProperties{};
+        VkPhysicalDeviceCudaKernelLaunchPropertiesNV m_vkCudaKernelLaunchProperties{};
         uint32_t m_vkDriverVersion{};
         uint32_t m_dxgiVendorId{};
         uint32_t m_dxgiDeviceId{};
