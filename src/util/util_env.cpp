@@ -45,16 +45,13 @@ namespace dxvk::env {
         return stream.str();
     }
 
-    // Function to check for WAR to DLSS Bug 3634851 if an affected DLSS DLL is
-    // detected this function will return true; false will be returned for all
-    // non-affected DLLs.
-    static bool isDLSSVersion20To24(void* pReturnAddress) {
+    static std::optional<std::pair<uint32_t, uint32_t>> getDLSSVersion(void* pReturnAddress) {
         // Get file path of caller DLL
         char modulePath[MAX_PATH];
         HMODULE hModule = nullptr;
         if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (const char*)pReturnAddress, &hModule)) {
             // Failed to get the path, won't try to WAR.
-            return false;
+            return {};
         }
         uint32_t pathLen = GetModuleFileName(hModule, modulePath, MAX_PATH);
 
@@ -66,55 +63,59 @@ namespace dxvk::env {
             // app_???????.bin matches OTA pattern
         } else {
             // Filename does not match known patterns
-            return false;
+            return {};
         }
 
         // Get the version metadata from the DLL
         uint32_t infoSize = GetFileVersionInfoSizeA(modulePath, nullptr);
         if (infoSize == 0) {
-            return false;
+            return {};
         }
 
-        auto* verInfo = new uint8_t[infoSize];
+        auto verInfo = std::vector<uint8_t>(infoSize);
 
-        if (!GetFileVersionInfoA(modulePath, 0, infoSize, verInfo)) {
-            delete[] verInfo;
-            return false;
+        if (!GetFileVersionInfoA(modulePath, 0, infoSize, verInfo.data())) {
+            return {};
         }
 
         VS_FIXEDFILEINFO* fixedInfo = nullptr;
         uint32_t fixedSize = 0;
 
-        VerQueryValueA(verInfo, "\\", (void**)&fixedInfo, &fixedSize);
+        VerQueryValueA(verInfo.data(), "\\", (void**)&fixedInfo, &fixedSize);
 
         // Double-check that we are reading a VS_FIXEDFILEINFO structure
         if (fixedInfo->dwSignature != 0xFEEF04BD) {
-            delete[] verInfo;
-            return false;
+            return {};
         }
 
-        // Only DLSS 2.x versions prior to 2.4 are affected by this bug
         uint32_t majorVersion = (fixedInfo->dwFileVersionMS & 0xFFFF0000) >> 16;
         uint32_t minorVersion = fixedInfo->dwFileVersionMS & 0x0000FFFF;
-        if (majorVersion != 2 || minorVersion >= 4) {
-            delete[] verInfo;
-            return false;
-        }
 
         // Lastly compare the product name to be absolutely certain we were
         // called by DLSS
         char* productName;
         uint32_t productNameSize;
-        VerQueryValueA(verInfo, R"(\StringFileInfo\040904E4\ProductName)", (void**)&productName, &productNameSize);
+        VerQueryValueA(verInfo.data(), R"(\StringFileInfo\040904E4\ProductName)", (void**)&productName, &productNameSize);
 
         if (strcmp(productName, "NVIDIA Deep Learning SuperSampling") == 0) {
-            // A DLSS version between 2.0 and 2.4 was detected, applying WAR
-            delete[] verInfo;
-            return true;
+            return std::make_pair(majorVersion, minorVersion);
         } else {
-            delete[] verInfo;
-            return false;
+            return {};
         }
+    }
+
+    // Function to check for WAR to DLSS Bug 3634851 if an affected DLSS DLL is
+    // detected this function will return true; false will be returned for all
+    // non-affected DLLs.
+    static bool isDLSSVersion20To24(void* returnAddress) {
+        auto [majorVersion, minorVersion] = getDLSSVersion(returnAddress).value_or(std::make_pair(0, 0));
+        // Only DLSS 2.x versions prior to 2.4 are affected by this bug
+        return majorVersion == 2 && minorVersion < 4;
+    }
+
+    bool isDLSSVersion20(void* returnAddress) {
+        auto [majorVersion, minorVersion] = getDLSSVersion(returnAddress).value_or(std::make_pair(0, 0));
+        return majorVersion == 2 && minorVersion == 0;
     }
 
     bool isTheGreatCircle() {
