@@ -102,7 +102,7 @@ ID3D11VkExtDevice1 : public ID3D11VkExtDevice {
     virtual bool STDMETHODCALLTYPE GetCudaTextureObjectNVX(
         uint32_t srvDriverHandle,
         uint32_t samplerDriverHandle,
-        uint32_t * pCudaTextureHandle) = 0;
+        uint32_t* pCudaTextureHandle) = 0;
 };
 
 MIDL_INTERFACE("fd0bca13-5cb6-4c3a-987e-4750de2ca791")
