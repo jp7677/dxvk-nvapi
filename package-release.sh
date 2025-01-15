@@ -21,6 +21,7 @@ fi
 shift 2
 
 opt_enabletests=false
+opt_disablelayer=0
 opt_devbuild=0
 
 crossfile="build-win"
@@ -32,6 +33,9 @@ while [ $# -gt 0 ]; do
     ;;
   "--enable-tests")
     opt_enabletests=true
+    ;;
+  "--disable-layer")
+    opt_disablelayer=1
     ;;
   "--dev-build")
     opt_devbuild=1
@@ -54,6 +58,7 @@ function prepare {
     src/nvapi_d3d.cpp         \
     src/nvapi_d3d11.cpp       \
     src/nvapi_d3d12.cpp       \
+    src/nvapi_vulkan.cpp      \
     src/nvapi_interface.cpp   \
     external/nvapi/nvapi_interface.h
 }
@@ -88,6 +93,31 @@ function build_arch {
   fi
 }
 
+function build_layer {
+  # remove generated files, because otherwise the existing
+  # files get into the build instead of the generated ones
+  rm -f "$SRC_DIR"/layer/{version,config}.h
+
+  meson setup                     \
+    --buildtype "release"         \
+    --prefix "$BUILD_DIR/layer"   \
+    --libdir ''                   \
+    --strip                       \
+    -Dabsolute_library_path=false \
+    -Dlibrary_path_prefix=./      \
+    -Dmanifest_install_dir=.      \
+    "$BUILD_DIR/build.layer"      \
+    "$SRC_DIR/layer"
+
+  ninja -C "$BUILD_DIR/build.layer" install
+ 
+  cp "$BUILD_DIR"/build.layer/{version,config}.h "$SRC_DIR/layer"
+
+  if (( ! opt_devbuild )); then
+    rm -R "$BUILD_DIR/build.layer"
+  fi
+}
+
 function copy_extra {
   cd "$SRC_DIR"
   cp LICENSE "$BUILD_DIR"
@@ -97,4 +127,8 @@ function copy_extra {
 prepare
 build_arch 32
 build_arch 64
+cd "$SRC_DIR"
+if (( ! opt_disablelayer )); then
+  build_layer
+fi
 copy_extra
