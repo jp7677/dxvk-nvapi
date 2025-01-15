@@ -28,6 +28,10 @@ class MockFactory : public dxvk::ResourceFactory {
         return std::move(m_vkMock);
     }
 
+    std::unique_ptr<dxvk::Vk> CreateVulkan(const char*) override {
+        return std::move(m_vkMock);
+    }
+
     std::unique_ptr<dxvk::Nvml> CreateNvml() override {
         return std::move(m_nvmlMock);
     }

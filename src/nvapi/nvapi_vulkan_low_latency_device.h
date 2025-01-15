@@ -7,6 +7,8 @@ namespace dxvk {
     class NvapiVulkanLowLatencyDevice {
       public:
         static bool Initialize(ResourceFactory& resourceFactory);
+        static std::pair<NvapiVulkanLowLatencyDevice*, bool> Insert(std::unique_ptr<NvapiVulkanLowLatencyDevice>&& lowLatencyDevice);
+        static void Reset();
 
         [[nodiscard]] static std::pair<NvapiVulkanLowLatencyDevice*, VkResult> GetOrCreate(VkDevice device);
         [[nodiscard]] static NvapiVulkanLowLatencyDevice* Get(VkDevice device);
@@ -26,20 +28,20 @@ namespace dxvk {
             PFN_PARAM(vkQueueNotifyOutOfBandNV));
 #undef PFN_PARAM
 
-        [[nodiscard]] VkSemaphore GetSemaphore() const;
+        [[nodiscard]] virtual VkSemaphore GetSemaphore() const;
 
-        [[nodiscard]] bool GetLowLatencyMode() const;
+        [[nodiscard]] virtual bool GetLowLatencyMode() const;
 
-        [[nodiscard]] VkResult SetLatencySleepMode(std::nullptr_t);
-        [[nodiscard]] VkResult SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs);
-        [[nodiscard]] VkResult LatencySleep(uint64_t value);
-        [[nodiscard]] bool GetLatencyTimings(std::array<VkLatencyTimingsFrameReportNV, 64>& timings);
-        void SetLatencyMarker(uint64_t presentID, VkLatencyMarkerNV marker);
-        void QueueNotifyOutOfBand(VkQueue queue, VkOutOfBandQueueTypeNV queueType);
+        [[nodiscard]] virtual VkResult SetLatencySleepMode(std::nullptr_t);
+        [[nodiscard]] virtual VkResult SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs);
+        [[nodiscard]] virtual VkResult LatencySleep(uint64_t value);
+        [[nodiscard]] virtual bool GetLatencyTimings(std::array<VkLatencyTimingsFrameReportNV, 64>& timings);
+        virtual void SetLatencyMarker(uint64_t presentID, VkLatencyMarkerNV marker);
+        virtual void QueueNotifyOutOfBand(VkQueue queue, VkOutOfBandQueueTypeNV queueType);
 
       private:
         static std::unique_ptr<Vk> m_vk;
-        static std::unordered_map<VkDevice, NvapiVulkanLowLatencyDevice> m_lowLatencyDeviceMap;
+        static std::unordered_map<VkDevice, std::unique_ptr<NvapiVulkanLowLatencyDevice>> m_lowLatencyDeviceMap;
         static std::mutex m_mutex;
 
         VkDevice m_device{};

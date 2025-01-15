@@ -2,7 +2,7 @@
 
 namespace dxvk {
     std::unique_ptr<Vk> NvapiVulkanLowLatencyDevice::m_vk = nullptr;
-    std::unordered_map<VkDevice, NvapiVulkanLowLatencyDevice> NvapiVulkanLowLatencyDevice::m_lowLatencyDeviceMap = {};
+    std::unordered_map<VkDevice, std::unique_ptr<NvapiVulkanLowLatencyDevice>> NvapiVulkanLowLatencyDevice::m_lowLatencyDeviceMap = {};
     std::mutex NvapiVulkanLowLatencyDevice::m_mutex = {};
 
     bool NvapiVulkanLowLatencyDevice::Initialize(ResourceFactory& resourceFactory) {
@@ -21,6 +21,28 @@ namespace dxvk {
         return m_vk && m_vk->IsAvailable();
     }
 
+    std::pair<NvapiVulkanLowLatencyDevice*, bool> NvapiVulkanLowLatencyDevice::Insert(std::unique_ptr<NvapiVulkanLowLatencyDevice>&& lowLatencyDevice) {
+        std::scoped_lock lock{m_mutex};
+
+        auto vkDevice = lowLatencyDevice->m_device;
+
+        auto [it, inserted] = m_lowLatencyDeviceMap.emplace(vkDevice, std::move(lowLatencyDevice));
+
+        return std::make_pair(it->second.get(), inserted);
+    }
+
+    void NvapiVulkanLowLatencyDevice::Reset() {
+        std::scoped_lock lock{m_mutex};
+
+        for (auto& pair : m_lowLatencyDeviceMap) {
+            auto lowLatencyDevice = std::move(pair.second);
+            lowLatencyDevice->m_vkDestroySemaphore(lowLatencyDevice->m_device, lowLatencyDevice->m_semaphore, nullptr);
+        }
+
+        m_lowLatencyDeviceMap.clear();
+        m_vk.reset();
+    }
+
     std::pair<NvapiVulkanLowLatencyDevice*, VkResult> NvapiVulkanLowLatencyDevice::GetOrCreate(VkDevice device) {
         std::scoped_lock lock{m_mutex};
 
@@ -30,9 +52,7 @@ namespace dxvk {
         if (!m_vk || !m_vk->IsAvailable())
             return {nullptr, VK_ERROR_INITIALIZATION_FAILED};
 
-        auto pvkGetDeviceProcAddr = m_vk->GetVkGetDeviceProcAddr();
-
-#define VK_GET_DEVICE_PROC_ADDR(proc) auto proc = reinterpret_cast<PFN_##proc>(pvkGetDeviceProcAddr(device, #proc))
+#define VK_GET_DEVICE_PROC_ADDR(proc) auto proc = reinterpret_cast<PFN_##proc>(m_vk->GetDeviceProcAddr(device, #proc))
 
         VK_GET_DEVICE_PROC_ADDR(vkCreateSemaphore);
         VK_GET_DEVICE_PROC_ADDR(vkDestroySemaphore);
@@ -69,9 +89,8 @@ namespace dxvk {
             return {nullptr, vr};
 
         auto [it, inserted] = m_lowLatencyDeviceMap.emplace(
-            std::piecewise_construct,
-            std::forward_as_tuple(device),
-            std::forward_as_tuple(
+            device,
+            std::make_unique<NvapiVulkanLowLatencyDevice>(
                 device,
                 semaphore,
                 vkDestroySemaphore,
@@ -84,12 +103,12 @@ namespace dxvk {
         if (!inserted)
             return {nullptr, VK_ERROR_UNKNOWN};
 
-        return {&it->second, vr};
+        return {it->second.get(), vr};
     }
 
     NvapiVulkanLowLatencyDevice* NvapiVulkanLowLatencyDevice::Get(VkDevice device) {
         auto it = m_lowLatencyDeviceMap.find(device);
-        return it == m_lowLatencyDeviceMap.end() ? nullptr : &it->second;
+        return it == m_lowLatencyDeviceMap.end() ? nullptr : it->second.get();
     }
 
     bool NvapiVulkanLowLatencyDevice::Destroy(VkDevice device) {
@@ -100,9 +119,9 @@ namespace dxvk {
         if (node.empty())
             return false;
 
-        auto& lowLatencyDevice = node.mapped();
+        auto lowLatencyDevice = std::move(node.mapped());
 
-        lowLatencyDevice.m_vkDestroySemaphore(lowLatencyDevice.m_device, lowLatencyDevice.m_semaphore, nullptr);
+        lowLatencyDevice->m_vkDestroySemaphore(lowLatencyDevice->m_device, lowLatencyDevice->m_semaphore, nullptr);
 
         return true;
     }

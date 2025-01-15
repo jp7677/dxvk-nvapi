@@ -14,7 +14,7 @@ namespace dxvk {
         virtual ~Vk();
 
         [[nodiscard]] virtual bool IsAvailable() const;
-        [[nodiscard]] virtual PFN_vkGetDeviceProcAddr GetVkGetDeviceProcAddr() const;
+        [[nodiscard]] virtual PFN_vkVoidFunction GetDeviceProcAddr(VkDevice vkDevice, const char* name) const;
         [[nodiscard]] virtual std::set<std::string> GetDeviceExtensions(VkInstance vkInstance, VkPhysicalDevice vkDevice) const;
         virtual void GetPhysicalDeviceProperties2(VkInstance vkInstance, VkPhysicalDevice vkDevice, VkPhysicalDeviceProperties2* deviceProperties2) const;
 
