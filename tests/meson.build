@@ -8,6 +8,7 @@ nvapi_src = files([
   '../src/nvapi/lfx.cpp',
   '../src/nvapi/nvapi_d3d_instance.cpp',
   '../src/nvapi/nvapi_d3d_low_latency_device.cpp',
+  '../src/nvapi/nvapi_vulkan_low_latency_device.cpp',
   '../src/nvapi/nvapi_output.cpp',
   '../src/nvapi/nvapi_adapter.cpp',
   '../src/nvapi/nvapi_adapter_registry.cpp',
@@ -39,6 +40,7 @@ nvapi_tests_src = files([
   'nvapi_sysinfo_nvml.cpp',
   'nvapi_sysinfo_hdr.cpp',
   'nvapi_system.cpp',
+  'nvapi_vulkan.cpp',
   'util.cpp',
 ])
 
