@@ -16,22 +16,28 @@ TEST_CASE("Log", "[.util]") {
     REQUIRE(dxvk::log::fmt::flt(0.45) == "0.45");
     REQUIRE(dxvk::log::fmt::flags(28) == "flags=0x001c");
 
-    NV_LATENCY_MARKER_PARAMS params1{};
-    params1.version = NV_LATENCY_MARKER_PARAMS_VER1;
-    params1.frameID = 65;
-    params1.markerType = PC_LATENCY_PING;
-    REQUIRE(dxvk::log::fmt::nv_latency_marker_params(&params1) == "{version=65624,frameID=65,markerType=PC_LATENCY_PING,rsvd}");
+    {
+        NV_LATENCY_MARKER_PARAMS params{};
+        params.version = NV_LATENCY_MARKER_PARAMS_VER1;
+        params.frameID = 65;
+        params.markerType = PC_LATENCY_PING;
+        REQUIRE(dxvk::log::fmt::nv_latency_marker_params(&params) == "{version=65624,frameID=65,markerType=PC_LATENCY_PING,rsvd}");
+    }
 
-    NV_ASYNC_FRAME_MARKER_PARAMS params2{};
-    params2.version = NV_ASYNC_FRAME_MARKER_PARAMS_VER1;
-    params2.frameID = 65;
-    params2.markerType = PC_LATENCY_PING;
-    params2.presentFrameID = 63;
-    REQUIRE(dxvk::log::fmt::nv_async_frame_marker_params(&params2) == "{version=65624,frameID=65,markerType=PC_LATENCY_PING,presentFrameID=63,rsvd}");
+    {
+        NV_ASYNC_FRAME_MARKER_PARAMS params{};
+        params.version = NV_ASYNC_FRAME_MARKER_PARAMS_VER1;
+        params.frameID = 65;
+        params.markerType = PC_LATENCY_PING;
+        params.presentFrameID = 63;
+        REQUIRE(dxvk::log::fmt::nv_async_frame_marker_params(&params) == "{version=65624,frameID=65,markerType=PC_LATENCY_PING,presentFrameID=63,rsvd}");
+    }
 
-    D3D12_CPU_DESCRIPTOR_HANDLE handle{};
-    auto ptr = dxvk::str::format(std::hex, handle.ptr);
-    REQUIRE(dxvk::log::fmt::d3d12_cpu_descriptor_handle(handle) == dxvk::str::format("{ptr=", dxvk::log::fmt::hex_prefix, ptr, "}"));
+    {
+        D3D12_CPU_DESCRIPTOR_HANDLE handle{};
+        auto ptr = dxvk::str::format(std::hex, handle.ptr);
+        REQUIRE(dxvk::log::fmt::d3d12_cpu_descriptor_handle(handle) == dxvk::str::format("{ptr=", dxvk::log::fmt::hex_prefix, ptr, "}"));
+    }
 }
 
 TEST_CASE("String", "[.util]") {
