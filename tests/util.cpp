@@ -34,6 +34,35 @@ TEST_CASE("Log", "[.util]") {
     }
 
     {
+        NV_VULKAN_GET_SLEEP_STATUS_PARAMS params{};
+        params.version = NV_VULKAN_GET_SLEEP_STATUS_PARAMS_VER1;
+        REQUIRE(dxvk::log::fmt::nv_vk_get_sleep_status_params(&params) == "{version=65672,...,rsvd}");
+    }
+
+    {
+        NV_VULKAN_SET_SLEEP_MODE_PARAMS params{};
+        params.version = NV_VULKAN_SET_SLEEP_MODE_PARAMS_VER1;
+        params.bLowLatencyMode = 1;
+        params.bLowLatencyBoost = 0;
+        params.minimumIntervalUs = 5555;
+        REQUIRE(dxvk::log::fmt::nv_vk_set_sleep_status_params(&params) == "{version=65580,bLowLatencyMode=1,bLowLatencyBoost=0,minimumIntervalUs=5555,rsvd}");
+    }
+
+    {
+        NV_VULKAN_LATENCY_RESULT_PARAMS params{};
+        params.version = NV_VULKAN_LATENCY_RESULT_PARAMS_VER1;
+        REQUIRE(dxvk::log::fmt::nv_vk_latency_result_params(&params) == "{version=80936,...,rsvd}");
+    }
+
+    {
+        NV_VULKAN_LATENCY_MARKER_PARAMS params{};
+        params.version = NV_VULKAN_LATENCY_MARKER_PARAMS_VER1;
+        params.frameID = 65;
+        params.markerType = VULKAN_PC_LATENCY_PING;
+        REQUIRE(dxvk::log::fmt::nv_vk_latency_marker_params(&params) == "{version=65624,frameID=65,markerType=8,rsvd}");
+    }
+
+    {
         D3D12_CPU_DESCRIPTOR_HANDLE handle{};
         auto ptr = dxvk::str::format(std::hex, handle.ptr);
         REQUIRE(dxvk::log::fmt::d3d12_cpu_descriptor_handle(handle) == dxvk::str::format("{ptr=", dxvk::log::fmt::hex_prefix, ptr, "}"));
