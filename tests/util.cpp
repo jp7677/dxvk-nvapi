@@ -6,28 +6,28 @@
 using namespace Catch::Matchers;
 
 TEST_CASE("Log", "[.util]") {
-    REQUIRE(dxvk::log::fmt::hnd(nullptr) == std::string("hnd=0x0"));
+    REQUIRE(dxvk::log::fmt::hnd(nullptr) == "hnd=0x0");
     // Avoid different hex padding between MSVC and GCC
-    REQUIRE(dxvk::log::fmt::hnd((void*)0x1000000000000089) == std::string("hnd=0x1000000000000089"));
-    REQUIRE(dxvk::log::fmt::ptr(nullptr) == std::string("nullptr"));
-    REQUIRE(dxvk::log::fmt::ptr((void*)0x1000000000000089) == std::string("ptr=0x1000000000000089"));
-    REQUIRE(dxvk::log::fmt::flt(0) == std::string("0.0"));
-    REQUIRE(dxvk::log::fmt::flt(1) == std::string("1.0"));
-    REQUIRE(dxvk::log::fmt::flt(0.45) == std::string("0.45"));
-    REQUIRE(dxvk::log::fmt::flags(28) == std::string("flags=0x001c"));
+    REQUIRE(dxvk::log::fmt::hnd((void*)0x1000000000000089) == "hnd=0x1000000000000089");
+    REQUIRE(dxvk::log::fmt::ptr(nullptr) == "nullptr");
+    REQUIRE(dxvk::log::fmt::ptr((void*)0x1000000000000089) == "ptr=0x1000000000000089");
+    REQUIRE(dxvk::log::fmt::flt(0) == "0.0");
+    REQUIRE(dxvk::log::fmt::flt(1) == "1.0");
+    REQUIRE(dxvk::log::fmt::flt(0.45) == "0.45");
+    REQUIRE(dxvk::log::fmt::flags(28) == "flags=0x001c");
 
     NV_LATENCY_MARKER_PARAMS params1{};
     params1.version = NV_LATENCY_MARKER_PARAMS_VER1;
     params1.frameID = 65;
     params1.markerType = PC_LATENCY_PING;
-    REQUIRE(dxvk::log::fmt::nv_latency_marker_params(&params1) == std::string("{version=65624,frameID=65,markerType=PC_LATENCY_PING,rsvd}"));
+    REQUIRE(dxvk::log::fmt::nv_latency_marker_params(&params1) == "{version=65624,frameID=65,markerType=PC_LATENCY_PING,rsvd}");
 
     NV_ASYNC_FRAME_MARKER_PARAMS params2{};
     params2.version = NV_ASYNC_FRAME_MARKER_PARAMS_VER1;
     params2.frameID = 65;
     params2.markerType = PC_LATENCY_PING;
     params2.presentFrameID = 63;
-    REQUIRE(dxvk::log::fmt::nv_async_frame_marker_params(&params2) == std::string("{version=65624,frameID=65,markerType=PC_LATENCY_PING,presentFrameID=63,rsvd}"));
+    REQUIRE(dxvk::log::fmt::nv_async_frame_marker_params(&params2) == "{version=65624,frameID=65,markerType=PC_LATENCY_PING,presentFrameID=63,rsvd}");
 
     D3D12_CPU_DESCRIPTOR_HANDLE handle{};
     auto ptr = dxvk::str::format(std::hex, handle.ptr);
@@ -37,23 +37,23 @@ TEST_CASE("Log", "[.util]") {
 TEST_CASE("String", "[.util]") {
     SECTION("fromnvus") {
         NvAPI_UnicodeString us = {'U', 'n', 'i', 'c', 'o', 'd', 'e'};
-        REQUIRE(dxvk::str::fromnvus(us) == std::string("Unicode"));
+        REQUIRE(dxvk::str::fromnvus(us) == "Unicode");
     }
 
     SECTION("tonvss") {
         NvAPI_ShortString ss{};
 
-        dxvk::str::tonvss(ss, std::string("Short-String"));
+        dxvk::str::tonvss(ss, "Short-String");
         REQUIRE_THAT(ss, Equals("Short-String"));
 
-        dxvk::str::tonvss(ss, std::string("Longer-Than-Short-String-Longer-Than-Short-String-Longer-Than-Short-String"));
+        dxvk::str::tonvss(ss, "Longer-Than-Short-String-Longer-Than-Short-String-Longer-Than-Short-String");
         REQUIRE_THAT(ss, SizeIs(64));
     }
 
     SECTION("fromnullable") {
         REQUIRE(dxvk::str::fromnullable(nullptr) == std::string());
         REQUIRE(dxvk::str::fromnullable("") == std::string());
-        REQUIRE(dxvk::str::fromnullable("string") == std::string("string"));
+        REQUIRE(dxvk::str::fromnullable("string") == "string");
     }
 
     SECTION("split") {
@@ -98,9 +98,9 @@ TEST_CASE("String", "[.util]") {
 
     SECTION("implode") {
         REQUIRE(dxvk::str::implode(",", std::vector<std::string_view>{}) == std::string());
-        REQUIRE(dxvk::str::implode(",", std::vector<std::string_view>{"foo"}) == std::string("foo"));
-        REQUIRE(dxvk::str::implode(" ", std::vector<std::string_view>{"foo", "bar"}) == std::string("foo bar"));
-        REQUIRE(dxvk::str::implode(", ", std::vector<std::string_view>{"foo", "bar", "baz"}) == std::string("foo, bar, baz"));
+        REQUIRE(dxvk::str::implode(",", std::vector<std::string_view>{"foo"}) == "foo");
+        REQUIRE(dxvk::str::implode(" ", std::vector<std::string_view>{"foo", "bar"}) == "foo bar");
+        REQUIRE(dxvk::str::implode(", ", std::vector<std::string_view>{"foo", "bar", "baz"}) == "foo, bar, baz");
     }
 }
 
