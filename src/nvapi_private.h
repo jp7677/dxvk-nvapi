@@ -35,11 +35,7 @@
 #include <d3d9.h>
 #include <dxgi1_6.h>
 #include <d3d11_1.h>
-#ifdef _MSC_VER
 #include <d3d12.h>
-#else
-#include "../inc/d3d12.h"
-#endif
 #include <vulkan/vulkan_core.h>
 #include "../inc/nvml.h"
 
