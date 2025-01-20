@@ -2,8 +2,8 @@ build
 buildDir
 out
 winsysroot
-.idea/**
-.vscode/**
+.idea
+.vscode
 version.h
 config.h
 compile_commands.json
