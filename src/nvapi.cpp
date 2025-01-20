@@ -152,6 +152,9 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGPU), log::fmt::ptr(pLogicalGPU));
 
+        if (env::isDLSSVersion20(_ReturnAddress()))
+            return NoImplementation(n);
+
         if (nvapiAdapterRegistry == nullptr)
             return ApiNotInitialized(n);
 
