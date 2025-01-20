@@ -24,6 +24,7 @@ nvapi_src = files([
   '../src/nvapi_gpu.cpp',
   '../src/nvapi_mosaic.cpp',
   '../src/nvapi_sys.cpp',
+  '../src/nvapi_vulkan.cpp',
 ])
 
 catch2_src = files(['../inc/catch_amalgamated.cpp'])
