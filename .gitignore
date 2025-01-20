@@ -3,8 +3,8 @@ buildDir
 build.layer
 out
 winsysroot
-.idea/**
-.vscode/**
+.idea
+.vscode
 version.h
 config.h
 layer/version.h
