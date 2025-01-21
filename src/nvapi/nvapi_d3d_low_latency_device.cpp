@@ -127,23 +127,23 @@ namespace dxvk {
         static_assert(static_cast<int>(OUT_OF_BAND_PRESENT_END) - 1 == static_cast<int>(VK_LATENCY_MARKER_OUT_OF_BAND_PRESENT_END_NV));
 
         switch (markerType) {
-            case (SIMULATION_START):
-            case (SIMULATION_END):
-            case (RENDERSUBMIT_START):
-            case (RENDERSUBMIT_END):
-            case (PRESENT_START):
-            case (PRESENT_END):
-            case (INPUT_SAMPLE):
-            case (TRIGGER_FLASH):
+            case SIMULATION_START:
+            case SIMULATION_END:
+            case RENDERSUBMIT_START:
+            case RENDERSUBMIT_END:
+            case PRESENT_START:
+            case PRESENT_END:
+            case INPUT_SAMPLE:
+            case TRIGGER_FLASH:
                 return markerType;
             // VkLatencyMarkerNV misses PC_LATENCY_PING and all following enum values are offset
             // See https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#VUID-VkSetLatencyMarkerInfoNV-marker-parameter
-            case (PC_LATENCY_PING):
+            case PC_LATENCY_PING:
                 return {};
-            case (OUT_OF_BAND_RENDERSUBMIT_START):
-            case (OUT_OF_BAND_RENDERSUBMIT_END):
-            case (OUT_OF_BAND_PRESENT_START):
-            case (OUT_OF_BAND_PRESENT_END):
+            case OUT_OF_BAND_RENDERSUBMIT_START:
+            case OUT_OF_BAND_RENDERSUBMIT_END:
+            case OUT_OF_BAND_PRESENT_START:
+            case OUT_OF_BAND_PRESENT_END:
                 return markerType - 1;
         }
 
