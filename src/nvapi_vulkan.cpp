@@ -15,8 +15,7 @@ extern "C" {
         if (!resourceFactory)
             return ApiNotInitialized(n);
 
-        static std::once_flag initialized{};
-        std::call_once(initialized, []() { NvapiVulkanLowLatencyDevice::Initialize(*resourceFactory); });
+        NvapiVulkanLowLatencyDevice::Initialize(*resourceFactory);
 
         auto device = reinterpret_cast<VkDevice>(vkDevice);
         auto semaphore = reinterpret_cast<VkSemaphore*>(signalSemaphoreHandle);
