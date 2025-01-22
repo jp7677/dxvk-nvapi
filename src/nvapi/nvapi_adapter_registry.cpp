@@ -2,6 +2,7 @@
 #include "nvapi_d3d11_device.h"
 #include "nvapi_d3d12_device.h"
 #include "nvapi_d3d_low_latency_device.h"
+#include "nvapi_vulkan_low_latency_device.h"
 #include "../util/util_log.h"
 
 namespace dxvk {
@@ -13,6 +14,7 @@ namespace dxvk {
         NvapiD3d11Device::Reset();
         NvapiD3d12Device::Reset();
         NvapiD3dLowLatencyDevice::Reset();
+        NvapiVulkanLowLatencyDevice::Reset();
 
         for (const auto output : m_nvapiOutputs)
             delete output;
