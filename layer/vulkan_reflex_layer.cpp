@@ -394,6 +394,11 @@ struct VkInstanceOverrides {
         if (!pCreateInfo)
             return pDispatch->CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
 
+        if (!PhysicalDeviceSupportsExtension(pDispatch->EnumerateDeviceExtensionProperties, physicalDevice, ll2.data(), 2)) {
+            INFO("%s not supported by physical device, skipping setup of compatibility layer", ll2.data());
+            return pDispatch->CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
+        }
+
         auto info = *pCreateInfo;
 
         for (auto ext = info.ppEnabledExtensionNames; ext && ext < info.ppEnabledExtensionNames + info.enabledExtensionCount; ++ext) {
