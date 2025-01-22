@@ -85,7 +85,7 @@ class DXGIOutput6Mock final : public trompeloeil::mock_interface<IDXGIOutput6> {
 
 class VkMock final : public trompeloeil::mock_interface<dxvk::Vk> {
     IMPLEMENT_CONST_MOCK0(IsAvailable);
-    IMPLEMENT_CONST_MOCK0(GetVkGetDeviceProcAddr);
+    IMPLEMENT_CONST_MOCK2(GetDeviceProcAddr);
     IMPLEMENT_CONST_MOCK2(GetDeviceExtensions);
     IMPLEMENT_CONST_MOCK3(GetPhysicalDeviceProperties2);
 };

@@ -21,6 +21,16 @@ namespace dxvk {
         return m_vk && m_vk->IsAvailable();
     }
 
+    void NvapiVulkanLowLatencyDevice::Reset() {
+        std::scoped_lock lock{m_mutex};
+
+        for (auto& [_, lowLatencyDevice] : m_lowLatencyDeviceMap)
+            lowLatencyDevice.m_vkDestroySemaphore(lowLatencyDevice.m_device, lowLatencyDevice.m_semaphore, nullptr);
+
+        m_lowLatencyDeviceMap.clear();
+        m_vk.reset();
+    }
+
     std::pair<NvapiVulkanLowLatencyDevice*, VkResult> NvapiVulkanLowLatencyDevice::GetOrCreate(VkDevice device) {
         std::scoped_lock lock{m_mutex};
 
@@ -30,9 +40,7 @@ namespace dxvk {
         if (!m_vk || !m_vk->IsAvailable())
             return {nullptr, VK_ERROR_INITIALIZATION_FAILED};
 
-        auto pvkGetDeviceProcAddr = m_vk->GetVkGetDeviceProcAddr();
-
-#define VK_GET_DEVICE_PROC_ADDR(proc) auto proc = reinterpret_cast<PFN_##proc>(pvkGetDeviceProcAddr(device, #proc))
+#define VK_GET_DEVICE_PROC_ADDR(proc) auto proc = reinterpret_cast<PFN_##proc>(m_vk->GetDeviceProcAddr(device, #proc))
 
         VK_GET_DEVICE_PROC_ADDR(vkCreateSemaphore);
         VK_GET_DEVICE_PROC_ADDR(vkDestroySemaphore);

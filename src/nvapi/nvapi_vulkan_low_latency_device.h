@@ -7,6 +7,7 @@ namespace dxvk {
     class NvapiVulkanLowLatencyDevice {
       public:
         static bool Initialize(ResourceFactory& resourceFactory);
+        static void Reset();
 
         [[nodiscard]] static std::pair<NvapiVulkanLowLatencyDevice*, VkResult> GetOrCreate(VkDevice device);
         [[nodiscard]] static NvapiVulkanLowLatencyDevice* Get(VkDevice device);

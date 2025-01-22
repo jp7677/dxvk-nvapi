@@ -25,8 +25,8 @@ namespace dxvk {
         return m_vkGetInstanceProcAddr != nullptr && m_vkGetDeviceProcAddr != nullptr;
     }
 
-    PFN_vkGetDeviceProcAddr Vk::GetVkGetDeviceProcAddr() const {
-        return m_vkGetDeviceProcAddr;
+    PFN_vkVoidFunction Vk::GetDeviceProcAddr(VkDevice vkDevice, const char* name) const {
+        return m_vkGetDeviceProcAddr(vkDevice, name);
     }
 
     std::set<std::string> Vk::GetDeviceExtensions(VkInstance vkInstance, VkPhysicalDevice vkDevice) const {
