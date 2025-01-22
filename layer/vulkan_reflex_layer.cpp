@@ -316,10 +316,10 @@ struct VkInstanceOverrides {
             return pfnCreateInstanceProc(pCreateInfo, pAllocator, pInstance);
 
         auto info = *pCreateInfo;
-        auto apiVersion = info.pApplicationInfo ? info.pApplicationInfo->apiVersion : VK_VERSION_1_0;
+        auto apiVersion = info.pApplicationInfo ? info.pApplicationInfo->apiVersion : VK_API_VERSION_1_0;
         std::vector<const char*> extensions;
 
-        if (apiVersion < VK_VERSION_1_1) {
+        if (apiVersion < VK_API_VERSION_1_1) {
             auto end = info.ppEnabledExtensionNames + info.enabledExtensionCount;
 
             if (!info.ppEnabledExtensionNames || !info.enabledExtensionCount || std::find(info.ppEnabledExtensionNames, end, gpdp2) == end) {
@@ -445,7 +445,7 @@ struct VkInstanceOverrides {
         if (!hasLL2)
             extensions.push_back(ll2.data());
 
-        if (auto instanceContext = ReflexInstanceContext::get(pDispatch->Instance); instanceContext && instanceContext.get()->apiVersion < VK_VERSION_1_2) {
+        if (auto instanceContext = ReflexInstanceContext::get(pDispatch->Instance); instanceContext && instanceContext.get()->apiVersion < VK_API_VERSION_1_2) {
             if (std::ranges::find(extensions, ts) == extensions.end())
                 extensions.push_back(ts.data());
         }
