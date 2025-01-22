@@ -151,7 +151,7 @@ namespace dxvk {
         return {};
     }
 
-    void NvapiD3dLowLatencyDevice::ClearCacheMaps() {
+    void NvapiD3dLowLatencyDevice::Reset() {
         std::scoped_lock lock(m_lowLatencyDeviceMutex, m_lowLatencyFrameIdGeneratorMutex);
 
         m_lowLatencyDeviceMap.clear();

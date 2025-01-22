@@ -200,7 +200,7 @@ namespace dxvk {
         return deviceContextExt;
     }
 
-    void NvapiD3d11Device::ClearCacheMaps() {
+    void NvapiD3d11Device::Reset() {
         std::scoped_lock depthBoundsDeviceOrContextLock(m_depthBoundsDeviceOrContextMutex);
         std::scoped_lock barrierControlDeviceOrContextLock(m_barrierControlDeviceOrContextMutex);
         std::scoped_lock multiDrawIndirectContextLock(m_multiDrawIndirectContextMutex);

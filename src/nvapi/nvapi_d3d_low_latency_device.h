@@ -35,7 +35,7 @@ namespace dxvk {
 
         [[nodiscard]] static std::optional<uint32_t> ToMarkerType(NV_LATENCY_MARKER_TYPE markerType);
 
-        static void ClearCacheMaps();
+        static void Reset();
 
       private:
         inline static std::unordered_map<IUnknown*, ID3DLowLatencyDevice*> m_lowLatencyDeviceMap;

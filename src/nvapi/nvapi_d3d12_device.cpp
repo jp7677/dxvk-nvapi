@@ -192,7 +192,7 @@ namespace dxvk {
         return {};
     }
 
-    void NvapiD3d12Device::ClearCacheMaps() {
+    void NvapiD3d12Device::Reset() {
         std::scoped_lock commandQueueLock(m_commandQueueMutex);
         std::scoped_lock commandListLock(m_commandListMutex);
         std::scoped_lock cubinDeviceLock(m_cubinDeviceMutex);

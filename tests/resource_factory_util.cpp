@@ -26,9 +26,9 @@ void SetupResourceFactory(
 }
 
 void ResetGlobals() {
-    NvapiD3d11Device::ClearCacheMaps();
-    NvapiD3d12Device::ClearCacheMaps();
-    NvapiD3dLowLatencyDevice::ClearCacheMaps();
+    NvapiD3d11Device::Reset();
+    NvapiD3d12Device::Reset();
+    NvapiD3dLowLatencyDevice::Reset();
 
     if (resourceFactory == nullptr)
         return;

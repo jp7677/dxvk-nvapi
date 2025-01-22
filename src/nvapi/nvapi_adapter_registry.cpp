@@ -10,9 +10,9 @@ namespace dxvk {
         : m_resourceFactory(resourceFactory) {}
 
     NvapiAdapterRegistry::~NvapiAdapterRegistry() {
-        NvapiD3d11Device::ClearCacheMaps();
-        NvapiD3d12Device::ClearCacheMaps();
-        NvapiD3dLowLatencyDevice::ClearCacheMaps();
+        NvapiD3d11Device::Reset();
+        NvapiD3d12Device::Reset();
+        NvapiD3dLowLatencyDevice::Reset();
 
         for (const auto output : m_nvapiOutputs)
             delete output;
