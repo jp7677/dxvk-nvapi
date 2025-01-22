@@ -1,0 +1,47 @@
+#pragma once
+
+#include "nvapi_tests_private.h"
+#include "../src/nvapi/vk.h"
+
+class VkDeviceMock {
+    MAKE_MOCK4(vkCreateSemaphore, VkResult(VkDevice, const VkSemaphoreCreateInfo*, const VkAllocationCallbacks*, VkSemaphore*));
+    MAKE_MOCK3(vkDestroySemaphore, void(VkDevice, VkSemaphore, const VkAllocationCallbacks*));
+    MAKE_MOCK3(vkSetLatencySleepModeNV, VkResult(VkDevice, VkSwapchainKHR, const VkLatencySleepModeInfoNV*));
+    MAKE_MOCK3(vkLatencySleepNV, VkResult(VkDevice, VkSwapchainKHR, const VkLatencySleepInfoNV*));
+    MAKE_MOCK3(vkGetLatencyTimingsNV, void(VkDevice, VkSwapchainKHR, VkGetLatencyMarkerInfoNV*));
+    MAKE_MOCK3(vkSetLatencyMarkerNV, void(VkDevice, VkSwapchainKHR, const VkSetLatencyMarkerInfoNV*));
+
+    static VkResult CreateSemaphore(VkDevice device, const VkSemaphoreCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSemaphore* pSemaphore) {
+        return reinterpret_cast<VkDeviceMock*>(device)->vkCreateSemaphore(device, pCreateInfo, pAllocator, pSemaphore);
+    }
+    static void DestroySemaphore(VkDevice device, VkSemaphore semaphore, const VkAllocationCallbacks* pAllocator) {
+        reinterpret_cast<VkDeviceMock*>(device)->vkDestroySemaphore(device, semaphore, pAllocator);
+    }
+    static VkResult SetLatencySleepModeNV(VkDevice device, VkSwapchainKHR swapchain, const VkLatencySleepModeInfoNV* pSleepModeInfo) {
+        return reinterpret_cast<VkDeviceMock*>(device)->vkSetLatencySleepModeNV(device, swapchain, pSleepModeInfo);
+    }
+    static VkResult LatencySleepNV(VkDevice device, VkSwapchainKHR swapchain, const VkLatencySleepInfoNV* pSleepInfo) {
+        return reinterpret_cast<VkDeviceMock*>(device)->vkLatencySleepNV(device, swapchain, pSleepInfo);
+    }
+    static void GetLatencyTimingsNV(VkDevice device, VkSwapchainKHR swapchain, VkGetLatencyMarkerInfoNV* pLatencyMarkerInfo) {
+        reinterpret_cast<VkDeviceMock*>(device)->vkGetLatencyTimingsNV(device, swapchain, pLatencyMarkerInfo);
+    }
+    static void SetLatencyMarkerNV(VkDevice device, VkSwapchainKHR swapchain, const VkSetLatencyMarkerInfoNV* pLatencyMarkerInfo) {
+        reinterpret_cast<VkDeviceMock*>(device)->vkSetLatencyMarkerNV(device, swapchain, pLatencyMarkerInfo);
+    }
+};
+
+class VkQueueMock {
+    MAKE_MOCK2(vkQueueNotifyOutOfBandNV, void(VkQueue, const VkOutOfBandQueueTypeInfoNV*));
+
+    static void QueueNotifyOutOfBandNV(VkQueue queue, const VkOutOfBandQueueTypeInfoNV* pQueueTypeInfo) {
+        reinterpret_cast<VkQueueMock*>(queue)->vkQueueNotifyOutOfBandNV(queue, pQueueTypeInfo);
+    }
+};
+
+class VkMock final : public trompeloeil::mock_interface<dxvk::Vk> {
+    IMPLEMENT_CONST_MOCK0(IsAvailable);
+    IMPLEMENT_CONST_MOCK2(GetDeviceProcAddr);
+    IMPLEMENT_CONST_MOCK2(GetDeviceExtensions);
+    IMPLEMENT_CONST_MOCK3(GetPhysicalDeviceProperties2);
+};

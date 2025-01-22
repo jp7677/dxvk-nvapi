@@ -3,6 +3,7 @@
 #include "nvapi_tests_private.h"
 #include "nvapi_d3d_mocks.h"
 #include "nvapi_sysinfo_mocks.h"
+#include "nvapi_vulkan_mocks.h"
 
 DXGIDxvkAdapterMock* CreateDXGIDxvkAdapterMock();
 DXGIOutput6Mock* CreateDXGIOutput6Mock();

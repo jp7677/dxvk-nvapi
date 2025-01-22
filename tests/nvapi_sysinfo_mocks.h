@@ -83,13 +83,6 @@ class DXGIOutput6Mock final : public trompeloeil::mock_interface<IDXGIOutput6> {
     IMPLEMENT_MOCK1(CheckHardwareCompositionSupport);
 };
 
-class VkMock final : public trompeloeil::mock_interface<dxvk::Vk> {
-    IMPLEMENT_CONST_MOCK0(IsAvailable);
-    IMPLEMENT_CONST_MOCK2(GetDeviceProcAddr);
-    IMPLEMENT_CONST_MOCK2(GetDeviceExtensions);
-    IMPLEMENT_CONST_MOCK3(GetPhysicalDeviceProperties2);
-};
-
 class NvmlMock final : public trompeloeil::mock_interface<dxvk::Nvml> {
     IMPLEMENT_CONST_MOCK0(IsAvailable);
     IMPLEMENT_CONST_MOCK1(ErrorString);

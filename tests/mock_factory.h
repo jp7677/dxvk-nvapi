@@ -3,6 +3,7 @@
 #include "nvapi_tests_private.h"
 #include "nvapi_d3d_mocks.h"
 #include "nvapi_sysinfo_mocks.h"
+#include "nvapi_vulkan_mocks.h"
 #include "../src/nvapi/resource_factory.h"
 
 using namespace trompeloeil;
@@ -25,6 +26,10 @@ class MockFactory : public dxvk::ResourceFactory {
     };
 
     std::unique_ptr<dxvk::Vk> CreateVulkan(dxvk::Com<IDXGIFactory1>& dxgiFactory) override {
+        return std::move(m_vkMock);
+    }
+
+    std::unique_ptr<dxvk::Vk> CreateVulkan(const char*) override {
         return std::move(m_vkMock);
     }
 

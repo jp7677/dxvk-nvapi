@@ -29,6 +29,7 @@ void ResetGlobals() {
     NvapiD3d11Device::Reset();
     NvapiD3d12Device::Reset();
     NvapiD3dLowLatencyDevice::Reset();
+    NvapiVulkanLowLatencyDevice::Reset();
 
     if (resourceFactory == nullptr)
         return;

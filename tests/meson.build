@@ -8,6 +8,7 @@ nvapi_src = files([
   '../src/nvapi/lfx.cpp',
   '../src/nvapi/nvapi_d3d_instance.cpp',
   '../src/nvapi/nvapi_d3d_low_latency_device.cpp',
+  '../src/nvapi/nvapi_vulkan_low_latency_device.cpp',
   '../src/nvapi/nvapi_output.cpp',
   '../src/nvapi/nvapi_adapter.cpp',
   '../src/nvapi/nvapi_adapter_registry.cpp',
@@ -23,6 +24,7 @@ nvapi_src = files([
   '../src/nvapi_gpu.cpp',
   '../src/nvapi_mosaic.cpp',
   '../src/nvapi_sys.cpp',
+  '../src/nvapi_vulkan.cpp',
 ])
 
 catch2_src = files(['../inc/catch_amalgamated.cpp'])

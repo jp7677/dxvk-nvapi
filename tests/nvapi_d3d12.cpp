@@ -1,6 +1,7 @@
 #include "nvapi_tests_private.h"
 #include "resource_factory_util.h"
 #include "nvapi_sysinfo_mocks.h"
+#include "nvapi_vulkan_mocks.h"
 #include "nvapi_d3d12_mocks.h"
 #include "nvapi_d3d_mocks.h"
 
