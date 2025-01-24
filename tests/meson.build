@@ -41,6 +41,7 @@ nvapi_tests_src = files([
   'nvapi_sysinfo_nvml.cpp',
   'nvapi_sysinfo_hdr.cpp',
   'nvapi_system.cpp',
+  'nvapi_vulkan.cpp',
   'util.cpp',
 ])
 

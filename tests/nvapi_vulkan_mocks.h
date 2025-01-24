@@ -3,6 +3,8 @@
 #include "nvapi_tests_private.h"
 #include "../src/nvapi/vk.h"
 
+using namespace trompeloeil;
+
 class VkDeviceMock {
     MAKE_MOCK4(vkCreateSemaphore, VkResult(VkDevice, const VkSemaphoreCreateInfo*, const VkAllocationCallbacks*, VkSemaphore*));
     MAKE_MOCK3(vkDestroySemaphore, void(VkDevice, VkSemaphore, const VkAllocationCallbacks*));
@@ -39,9 +41,31 @@ class VkQueueMock {
     }
 };
 
-class VkMock final : public trompeloeil::mock_interface<dxvk::Vk> {
+class VkMock final : public mock_interface<dxvk::Vk> {
     IMPLEMENT_CONST_MOCK0(IsAvailable);
     IMPLEMENT_CONST_MOCK2(GetDeviceProcAddr);
     IMPLEMENT_CONST_MOCK2(GetDeviceExtensions);
     IMPLEMENT_CONST_MOCK3(GetPhysicalDeviceProperties2);
+
+    [[nodiscard]] static std::array<std::unique_ptr<expectation>, 2> ConfigureDefaultPFN(VkMock& mock) {
+        return {
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkCreateSemaphore"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::CreateSemaphore)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkDestroySemaphore"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::DestroySemaphore))};
+    }
+
+    [[nodiscard]] static std::array<std::unique_ptr<expectation>, 5> ConfigureLL2PFN(VkMock& mock) {
+        return {
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencySleepModeNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::SetLatencySleepModeNV)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkLatencySleepNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::LatencySleepNV)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkGetLatencyTimingsNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::GetLatencyTimingsNV)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencyMarkerNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::SetLatencyMarkerNV)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkQueueNotifyOutOfBandNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkQueueMock::QueueNotifyOutOfBandNV))};
+    }
 };
