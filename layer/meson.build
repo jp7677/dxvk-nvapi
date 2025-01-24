@@ -3,7 +3,7 @@ project(
     ['cpp'],
     default_options: ['cpp_std=c++20'],
     version: 'v0.8.0',
-    meson_version: '>= 1.1',
+    meson_version: '>= 1.0',
 )
 
 version = vcs_tag(

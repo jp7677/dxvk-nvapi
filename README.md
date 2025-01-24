@@ -29,7 +29,7 @@ When available, DXVK-NVAPI uses NVIDIA's NVML management library to query temper
 
 Like DXVK, this library is being built as a Windows DLL using MinGW. DXVK-NVAPI requires MinGW-w64 compiler and headers version 9 or newer, the Meson build system at least version 0.58 and Python 3 (needed for a prebuild validation script). This project uses git submodules. Ensure to fetch the submodules while or after cloning the repository, e.g. with `git clone --recurse-submodules git@github.com:jp7677/dxvk-nvapi.git`.
 
-The Vulkan Reflex layer has higher requirements: Meson 1.1 and a C++ compiler that supports C++20 standard. It is recommended (and assumed) that the layer is built as Linux-side library, and as such this compiler should target Linux and not be a cross-compiler like MinGW.
+The Vulkan Reflex layer has higher requirements: Meson 1.0 and a C++ compiler that supports C++20 standard. It is recommended (and assumed) that the layer is built as Linux-side library, and as such this compiler should target Linux and not be a cross-compiler like MinGW.
 
 Run:
 
