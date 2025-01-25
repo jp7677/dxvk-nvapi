@@ -36,8 +36,7 @@ extern "C" {
             return InsufficientBuffer(n);
         }
 
-        auto version = pDisplayIds->version;
-        switch (version) {
+        switch (auto version = pDisplayIds->version) {
             case NV_GPU_DISPLAYIDS_VER1: // Both versions use the same NV_GPU_DISPLAYIDS struct
             case NV_GPU_DISPLAYIDS_VER2: {
                 *pDisplayIds = {};
@@ -83,8 +82,7 @@ extern "C" {
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
         unsigned int width;
-        auto result = adapter->GetNvmlDeviceGetCurrPcieLinkWidth(&width);
-        switch (result) {
+        switch (auto result = adapter->GetNvmlDeviceGetCurrPcieLinkWidth(&width)) {
             case NVML_SUCCESS:
                 *pWidth = width;
                 return Ok(n, alreadyLoggedOk);
@@ -125,8 +123,7 @@ extern "C" {
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
         unsigned int irq;
-        auto result = adapter->GetNvmlDeviceGetIrqNum(&irq);
-        switch (result) {
+        switch (auto result = adapter->GetNvmlDeviceGetIrqNum(&irq)) {
             case NVML_SUCCESS:
                 *pIRQ = irq;
                 return Ok(n, alreadyLoggedOk);
@@ -170,8 +167,7 @@ extern "C" {
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
         unsigned int cores;
-        auto result = adapter->GetNvmlDeviceNumGpuCores(&cores);
-        switch (result) {
+        switch (auto result = adapter->GetNvmlDeviceNumGpuCores(&cores)) {
             case NVML_SUCCESS:
                 *pCount = cores;
                 return Ok(n, alreadyLoggedOk);
@@ -736,8 +732,7 @@ extern "C" {
         }
 
         char version[NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE]{};
-        auto result = adapter->GetNvmlDeviceVbiosVersion(version, NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE);
-        switch (result) {
+        switch (auto result = adapter->GetNvmlDeviceVbiosVersion(version, NVML_DEVICE_INFOROM_VERSION_BUFFER_SIZE)) {
             case NVML_SUCCESS:
                 str::tonvss(szBiosRevision, version);
                 return Ok(n);
@@ -1036,8 +1031,7 @@ extern "C" {
             return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
 
         nvmlPstates_t pState{};
-        auto result = adapter->GetNvmlDevicePerformanceState(&pState);
-        switch (result) {
+        switch (auto result = adapter->GetNvmlDevicePerformanceState(&pState)) {
             case NVML_SUCCESS:
                 *pCurrentPstate = static_cast<NV_GPU_PERF_PSTATE_ID>(pState);
                 return Ok(n, alreadyLoggedOk);

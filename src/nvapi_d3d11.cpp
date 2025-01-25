@@ -69,8 +69,7 @@ extern "C" {
         if (!pMultiGPUCaps)
             return InvalidArgument(n);
 
-        auto version = pMultiGPUCaps->version;
-        switch (version) { // NOLINT(*-multiway-paths-covered)
+        switch (auto version = pMultiGPUCaps->version) { // NOLINT(*-multiway-paths-covered)
             case NV_MULTIGPU_CAPS_VER2:
                 *pMultiGPUCaps = {};
                 pMultiGPUCaps->version = version;
