@@ -19,8 +19,7 @@ namespace dxvk::log {
 
     void initialize(std::ofstream& filestream, bool& skipAllLogging) {
 #ifdef _WIN32
-        auto ntdllModule = ::GetModuleHandleA("ntdll.dll");
-        if (ntdllModule != nullptr)
+        if (auto ntdllModule = ::GetModuleHandleA("ntdll.dll"))
             wineDbgOutput = reinterpret_cast<PFN_wineDbgOutput>(reinterpret_cast<void*>(GetProcAddress(ntdllModule, "__wine_dbg_output")));
 #endif
 
@@ -42,7 +41,7 @@ namespace dxvk::log {
         if (logPath.empty())
             return;
 
-        if ((*logPath.rbegin()) != '/')
+        if (*logPath.rbegin() != '/')
             logPath += '/';
 
         auto fullPath = logPath + logFileName;
