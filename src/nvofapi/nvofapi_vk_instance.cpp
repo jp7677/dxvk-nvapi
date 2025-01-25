@@ -34,30 +34,35 @@ namespace dxvk {
             return false;
         }
 
-        m_vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr) reinterpret_cast<void*>(GetProcAddress(m_library, "vkGetInstanceProcAddr"));
-        m_vkGetDeviceProcAddr = (PFN_vkGetDeviceProcAddr)m_vkGetInstanceProcAddr(m_vkInstance, "vkGetDeviceProcAddr");
-        m_vkGetPhysicalDeviceQueueFamilyProperties = (PFN_vkGetPhysicalDeviceQueueFamilyProperties)m_vkGetInstanceProcAddr(m_vkInstance, "vkGetPhysicalDeviceQueueFamilyProperties");
+        m_vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(reinterpret_cast<void*>(GetProcAddress(m_library, "vkGetInstanceProcAddr")));
 
-        m_vkCreateImageView = (PFN_vkCreateImageView)m_vkGetDeviceProcAddr(m_vkDevice, "vkCreateImageView");
-        m_vkDestroyImageView = (PFN_vkDestroyImageView)m_vkGetDeviceProcAddr(m_vkDevice, "vkDestroyImageView");
+#define VK_GET_INSTANCE_PROC_ADDR(proc) m_##proc = reinterpret_cast<PFN_##proc>(m_vkGetInstanceProcAddr(m_vkInstance, #proc))
 
-        m_vkGetDeviceQueue = (PFN_vkGetDeviceQueue)m_vkGetDeviceProcAddr(m_vkDevice, "vkGetDeviceQueue");
-        m_vkCreateCommandPool = (PFN_vkCreateCommandPool)m_vkGetDeviceProcAddr(m_vkDevice, "vkCreateCommandPool");
-        m_vkDestroyCommandPool = (PFN_vkDestroyCommandPool)m_vkGetDeviceProcAddr(m_vkDevice, "vkDestroyCommandPool");
-        m_vkAllocateCommandBuffers = (PFN_vkAllocateCommandBuffers)m_vkGetDeviceProcAddr(m_vkDevice, "vkAllocateCommandBuffers");
-        m_vkQueueSubmit2 = (PFN_vkQueueSubmit2)m_vkGetDeviceProcAddr(m_vkDevice, "vkQueueSubmit2");
+        VK_GET_INSTANCE_PROC_ADDR(vkGetDeviceProcAddr);
+        VK_GET_INSTANCE_PROC_ADDR(vkGetPhysicalDeviceQueueFamilyProperties);
 
-        m_vkResetCommandBuffer = (PFN_vkResetCommandBuffer)m_vkGetDeviceProcAddr(m_vkDevice, "vkResetCommandBuffer");
-        m_vkBeginCommandBuffer = (PFN_vkBeginCommandBuffer)m_vkGetDeviceProcAddr(m_vkDevice, "vkBeginCommandBuffer");
-        m_vkEndCommandBuffer = (PFN_vkEndCommandBuffer)m_vkGetDeviceProcAddr(m_vkDevice, "vkEndCommandBuffer");
+#define VK_GET_DEVICE_PROC_ADDR(proc) m_##proc = reinterpret_cast<PFN_##proc>(m_vkGetDeviceProcAddr(m_vkDevice, #proc))
+
+        VK_GET_DEVICE_PROC_ADDR(vkCreateImageView);
+        VK_GET_DEVICE_PROC_ADDR(vkDestroyImageView);
+
+        VK_GET_DEVICE_PROC_ADDR(vkGetDeviceQueue);
+        VK_GET_DEVICE_PROC_ADDR(vkCreateCommandPool);
+        VK_GET_DEVICE_PROC_ADDR(vkDestroyCommandPool);
+        VK_GET_DEVICE_PROC_ADDR(vkAllocateCommandBuffers);
+        VK_GET_DEVICE_PROC_ADDR(vkQueueSubmit2);
+
+        VK_GET_DEVICE_PROC_ADDR(vkResetCommandBuffer);
+        VK_GET_DEVICE_PROC_ADDR(vkBeginCommandBuffer);
+        VK_GET_DEVICE_PROC_ADDR(vkEndCommandBuffer);
 
         // Get NvapiAdapter from the vkPhysicalDevice
         // Populate the optical flow related info here
         // fail to create if optical flow extension is unsupported
-        m_vkCreateOpticalFlowSessionNV = (PFN_vkCreateOpticalFlowSessionNV)m_vkGetDeviceProcAddr(m_vkDevice, "vkCreateOpticalFlowSessionNV");
-        m_vkDestroyOpticalFlowSessionNV = (PFN_vkDestroyOpticalFlowSessionNV)m_vkGetDeviceProcAddr(m_vkDevice, "vkDestroyOpticalFlowSessionNV");
-        m_vkBindOpticalFlowSessionImageNV = (PFN_vkBindOpticalFlowSessionImageNV)m_vkGetDeviceProcAddr(m_vkDevice, "vkBindOpticalFlowSessionImageNV");
-        m_vkCmdOpticalFlowExecuteNV = (PFN_vkCmdOpticalFlowExecuteNV)m_vkGetDeviceProcAddr(m_vkDevice, "vkCmdOpticalFlowExecuteNV");
+        VK_GET_DEVICE_PROC_ADDR(vkCreateOpticalFlowSessionNV);
+        VK_GET_DEVICE_PROC_ADDR(vkDestroyOpticalFlowSessionNV);
+        VK_GET_DEVICE_PROC_ADDR(vkBindOpticalFlowSessionImageNV);
+        VK_GET_DEVICE_PROC_ADDR(vkCmdOpticalFlowExecuteNV);
 
         // Get the OFA queue
         VkCommandPoolCreateInfo createInfo{};

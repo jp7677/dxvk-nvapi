@@ -55,19 +55,24 @@ namespace dxvk {
             return false;
         }
 
-        m_vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr) reinterpret_cast<void*>(GetProcAddress(m_library, "vkGetInstanceProcAddr"));
-        m_vkGetDeviceProcAddr = (PFN_vkGetDeviceProcAddr)m_vkGetInstanceProcAddr(m_vkInstance, "vkGetDeviceProcAddr");
-        m_vkGetPhysicalDeviceQueueFamilyProperties = (PFN_vkGetPhysicalDeviceQueueFamilyProperties)m_vkGetInstanceProcAddr(m_vkInstance, "vkGetPhysicalDeviceQueueFamilyProperties");
+        m_vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(reinterpret_cast<void*>(GetProcAddress(m_library, "vkGetInstanceProcAddr")));
 
-        m_vkCreateImageView = (PFN_vkCreateImageView)m_vkGetDeviceProcAddr(m_vkDevice, "vkCreateImageView");
-        m_vkDestroyImageView = (PFN_vkDestroyImageView)m_vkGetDeviceProcAddr(m_vkDevice, "vkDestroyImageView");
+#define VK_GET_INSTANCE_PROC_ADDR(proc) m_##proc = reinterpret_cast<PFN_##proc>(m_vkGetInstanceProcAddr(m_vkInstance, #proc))
+
+        VK_GET_INSTANCE_PROC_ADDR(vkGetDeviceProcAddr);
+        VK_GET_INSTANCE_PROC_ADDR(vkGetPhysicalDeviceQueueFamilyProperties);
+
+#define VK_GET_DEVICE_PROC_ADDR(proc) m_##proc = reinterpret_cast<PFN_##proc>(m_vkGetDeviceProcAddr(m_vkDevice, #proc))
+
+        VK_GET_DEVICE_PROC_ADDR(vkCreateImageView);
+        VK_GET_DEVICE_PROC_ADDR(vkDestroyImageView);
 
         // Populate the optical flow related info here
         // fail to create if optical flow extension is unsupported
-        m_vkCreateOpticalFlowSessionNV = (PFN_vkCreateOpticalFlowSessionNV)m_vkGetDeviceProcAddr(m_vkDevice, "vkCreateOpticalFlowSessionNV");
-        m_vkDestroyOpticalFlowSessionNV = (PFN_vkDestroyOpticalFlowSessionNV)m_vkGetDeviceProcAddr(m_vkDevice, "vkDestroyOpticalFlowSessionNV");
-        m_vkBindOpticalFlowSessionImageNV = (PFN_vkBindOpticalFlowSessionImageNV)m_vkGetDeviceProcAddr(m_vkDevice, "vkBindOpticalFlowSessionImageNV");
-        m_vkCmdOpticalFlowExecuteNV = (PFN_vkCmdOpticalFlowExecuteNV)m_vkGetDeviceProcAddr(m_vkDevice, "vkCmdOpticalFlowExecuteNV");
+        VK_GET_DEVICE_PROC_ADDR(vkCreateOpticalFlowSessionNV);
+        VK_GET_DEVICE_PROC_ADDR(vkDestroyOpticalFlowSessionNV);
+        VK_GET_DEVICE_PROC_ADDR(vkBindOpticalFlowSessionImageNV);
+        VK_GET_DEVICE_PROC_ADDR(vkCmdOpticalFlowExecuteNV);
 
         // Get the OFA queue
         m_vkQueueFamilyIndex = GetVkOFAQueue();
@@ -80,7 +85,7 @@ namespace dxvk {
             return false;
 
         for (uint32_t i = 0; i < CMDS_IN_FLIGHT; i++) {
-            if (FAILED(m_d3ddevice->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, (D3D12_COMMAND_LIST_FLAGS)0, IID_PPV_ARGS(&m_cmdLists[i]))))
+            if (FAILED(m_d3ddevice->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, static_cast<D3D12_COMMAND_LIST_FLAGS>(0), IID_PPV_ARGS(&m_cmdLists[i]))))
                 return false;
         }
         return true;

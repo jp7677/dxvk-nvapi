@@ -116,9 +116,9 @@ namespace dxvk {
 
         if (initParams->hPrivData != nullptr) {
             privData.sType = VK_STRUCTURE_TYPE_OPTICAL_FLOW_SESSION_CREATE_PRIVATE_DATA_INFO_NV;
-            privData.size = ((NV_OF_PRIV_DATA*)initParams->hPrivData)->size;
-            privData.id = ((NV_OF_PRIV_DATA*)initParams->hPrivData)->id;
-            privData.pPrivateData = ((NV_OF_PRIV_DATA*)initParams->hPrivData)->data;
+            privData.size = reinterpret_cast<NV_OF_PRIV_DATA*>(initParams->hPrivData)->size;
+            privData.id = reinterpret_cast<NV_OF_PRIV_DATA*>(initParams->hPrivData)->id;
+            privData.pPrivateData = reinterpret_cast<NV_OF_PRIV_DATA*>(initParams->hPrivData)->data;
 
             createInfo.pNext = &privData;
         }
@@ -177,8 +177,8 @@ namespace dxvk {
         BindImageToSession(outParams->bwdOutputCostBuffer, VK_OPTICAL_FLOW_SESSION_BINDING_POINT_BACKWARD_COST_NV);
         BindImageToSession(outParams->globalFlowBuffer, VK_OPTICAL_FLOW_SESSION_BINDING_POINT_GLOBAL_FLOW_NV);
         // Support INPUT_MIPS execute priv data
-        if (inParams->hPrivData != nullptr && ((NV_OF_PRIV_DATA*)inParams->hPrivData)->id == NV_OF_EXECUTE_PRIV_DATA_ID_INPUT_MIPS) {
-            NV_OF_EXECUTE_PRIV_DATA_INPUT_MIPS* mipData = ((NV_OF_EXECUTE_PRIV_DATA_INPUT_MIPS*)((NV_OF_PRIV_DATA*)inParams->hPrivData)->data);
+        if (inParams->hPrivData != nullptr && reinterpret_cast<NV_OF_PRIV_DATA*>(inParams->hPrivData)->id == NV_OF_EXECUTE_PRIV_DATA_ID_INPUT_MIPS) {
+            auto mipData = static_cast<NV_OF_EXECUTE_PRIV_DATA_INPUT_MIPS*>(reinterpret_cast<NV_OF_PRIV_DATA*>(inParams->hPrivData)->data);
             for (uint32_t i = 0; i < 6; i++) {
                 if (mipData->input[i] && mipData->reference[i]) {
                     BindImageToSession(mipData->input[i], VK_OPTICAL_FLOW_SESSION_BINDING_POINT_INPUT_NV);
