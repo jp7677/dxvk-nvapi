@@ -141,7 +141,7 @@ namespace dxvk {
         submit.pWaitSemaphoreInfos = waitSyncs.data();
         submit.commandBufferInfoCount = 1;
         submit.pCommandBufferInfos = &cmdbufInfo;
-        submit.signalSemaphoreInfoCount = (outParams->pSignalSync) ? 1 : 0;
+        submit.signalSemaphoreInfoCount = outParams->pSignalSync ? 1 : 0;
         submit.pSignalSemaphoreInfos = &signalSync;
 
         status = m_vkQueueSubmit2(m_queue, 1, &submit, VK_NULL_HANDLE);
