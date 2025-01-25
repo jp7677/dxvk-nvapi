@@ -88,6 +88,20 @@ namespace dxvk::log {
         inline std::string d3d12_cpu_descriptor_handle(D3D12_CPU_DESCRIPTOR_HANDLE h) {
             return str::format("{ptr=", hex_prefix, std::hex, h.ptr, "}");
         }
+
+        inline std::string nvapi_d3d12_get_cuda_merged_texture_sampler_object_params(NVAPI_D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS* p) {
+            if (p == nullptr)
+                return "nullptr";
+
+            return str::format("{structSizeIn=", p->structSizeIn, ",pDevice=", p->pDevice, ",texDesc=", d3d12_cpu_descriptor_handle(p->texDesc), ",smpDesc=", d3d12_cpu_descriptor_handle(p->smpDesc), "}");
+        }
+
+        inline std::string nvapi_d3d12_get_cuda_independent_descriptor_object_params(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS* p) {
+            if (p == nullptr)
+                return "nullptr";
+
+            return str::format("{structSizeIn=", p->structSizeIn, ",pDevice=", p->pDevice, ",type=", p->type, ",desc=", d3d12_cpu_descriptor_handle(p->desc), "}");
+        }
     }
 
     bool tracing();

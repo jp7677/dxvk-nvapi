@@ -56,6 +56,34 @@ extern "C" {
         return Ok(n, alreadyLoggedOk);
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderExV2(NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pParams));
+
+        if (!pParams)
+            return InvalidArgument(n);
+
+        pParams->structSizeOut = sizeof(NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS);
+
+        if (pParams->structSizeIn < (offsetof(NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS, hShader) + sizeof(NVDX_ObjectHandle)))
+            return IncompatibleStructVersion(n, pParams->structSizeIn);
+
+        if (!pParams->pDevice || !pParams->pShaderName)
+            return InvalidArgument(n);
+
+        if (pParams->flags)
+            return InvalidArgument(str::format(n, ": flags: ", pParams->flags));
+
+        if (!NvapiD3d12Device::CreateCubinComputeShaderEx(pParams->pDevice, pParams->pCubin, pParams->size, pParams->blockX, pParams->blockY, pParams->blockZ, pParams->dynSharedMemBytes, pParams->pShaderName, &pParams->hShader))
+            return Error(n, alreadyLoggedError);
+
+        return Ok(n, alreadyLoggedOk);
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderWithName(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedError = false;
@@ -139,6 +167,78 @@ extern "C" {
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_GetCudaMergedTextureSamplerObject(NVAPI_D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::nvapi_d3d12_get_cuda_merged_texture_sampler_object_params(pParams));
+
+        if (!pParams)
+            return InvalidArgument(n);
+
+        pParams->structSizeOut = sizeof(NVAPI_D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS);
+
+        if (pParams->structSizeIn < (offsetof(NVAPI_D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS, textureHandle) + sizeof(NvU64)))
+            return IncompatibleStructVersion(n, pParams->structSizeIn);
+
+        if (!pParams->pDevice || !pParams->texDesc.ptr)
+            return InvalidArgument(n);
+
+        Com<ID3D12DeviceExt2> device;
+        if (FAILED(pParams->pDevice->QueryInterface(IID_PPV_ARGS(&device))))
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        switch (device->GetCudaMergedTextureSamplerObject(pParams->texDesc, pParams->smpDesc, &pParams->textureHandle)) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_INVALIDARG:
+                return InvalidArgument(n);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_GetCudaIndependentDescriptorObject(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::nvapi_d3d12_get_cuda_independent_descriptor_object_params(pParams));
+
+        if (!pParams)
+            return InvalidArgument(n);
+
+        pParams->structSizeOut = sizeof(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS);
+
+        if (pParams->structSizeIn < (offsetof(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS, handle) + sizeof(NvU64)))
+            return IncompatibleStructVersion(n, pParams->structSizeIn);
+
+        if (!pParams->pDevice || !pParams->desc.ptr)
+            return InvalidArgument(n);
+
+        Com<ID3D12DeviceExt2> device;
+        if (FAILED(pParams->pDevice->QueryInterface(IID_PPV_ARGS(&device))))
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        switch (device->GetCudaIndependentDescriptorObject(pParams->desc, static_cast<D3D12_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_TYPE>(pParams->type), &pParams->handle)) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_INVALIDARG:
+                return InvalidArgument(n);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_LaunchCubinShader(ID3D12GraphicsCommandList* pCmdList, NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) {
