@@ -49,7 +49,7 @@ namespace dxvk {
             if (result == NVML_SUCCESS)
                 return;
 
-            log::info(str::format("NVML loaded but initialization failed with error: ", ErrorString(result)));
+            log::info(str::format("NVML loaded but initialization failed with error: ", Nvml::ErrorString(result)));
         }
 
         ::FreeLibrary(m_nvmlModule);
