@@ -21,6 +21,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#pragma once
+
 #include "../nvofapi_private.h"
 
 namespace dxvk {
