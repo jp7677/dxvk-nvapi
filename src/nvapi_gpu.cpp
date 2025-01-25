@@ -13,20 +13,20 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pDisplayIds), log::fmt::ptr(pDisplayIdCount), log::fmt::flags(flags));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
         if (!nvapiAdapterRegistry->IsAdapter(adapter))
             return ExpectedPhysicalGpuHandle(n);
 
-        if (pDisplayIdCount == nullptr)
+        if (!pDisplayIdCount)
             return InvalidArgument(n);
 
         // TODO: return 0 when flags contain NV_GPU_CONNECTED_IDS_FLAG_SLI
         auto count = nvapiAdapterRegistry->GetOutputCount(adapter);
 
-        if (pDisplayIds == nullptr) {
+        if (!pDisplayIds) {
             *pDisplayIdCount = count;
             return Ok(n);
         }
@@ -66,10 +66,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pWidth));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pWidth == nullptr)
+        if (!pWidth)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -108,10 +108,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pIRQ));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pIRQ == nullptr)
+        if (!pIRQ)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -150,10 +150,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pCount));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pCount == nullptr)
+        if (!pCount)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -192,10 +192,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pGpuType));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pGpuType == nullptr)
+        if (!pGpuType)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -213,10 +213,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pSystemType));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pSystemType == nullptr)
+        if (!pSystemType)
             return InvalidArgument(n);
 
         *pSystemType = NV_SYSTEM_TYPE_UNKNOWN;
@@ -230,10 +230,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pDeviceId), log::fmt::ptr(pSubSystemId), log::fmt::ptr(pRevisionId), log::fmt::ptr(pExtDeviceId));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pDeviceId == nullptr || pSubSystemId == nullptr || pRevisionId == nullptr || pExtDeviceId == nullptr)
+        if (!pDeviceId || !pSubSystemId || !pRevisionId || !pExtDeviceId)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -254,10 +254,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(szName));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (szName == nullptr)
+        if (!szName)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -275,10 +275,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pBusId));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pBusId == nullptr)
+        if (!pBusId)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -296,10 +296,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pBusSlotId));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pBusSlotId == nullptr)
+        if (!pBusSlotId)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -320,10 +320,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pBusType));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pBusType == nullptr)
+        if (!pBusType)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -353,10 +353,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pSize));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pSize == nullptr)
+        if (!pSize)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -374,10 +374,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pSize));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pSize == nullptr)
+        if (!pSize)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -396,10 +396,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pMemoryInfo));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pMemoryInfo == nullptr)
+        if (!pMemoryInfo)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -454,10 +454,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pMemoryInfo));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pMemoryInfo == nullptr)
+        if (!pMemoryInfo)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -495,10 +495,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pOSAdapterId));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pOSAdapterId == nullptr)
+        if (!pOSAdapterId)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -520,16 +520,16 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hLogicalGpu), log::fmt::ptr(pLogicalGpuData));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pLogicalGpuData == nullptr)
+        if (!pLogicalGpuData)
             return InvalidArgument(n);
 
         if (pLogicalGpuData->version != NV_LOGICAL_GPU_DATA_VER1)
             return IncompatibleStructVersion(n, pLogicalGpuData->version);
 
-        if (pLogicalGpuData->pOSAdapterId == nullptr)
+        if (!pLogicalGpuData->pOSAdapterId)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hLogicalGpu);
@@ -558,10 +558,10 @@ extern "C" {
 
         auto returnAddress = _ReturnAddress();
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pGpuArchInfo == nullptr)
+        if (!pGpuArchInfo)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -637,10 +637,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pComputeTopo));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pComputeTopo == nullptr)
+        if (!pComputeTopo)
             return InvalidArgument(n);
 
         if (pComputeTopo->version != NV_COMPUTE_GPU_TOPOLOGY_VER1)
@@ -681,10 +681,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pGpuInfo));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pGpuInfo == nullptr)
+        if (!pGpuInfo)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -720,10 +720,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(szBiosRevision));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (szBiosRevision == nullptr)
+        if (!szBiosRevision)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -762,10 +762,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pDynamicPstatesInfoEx));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pDynamicPstatesInfoEx == nullptr)
+        if (!pDynamicPstatesInfoEx)
             return InvalidArgument(n);
 
         if (pDynamicPstatesInfoEx->version != NV_GPU_DYNAMIC_PSTATES_INFO_EX_VER)
@@ -860,10 +860,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), sensorIndex, log::fmt::ptr(pThermalSettings));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pThermalSettings == nullptr)
+        if (!pThermalSettings)
             return InvalidArgument(n);
 
         if (pThermalSettings->version != NV_GPU_THERMAL_SETTINGS_VER_1 && pThermalSettings->version != NV_GPU_THERMAL_SETTINGS_VER_2)
@@ -1016,10 +1016,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pCurrentPstate));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pCurrentPstate == nullptr)
+        if (!pCurrentPstate)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -1062,10 +1062,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pClkFreqs));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pClkFreqs == nullptr)
+        if (!pClkFreqs)
             return InvalidArgument(n);
 
         if (pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_1 && pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_2 && pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_3)
@@ -1199,10 +1199,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pPstatesInfo));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pPstatesInfo == nullptr)
+        if (!pPstatesInfo)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);

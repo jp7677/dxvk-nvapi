@@ -32,7 +32,7 @@ namespace dxvk {
             return false;
 
         m_vk = m_resourceFactory.CreateVulkan(m_dxgiFactory);
-        if (m_vk == nullptr || !m_vk->IsAvailable())
+        if (!m_vk || !m_vk->IsAvailable())
             return false;
 
         m_nvml = m_resourceFactory.CreateNvml();

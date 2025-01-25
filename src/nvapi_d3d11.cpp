@@ -14,7 +14,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pAdapter), DriverType, Software, log::fmt::flags(Flags), log::fmt::ptr(pFeatureLevels), FeatureLevels, SDKVersion, log::fmt::ptr(ppDevice), log::fmt::ptr(pFeatureLevel), log::fmt::ptr(ppImmediateContext), log::fmt::ptr(pSupportedLevel));
 
-        if (pSupportedLevel == nullptr)
+        if (!pSupportedLevel)
             return InvalidArgument(n);
 
         if (FAILED(::D3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext)))
@@ -31,7 +31,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pAdapter), DriverType, Software, log::fmt::flags(Flags), log::fmt::ptr(pFeatureLevels), FeatureLevels, SDKVersion, log::fmt::ptr(pSwapChainDesc), log::fmt::ptr(ppSwapChain), log::fmt::ptr(ppDevice), log::fmt::ptr(pFeatureLevel), log::fmt::ptr(ppImmediateContext), log::fmt::ptr(pSupportedLevel));
 
-        if (pSupportedLevel == nullptr)
+        if (!pSupportedLevel)
             return InvalidArgument(n);
 
         if (FAILED(::D3D11CreateDeviceAndSwapChain(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, pSwapChainDesc, ppSwapChain, ppDevice, pFeatureLevel, ppImmediateContext)))
@@ -48,7 +48,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDeviceOrContext), code, log::fmt::ptr(supported));
 
-        if (pDeviceOrContext == nullptr || supported == nullptr)
+        if (!pDeviceOrContext || !supported)
             return InvalidArgument(n);
 
         // DXVK does not know any NVIDIA intrinsics backdoors
@@ -63,10 +63,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pMultiGPUCaps));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pMultiGPUCaps == nullptr)
+        if (!pMultiGPUCaps)
             return InvalidArgument(n);
 
         auto version = pMultiGPUCaps->version;
@@ -112,7 +112,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDeviceOrContext), bEnable, log::fmt::flt(fMinDepth), log::fmt::flt(fMaxDepth));
 
-        if (pDeviceOrContext == nullptr)
+        if (!pDeviceOrContext)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::SetDepthBoundsTest(pDeviceOrContext, bEnable, fMinDepth, fMaxDepth))
@@ -129,7 +129,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDeviceOrContext));
 
-        if (pDeviceOrContext == nullptr)
+        if (!pDeviceOrContext)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::BeginUAVOverlap(pDeviceOrContext))
@@ -146,7 +146,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDeviceOrContext));
 
-        if (pDeviceOrContext == nullptr)
+        if (!pDeviceOrContext)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::EndUAVOverlap(pDeviceOrContext))
@@ -163,7 +163,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevContext11), drawCount, log::fmt::ptr(pBuffer), alignedByteOffsetForArgs, alignedByteStrideForArgs);
 
-        if (pDevContext11 == nullptr || pBuffer == nullptr)
+        if (!pDevContext11 || !pBuffer)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::MultiDrawInstancedIndirect(pDevContext11, drawCount, pBuffer, alignedByteOffsetForArgs, alignedByteStrideForArgs))
@@ -180,7 +180,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevContext11), drawCount, log::fmt::ptr(pBuffer), alignedByteOffsetForArgs, alignedByteStrideForArgs);
 
-        if (pDevContext11 == nullptr || pBuffer == nullptr)
+        if (!pDevContext11 || !pBuffer)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::MultiDrawIndexedInstancedIndirect(pDevContext11, drawCount, pBuffer, alignedByteOffsetForArgs, alignedByteStrideForArgs))
@@ -197,7 +197,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pCubin), size, blockX, blockY, blockZ, log::fmt::ptr(phShader));
 
-        if (pDevice == nullptr || pCubin == nullptr || phShader == nullptr)
+        if (!pDevice || !pCubin || !phShader)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::CreateCubinComputeShaderWithName(pDevice, pCubin, size, blockX, blockY, blockZ, "", phShader))
@@ -214,7 +214,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pCubin), size, blockX, blockY, blockZ, log::fmt::ptr(pShaderName), log::fmt::ptr(phShader));
 
-        if (pDevice == nullptr || pCubin == nullptr || pShaderName == nullptr || phShader == nullptr)
+        if (!pDevice || !pCubin || !pShaderName || !phShader)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::CreateCubinComputeShaderWithName(pDevice, pCubin, size, blockX, blockY, blockZ, pShaderName, phShader))
@@ -231,7 +231,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDeviceContext), log::fmt::hnd(hShader), gridX, gridY, gridZ, log::fmt::ptr(pParams), paramSize, log::fmt::ptr(pReadResources), numReadResources, log::fmt::ptr(pWriteResources), numWriteResources);
 
-        if (pDeviceContext == nullptr)
+        if (!pDeviceContext)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::LaunchCubinShader(pDeviceContext, hShader, gridX, gridY, gridZ, pParams, paramSize, pReadResources, numReadResources, pWriteResources, numWriteResources))
@@ -248,7 +248,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::hnd(hShader));
 
-        if (pDevice == nullptr)
+        if (!pDevice)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::DestroyCubinShader(hShader))
@@ -264,7 +264,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pSupported));
 
-        if (pDevice == nullptr || pSupported == nullptr)
+        if (!pDevice || !pSupported)
             return InvalidArgument(n);
 
         *pSupported = NvapiD3d11Device::IsFatbinPTXSupported(pDevice);
@@ -280,7 +280,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pResource), log::fmt::ptr(pDesc), log::fmt::ptr(ppUAV), log::fmt::ptr(pDriverHandle));
 
-        if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr || ppUAV == nullptr || pDriverHandle == nullptr)
+        if (!pDevice || !pResource || !pDesc || !ppUAV || !pDriverHandle)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::CreateUnorderedAccessViewAndGetDriverHandle(pDevice, pResource, pDesc, ppUAV, pDriverHandle))
@@ -297,7 +297,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pResource), log::fmt::ptr(pDesc), log::fmt::ptr(ppSRV), log::fmt::ptr(pDriverHandle));
 
-        if (pDevice == nullptr || pResource == nullptr || pDesc == nullptr || ppSRV == nullptr || pDriverHandle == nullptr)
+        if (!pDevice || !pResource || !pDesc || !ppSRV || !pDriverHandle)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::CreateShaderResourceViewAndGetDriverHandle(pDevice, pResource, pDesc, ppSRV, pDriverHandle))
@@ -314,7 +314,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pResource), log::fmt::ptr(phObject));
 
-        if (pDevice == nullptr || pResource == nullptr || phObject == nullptr)
+        if (!pDevice || !pResource || !phObject)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::GetResourceDriverHandle(pResource, phObject))
@@ -331,7 +331,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::hnd(hResource), log::fmt::ptr(pGpuVA));
 
-        if (pDevice == nullptr || hResource == NVDX_OBJECT_NONE || pGpuVA == nullptr)
+        if (!pDevice || hResource == NVDX_OBJECT_NONE || !pGpuVA)
             return InvalidArgument(n);
 
         NvU64 dummy;
@@ -349,7 +349,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
 
-        if (pDevice == nullptr || pParams == nullptr)
+        if (!pDevice || !pParams)
             return InvalidArgument(n);
 
         if (pParams->version != NV_GET_GPU_VIRTUAL_ADDRESS_VER1)
@@ -372,7 +372,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pSamplerDesc), log::fmt::ptr(ppSamplerState), log::fmt::ptr(pDriverHandle));
 
-        if (pDevice == nullptr || pSamplerDesc == nullptr || ppSamplerState == nullptr || pDriverHandle == nullptr)
+        if (!pDevice || !pSamplerDesc || !ppSamplerState || !pDriverHandle)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::CreateSamplerStateAndGetDriverHandle(pDevice, pSamplerDesc, ppSamplerState, reinterpret_cast<uint32_t*>(pDriverHandle)))
@@ -389,7 +389,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), srvDriverHandle, samplerDriverHandle, log::fmt::ptr(pCudaTextureHandle));
 
-        if (pDevice == nullptr || pCudaTextureHandle == nullptr)
+        if (!pDevice || !pCudaTextureHandle)
             return InvalidArgument(n);
 
         if (!NvapiD3d11Device::GetCudaTextureObject(pDevice, srvDriverHandle, samplerDriverHandle, reinterpret_cast<uint32_t*>(pCudaTextureHandle)))

@@ -19,10 +19,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(nvGPUHandle), log::fmt::ptr(pGpuCount));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (nvGPUHandle == nullptr || pGpuCount == nullptr)
+        if (!nvGPUHandle || !pGpuCount)
             return InvalidArgument(n);
 
         for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++)
@@ -39,10 +39,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(nvGPUHandle), log::fmt::ptr(pGpuCount));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (nvGPUHandle == nullptr || pGpuCount == nullptr)
+        if (!nvGPUHandle || !pGpuCount)
             return InvalidArgument(n);
 
         for (auto i = 0U; i < nvapiAdapterRegistry->GetAdapterCount(); i++)
@@ -59,10 +59,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(nvGPUHandle), log::fmt::ptr(pGpuCount));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (nvGPUHandle == nullptr || pGpuCount == nullptr)
+        if (!nvGPUHandle || !pGpuCount)
             return InvalidArgument(n);
 
         // There is no TCC mode on Linux, see https://forums.developer.nvidia.com/t/gpudirect-is-tcc-mode-a-requirement/79248
@@ -80,10 +80,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pGpuId));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pGpuId == nullptr)
+        if (!pGpuId)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -102,10 +102,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, gpuId, log::fmt::ptr(hPhysicalGpu));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == nullptr)
+        if (!hPhysicalGpu)
             return InvalidArgument(n);
 
         NvapiAdapter* adapter = nullptr;
@@ -113,7 +113,7 @@ extern "C" {
             if (nvapiAdapterRegistry->GetAdapter(i)->GetBoardId() == gpuId)
                 adapter = nvapiAdapterRegistry->GetAdapter(i);
 
-        if (adapter == nullptr)
+        if (!adapter)
             return InvalidArgument(n);
 
         *hPhysicalGpu = reinterpret_cast<NvPhysicalGpuHandle>(adapter);
@@ -127,10 +127,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hNvDisplay), log::fmt::ptr(pVersion));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pVersion == nullptr) // Ignore hNvDisplay
+        if (!pVersion) // Ignore hNvDisplay
             return InvalidArgument(n);
 
         if (pVersion->version != NV_DISPLAY_DRIVER_VERSION_VER)
@@ -152,10 +152,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGPU), log::fmt::ptr(pLogicalGPU));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pLogicalGPU == nullptr)
+        if (!pLogicalGPU)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGPU);
@@ -173,10 +173,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hNvDisp), log::fmt::ptr(pLogicalGPU));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pLogicalGPU == nullptr)
+        if (!pLogicalGPU)
             return InvalidArgument(n);
 
         auto output = reinterpret_cast<NvapiOutput*>(hNvDisp);
@@ -194,10 +194,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hLogicalGPU), log::fmt::ptr(hPhysicalGPU), log::fmt::ptr(pGpuCount));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGPU == nullptr || pGpuCount == nullptr)
+        if (!hPhysicalGPU || !pGpuCount)
             return InvalidArgument(n);
 
         auto adapter = reinterpret_cast<NvapiAdapter*>(hLogicalGPU);
@@ -216,10 +216,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hNvDisp), log::fmt::ptr(nvGPUHandle), log::fmt::ptr(pGpuCount));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (nvGPUHandle == nullptr || pGpuCount == nullptr)
+        if (!nvGPUHandle || !pGpuCount)
             return InvalidArgument(n);
 
         auto output = reinterpret_cast<NvapiOutput*>(hNvDisp);
@@ -238,14 +238,14 @@ extern "C" {
         if (log::tracing())
             log::trace(n, thisEnum, log::fmt::ptr(pNvDispHandle));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pNvDispHandle == nullptr)
+        if (!pNvDispHandle)
             return InvalidArgument(n);
 
         auto output = nvapiAdapterRegistry->GetOutput(thisEnum);
-        if (output == nullptr)
+        if (!output)
             return EndEnumeration(str::format(n, " (", thisEnum, ")"));
 
         *pNvDispHandle = reinterpret_cast<NvDisplayHandle>(output);
@@ -269,10 +269,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(NvDispHandle), log::fmt::ptr(szDisplayName));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (szDisplayName == nullptr)
+        if (!szDisplayName)
             return InvalidArgument(n);
 
         auto output = reinterpret_cast<NvapiOutput*>(NvDispHandle);
@@ -290,14 +290,14 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(szDisplayName), log::fmt::ptr(pNvDispHandle));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (szDisplayName == nullptr || pNvDispHandle == nullptr)
+        if (!szDisplayName || !pNvDispHandle)
             return InvalidArgument(n);
 
         auto output = nvapiAdapterRegistry->FindOutput(szDisplayName);
-        if (output == nullptr)
+        if (!output)
             return NvidiaDeviceNotFound(n);
 
         *pNvDispHandle = reinterpret_cast<NvDisplayHandle>(output);
@@ -311,7 +311,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(szDesc));
 
-        if (szDesc == nullptr)
+        if (!szDesc)
             return InvalidArgument(n);
 
         str::tonvss(szDesc, "NVAPI Open Source Interface (DXVK-NVAPI)");
@@ -325,7 +325,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, nr, log::fmt::ptr(szDesc));
 
-        if (szDesc == nullptr)
+        if (!szDesc)
             return InvalidArgument(n);
 
         auto error = fromErrorNr(nr);
@@ -369,7 +369,7 @@ extern "C" {
             " ", DXVK_NVAPI_BUILD_TYPE,
             " (", env::getExecutableName(), ")"));
 
-        if (resourceFactory == nullptr)
+        if (!resourceFactory)
             resourceFactory = std::make_unique<ResourceFactory>();
 
         nvapiAdapterRegistry = std::make_unique<NvapiAdapterRegistry>(*resourceFactory);

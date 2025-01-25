@@ -15,7 +15,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(phSession));
 
-        if (phSession == nullptr)
+        if (!phSession)
             return InvalidArgument(n);
 
         *phSession = nvapiDrsSession;
@@ -56,7 +56,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(phProfile));
 
-        if (phProfile == nullptr)
+        if (!phProfile)
             return InvalidArgument(n);
 
         *phProfile = nvapiDrsProfile;
@@ -70,7 +70,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(phProfile));
 
-        if (phProfile == nullptr)
+        if (!phProfile)
             return InvalidArgument(n);
 
         *phProfile = nvapiDrsProfile;

@@ -6,10 +6,10 @@ namespace dxvk {
     Nvml::Nvml() {
         const auto nvmlModuleName = "nvml.dll";
         m_nvmlModule = ::LoadLibraryA(nvmlModuleName);
-        if (m_nvmlModule != nullptr)
+        if (m_nvmlModule)
             log::info(str::format("Successfully loaded ", nvmlModuleName));
 
-        if (m_nvmlModule == nullptr) {
+        if (!m_nvmlModule) {
             auto lastError = ::GetLastError();
             if (lastError != ERROR_MOD_NOT_FOUND) // Ignore library not found
                 log::info(str::format("Loading ", nvmlModuleName, " failed with error code: ", lastError));
@@ -39,10 +39,10 @@ namespace dxvk {
 
 #undef GETPROCADDR
 
-        if (m_nvmlInit_v2 == nullptr
-            || m_nvmlShutdown == nullptr
-            || m_nvmlErrorString == nullptr
-            || m_nvmlDeviceGetHandleByPciBusId_v2 == nullptr)
+        if (!m_nvmlInit_v2
+            || !m_nvmlShutdown
+            || !m_nvmlErrorString
+            || !m_nvmlDeviceGetHandleByPciBusId_v2)
             log::info(str::format("NVML loaded but initialization failed"));
         else {
             auto result = m_nvmlInit_v2();
@@ -57,7 +57,7 @@ namespace dxvk {
     }
 
     Nvml::~Nvml() {
-        if (m_nvmlModule == nullptr)
+        if (!m_nvmlModule)
             return;
 
         m_nvmlShutdown();

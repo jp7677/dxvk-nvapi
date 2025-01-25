@@ -43,14 +43,14 @@ extern "C" {
         if (log::tracing())
             log::trace(n, displayId, log::fmt::ptr(pHdrCapabilities));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pHdrCapabilities == nullptr)
+        if (!pHdrCapabilities)
             return InvalidArgument(n);
 
         auto output = nvapiAdapterRegistry->FindOutput(displayId);
-        if (output == nullptr)
+        if (!output)
             return InvalidArgument(n);
 
         const auto& data = output->GetColorData();
@@ -121,18 +121,18 @@ extern "C" {
         if (log::tracing())
             log::trace(n, displayId, log::fmt::ptr(pHdrColorData));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pHdrColorData == nullptr)
+        if (!pHdrColorData)
             return InvalidArgument(n);
 
         auto output = nvapiAdapterRegistry->FindOutput(displayId);
-        if (output == nullptr)
+        if (!output)
             return InvalidArgument(n);
 
         auto interop = nvapiAdapterRegistry->GetInteropFactory();
-        if (interop == nullptr)
+        if (!interop)
             return NoImplementation(str::format(n, " (0x", std::hex, displayId, ")"));
 
         auto& data = output->GetColorData();
@@ -218,14 +218,14 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(displayName), log::fmt::ptr(displayId));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (displayName == nullptr || displayId == nullptr)
+        if (!displayName || !displayId)
             return InvalidArgument(n);
 
         auto output = nvapiAdapterRegistry->FindOutput(std::string(displayName));
-        if (output == nullptr)
+        if (!output)
             return InvalidArgument(str::format(n, " (", displayName, ")"));
 
         *displayId = output->GetId();
@@ -239,14 +239,14 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(displayId));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (displayId == nullptr)
+        if (!displayId)
             return InvalidArgument(n);
 
         auto output = nvapiAdapterRegistry->FindPrimaryOutput();
-        if (output == nullptr)
+        if (!output)
             return NvidiaDeviceNotFound(n);
 
         *displayId = output->GetId();

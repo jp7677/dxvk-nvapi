@@ -159,7 +159,7 @@ namespace dxvk {
     }
 
     Com<ID3DLowLatencyDevice> NvapiD3dLowLatencyDevice::GetLowLatencyDevice(IUnknown* device) {
-        if (device == nullptr)
+        if (!device)
             return nullptr;
 
         std::scoped_lock lock(m_lowLatencyDeviceMutex);
@@ -177,7 +177,7 @@ namespace dxvk {
     }
 
     Com<ID3DLowLatencyDevice> NvapiD3dLowLatencyDevice::GetLowLatencyDevice(ID3D12CommandQueue* commandQueue) {
-        if (commandQueue == nullptr)
+        if (!commandQueue)
             return nullptr;
 
         auto unknown = static_cast<IUnknown*>(commandQueue);

@@ -16,7 +16,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), opCode, log::fmt::ptr(pSupported));
 
-        if (pDevice == nullptr || pSupported == nullptr)
+        if (!pDevice || !pSupported)
             return InvalidArgument(n);
 
         // VKD3D-Proton does not know any NVIDIA intrinsics
@@ -31,7 +31,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pNumMetaCommands), log::fmt::ptr(pDescs));
 
-        if (pDevice == nullptr || pNumMetaCommands == nullptr)
+        if (!pDevice || !pNumMetaCommands)
             return InvalidArgument(n);
 
         *pNumMetaCommands = 0; // No meta commands with this implementation
@@ -47,7 +47,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(cubinData), cubinSize, blockX, blockY, blockZ, smemSize, log::fmt::ptr(shaderName), log::fmt::ptr(pShader));
 
-        if (pDevice == nullptr || shaderName == nullptr || pShader == nullptr)
+        if (!pDevice || !shaderName || !pShader)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::CreateCubinComputeShaderEx(pDevice, cubinData, cubinSize, blockX, blockY, blockZ, smemSize, shaderName, pShader))
@@ -64,7 +64,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(cubinData), cubinSize, blockX, blockY, blockZ, log::fmt::ptr(shaderName), log::fmt::ptr(pShader));
 
-        if (pDevice == nullptr || shaderName == nullptr || pShader == nullptr)
+        if (!pDevice || !shaderName || !pShader)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::CreateCubinComputeShaderWithName(pDevice, cubinData, cubinSize, blockX, blockY, blockZ, shaderName, pShader))
@@ -81,7 +81,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(cubinData), cubinSize, blockX, blockY, blockZ, log::fmt::ptr(pShader));
 
-        if (pDevice == nullptr || pShader == nullptr)
+        if (!pDevice || !pShader)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::CreateCubinComputeShaderWithName(pDevice, cubinData, cubinSize, blockX, blockY, blockZ, "", pShader))
@@ -98,7 +98,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::hnd(pShader));
 
-        if (pDevice == nullptr)
+        if (!pDevice)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::DestroyCubinComputeShader(pDevice, pShader))
@@ -115,7 +115,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::d3d12_cpu_descriptor_handle(srvHandle), log::fmt::d3d12_cpu_descriptor_handle(samplerHandle), log::fmt::ptr(cudaTextureHandle));
 
-        if (pDevice == nullptr || cudaTextureHandle == nullptr)
+        if (!pDevice || !cudaTextureHandle)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::GetCudaTextureObject(pDevice, srvHandle, samplerHandle, cudaTextureHandle))
@@ -132,7 +132,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::d3d12_cpu_descriptor_handle(uavHandle), log::fmt::ptr(cudaSurfaceHandle));
 
-        if (pDevice == nullptr || cudaSurfaceHandle == nullptr)
+        if (!pDevice || !cudaSurfaceHandle)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::GetCudaSurfaceObject(pDevice, uavHandle, cudaSurfaceHandle))
@@ -149,7 +149,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pCmdList), log::fmt::hnd(pShader), blockX, blockY, blockZ, log::fmt::ptr(params), paramSize);
 
-        if (pCmdList == nullptr)
+        if (!pCmdList)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::LaunchCubinShader(pCmdList, pShader, blockX, blockY, blockZ, params, paramSize))
@@ -166,7 +166,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pUAVInfo));
 
-        if (pDevice == nullptr || pUAVInfo == nullptr)
+        if (!pDevice || !pUAVInfo)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::CaptureUAVInfo(pDevice, pUAVInfo))
@@ -181,10 +181,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), structVersion, log::fmt::ptr(pGraphicsCaps));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pDevice == nullptr || pGraphicsCaps == nullptr)
+        if (!pDevice || !pGraphicsCaps)
             return InvalidArgument(n);
 
         if (structVersion != NV_D3D12_GRAPHICS_CAPS_VER1)
@@ -202,7 +202,7 @@ extern "C" {
         if (luid.has_value())
             adapter = nvapiAdapterRegistry->FindAdapter(luid.value());
 
-        if (adapter == nullptr)
+        if (!adapter)
             return Ok(str::format(n, " (sm_0)"));
 
         // From https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/ and https://en.wikipedia.org/wiki/CUDA#GPUs_supported
@@ -230,7 +230,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(isSupported));
 
-        if (pDevice == nullptr || isSupported == nullptr)
+        if (!pDevice || !isSupported)
             return InvalidArgument(n);
 
         *isSupported = NvapiD3d12Device::IsFatbinPTXSupported(pDevice);
@@ -247,7 +247,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pPSODesc), numExtensions, log::fmt::ptr(ppExtensions), log::fmt::ptr(ppPSO));
 
-        if (pDevice == nullptr || pPSODesc == nullptr || ppExtensions == nullptr || ppPSO == nullptr)
+        if (!pDevice || !pPSODesc || !ppExtensions || !ppPSO)
             return InvalidArgument(n);
 
         if (numExtensions == 0)
@@ -276,7 +276,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pCommandList), log::fmt::flt(minDepth), log::fmt::flt(maxDepth));
 
-        if (pCommandList == nullptr)
+        if (!pCommandList)
             return InvalidArgument(n);
 
         if (!NvapiD3d12Device::SetDepthBoundsTestValues(pCommandList, minDepth, maxDepth))
@@ -291,7 +291,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), type, log::fmt::ptr(pData), dataSize);
 
-        if (pDevice == nullptr || pData == nullptr)
+        if (!pDevice || !pData)
             return InvalidPointer(n);
 
         switch (type) {
@@ -385,13 +385,13 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
 
-        if (pDevice == nullptr || pParams == nullptr)
+        if (!pDevice || !pParams)
             return InvalidArgument(n);
 
         if (pParams->version != NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS_VER1)
             return IncompatibleStructVersion(n, pParams->version);
 
-        if (pParams->pDesc == nullptr || pParams->pInfo == nullptr)
+        if (!pParams->pDesc || !pParams->pInfo)
             return InvalidArgument(n);
 
         std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs{};
@@ -412,13 +412,13 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pCommandList), log::fmt::ptr(pParams));
 
-        if (pCommandList == nullptr || pParams == nullptr)
+        if (!pCommandList || !pParams)
             return InvalidArgument(n);
 
         if (pParams->version != NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER1)
             return IncompatibleStructVersion(n, pParams->version);
 
-        if (pParams->pDesc == nullptr || (pParams->numPostbuildInfoDescs != 0 && pParams->pPostbuildInfoDescs == nullptr))
+        if (!pParams->pDesc || (pParams->numPostbuildInfoDescs != 0 && !pParams->pPostbuildInfoDescs))
             return InvalidArgument(n);
 
         std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs{};
@@ -446,10 +446,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, cqType);
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pCommandQueue == nullptr)
+        if (!pCommandQueue)
             return InvalidPointer(n);
 
         if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pCommandQueue))
@@ -473,10 +473,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pCommandQueue), log::fmt::nv_async_frame_marker_params(pSetAsyncFrameMarkerParams));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pCommandQueue == nullptr || pSetAsyncFrameMarkerParams == nullptr)
+        if (!pCommandQueue || !pSetAsyncFrameMarkerParams)
             return InvalidPointer(n);
 
         if (pSetAsyncFrameMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)

@@ -12,14 +12,14 @@ extern "C" {
         if (log::tracing())
             log::trace(n, displayId, log::fmt::ptr(hPhysicalGpu));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (hPhysicalGpu == nullptr)
+        if (!hPhysicalGpu)
             return InvalidArgument(n);
 
         auto output = nvapiAdapterRegistry->FindOutput(displayId);
-        if (output == nullptr)
+        if (!output)
             return InvalidArgument(n);
 
         *hPhysicalGpu = reinterpret_cast<NvPhysicalGpuHandle>(output->GetParent());
@@ -33,10 +33,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDriverVersion), log::fmt::ptr(szBuildBranchString));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pDriverVersion == nullptr || szBuildBranchString == nullptr)
+        if (!pDriverVersion || !szBuildBranchString)
             return InvalidArgument(n);
 
         *pDriverVersion = nvapiAdapterRegistry->GetFirstAdapter()->GetDriverVersion();
@@ -51,10 +51,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDriverInfo));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pDriverInfo == nullptr)
+        if (!pDriverInfo)
             return InvalidArgument(n);
 
         if (pDriverInfo->version != NV_DISPLAY_DRIVER_INFO_VER1 && pDriverInfo->version != NV_DISPLAY_DRIVER_INFO_VER2)
@@ -96,10 +96,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pPhysicalGPUs));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pPhysicalGPUs == nullptr)
+        if (!pPhysicalGPUs)
             return InvalidArgument(n);
 
         if (pPhysicalGPUs->version != NV_PHYSICAL_GPUS_VER1)
@@ -121,10 +121,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pLogicalGPUs));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pLogicalGPUs == nullptr)
+        if (!pLogicalGPUs)
             return InvalidArgument(n);
 
         if (pLogicalGPUs->version != NV_LOGICAL_GPUS_VER1)

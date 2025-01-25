@@ -64,11 +64,12 @@ namespace dxvk {
     }
 
     bool NvapiD3d11Device::DestroyCubinShader(NVDX_ObjectHandle hShader) {
-        auto cubinShader = reinterpret_cast<IUnknown*>(hShader);
-        if (cubinShader != nullptr)
+        if (auto cubinShader = reinterpret_cast<IUnknown*>(hShader)) {
             cubinShader->Release();
+            return true;
+        }
 
-        return cubinShader != nullptr;
+        return false;
     }
 
     bool NvapiD3d11Device::GetResourceDriverHandle(ID3D11Resource* pResource, NVDX_ObjectHandle* phObject) {

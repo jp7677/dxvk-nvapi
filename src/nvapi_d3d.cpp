@@ -13,7 +13,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pResource), log::fmt::ptr(pHandle));
 
-        if (pResource == nullptr || pHandle == nullptr)
+        if (!pResource || !pHandle)
             return InvalidArgument(n);
 
         // Fake-implement with a dumb passthrough, though no other NvAPI entry points
@@ -60,7 +60,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pSliState));
 
-        if (pDevice == nullptr || pSliState == nullptr)
+        if (!pDevice || !pSliState)
             return InvalidArgument(n);
 
         switch (pSliState->version) {
@@ -111,7 +111,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), structVersion, log::fmt::ptr(pGraphicsCaps));
 
-        if (pGraphicsCaps == nullptr)
+        if (!pGraphicsCaps)
             return InvalidArgument(n);
 
         switch (structVersion) {
@@ -149,10 +149,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pDevice == nullptr)
+        if (!pDevice)
             return InvalidArgument(n);
 
         if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
@@ -176,10 +176,10 @@ extern "C" {
         static bool lastLowLatencyMode = false;
         static uint32_t lastMinimumIntervalUs = UINT32_MAX;
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pDevice == nullptr || pSetSleepModeParams == nullptr)
+        if (!pDevice || !pSetSleepModeParams)
             return InvalidArgument(n);
 
         if (pSetSleepModeParams->version != NV_SET_SLEEP_MODE_PARAMS_VER1)
@@ -207,10 +207,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pGetSleepStatusParams));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pDevice == nullptr || pGetSleepStatusParams == nullptr)
+        if (!pDevice || !pGetSleepStatusParams)
             return InvalidArgument(n);
 
         if (pGetSleepStatusParams->version != NV_GET_SLEEP_STATUS_PARAMS_VER1)
@@ -233,10 +233,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDev), log::fmt::ptr(pGetLatencyParams));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pDev == nullptr || pGetLatencyParams == nullptr)
+        if (!pDev || !pGetLatencyParams)
             return InvalidArgument(n);
 
         if (pGetLatencyParams->version != NV_LATENCY_RESULT_PARAMS_VER1)
@@ -261,10 +261,10 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDev), log::fmt::nv_latency_marker_params(pSetLatencyMarkerParams));
 
-        if (nvapiAdapterRegistry == nullptr)
+        if (!nvapiAdapterRegistry)
             return ApiNotInitialized(n);
 
-        if (pDev == nullptr || pSetLatencyMarkerParams == nullptr)
+        if (!pDev || !pSetLatencyMarkerParams)
             return InvalidArgument(n);
 
         if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
