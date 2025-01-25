@@ -45,7 +45,7 @@ namespace dxvk::str {
 #if __cpp_concepts >= 201907L
         requires std::default_initializable<T>
         && std::constructible_from<typename T::value_type, const char*, size_t>
-        && requires(T t, T::iterator it, T::value_type&& s) {
+        && requires(T t, typename T::iterator it, typename T::value_type&& s) {
                requires std::input_iterator<typename T::iterator>;
                { t.end() } -> std::same_as<typename T::iterator>;
                { t.insert(it, s) } -> std::same_as<typename T::iterator>;
