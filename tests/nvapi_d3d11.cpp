@@ -196,7 +196,7 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         REQUIRE(NvAPI_D3D11_GetResourceGPUVirtualAddress(static_cast<ID3D11Device*>(&device), NVDX_ObjectHandle(1), &gpuVAStart) == NVAPI_ERROR);
         NV_GET_GPU_VIRTUAL_ADDRESS gva;
         gva.version = NV_GET_GPU_VIRTUAL_ADDRESS_VER1;
-        gva.hResource = NVDX_ObjectHandle(1);
+        gva.hResource = reinterpret_cast<NVDX_ObjectHandle>(1);
         REQUIRE(NvAPI_D3D11_GetResourceGPUVirtualAddressEx(static_cast<ID3D11Device*>(&device), &gva) == NVAPI_ERROR);
         D3D11_SAMPLER_DESC samplerDesc;
         ID3D11SamplerState* samplerState;
