@@ -85,13 +85,13 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
 
         NvDisplayHandle handle4 = nullptr;
         REQUIRE(NvAPI_EnumNvidiaDisplayHandle(3U, &handle4) == NVAPI_END_ENUMERATION);
-        REQUIRE(handle4 == nullptr);
+        REQUIRE_FALSE(handle4);
     }
 
     SECTION("EnumNvidiaUnAttachedDisplayHandle succeeds") {
         NvUnAttachedDisplayHandle handle = nullptr;
         REQUIRE(NvAPI_EnumNvidiaUnAttachedDisplayHandle(0U, &handle) == NVAPI_END_ENUMERATION);
-        REQUIRE(handle == nullptr);
+        REQUIRE_FALSE(handle);
     }
 
     SECTION("GetLogicalGPUFromPhysicalGPU succeeds") {
@@ -215,7 +215,7 @@ TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
 
         NvPhysicalGpuHandle handle4 = nullptr;
         REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(0x00000000, &handle4) == NVAPI_INVALID_ARGUMENT);
-        REQUIRE(handle4 == nullptr);
+        REQUIRE_FALSE(handle4);
     }
 
     SECTION("GetAssociatedNvidiaDisplayName succeeds") {

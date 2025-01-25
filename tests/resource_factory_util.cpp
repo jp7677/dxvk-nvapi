@@ -31,7 +31,7 @@ void ResetGlobals() {
     NvapiD3dLowLatencyDevice::Reset();
     NvapiVulkanLowLatencyDevice::Reset();
 
-    if (resourceFactory == nullptr)
+    if (!resourceFactory)
         return;
 
     auto mockFactory = reinterpret_cast<MockFactory*>(resourceFactory.get());
