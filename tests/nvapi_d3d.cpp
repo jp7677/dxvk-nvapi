@@ -119,7 +119,6 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
     D3DLowLatencyDeviceMock lowLatencyDevice;
     DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
     DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
-    auto lowLatencyDeviceRefCount = 0;
 
     auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *lfx, *adapter, *output);
 
@@ -276,6 +275,7 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
     }
 
     SECTION("Reflex depending methods succeed when D3DLowLatencyDevice is available") {
+        auto lowLatencyDeviceRefCount = 0;
         ALLOW_CALL(unknown, QueryInterface(__uuidof(ID3DLowLatencyDevice), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<ID3DLowLatencyDevice*>(&lowLatencyDevice))
             .LR_SIDE_EFFECT(lowLatencyDeviceRefCount++)
