@@ -27,7 +27,7 @@ namespace dxvk {
         if (SUCCEEDED(dxgiOutput->QueryInterface(IID_PPV_ARGS(&dxgiOutput6)))) {
             DXGI_OUTPUT_DESC1 desc1{};
             dxgiOutput6->GetDesc1(&desc1);
-            const auto m = 50000.0f;
+            constexpr auto m = 50000.0f;
             m_colorData.HasST2084Support = desc1.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
             switch (desc1.BitsPerColor) {
                 case 6:
