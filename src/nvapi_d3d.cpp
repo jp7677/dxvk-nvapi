@@ -18,7 +18,7 @@ extern "C" {
 
         // Fake-implement with a dumb passthrough, though no other NvAPI entry points
         // we're likely to implement should care about the actual handle value.
-        *pHandle = (NVDX_ObjectHandle)pResource;
+        *pHandle = reinterpret_cast<NVDX_ObjectHandle>(pResource);
         return Ok(n, alreadyLogged);
     }
 

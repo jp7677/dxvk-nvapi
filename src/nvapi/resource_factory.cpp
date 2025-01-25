@@ -10,7 +10,7 @@ namespace dxvk {
 
     Com<IDXGIFactory1> ResourceFactory::CreateDXGIFactory1() {
         Com<IDXGIFactory1> dxgiFactory;
-        if (FAILED(::CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&dxgiFactory))) {
+        if (FAILED(::CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory)))) {
             log::info("Creating DXGI Factory (IDXGIFactory1) failed, please ensure that DXVK's dxgi.dll is present");
             return nullptr;
         }

@@ -300,21 +300,21 @@ extern "C" {
                     return InvalidArgument(n);
 
                 // let's hope that NvAPI_D3D12_IsNvShaderExtnOpCodeSupported returning false is enough to discourage games from attempting to use Shader Execution Reordering
-                *(NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS*)pData = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
+                *static_cast<NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
                 break;
 
             case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP:
                 if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS))
                     return InvalidArgument(n);
 
-                *(NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS*)pData = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE;
+                *static_cast<NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE;
                 break;
 
             case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_DISPLACEMENT_MICROMAP:
                 if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS))
                     return InvalidArgument(n);
 
-                *(NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS*)pData = NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_NONE;
+                *static_cast<NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_NONE;
                 break;
 
             default:

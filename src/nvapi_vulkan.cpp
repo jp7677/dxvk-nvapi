@@ -17,7 +17,7 @@ extern "C" {
 
         NvapiVulkanLowLatencyDevice::Initialize(*resourceFactory);
 
-        auto device = reinterpret_cast<VkDevice>(vkDevice);
+        auto device = static_cast<VkDevice>(vkDevice);
         auto semaphore = reinterpret_cast<VkSemaphore*>(signalSemaphoreHandle);
 
         if (!device)
@@ -52,7 +52,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(vkDevice));
 
-        auto device = reinterpret_cast<VkDevice>(vkDevice);
+        auto device = static_cast<VkDevice>(vkDevice);
 
         if (!device)
             return InvalidArgument(n);
@@ -67,7 +67,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(vkDevice), log::fmt::nv_vk_get_sleep_status_params(pGetSleepStatusParams));
 
-        auto device = reinterpret_cast<VkDevice>(vkDevice);
+        auto device = static_cast<VkDevice>(vkDevice);
 
         if (!device)
             return InvalidArgument(n);
@@ -96,7 +96,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(vkDevice), log::fmt::nv_vk_set_sleep_status_params(pSetSleepModeParams));
 
-        auto device = reinterpret_cast<VkDevice>(vkDevice);
+        auto device = static_cast<VkDevice>(vkDevice);
 
         if (!device)
             return InvalidArgument(n);
@@ -123,7 +123,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(vkDevice), signalValue);
 
-        auto device = reinterpret_cast<VkDevice>(vkDevice);
+        auto device = static_cast<VkDevice>(vkDevice);
 
         if (!device)
             return InvalidArgument(n);
@@ -145,7 +145,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(vkDevice), log::fmt::nv_vk_latency_result_params(pGetLatencyParams));
 
-        auto device = reinterpret_cast<VkDevice>(vkDevice);
+        auto device = static_cast<VkDevice>(vkDevice);
 
         if (!device)
             return InvalidArgument(n);
@@ -187,7 +187,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(vkDevice), log::fmt::nv_vk_latency_marker_params(pSetLatencyMarkerParams));
 
-        auto device = reinterpret_cast<VkDevice>(vkDevice);
+        auto device = static_cast<VkDevice>(vkDevice);
 
         if (!device)
             return InvalidArgument(n);
@@ -224,8 +224,8 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::ptr(vkDevice), log::fmt::ptr(queueHandle), queueType);
 
-        auto device = reinterpret_cast<VkDevice>(vkDevice);
-        auto queue = reinterpret_cast<VkQueue>(queueHandle);
+        auto device = static_cast<VkDevice>(vkDevice);
+        auto queue = static_cast<VkQueue>(queueHandle);
 
         if (!device || !queue)
             return InvalidArgument(n);
