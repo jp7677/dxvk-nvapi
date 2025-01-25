@@ -52,7 +52,7 @@ namespace dxvk::env {
         // Get file path of caller DLL
         char modulePath[MAX_PATH];
         HMODULE hModule = nullptr;
-        if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (const char*)pReturnAddress, &hModule)) {
+        if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, static_cast<const char*>(pReturnAddress), &hModule)) {
             // Failed to get the path, won't try to WAR.
             return false;
         }
@@ -85,7 +85,7 @@ namespace dxvk::env {
         VS_FIXEDFILEINFO* fixedInfo = nullptr;
         uint32_t fixedSize = 0;
 
-        VerQueryValueA(verInfo, "\\", (void**)&fixedInfo, &fixedSize);
+        VerQueryValueA(verInfo, "\\", reinterpret_cast<void**>(&fixedInfo), &fixedSize);
 
         // Double-check that we are reading a VS_FIXEDFILEINFO structure
         if (fixedInfo->dwSignature != 0xFEEF04BD) {
@@ -105,7 +105,7 @@ namespace dxvk::env {
         // called by DLSS
         char* productName;
         uint32_t productNameSize;
-        VerQueryValueA(verInfo, R"(\StringFileInfo\040904E4\ProductName)", (void**)&productName, &productNameSize);
+        VerQueryValueA(verInfo, R"(\StringFileInfo\040904E4\ProductName)", reinterpret_cast<void**>(&productName), &productNameSize);
 
         if (strcmp(productName, "NVIDIA Deep Learning SuperSampling") == 0) {
             // A DLSS version between 2.0 and 2.4 was detected, applying WAR
