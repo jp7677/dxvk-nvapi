@@ -86,13 +86,13 @@ TEST_CASE("String", "[.util]") {
     }
 
     SECTION("fromnullable") {
-        REQUIRE(dxvk::str::fromnullable(nullptr) == std::string());
-        REQUIRE(dxvk::str::fromnullable("") == std::string());
+        REQUIRE(dxvk::str::fromnullable(nullptr).empty());
+        REQUIRE(dxvk::str::fromnullable("").empty());
         REQUIRE(dxvk::str::fromnullable("string") == "string");
     }
 
     SECTION("split") {
-        REQUIRE(dxvk::str::split<std::set<std::string>>("", std::regex(",")).size() == 0);
+        REQUIRE(dxvk::str::split<std::set<std::string>>("", std::regex(",")).empty());
 
         auto result = dxvk::str::split<std::set<std::string>>("foo,bar,baz", std::regex(","));
 
@@ -132,7 +132,7 @@ TEST_CASE("String", "[.util]") {
     }
 
     SECTION("implode") {
-        REQUIRE(dxvk::str::implode(",", std::vector<std::string_view>{}) == std::string());
+        REQUIRE(dxvk::str::implode(",", std::vector<std::string_view>{}).empty());
         REQUIRE(dxvk::str::implode(",", std::vector<std::string_view>{"foo"}) == "foo");
         REQUIRE(dxvk::str::implode(" ", std::vector<std::string_view>{"foo", "bar"}) == "foo bar");
         REQUIRE(dxvk::str::implode(", ", std::vector<std::string_view>{"foo", "bar", "baz"}) == "foo, bar, baz");
