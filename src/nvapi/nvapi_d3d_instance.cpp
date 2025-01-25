@@ -14,7 +14,7 @@ namespace dxvk {
             log::info("LatencyFleX loaded and initialized successfully");
     }
 
-    bool NvapiD3dInstance::IsReflexAvailable(IUnknown* device) {
+    bool NvapiD3dInstance::IsReflexAvailable(IUnknown* device) const {
         return NvapiD3dLowLatencyDevice::SupportsLowLatency(device) || m_lfx->IsAvailable();
     }
 
@@ -40,7 +40,7 @@ namespace dxvk {
         return result;
     }
 
-    bool NvapiD3dInstance::Sleep(IUnknown* device) {
+    bool NvapiD3dInstance::Sleep(IUnknown* device) const {
         bool result = true;
 
         if (m_lfx->IsAvailable() && m_isLowLatencyEnabled)

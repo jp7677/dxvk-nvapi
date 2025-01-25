@@ -10,11 +10,11 @@ namespace dxvk {
         ~NvapiD3dInstance();
 
         void Initialize();
-        [[nodiscard]] bool IsReflexAvailable(IUnknown* device);
+        [[nodiscard]] bool IsReflexAvailable(IUnknown* device) const;
         [[nodiscard]] bool IsLowLatencyEnabled() const;
         [[nodiscard]] bool IsUsingLfx() const;
         [[nodiscard]] bool SetReflexMode(IUnknown* device, bool enable, bool boost, uint32_t frameTimeUs);
-        [[nodiscard]] bool Sleep(IUnknown* device);
+        [[nodiscard]] bool Sleep(IUnknown* device) const;
 
       private:
         constexpr static uint64_t kNanoInMicro = 1000;
