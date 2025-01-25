@@ -9,7 +9,7 @@ namespace dxvk {
     class NvapiD3d12Device {
 
         struct CommandListExtWithVersion {
-            ID3D12GraphicsCommandListExt1* CommandListExt;
+            ID3D12GraphicsCommandListExt2* CommandListExt;
             uint32_t InterfaceVersion;
         };
 
@@ -29,9 +29,20 @@ namespace dxvk {
         static bool CaptureUAVInfo(ID3D12Device* device, NVAPI_UAV_INFO* uavInfo);
         static bool IsFatbinPTXSupported(ID3D12Device* device);
 
+        static bool IsOpacityMicromapSupported(ID3D12Device* device);
+        static std::optional<NvAPI_Status> SetCreatePipelineStateOptions(ID3D12Device5* device, const NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS* params);
+        static std::optional<NvAPI_Status> CheckDriverMatchingIdentifierEx(ID3D12Device5* device, NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS* params);
+        static std::optional<NvAPI_Status> GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D12Device5* device, NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* params);
+        static std::optional<NvAPI_Status> GetRaytracingOpacityMicromapArrayPrebuildInfo(ID3D12Device5* device, NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS* params);
+        static std::optional<NvAPI_Status> BuildRaytracingAccelerationStructureEx(ID3D12GraphicsCommandList4* commandList, const NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS* params);
+        static std::optional<NvAPI_Status> BuildRaytracingOpacityMicromapArray(ID3D12GraphicsCommandList4* commandList, NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS* params);
+        static std::optional<NvAPI_Status> RelocateRaytracingOpacityMicromapArray(ID3D12GraphicsCommandList4* commandList, const NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS* params);
+        static std::optional<NvAPI_Status> EmitRaytracingOpacityMicromapArrayPostbuildInfo(ID3D12GraphicsCommandList4* commandList, const NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS* params);
+
         static void Reset();
 
       private:
+        inline static std::unordered_map<ID3D12Device*, ID3D12DeviceExt2*> m_ommDeviceMap;
         inline static std::unordered_map<ID3D12Device*, ID3D12DeviceExt*> m_cubinDeviceMap;
         inline static std::unordered_map<ID3D12CommandQueue*, ID3D12CommandQueueExt*> m_commandQueueMap;
         inline static std::unordered_map<ID3D12GraphicsCommandList*, CommandListExtWithVersion> m_commandListMap;
@@ -39,12 +50,16 @@ namespace dxvk {
 
         inline static std::mutex m_commandListMutex;
         inline static std::mutex m_commandQueueMutex;
+        inline static std::mutex m_ommDeviceMutex;
         inline static std::mutex m_cubinDeviceMutex;
         inline static std::mutex m_cubinSmemMutex;
 
+        [[nodiscard]] static Com<ID3D12DeviceExt2> GetOmmDevice(ID3D12Device* device);
         [[nodiscard]] static Com<ID3D12DeviceExt> GetCubinDevice(ID3D12Device* device);
-        [[nodiscard]] static Com<ID3D12DeviceExt> GetDeviceExt(ID3D12Device* device, D3D12_VK_EXTENSION extension);
         [[nodiscard]] static Com<ID3D12CommandQueueExt> GetCommandQueueExt(ID3D12CommandQueue* commandQueue);
         [[nodiscard]] static std::optional<CommandListExtWithVersion> GetCommandListExt(ID3D12GraphicsCommandList* commandList);
+
+        template <typename T>
+        [[nodiscard]] static Com<T> GetDeviceExt(ID3D12Device* device, D3D12_VK_EXTENSION extension);
     };
 }
