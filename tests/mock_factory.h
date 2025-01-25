@@ -41,7 +41,7 @@ class MockFactory : public dxvk::ResourceFactory {
         return std::move(m_lfxMock);
     }
 
-    [[nodiscard]] DXGIDxvkFactoryMock* GetDXGIDxvkFactoryMock() {
+    [[nodiscard]] DXGIDxvkFactoryMock* GetDXGIDxvkFactoryMock() const {
         return m_dxgiFactoryMock.get();
     }
 
