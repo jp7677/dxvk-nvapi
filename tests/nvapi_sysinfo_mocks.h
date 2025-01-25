@@ -2,7 +2,6 @@
 
 #include "nvapi_tests_private.h"
 #include "../src/interfaces/dxvk_interfaces.h"
-#include "../src/nvapi/vk.h"
 #include "../src/nvapi/nvml.h"
 
 class IDXGIDxvkFactoryMock : public IDXGIFactory1, public IDXGIVkInteropFactory1 {};
