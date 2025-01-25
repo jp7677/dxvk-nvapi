@@ -31,7 +31,8 @@ namespace dxvk {
       public:
         NvOFInstanceVk(VkInstance vkInstance, VkPhysicalDevice vkPhysicalDevice, VkDevice vkDevice) : NvOFInstance(vkInstance, vkPhysicalDevice, vkDevice) {
         }
-        virtual ~NvOFInstanceVk() {
+
+        ~NvOFInstanceVk() override {
             // free cmdbuffers
             m_vkFreeCommandBuffers(m_vkDevice, m_commandPool, CMDS_IN_FLIGHT, m_commandBuffers.data());
             m_vkDestroyCommandPool(m_vkDevice, m_commandPool, nullptr);
