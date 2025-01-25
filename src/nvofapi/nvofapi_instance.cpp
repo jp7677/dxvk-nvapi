@@ -42,7 +42,7 @@ namespace dxvk {
 
     constexpr uint32_t NV_OF_EXECUTE_PRIV_DATA_ID_INPUT_MIPS = 6;
 
-    uint32_t NvOFInstance::GetVkOFAQueue() {
+    uint32_t NvOFInstance::GetVkOFAQueue() const {
         uint32_t count = 0;
         m_vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysicalDevice, &count, nullptr);
         auto queueFamProps = std::vector<VkQueueFamilyProperties>(count);
@@ -132,7 +132,7 @@ namespace dxvk {
         return ErrorGeneric();
     }
 
-    NV_OF_STATUS NvOFInstance::BindImageToSession(NvOFGPUBufferHandle hBuffer, VkOpticalFlowSessionBindingPointNV bindingPoint) {
+    NV_OF_STATUS NvOFInstance::BindImageToSession(NvOFGPUBufferHandle hBuffer, VkOpticalFlowSessionBindingPointNV bindingPoint) const {
         auto nvOFImage = reinterpret_cast<NvOFImage*>(hBuffer);
 
         if (!nvOFImage)
@@ -149,7 +149,7 @@ namespace dxvk {
         return Success();
     }
 
-    NV_OF_STATUS NvOFInstance::GetCaps(NV_OF_CAPS param, uint32_t* capsVal, uint32_t* size) {
+    NV_OF_STATUS NvOFInstance::GetCaps(NV_OF_CAPS param, uint32_t* capsVal, uint32_t* size) const {
         if (param == NV_OF_CAPS_SUPPORTED_OUTPUT_GRID_SIZES) {
             *size = 1;
             if (capsVal) {
@@ -162,13 +162,13 @@ namespace dxvk {
         return ErrorGeneric();
     }
 
-    void NvOFInstance::RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_VK* registerParams) {
+    void NvOFInstance::RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_VK* registerParams) const {
         auto nvOFImage = new NvOFImage(m_vkDevice, registerParams->image, registerParams->format);
         nvOFImage->Initialize(m_vkCreateImageView, m_vkDestroyImageView);
         *registerParams->hOFGpuBuffer = reinterpret_cast<NvOFGPUBufferHandle>(nvOFImage);
     }
 
-    void NvOFInstance::RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf) {
+    void NvOFInstance::RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf) const {
         BindImageToSession(inParams->inputFrame, VK_OPTICAL_FLOW_SESSION_BINDING_POINT_INPUT_NV);
         BindImageToSession(inParams->referenceFrame, VK_OPTICAL_FLOW_SESSION_BINDING_POINT_REFERENCE_NV);
         BindImageToSession(outParams->outputBuffer, VK_OPTICAL_FLOW_SESSION_BINDING_POINT_FLOW_VECTOR_NV);

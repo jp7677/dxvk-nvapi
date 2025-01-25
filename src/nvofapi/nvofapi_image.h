@@ -35,7 +35,7 @@ namespace dxvk {
             m_vkDestroyImageView(m_vkDevice, m_imageView, nullptr);
         }
 
-        VkImageView ImageView() { return m_imageView; }
+        [[nodiscard]] VkImageView ImageView() const { return m_imageView; }
 
         bool Initialize(PFN_vkCreateImageView CreateImageView,
             PFN_vkDestroyImageView DestroyImageView);

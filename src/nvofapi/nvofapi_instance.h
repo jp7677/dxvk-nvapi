@@ -44,18 +44,18 @@ namespace dxvk {
             FreeLibrary(m_library);
         }
 
-        VkDevice GetVkDevice() { return m_vkDevice; }
-        VkOpticalFlowSessionNV GetOfaSession() { return m_vkOfaSession; }
+        [[nodiscard]] VkDevice GetVkDevice() const { return m_vkDevice; }
+        [[nodiscard]] VkOpticalFlowSessionNV GetOfaSession() const { return m_vkOfaSession; }
 
-        NV_OF_STATUS GetCaps(NV_OF_CAPS param, uint32_t* capsVal, uint32_t* size);
+        NV_OF_STATUS GetCaps(NV_OF_CAPS param, uint32_t* capsVal, uint32_t* size) const;
 
         NV_OF_STATUS InitSession(const NV_OF_INIT_PARAMS* initParams);
 
-        void RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_VK* registerParams);
+        void RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_VK* registerParams) const;
 
-        NV_OF_STATUS BindImageToSession(NvOFGPUBufferHandle hBuffer, VkOpticalFlowSessionBindingPointNV bindingPoint);
+        NV_OF_STATUS BindImageToSession(NvOFGPUBufferHandle hBuffer, VkOpticalFlowSessionBindingPointNV bindingPoint) const;
 
-        void RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf);
+        void RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf) const;
 
       protected:
         VkInstance m_vkInstance{};
@@ -74,6 +74,6 @@ namespace dxvk {
         PFN_vkGetPhysicalDeviceQueueFamilyProperties m_vkGetPhysicalDeviceQueueFamilyProperties{};
         HMODULE m_library{};
 
-        uint32_t GetVkOFAQueue();
+        [[nodiscard]] uint32_t GetVkOFAQueue() const;
     };
 }
