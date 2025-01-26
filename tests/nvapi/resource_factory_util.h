@@ -1,9 +1,10 @@
 #pragma once
 
 #include "nvapi_tests_private.h"
-#include "nvapi_d3d_mocks.h"
-#include "nvapi_sysinfo_mocks.h"
-#include "nvapi_vulkan_mocks.h"
+#include "../mocks/vulkan_mocks.h"
+#include "../mocks/dxgi_mocks.h"
+#include "../mocks/nvml_mocks.h"
+#include "../mocks/lfx_mocks.h"
 
 DXGIDxvkAdapterMock* CreateDXGIDxvkAdapterMock();
 DXGIOutput6Mock* CreateDXGIOutput6Mock();

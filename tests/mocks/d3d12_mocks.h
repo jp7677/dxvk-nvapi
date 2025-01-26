@@ -1,7 +1,7 @@
 #pragma once
 
-#include "nvapi_tests_private.h"
-#include "../src/interfaces/vkd3d-proton_interfaces.h"
+#include "../../src/nvapi_private.h"
+#include "../../src/interfaces/vkd3d-proton_interfaces.h"
 
 class ID3D12Vkd3dDevice : public ID3D12Device5, public ID3D12DeviceExt {};
 

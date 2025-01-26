@@ -1,7 +1,7 @@
 #pragma once
 
-#include "nvapi_tests_private.h"
-#include "../src/interfaces/dxvk_interfaces.h"
+#include "../../src/nvapi_private.h"
+#include "../../src/interfaces/dxvk_interfaces.h"
 
 class ID3D11DxvkDevice : public ID3D11Device, public ID3D11VkExtDevice1 {};
 

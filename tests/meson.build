@@ -1,11 +1,13 @@
+catch2_src = files(['../inc/catch_amalgamated.cpp'])
+
 nvapi_src = files([
   '../src/util/util_string.cpp',
   '../src/util/util_env.cpp',
   '../src/util/util_log.cpp',
   '../src/shared/vk.cpp',
   '../src/shared/resource_factory.cpp',
-  '../src/nvapi/nvml.cpp',
   '../src/nvapi/lfx.cpp',
+  '../src/nvapi/nvml.cpp',
   '../src/nvapi/nvapi_resource_factory.cpp',
   '../src/nvapi/nvapi_d3d_instance.cpp',
   '../src/nvapi/nvapi_d3d_low_latency_device.cpp',
@@ -28,11 +30,9 @@ nvapi_src = files([
   '../src/nvapi_vulkan.cpp',
 ])
 
-catch2_src = files(['../inc/catch_amalgamated.cpp'])
-
 nvapi_tests_src = files([
-  'main.cpp',
-  'resource_factory_util.cpp',
+  'nvapi_main.cpp',
+  'nvapi/resource_factory_util.cpp',
   'nvapi_d3d.cpp',
   'nvapi_d3d11.cpp',
   'nvapi_d3d12.cpp',

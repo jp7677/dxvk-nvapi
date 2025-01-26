@@ -1,7 +1,7 @@
 #pragma once
 
-#include "nvapi_tests_private.h"
-#include "../src/shared/vk.h"
+#include "../../src/nvapi_private.h"
+#include "../../src/shared/vk.h"
 
 using namespace trompeloeil;
 
