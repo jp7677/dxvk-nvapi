@@ -21,9 +21,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "nvofapi/nvofapi_vk_instance.h"
-#include "nvofapi/nvofapi_image.h"
 #include "nvofapi_entrypoints.h"
+#include "nvofapi_globals.h"
+#include "nvofapi/nvofapi_image.h"
+#include "nvofapi/nvofapi_vk_instance.h"
 #include "util/util_env.h"
 #include "util/util_log.h"
 #include "util/util_string.h"
@@ -31,8 +32,12 @@
 #include "../version.h"
 #include "../config.h"
 
-using namespace dxvk;
+static auto initializationMutex = std::mutex{};
+
 extern "C" {
+
+    using namespace dxvk;
+
     // VK entrypoints
     NV_OF_STATUS NVOFAPI CreateOpticalFlowVk(VkInstance vkInstance, VkPhysicalDevice vkPhysicalDevice, VkDevice vkDevice, NvOFHandle* hOFInstance) {
         constexpr auto n = __func__;
@@ -40,13 +45,11 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(vkInstance), log::fmt::hnd(vkPhysicalDevice), log::fmt::hnd(vkDevice), log::fmt::ptr(hOFInstance));
 
-        NvOFInstanceVk* nvOF = nullptr;
-        try {
-            nvOF = new NvOFInstanceVk(vkInstance, vkPhysicalDevice, vkDevice);
-        } catch (std::exception const& e) {
-            log::info(str::format("CreateOpticalFlowD3D12 exception, ", e.what()));
-            return ErrorGeneric(n);
-        }
+        std::scoped_lock lock(initializationMutex);
+        if (resourceFactory == nullptr)
+            resourceFactory = std::make_unique<ResourceFactory>();
+
+        auto nvOF = new NvOFInstanceVk(*resourceFactory, vkInstance, vkPhysicalDevice, vkDevice);
 
         if (!nvOF->Initialize()) {
             delete nvOF;

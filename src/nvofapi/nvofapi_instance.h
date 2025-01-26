@@ -24,6 +24,8 @@
 #pragma once
 
 #include "../nvofapi_private.h"
+#include "../shared/resource_factory.h"
+#include "../shared/vk.h"
 #include "../interfaces/vkd3d-proton_interfaces.h"
 
 namespace dxvk {
@@ -31,17 +33,13 @@ namespace dxvk {
 
     class NvOFInstance {
       public:
-        NvOFInstance(VkInstance vkInstance,
-            VkPhysicalDevice vkPhysicalDevice,
-            VkDevice vkDevice) : m_vkInstance(vkInstance),
-                                 m_vkPhysicalDevice(vkPhysicalDevice), m_vkDevice(vkDevice) {
-        }
-
-        NvOFInstance() {};
+        explicit NvOFInstance(ResourceFactory& resourceFactory) : m_resourceFactory(resourceFactory) {};
+        NvOFInstance(ResourceFactory& resourceFactory, VkInstance vkInstance, VkPhysicalDevice vkPhysicalDevice, VkDevice vkDevice)
+            : m_resourceFactory(resourceFactory), m_vkInstance(vkInstance), m_vkPhysicalDevice(vkPhysicalDevice), m_vkDevice(vkDevice) {}
 
         virtual ~NvOFInstance() {
-            m_vkDestroyOpticalFlowSessionNV(m_vkDevice, m_vkOfaSession, nullptr);
-            FreeLibrary(m_library);
+            if (m_vkDestroyOpticalFlowSessionNV)
+                m_vkDestroyOpticalFlowSessionNV(m_vkDevice, m_vkOfaSession, nullptr);
         }
 
         [[nodiscard]] VkDevice GetVkDevice() const { return m_vkDevice; }
@@ -58,12 +56,14 @@ namespace dxvk {
         void RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf) const;
 
       protected:
+        ResourceFactory& m_resourceFactory;
+        std::unique_ptr<Vk> m_vk;
+
         VkInstance m_vkInstance{};
         VkPhysicalDevice m_vkPhysicalDevice{};
         VkDevice m_vkDevice{};
+
         VkOpticalFlowSessionNV m_vkOfaSession{};
-        PFN_vkGetInstanceProcAddr m_vkGetInstanceProcAddr{};
-        PFN_vkGetDeviceProcAddr m_vkGetDeviceProcAddr{};
         PFN_vkCreateOpticalFlowSessionNV m_vkCreateOpticalFlowSessionNV{};
         PFN_vkDestroyOpticalFlowSessionNV m_vkDestroyOpticalFlowSessionNV{};
         PFN_vkCreateImageView m_vkCreateImageView{};
@@ -72,7 +72,6 @@ namespace dxvk {
         PFN_vkCmdOpticalFlowExecuteNV m_vkCmdOpticalFlowExecuteNV{};
 
         PFN_vkGetPhysicalDeviceQueueFamilyProperties m_vkGetPhysicalDeviceQueueFamilyProperties{};
-        HMODULE m_library{};
 
         [[nodiscard]] uint32_t GetVkOFAQueue() const;
     };

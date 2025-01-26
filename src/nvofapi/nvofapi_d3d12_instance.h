@@ -24,14 +24,15 @@
 #pragma once
 
 #include "../nvofapi_private.h"
+#include "../shared/resource_factory.h"
 #include "nvofapi_instance.h"
 #include "../util/com_pointer.h"
 
 namespace dxvk {
-    class NvOFInstanceD3D12 : public NvOFInstance {
+    class NvOFInstanceD3D12 final : public NvOFInstance {
 
       public:
-        NvOFInstanceD3D12(ID3D12Device* pD3D12Device);
+        NvOFInstanceD3D12(ResourceFactory& resourceFactory, ID3D12Device* pD3D12Device);
         ~NvOFInstanceD3D12() override = default;
 
         bool Initialize();

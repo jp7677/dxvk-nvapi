@@ -24,23 +24,27 @@
 #pragma once
 
 #include "../nvofapi_private.h"
+#include "../shared/resource_factory.h"
 #include "nvofapi_instance.h"
 
 namespace dxvk {
-    class NvOFInstanceVk : public NvOFInstance {
+    class NvOFInstanceVk final : public NvOFInstance {
+
       public:
-        NvOFInstanceVk(VkInstance vkInstance, VkPhysicalDevice vkPhysicalDevice, VkDevice vkDevice) : NvOFInstance(vkInstance, vkPhysicalDevice, vkDevice) {
-        }
+        NvOFInstanceVk(ResourceFactory& resourceFactory, VkInstance vkInstance, VkPhysicalDevice vkPhysicalDevice, VkDevice vkDevice)
+            : NvOFInstance(resourceFactory, vkInstance, vkPhysicalDevice, vkDevice) {}
 
         ~NvOFInstanceVk() override {
             // free cmdbuffers
-            m_vkFreeCommandBuffers(m_vkDevice, m_commandPool, CMDS_IN_FLIGHT, m_commandBuffers.data());
-            m_vkDestroyCommandPool(m_vkDevice, m_commandPool, nullptr);
+            if (m_vkFreeCommandBuffers)
+                m_vkFreeCommandBuffers(m_vkDevice, m_commandPool, CMDS_IN_FLIGHT, m_commandBuffers.data());
+            if (m_vkDestroyCommandPool)
+                m_vkDestroyCommandPool(m_vkDevice, m_commandPool, nullptr);
         }
 
-        bool Execute(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams);
-
         bool Initialize();
+
+        bool Execute(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams);
 
       private:
         VkQueue m_queue{};

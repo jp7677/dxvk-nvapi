@@ -22,11 +22,12 @@
  */
 
 #include "nvofapi_d3d12_instance.h"
-#include "util/util_log.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
 
-    NvOFInstanceD3D12::NvOFInstanceD3D12(ID3D12Device* pD3D12Device) {
+    NvOFInstanceD3D12::NvOFInstanceD3D12(ResourceFactory& resourceFactory, ID3D12Device* pD3D12Device)
+        : NvOFInstance(resourceFactory) {
         // Query for the extension interface
         // Grab the vk triad
         if (FAILED(pD3D12Device->QueryInterface(IID_PPV_ARGS(&m_device))))
@@ -44,8 +45,9 @@ namespace dxvk {
     }
 
     bool NvOFInstanceD3D12::Initialize() {
-        m_library = LoadLibraryA("winevulkan.dll");
-        if (!m_library) {
+        m_vk = m_resourceFactory.CreateVulkan("winevulkan.dll");
+        if (!m_vk || !m_vk->IsAvailable()) {
+            log::info("Initializing NVOFAPI failed: could not find winevulkan.dll in the current process");
             return false;
         }
 
@@ -55,14 +57,11 @@ namespace dxvk {
             return false;
         }
 
-        m_vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(reinterpret_cast<void*>(GetProcAddress(m_library, "vkGetInstanceProcAddr")));
+#define VK_GET_INSTANCE_PROC_ADDR(proc) m_##proc = reinterpret_cast<PFN_##proc>(m_vk->GetInstanceProcAddr(m_vkInstance, #proc))
 
-#define VK_GET_INSTANCE_PROC_ADDR(proc) m_##proc = reinterpret_cast<PFN_##proc>(m_vkGetInstanceProcAddr(m_vkInstance, #proc))
-
-        VK_GET_INSTANCE_PROC_ADDR(vkGetDeviceProcAddr);
         VK_GET_INSTANCE_PROC_ADDR(vkGetPhysicalDeviceQueueFamilyProperties);
 
-#define VK_GET_DEVICE_PROC_ADDR(proc) m_##proc = reinterpret_cast<PFN_##proc>(m_vkGetDeviceProcAddr(m_vkDevice, #proc))
+#define VK_GET_DEVICE_PROC_ADDR(proc) m_##proc = reinterpret_cast<PFN_##proc>(m_vk->GetDeviceProcAddr(m_vkDevice, #proc))
 
         VK_GET_DEVICE_PROC_ADDR(vkCreateImageView);
         VK_GET_DEVICE_PROC_ADDR(vkDestroyImageView);

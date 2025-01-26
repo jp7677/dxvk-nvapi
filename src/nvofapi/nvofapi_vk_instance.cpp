@@ -27,21 +27,22 @@
 namespace dxvk {
 
     bool NvOFInstanceVk::Initialize() {
-        // For VK we cannot load winevulkan directly or we may break handle
-        // opacity.
-        m_library = LoadLibraryA("vulkan-1.dll");
-        if (!m_library) {
+        // For Vulkan we cannot load `winevulkan.dll` directly, or we may break handle opacity
+        m_vk = m_resourceFactory.CreateVulkan("vulkan-1.dll");
+
+        if (!m_vk || !m_vk->IsAvailable())
+            m_vk = m_resourceFactory.CreateVulkan("winevulkan.dll");
+
+        if (!m_vk || !m_vk->IsAvailable()) {
+            log::info("Initializing NVOFAPI failed: could not find vulkan-1.dll (nor winevulkan.dll) in the current process");
             return false;
         }
 
-        m_vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(reinterpret_cast<void*>(GetProcAddress(m_library, "vkGetInstanceProcAddr")));
+#define VK_GET_INSTANCE_PROC_ADDR(proc) m_##proc = reinterpret_cast<PFN_##proc>(m_vk->GetInstanceProcAddr(m_vkInstance, #proc))
 
-#define VK_GET_INSTANCE_PROC_ADDR(proc) m_##proc = reinterpret_cast<PFN_##proc>(m_vkGetInstanceProcAddr(m_vkInstance, #proc))
-
-        VK_GET_INSTANCE_PROC_ADDR(vkGetDeviceProcAddr);
         VK_GET_INSTANCE_PROC_ADDR(vkGetPhysicalDeviceQueueFamilyProperties);
 
-#define VK_GET_DEVICE_PROC_ADDR(proc) m_##proc = reinterpret_cast<PFN_##proc>(m_vkGetDeviceProcAddr(m_vkDevice, #proc))
+#define VK_GET_DEVICE_PROC_ADDR(proc) m_##proc = reinterpret_cast<PFN_##proc>(m_vk->GetDeviceProcAddr(m_vkDevice, #proc))
 
         VK_GET_DEVICE_PROC_ADDR(vkCreateImageView);
         VK_GET_DEVICE_PROC_ADDR(vkDestroyImageView);
