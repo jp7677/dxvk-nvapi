@@ -1,12 +1,12 @@
 #pragma once
 
 #include "../nvapi_private.h"
-#include "./resource_factory.h"
+#include "./nvapi_resource_factory.h"
 
 namespace dxvk {
     class NvapiVulkanLowLatencyDevice {
       public:
-        static bool Initialize(ResourceFactory& resourceFactory);
+        static bool Initialize(NvapiResourceFactory& resourceFactory);
         static void Reset();
 
         [[nodiscard]] static std::pair<NvapiVulkanLowLatencyDevice*, VkResult> GetOrCreate(VkDevice device);

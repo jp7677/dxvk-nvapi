@@ -370,7 +370,7 @@ extern "C" {
             " (", env::getExecutableName(), ")"));
 
         if (!resourceFactory)
-            resourceFactory = std::make_unique<ResourceFactory>();
+            resourceFactory = std::make_unique<NvapiResourceFactory>();
 
         nvapiAdapterRegistry = std::make_unique<NvapiAdapterRegistry>(*resourceFactory);
         if (!nvapiAdapterRegistry->Initialize()) {

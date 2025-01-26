@@ -1,14 +1,14 @@
 #pragma once
 
 #include "nvapi_tests_private.h"
+#include "../src/nvapi/nvapi_resource_factory.h"
 #include "nvapi_d3d_mocks.h"
 #include "nvapi_sysinfo_mocks.h"
 #include "nvapi_vulkan_mocks.h"
-#include "../src/nvapi/resource_factory.h"
 
 using namespace trompeloeil;
 
-class MockFactory : public dxvk::ResourceFactory {
+class MockFactory final : public dxvk::NvapiResourceFactory {
 
   public:
     MockFactory(

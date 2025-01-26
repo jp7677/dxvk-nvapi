@@ -7,7 +7,7 @@
 
 namespace dxvk {
 
-    NvapiAdapterRegistry::NvapiAdapterRegistry(ResourceFactory& resourceFactory)
+    NvapiAdapterRegistry::NvapiAdapterRegistry(NvapiResourceFactory& resourceFactory)
         : m_resourceFactory(resourceFactory) {}
 
     NvapiAdapterRegistry::~NvapiAdapterRegistry() {

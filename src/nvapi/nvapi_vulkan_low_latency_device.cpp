@@ -5,7 +5,7 @@ namespace dxvk {
     std::unordered_map<VkDevice, NvapiVulkanLowLatencyDevice> NvapiVulkanLowLatencyDevice::m_lowLatencyDeviceMap = {};
     std::mutex NvapiVulkanLowLatencyDevice::m_mutex = {};
 
-    bool NvapiVulkanLowLatencyDevice::Initialize(ResourceFactory& resourceFactory) {
+    bool NvapiVulkanLowLatencyDevice::Initialize(NvapiResourceFactory& resourceFactory) {
         std::scoped_lock lock{m_mutex};
 
         if (m_vk && m_vk->IsAvailable())

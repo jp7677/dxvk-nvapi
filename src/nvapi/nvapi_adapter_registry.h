@@ -1,18 +1,16 @@
 #pragma once
 
 #include "../nvapi_private.h"
-#include "resource_factory.h"
+#include "nvapi_resource_factory.h"
 #include "nvapi_adapter.h"
 #include "nvapi_output.h"
-#include "vk.h"
-#include "nvml.h"
 #include "../interfaces/dxvk_interfaces.h"
 
 namespace dxvk {
     class NvapiAdapterRegistry {
 
       public:
-        explicit NvapiAdapterRegistry(ResourceFactory& resourceFactory);
+        explicit NvapiAdapterRegistry(NvapiResourceFactory& resourceFactory);
         ~NvapiAdapterRegistry();
 
         bool Initialize();
@@ -34,7 +32,7 @@ namespace dxvk {
         [[nodiscard]] IDXGIVkInteropFactory1* GetInteropFactory() const { return m_dxgiVkInterop.ptr(); }
 
       private:
-        ResourceFactory& m_resourceFactory;
+        NvapiResourceFactory& m_resourceFactory;
         Com<IDXGIFactory1> m_dxgiFactory;
         Com<IDXGIVkInteropFactory1> m_dxgiVkInterop;
         std::unique_ptr<Vk> m_vk;

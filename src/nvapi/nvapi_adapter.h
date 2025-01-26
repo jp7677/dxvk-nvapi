@@ -2,7 +2,7 @@
 
 #include "../nvapi_private.h"
 #include "../util/com_pointer.h"
-#include "vk.h"
+#include "../shared/vk.h"
 #include "nvml.h"
 #include "nvapi_output.h"
 

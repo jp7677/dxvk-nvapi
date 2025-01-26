@@ -1,12 +1,12 @@
 #pragma once
 
 #include "../nvapi_private.h"
-#include "resource_factory.h"
+#include "nvapi_resource_factory.h"
 
 namespace dxvk {
     class NvapiD3dInstance {
       public:
-        explicit NvapiD3dInstance(ResourceFactory& resourceFactory);
+        explicit NvapiD3dInstance(NvapiResourceFactory& resourceFactory);
         ~NvapiD3dInstance();
 
         void Initialize();
@@ -19,7 +19,7 @@ namespace dxvk {
       private:
         constexpr static uint64_t kNanoInMicro = 1000;
 
-        ResourceFactory& m_resourceFactory;
+        NvapiResourceFactory& m_resourceFactory;
         std::unique_ptr<Lfx> m_lfx;
         bool m_isLowLatencyEnabled = false;
     };

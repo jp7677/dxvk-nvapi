@@ -3,7 +3,7 @@
 #include "../util/util_log.h"
 
 namespace dxvk {
-    NvapiD3dInstance::NvapiD3dInstance(ResourceFactory& resourceFactory)
+    NvapiD3dInstance::NvapiD3dInstance(NvapiResourceFactory& resourceFactory)
         : m_resourceFactory(resourceFactory) {}
 
     NvapiD3dInstance::~NvapiD3dInstance() = default;
