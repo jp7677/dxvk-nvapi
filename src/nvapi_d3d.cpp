@@ -6,6 +6,16 @@
 extern "C" {
     using namespace dxvk;
 
+    NvAPI_Status __cdecl NvAPI_D3D_RegisterDevice(IUnknown* pDev) {
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDev));
+
+        // Just acknowledge the request since there is nothing to do here
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D_GetObjectHandleForResource(IUnknown* pDevice, IUnknown* pResource, NVDX_ObjectHandle* pHandle) {
         constexpr auto n = __func__;
         thread_local bool alreadyLogged = false;

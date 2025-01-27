@@ -7,6 +7,10 @@ using namespace trompeloeil;
 TEST_CASE("D3D methods succeed", "[.d3d]") {
     UnknownMock unknown;
 
+    SECTION("RegisterDevice returns OK") {
+        REQUIRE(NvAPI_D3D_RegisterDevice(&unknown) == NVAPI_OK);
+    }
+
     SECTION("GetObjectHandleForResource returns OK") {
         NVDX_ObjectHandle handle;
         REQUIRE(NvAPI_D3D_GetObjectHandleForResource(&unknown, &unknown, &handle) == NVAPI_OK);
