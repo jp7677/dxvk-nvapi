@@ -188,7 +188,15 @@ namespace dxvk {
             return it->second;
 
         Com<ID3DLowLatencyDevice> d3dLowLatencyDevice;
-        if (FAILED(commandQueue->GetDevice(IID_PPV_ARGS(&d3dLowLatencyDevice))))
+
+        // some games like The Cycle: Frontier (868270) pass ID3D11DeviceContext to NvAPI_D3D12_SetAsyncFrameMarker,
+        // so let's not trust the caller and handle this somewhat gracefully instead of just crashing
+        if (Com<ID3D11DeviceChild> d3d11DeviceChild; SUCCEEDED(commandQueue->QueryInterface(IID_PPV_ARGS(&d3d11DeviceChild)))) {
+            Com<ID3D11Device> d3d11Device;
+            d3d11DeviceChild->GetDevice(&d3d11Device);
+            if (FAILED(d3d11Device->QueryInterface(IID_PPV_ARGS(&d3dLowLatencyDevice))))
+                return nullptr;
+        } else if (FAILED(commandQueue->GetDevice(IID_PPV_ARGS(&d3dLowLatencyDevice))))
             return nullptr;
 
         m_lowLatencyDeviceMap.emplace(unknown, d3dLowLatencyDevice.ptr());
