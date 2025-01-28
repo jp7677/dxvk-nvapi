@@ -3,6 +3,7 @@
 #include "nvapi_sysinfo_mocks.h"
 #include "nvapi_vulkan_mocks.h"
 #include "nvapi_d3d12_mocks.h"
+#include "nvapi_d3d11_mocks.h"
 #include "nvapi_d3d_mocks.h"
 
 using namespace trompeloeil;
@@ -23,13 +24,17 @@ typedef struct _NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX_R520 {
 
 TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     D3D12Vkd3dDeviceMock device;
+    D3D11DxvkDeviceMock d3d11Device;
     D3D12Vkd3dCommandQueueMock commandQueue;
     D3DLowLatencyDeviceMock lowLatencyDevice;
+    D3D11DxvkDeviceContextMock d3d11DeviceContext;
     D3D12Vkd3dGraphicsCommandListMock commandList;
     auto deviceRefCount = 0;
+    auto d3d11DeviceRefCount = 0;
     auto commandListRefCount = 0;
     auto commandQueueRefCount = 0;
     auto lowLatencyDeviceRefCount = 0;
+    auto d3d11DeviceContextRefCount = 0;
 
     ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt*>(&device))
@@ -75,6 +80,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12CommandQueueExt*>(&commandQueue))
         .LR_SIDE_EFFECT(commandQueueRefCount++)
         .RETURN(S_OK);
+    ALLOW_CALL(commandQueue, QueryInterface(__uuidof(ID3D11DeviceChild), _))
+        .RETURN(E_NOINTERFACE);
     ALLOW_CALL(commandQueue, AddRef())
         .LR_SIDE_EFFECT(commandQueueRefCount++)
         .RETURN(commandQueueRefCount);
@@ -85,6 +92,30 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12Device*>(&device))
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
+
+    ALLOW_CALL(d3d11Device, AddRef())
+        .LR_SIDE_EFFECT(d3d11DeviceRefCount++)
+        .RETURN(d3d11DeviceRefCount);
+    ALLOW_CALL(d3d11Device, Release())
+        .LR_SIDE_EFFECT(d3d11DeviceRefCount--)
+        .RETURN(d3d11DeviceRefCount);
+
+    ALLOW_CALL(d3d11Device, QueryInterface(__uuidof(ID3DLowLatencyDevice), _))
+        .RETURN(E_NOINTERFACE);
+
+    ALLOW_CALL(d3d11DeviceContext, QueryInterface(__uuidof(ID3D11DeviceChild), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11DeviceChild*>(&d3d11DeviceContext))
+        .LR_SIDE_EFFECT(d3d11DeviceContextRefCount++)
+        .RETURN(S_OK);
+    ALLOW_CALL(d3d11DeviceContext, AddRef())
+        .LR_SIDE_EFFECT(d3d11DeviceContextRefCount++)
+        .RETURN(d3d11DeviceContextRefCount);
+    ALLOW_CALL(d3d11DeviceContext, Release())
+        .LR_SIDE_EFFECT(d3d11DeviceContextRefCount--)
+        .RETURN(d3d11DeviceContextRefCount);
+    ALLOW_CALL(d3d11DeviceContext, GetDevice(_))
+        .LR_SIDE_EFFECT(*_1 = static_cast<ID3D11Device*>(&d3d11Device))
+        .LR_SIDE_EFFECT(d3d11DeviceRefCount++);
 
     SECTION("CreateGraphicsPipelineState for other than SetDepthBounds returns not-supported") {
         FORBID_CALL(device, CreateGraphicsPipelineState(_, _, _));
@@ -819,6 +850,10 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             .LR_SIDE_EFFECT(*_2 = static_cast<ID3DLowLatencyDevice*>(&lowLatencyDevice))
             .LR_SIDE_EFFECT(lowLatencyDeviceRefCount++)
             .RETURN(S_OK);
+        ALLOW_CALL(d3d11Device, QueryInterface(__uuidof(ID3DLowLatencyDevice), _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<ID3DLowLatencyDevice*>(&lowLatencyDevice))
+            .LR_SIDE_EFFECT(lowLatencyDeviceRefCount++)
+            .RETURN(S_OK);
         ALLOW_CALL(lowLatencyDevice, AddRef())
             .LR_SIDE_EFFECT(lowLatencyDeviceRefCount++)
             .RETURN(lowLatencyDeviceRefCount);
@@ -933,10 +968,28 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 params.version = NV_ASYNC_FRAME_MARKER_PARAMS_VER;
                 REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(nullptr, &params) == NVAPI_INVALID_POINTER);
             }
+
+            SECTION("SetAsyncFrameMarker successfully handles being passed ID3D11DeviceContext as ID3D12CommandQueue") {
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(1ULL, VK_LATENCY_MARKER_OUT_OF_BAND_RENDERSUBMIT_START_NV))
+                    .RETURN(S_OK);
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_ASYNC_FRAME_MARKER_PARAMS params{};
+                params.version = NV_ASYNC_FRAME_MARKER_PARAMS_VER1;
+                params.frameID = 123ULL;
+                params.markerType = OUT_OF_BAND_RENDERSUBMIT_START;
+                REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(reinterpret_cast<ID3D12CommandQueue*>(&d3d11DeviceContext), &params) == NVAPI_OK);
+            }
         }
 
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
-        REQUIRE(lowLatencyDeviceRefCount == 0);
+        CHECK(deviceRefCount == 0);
+        CHECK(d3d11DeviceRefCount == 0);
+        CHECK(commandListRefCount == 0);
+        CHECK(commandQueueRefCount == 0);
+        CHECK(lowLatencyDeviceRefCount == 0);
+        CHECK(d3d11DeviceContextRefCount == 0);
     }
 }
