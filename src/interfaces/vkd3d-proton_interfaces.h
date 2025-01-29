@@ -128,13 +128,31 @@ ID3D12DXVKInteropDevice : public IUnknown {
     virtual HRESULT STDMETHODCALLTYPE UnlockCommandQueue(
         ID3D12CommandQueue * queue) = 0;
 };
+
 MIDL_INTERFACE("902d8115-59eb-4406-9518-fe00f991ee65")
 ID3D12DXVKInteropDevice1 : public ID3D12DXVKInteropDevice {
-    virtual HRESULT STDMETHODCALLTYPE GetVulkanResourceInfo1(ID3D12Resource * resource, UINT64 * vk_handle, UINT64 * buffer_offset, VkFormat * format);
-    virtual HRESULT STDMETHODCALLTYPE CreateInteropCommandQueue(const D3D12_COMMAND_QUEUE_DESC* pDesc, UINT32 vk_queue_family_index, ID3D12CommandQueue** ppQueue);
-    virtual HRESULT STDMETHODCALLTYPE CreateInteropCommandAllocator(D3D12_COMMAND_LIST_TYPE type, UINT32 vk_queue_family_index, ID3D12CommandAllocator * *ppAllocator);
-    virtual HRESULT STDMETHODCALLTYPE BeginVkCommandBufferInterop(ID3D12CommandList * pCmdList, VkCommandBuffer * pCommandBuffer);
-    virtual HRESULT STDMETHODCALLTYPE EndVkCommandBufferInterop(ID3D12CommandList * pCmdList);
+    virtual HRESULT STDMETHODCALLTYPE GetVulkanResourceInfo1(
+        ID3D12Resource * resource,
+        UINT64 * vk_handle,
+        UINT64 * buffer_offset,
+        VkFormat * format) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE CreateInteropCommandQueue(
+        const D3D12_COMMAND_QUEUE_DESC* pDesc,
+        UINT32 vk_queue_family_index,
+        ID3D12CommandQueue** ppQueue) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE CreateInteropCommandAllocator(
+        D3D12_COMMAND_LIST_TYPE type,
+        UINT32 vk_queue_family_index,
+        ID3D12CommandAllocator * *ppAllocator) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE BeginVkCommandBufferInterop(
+        ID3D12CommandList * pCmdList,
+        VkCommandBuffer * pCommandBuffer) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE EndVkCommandBufferInterop(
+        ID3D12CommandList * pCmdList) = 0;
 };
 
 MIDL_INTERFACE("77a86b09-2bea-4801-b89a-37648e104af1")
