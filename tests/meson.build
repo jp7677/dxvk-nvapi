@@ -52,3 +52,30 @@ nvapi_exe = executable(target_name, [ nvapi_src, catch2_src, nvapi_tests_src, dx
   dependencies        : [ lib_dxgi, lib_d3d11, lib_version ],
   include_directories : [ nvapi_headers, vk_headers ],
   install             : true)
+
+nvofapi_src = files([
+  '../src/util/util_string.cpp',
+  '../src/util/util_env.cpp',
+  '../src/util/util_log.cpp',
+  '../src/shared/resource_factory.cpp',
+  '../src/shared/vk.cpp',
+  '../src/nvofapi/nvofapi_image.cpp',
+  '../src/nvofapi/nvofapi_instance.cpp',
+  '../src/nvofapi/nvofapi_d3d12_instance.cpp',
+  '../src/nvofapi/nvofapi_vk_instance.cpp',
+  '../src/nvofapi_globals.cpp',
+  '../src/nvofapi.cpp',
+  '../src/nvofapi_d3d12.cpp',
+  '../src/nvofapi_vk.cpp',
+])
+
+nvofapi_tests_src = files([
+  'nvofapi_main.cpp',
+])
+
+target_name = 'nvofapi'+target_suffix+'-tests'
+nvofapi_exe = executable(target_name, [ nvofapi_src, catch2_src, nvofapi_tests_src, dxvk_nvapi_version ],
+  cpp_args            : '-DDXVK_NVAPI_TARGET_NAME="'+target_name+'"',
+  dependencies        : [ lib_version ],
+  include_directories : [ nvapi_headers, vk_headers ],
+  install             : true)
