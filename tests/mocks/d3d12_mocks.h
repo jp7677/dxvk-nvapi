@@ -3,7 +3,7 @@
 #include "../../src/nvapi_private.h"
 #include "../../src/interfaces/vkd3d-proton_interfaces.h"
 
-class ID3D12Vkd3dDevice : public ID3D12Device5, public ID3D12DeviceExt {};
+class ID3D12Vkd3dDevice : public ID3D12Device5, public ID3D12DeviceExt, public ID3D12DXVKInteropDevice1 {};
 
 class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3dDevice> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -84,13 +84,27 @@ class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3
     IMPLEMENT_MOCK3(CreateStateObject);
     IMPLEMENT_MOCK2(GetRaytracingAccelerationStructurePrebuildInfo);
     IMPLEMENT_MOCK2(CheckDriverMatchingIdentifier);
-    IMPLEMENT_MOCK3(GetVulkanHandles);
+    MAKE_MOCK3(GetVulkanHandles, HRESULT(VkInstance*, VkPhysicalDevice*, VkDevice*), override);
     IMPLEMENT_MOCK1(GetExtensionSupport);
     IMPLEMENT_MOCK7(CreateCubinComputeShaderWithName);
     IMPLEMENT_MOCK1(DestroyCubinComputeShader);
     IMPLEMENT_MOCK3(GetCudaTextureObject);
     IMPLEMENT_MOCK2(GetCudaSurfaceObject);
     IMPLEMENT_MOCK1(CaptureUAVInfo);
+    IMPLEMENT_MOCK2(GetDXGIAdapter);
+    IMPLEMENT_MOCK2(GetInstanceExtensions);
+    IMPLEMENT_MOCK2(GetDeviceExtensions);
+    IMPLEMENT_MOCK1(GetDeviceFeatures);
+    IMPLEMENT_MOCK3(GetVulkanQueueInfo);
+    IMPLEMENT_MOCK3(GetVulkanImageLayout);
+    IMPLEMENT_MOCK3(GetVulkanResourceInfo);
+    IMPLEMENT_MOCK1(LockCommandQueue);
+    IMPLEMENT_MOCK1(UnlockCommandQueue);
+    IMPLEMENT_MOCK4(GetVulkanResourceInfo1);
+    IMPLEMENT_MOCK3(CreateInteropCommandQueue);
+    IMPLEMENT_MOCK3(CreateInteropCommandAllocator);
+    IMPLEMENT_MOCK2(BeginVkCommandBufferInterop);
+    IMPLEMENT_MOCK1(EndVkCommandBufferInterop);
 };
 
 class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList4, public ID3D12GraphicsCommandListExt1 {};
