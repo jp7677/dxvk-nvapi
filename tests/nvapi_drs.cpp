@@ -38,13 +38,51 @@ TEST_CASE("DRS methods succeed", "[.drs]") {
         REQUIRE(NvAPI_DRS_FindApplicationByName(handle, name, nullptr, &application) == NVAPI_INVALID_ARGUMENT);
     }
 
-    SECTION("FindApplicationByName returns OK") {
+    SECTION("FindApplicationByName with null application returns invalid-argument") {
+        NvDRSSessionHandle handle{};
+        NvDRSProfileHandle profile;
+        NvAPI_UnicodeString name;
+        memcpy(name, L"Application", 24);
+        REQUIRE(NvAPI_DRS_FindApplicationByName(handle, name, &profile, nullptr) == NVAPI_INVALID_ARGUMENT);
+    }
+
+    SECTION("FindApplicationByName with unknown struct version returns incompatible-struct-version") {
         NvDRSSessionHandle handle{};
         NvDRSProfileHandle profile;
         NvAPI_UnicodeString name;
         memcpy(name, L"Application", 24);
         NVDRS_APPLICATION application;
+        application.version = NVDRS_APPLICATION_VER + 1;
+        REQUIRE(NvAPI_DRS_FindApplicationByName(handle, name, &profile, &application) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
+
+    SECTION("FindApplicationByName with current struct version returns not incompatible-struct-version") {
+        NvDRSSessionHandle handle{};
+        NvDRSProfileHandle profile;
+        NvAPI_UnicodeString name;
+        memcpy(name, L"Application", 24);
+        NVDRS_APPLICATION application;
+        application.version = NVDRS_APPLICATION_VER;
+        REQUIRE(NvAPI_DRS_FindApplicationByName(handle, name, &profile, &application) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
+
+    SECTION("FindApplicationByName returns OK and fills NVDRS_APPLICATION structure") {
+        NvDRSSessionHandle handle{};
+        NvDRSProfileHandle profile;
+        NvAPI_UnicodeString name;
+        memcpy(name, L"Application", 24);
+        NvAPI_UnicodeString empty{};
+        NVDRS_APPLICATION application;
+        application.version = NVDRS_APPLICATION_VER_V4;
         REQUIRE(NvAPI_DRS_FindApplicationByName(handle, name, &profile, &application) == NVAPI_OK);
+        CHECK_FALSE(application.isPredefined);
+        CHECK_FALSE(memcmp(application.appName, name, sizeof(NvAPI_UnicodeString)));
+        CHECK_FALSE(memcmp(application.userFriendlyName, name, sizeof(NvAPI_UnicodeString)));
+        CHECK_FALSE(memcmp(application.launcher, empty, sizeof(NvAPI_UnicodeString)));
+        CHECK_FALSE(memcmp(application.fileInFolder, empty, sizeof(NvAPI_UnicodeString)));
+        CHECK_FALSE(application.isMetro);
+        CHECK_FALSE(application.isCommandLine);
+        CHECK_FALSE(memcmp(application.commandLine, empty, sizeof(NvAPI_UnicodeString)));
     }
 
     SECTION("GetBaseProfile returns OK") {
