@@ -52,8 +52,29 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(appName), log::fmt::ptr(phProfile), log::fmt::ptr(pApplication));
 
-        if (!phProfile)
+        if (!phProfile || !pApplication)
             return InvalidArgument(n);
+
+        switch (pApplication->version) {
+            case NVDRS_APPLICATION_VER_V4:
+                std::memset(pApplication->commandLine, 0, sizeof(pApplication->commandLine));
+                [[fallthrough]];
+            case NVDRS_APPLICATION_VER_V3:
+                pApplication->isCommandLine = 0;
+                pApplication->isMetro = 0;
+                [[fallthrough]];
+            case NVDRS_APPLICATION_VER_V2:
+                std::memset(pApplication->fileInFolder, 0, sizeof(pApplication->fileInFolder));
+                [[fallthrough]];
+            case NVDRS_APPLICATION_VER_V1:
+                std::memset(pApplication->launcher, 0, sizeof(pApplication->launcher));
+                std::memcpy(pApplication->userFriendlyName, appName, sizeof(NvAPI_UnicodeString));
+                std::memcpy(pApplication->appName, appName, sizeof(NvAPI_UnicodeString));
+                pApplication->isPredefined = 0;
+                break;
+            default:
+                return IncompatibleStructVersion(n, pApplication->version);
+        }
 
         *phProfile = nvapiDrsProfile;
 
