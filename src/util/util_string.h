@@ -116,4 +116,8 @@ namespace dxvk::str {
                 return lhs.append(separator).append(rhs);
             });
     }
+
+    bool parsedword(const std::string_view& str, NvU32& value);
+
+    std::unordered_map<NvU32, NvU32> parsedwords(const std::string& str);
 }

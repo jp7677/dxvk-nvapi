@@ -44,4 +44,39 @@ namespace dxvk::str {
     std::string fromnullable(const char* str) {
         return str ? std::string(str) : std::string();
     }
+
+    bool parsedword(const std::string_view& str, NvU32& value) {
+        if (str.empty())
+            return false;
+
+        auto end = str.data() + str.size();
+        auto result = str.starts_with("0x") || str.starts_with("0X")
+            ? std::from_chars(str.data() + 2, end, value, 16)
+            : std::from_chars(str.data(), end, value, 10);
+
+        return result.ec == std::errc() && result.ptr == end;
+    }
+
+    std::unordered_map<NvU32, NvU32> parsedwords(const std::string& str) {
+        std::unordered_map<NvU32, NvU32> result;
+
+        if (str.empty())
+            return result;
+
+        auto entries = split<std::vector<std::string_view>>(str, std::regex(","));
+
+        for (auto entry : entries) {
+            auto eq = entry.find('=');
+
+            if (eq == entry.npos || eq == 0 || eq == entry.size() - 1)
+                continue;
+
+            NvU32 key, value;
+
+            if (parsedword(entry.substr(0, eq), key) && parsedword(entry.substr(eq + 1), value))
+                result[key] = value;
+        }
+
+        return result;
+    }
 }
