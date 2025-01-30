@@ -38,7 +38,12 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(profileName), log::fmt::ptr(phProfile));
 
-        return ProfileNotFound(str::format(n, " (", str::fromnvus(profileName), ")"));
+        if (!phProfile)
+            return InvalidArgument(n);
+
+        *phProfile = nvapiDrsProfile;
+
+        return Ok(n);
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_FindApplicationByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString appName, NvDRSProfileHandle* phProfile, NVDRS_APPLICATION* pApplication) {
@@ -47,7 +52,12 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(appName), log::fmt::ptr(phProfile), log::fmt::ptr(pApplication));
 
-        return ExecutableNotFound(str::format(n, " (", str::fromnvus(appName), ")"));
+        if (!phProfile)
+            return InvalidArgument(n);
+
+        *phProfile = nvapiDrsProfile;
+
+        return Ok(n);
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {

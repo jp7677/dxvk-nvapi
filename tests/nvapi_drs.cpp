@@ -14,21 +14,37 @@ TEST_CASE("DRS methods succeed", "[.drs]") {
         REQUIRE(NvAPI_DRS_LoadSettings(handle) == NVAPI_OK);
     }
 
-    SECTION("FindProfileByName returns profile-not-found") {
+    SECTION("FindProfileByName with null profile returns invalid-argument") {
         NvDRSSessionHandle handle{};
-        NvDRSProfileHandle profile;
-        NvAPI_UnicodeString name{};
+        NvAPI_UnicodeString name;
         memcpy(name, L"Profile", 16);
-        REQUIRE(NvAPI_DRS_FindProfileByName(handle, name, &profile) == NVAPI_PROFILE_NOT_FOUND);
+        REQUIRE(NvAPI_DRS_FindProfileByName(handle, name, nullptr) == NVAPI_INVALID_ARGUMENT);
     }
 
-    SECTION("FindApplicationByName returns executable-not-found") {
+    SECTION("FindProfileByName returns OK") {
+        NvDRSSessionHandle handle{};
+        NvDRSProfileHandle profile;
+        NvAPI_UnicodeString name;
+        memcpy(name, L"Profile", 16);
+        REQUIRE(NvAPI_DRS_FindProfileByName(handle, name, &profile) == NVAPI_OK);
+    }
+
+    SECTION("FindApplicationByName with null profile returns invalid-argument") {
+        NvDRSSessionHandle handle{};
+        NvAPI_UnicodeString name;
+        memcpy(name, L"Application", 24);
+        NVDRS_APPLICATION application{};
+        application.version = NVDRS_APPLICATION_VER;
+        REQUIRE(NvAPI_DRS_FindApplicationByName(handle, name, nullptr, &application) == NVAPI_INVALID_ARGUMENT);
+    }
+
+    SECTION("FindApplicationByName returns OK") {
         NvDRSSessionHandle handle{};
         NvDRSProfileHandle profile;
         NvAPI_UnicodeString name;
         memcpy(name, L"Application", 24);
         NVDRS_APPLICATION application;
-        REQUIRE(NvAPI_DRS_FindApplicationByName(handle, name, &profile, &application) == NVAPI_EXECUTABLE_NOT_FOUND);
+        REQUIRE(NvAPI_DRS_FindApplicationByName(handle, name, &profile, &application) == NVAPI_OK);
     }
 
     SECTION("GetBaseProfile returns OK") {
