@@ -137,6 +137,34 @@ TEST_CASE("String", "[.util]") {
         REQUIRE(dxvk::str::implode(" ", std::vector<std::string_view>{"foo", "bar"}) == "foo bar");
         REQUIRE(dxvk::str::implode(", ", std::vector<std::string_view>{"foo", "bar", "baz"}) == "foo, bar, baz");
     }
+
+    SECTION("parsedword") {
+        NvU32 value;
+
+        REQUIRE_FALSE(dxvk::str::parsedword("", value));
+        REQUIRE_FALSE(dxvk::str::parsedword("f", value));
+        REQUIRE_FALSE(dxvk::str::parsedword("0f", value));
+        REQUIRE_FALSE(dxvk::str::parsedword("f0", value));
+
+        REQUIRE(dxvk::str::parsedword("0", value));
+        REQUIRE(value == 0);
+        REQUIRE(dxvk::str::parsedword("10", value));
+        REQUIRE(value == 10);
+        REQUIRE(dxvk::str::parsedword("0x0f", value));
+        REQUIRE(value == 15);
+        REQUIRE(dxvk::str::parsedword("0XFFFFFFFF", value));
+        REQUIRE(value == std::numeric_limits<NvU32>::max());
+    }
+
+    SECTION("parsedwords") {
+        auto dwords = dxvk::str::parsedwords(",0X10E41DF3=0x00ffffff,0x10E41DF7=0X00FFFFFF,0xf,invalid,9,=,4=,=5,,0x104D6667=3,1=2");
+
+        REQUIRE(dwords.size() == 4);
+        REQUIRE(dwords.at(0x10e41df3) == 0x00ffffff);
+        REQUIRE(dwords.at(0x10e41df7) == 0x00ffffff);
+        REQUIRE(dwords.at(0x104d6667) == 3);
+        REQUIRE(dwords.at(1) == 2);
+    }
 }
 
 TEST_CASE("Version", "[.util]") {
