@@ -1,6 +1,8 @@
 #include "nvapi_private.h"
 #include "NvApiDriverSettings.c"
+#include "util/util_env.h"
 #include "util/util_statuscode.h"
+#include "util/util_string.h"
 
 static auto drs = 1U;
 static auto nvapiDrsSession = reinterpret_cast<NvDRSSessionHandle>(&drs);
@@ -120,9 +122,17 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
         constexpr auto n = __func__;
+        static const auto nvapiDrsSettingsString = dxvk::env::getEnvVariable("DXVK_NVAPI_DRS_SETTINGS");
+        static const auto nvapiDrsDwords = dxvk::str::parsedwords(nvapiDrsSettingsString);
 
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), settingId, log::fmt::ptr(pSetting));
+
+        if (!pSetting)
+            return InvalidArgument(n);
+
+        if (pSetting->version != NVDRS_SETTING_VER1)
+            return IncompatibleStructVersion(n, pSetting->version);
 
         auto id = str::format("0x", std::hex, settingId);
         auto name = std::string("Unknown");
@@ -133,6 +143,26 @@ extern "C" {
             [&settingId](const auto& item) { return item.settingId == settingId; });
         if (itD != std::end(mapSettingDWORD))
             name = str::fromws(itD->settingNameString);
+
+        if (auto it = nvapiDrsDwords.find(settingId); it != nvapiDrsDwords.end()) {
+            auto value = it->second;
+            pSetting->settingId = settingId;
+            pSetting->settingType = NVDRS_DWORD_TYPE;
+            pSetting->settingLocation = NVDRS_CURRENT_PROFILE_LOCATION;
+            pSetting->isCurrentPredefined = 0;
+            pSetting->isPredefinedValid = 1;
+            pSetting->u32CurrentValue = value;
+
+            if (itD != std::end(mapSettingDWORD)) {
+                std::memcpy(pSetting->settingName, itD->settingNameString, sizeof(pSetting->settingName));
+                pSetting->u32PredefinedValue = itD->defaultValue;
+            } else {
+                std::memset(pSetting->settingName, 0, sizeof(pSetting->settingName));
+                pSetting->u32PredefinedValue = 0;
+            }
+
+            return Ok(str::format(n, " (", id, "/", name, " = 0x", std::hex, value, ")"));
+        }
 
         auto itW = std::find_if(
             std::begin(mapSettingWSTRING),
