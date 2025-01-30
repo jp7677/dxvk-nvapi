@@ -104,19 +104,52 @@ TEST_CASE("DRS methods succeed", "[.drs]") {
         REQUIRE(NvAPI_DRS_CreateProfile(handle, &profileInfo, &profile) == NVAPI_NOT_SUPPORTED);
     }
 
-    SECTION("GetSetting returns setting-not-found") {
-        struct Data {
-            int32_t settingId;
-        };
-        auto args = GENERATE(
-            Data{FXAA_ALLOW_ID},
-            Data{CUDA_EXCLUDED_GPUS_ID},
-            Data{0x12345678});
+    SECTION("GetSetting") {
+        // this variable is read and cached the first time NvAPI_DRS_GetSetting is called
+        ::SetEnvironmentVariableA("DXVK_NVAPI_DRS_SETTINGS", "0x10E41E01=1,0x10E41DF3=0xffffff");
 
-        NvDRSSessionHandle handle{};
-        NvDRSProfileHandle profile{};
-        NVDRS_SETTING setting;
-        REQUIRE(NvAPI_DRS_GetSetting(handle, profile, args.settingId, &setting) == NVAPI_SETTING_NOT_FOUND);
+        SECTION("GetSetting with unknown struct version returns incompatible-struct-version") {
+            NvDRSSessionHandle handle{};
+            NvDRSProfileHandle profile{};
+            NVDRS_SETTING setting;
+            setting.version = NVDRS_SETTING_VER + 1;
+            REQUIRE(NvAPI_DRS_GetSetting(handle, profile, FXAA_ALLOW_ID, &setting) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetSetting with current struct version returns not incompatible-struct-version") {
+            NvDRSSessionHandle handle{};
+            NvDRSProfileHandle profile{};
+            NVDRS_SETTING setting;
+            setting.version = NVDRS_SETTING_VER;
+            REQUIRE(NvAPI_DRS_GetSetting(handle, profile, FXAA_ALLOW_ID, &setting) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetSetting for settings not found in environment returns setting-not-found") {
+            auto settingId = GENERATE(
+                FXAA_ALLOW_ID,
+                CUDA_EXCLUDED_GPUS_ID,
+                0x12345678u);
+
+            NvDRSSessionHandle handle{};
+            NvDRSProfileHandle profile{};
+            NVDRS_SETTING setting;
+            setting.version = NVDRS_SETTING_VER1;
+            REQUIRE(NvAPI_DRS_GetSetting(handle, profile, settingId, &setting) == NVAPI_SETTING_NOT_FOUND);
+        }
+
+        SECTION("GetSetting for DWORD settings found in environment returns OK") {
+            auto [settingId, value] = GENERATE(
+                std::make_pair(0x10E41E01u, 1u),
+                std::make_pair(0x10E41DF3u, 0xffffffu));
+
+            NvDRSSessionHandle handle{};
+            NvDRSProfileHandle profile{};
+            NVDRS_SETTING setting;
+            setting.version = NVDRS_SETTING_VER1;
+            REQUIRE(NvAPI_DRS_GetSetting(handle, profile, settingId, &setting) == NVAPI_OK);
+            REQUIRE(setting.settingType == NVDRS_DWORD_TYPE);
+            REQUIRE(setting.u32CurrentValue == value);
+        }
     }
 
     SECTION("DestroySession returns OK") {
