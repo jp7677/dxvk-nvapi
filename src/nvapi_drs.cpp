@@ -122,11 +122,19 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
         constexpr auto n = __func__;
-        static const auto nvapiDrsSettingsString = dxvk::env::getEnvVariable("DXVK_NVAPI_DRS_SETTINGS");
+        static const auto nvapiDrsSettingsEnvName = "DXVK_NVAPI_DRS_SETTINGS";
+        static const auto nvapiDrsSettingsString = dxvk::env::getEnvVariable(nvapiDrsSettingsEnvName);
         static const auto nvapiDrsDwords = dxvk::str::parsedwords(nvapiDrsSettingsString);
 
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), settingId, log::fmt::ptr(pSetting));
+
+        static std::once_flag once;
+        std::call_once(once, []() {
+            log::info(str::format(nvapiDrsSettingsEnvName, " is set, applying the following DRS settings when requested by the application (", nvapiDrsDwords.size(), " total):"));
+            for (auto& [key, value] : nvapiDrsDwords)
+                log::info(str::format("    0x", std::hex, key, " = 0x", std::hex, value));
+        });
 
         if (!pSetting)
             return InvalidArgument(n);
