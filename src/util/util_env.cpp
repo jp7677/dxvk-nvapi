@@ -4,13 +4,16 @@
 
 namespace dxvk::env {
     std::string getEnvVariable(const std::string& name) {
-        std::vector<WCHAR> variable;
-        variable.resize(MAX_PATH + 1);
+        auto wideName = str::tows(name.c_str());
+        std::wstring variable;
 
-        auto length = ::GetEnvironmentVariableW(str::tows(name.c_str()).c_str(), variable.data(), MAX_PATH);
-        variable.resize(length);
+        if (auto length = ::GetEnvironmentVariableW(wideName.c_str(), nullptr, 0)) {
+            variable.resize(length);
+            length = ::GetEnvironmentVariableW(wideName.c_str(), variable.data(), variable.size());
+            variable.resize(length);
+        }
 
-        return str::fromws(variable.data());
+        return str::fromws(variable.c_str());
     }
 
     std::string getExecutablePath() {
