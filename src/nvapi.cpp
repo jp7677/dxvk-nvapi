@@ -5,6 +5,7 @@
 #include "util/util_string.h"
 #include "util/util_env.h"
 #include "util/util_log.h"
+#include "util/util_dlss.h"
 #include "../version.h"
 #include "../config.h"
 
@@ -381,6 +382,8 @@ extern "C" {
 
         nvapiD3dInstance = std::make_unique<NvapiD3dInstance>(*resourceFactory);
         nvapiD3dInstance->Initialize();
+
+        setDlssIndicator();
 
         return Ok(n);
     }
