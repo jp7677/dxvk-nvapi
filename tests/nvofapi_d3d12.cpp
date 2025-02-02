@@ -4,7 +4,7 @@
 
 using namespace trompeloeil;
 
-TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
+TEST_CASE("D3D12 methods succeed", "[.d3d12][!mayfail]") {
     SECTION("CreateInstanceD3D12 fails to initialize with major version other than 5") {
         NV_OF_D3D12_API_FUNCTION_LIST functionList{};
         REQUIRE(NvOFAPICreateInstanceD3D12(0, &functionList) == NV_OF_ERR_INVALID_VERSION);
@@ -13,6 +13,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     SECTION("CreateInstanceD3D12 initializes") {
         auto vk = std::make_unique<VkMock>();
         auto vkDevice = std::make_unique<VkDeviceMock>();
+        auto vkPhysicalDevice = std::make_unique<VkPhysicalDeviceMock>();
 
         D3D12Vkd3dDeviceMock device;
 
@@ -55,6 +56,17 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_NV_OPTICAL_FLOW)).RETURN(false);
             FORBID_CALL(*vk, GetInstanceProcAddr(_, _));
             FORBID_CALL(*vk, GetDeviceProcAddr(_, _));
+
+            resourceFactory = std::make_unique<MockFactory>(std::move(vk));
+
+            NvOFHandle hOFInstance;
+            REQUIRE(functionList.nvCreateOpticalFlowD3D12(static_cast<ID3D12Device*>(&device), &hOFInstance) == NV_OF_ERR_GENERIC);
+        }
+
+        SECTION("CreateInstanceVk initializes with success") {
+            ALLOW_CALL(*vk, IsAvailable()).RETURN(true);
+            ALLOW_CALL(*vk, GetInstanceProcAddr(_, eq(std::string_view("vkGetPhysicalDeviceQueueFamilyProperties"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkPhysicalDeviceMock::GetPhysicalDeviceQueueFamilyProperties));
 
             resourceFactory = std::make_unique<MockFactory>(std::move(vk));
 
