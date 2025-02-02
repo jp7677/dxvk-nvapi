@@ -49,6 +49,7 @@ nvofapi_src = files([
   'nvofapi/nvofapi_vk_instance.cpp',
   'nvofapi_globals.cpp',
   'nvofapi.cpp',
+  'nvofapi_d3d11.cpp',
   'nvofapi_d3d12.cpp',
   'nvofapi_vk.cpp',
   'nvofapi_cuda.cpp',
