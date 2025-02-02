@@ -65,6 +65,7 @@ nvofapi_src = files([
   '../src/nvofapi/nvofapi_vk_instance.cpp',
   '../src/nvofapi_globals.cpp',
   '../src/nvofapi.cpp',
+  '../src/nvofapi_d3d11.cpp',
   '../src/nvofapi_d3d12.cpp',
   '../src/nvofapi_vk.cpp',
   '../src/nvofapi_cuda.cpp',
@@ -72,6 +73,7 @@ nvofapi_src = files([
 
 nvofapi_tests_src = files([
   'nvofapi_main.cpp',
+  'nvofapi_d3d11.cpp',
   'nvofapi_d3d12.cpp',
   'nvofapi_vk.cpp',
   'nvofapi_cuda.cpp',
