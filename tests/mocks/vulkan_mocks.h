@@ -13,6 +13,24 @@ class VkDeviceMock {
     MAKE_MOCK3(vkGetLatencyTimingsNV, void(VkDevice, VkSwapchainKHR, VkGetLatencyMarkerInfoNV*));
     MAKE_MOCK3(vkSetLatencyMarkerNV, void(VkDevice, VkSwapchainKHR, const VkSetLatencyMarkerInfoNV*));
 
+    MAKE_MOCK4(vkCreateImageView, VkResult(VkDevice, const VkImageViewCreateInfo*, const VkAllocationCallbacks*, VkImageView*));
+    MAKE_MOCK3(vkDestroyImageView, void(VkDevice, VkImageView, const VkAllocationCallbacks*));
+
+    MAKE_MOCK4(vkGetDeviceQueue, void(VkDevice, uint32_t, uint32_t, VkQueue*));
+    MAKE_MOCK4(vkCreateCommandPool, VkResult(VkDevice, const VkCommandPoolCreateInfo*, const VkAllocationCallbacks*, VkCommandPool*));
+    MAKE_MOCK3(vkDestroyCommandPool, void(VkDevice, VkCommandPool, const VkAllocationCallbacks*));
+    MAKE_MOCK3(vkAllocateCommandBuffers, VkResult(VkDevice, const VkCommandBufferAllocateInfo*, VkCommandBuffer*));
+    MAKE_MOCK4(vkQueueSubmit2, VkResult(VkQueue, uint32_t, const VkSubmitInfo2*, VkFence));
+
+    MAKE_MOCK2(vkResetCommandBuffer, VkResult(VkCommandBuffer, VkCommandBufferResetFlags));
+    MAKE_MOCK2(vkBeginCommandBuffer, VkResult(VkCommandBuffer, const VkCommandBufferBeginInfo*));
+    MAKE_MOCK1(vkEndCommandBuffer, VkResult(VkCommandBuffer));
+
+    MAKE_MOCK4(vkCreateOpticalFlowSessionNV, VkResult(VkDevice, const VkOpticalFlowSessionCreateInfoNV*, const VkAllocationCallbacks*, VkOpticalFlowSessionNV*));
+    MAKE_MOCK3(vkDestroyOpticalFlowSessionNV, void(VkDevice, VkOpticalFlowSessionNV, const VkAllocationCallbacks*));
+    MAKE_MOCK5(vkBindOpticalFlowSessionImageNV, VkResult(VkDevice, VkOpticalFlowSessionNV, VkOpticalFlowSessionBindingPointNV, VkImageView, VkImageLayout));
+    MAKE_MOCK3(vkCmdOpticalFlowExecuteNV, void(VkCommandBuffer, VkOpticalFlowSessionNV, const VkOpticalFlowExecuteInfoNV*));
+
     static VkResult CreateSemaphore(VkDevice device, const VkSemaphoreCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSemaphore* pSemaphore) {
         return reinterpret_cast<VkDeviceMock*>(device)->vkCreateSemaphore(device, pCreateInfo, pAllocator, pSemaphore);
     }

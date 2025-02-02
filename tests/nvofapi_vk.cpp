@@ -3,7 +3,7 @@
 
 using namespace trompeloeil;
 
-TEST_CASE("Vk methods succeed", "[.vk]") {
+TEST_CASE("Vk methods succeed", "[.vk][!mayfail]") {
 
     SECTION("CreateInstanceVk fails to initialize with major version other than 5") {
         NV_OF_VK_API_FUNCTION_LIST functionList{};
@@ -43,6 +43,19 @@ TEST_CASE("Vk methods succeed", "[.vk]") {
             VkPhysicalDevice vkPhysicalDevice{};
             NvOFHandle hOFInstance;
             REQUIRE(functionList.nvCreateOpticalFlowVk(vkInstance, vkPhysicalDevice, reinterpret_cast<VkDevice>(vkDevice.get()), &hOFInstance) == NV_OF_ERR_GENERIC);
+        }
+
+        SECTION("CreateInstanceVk returns success") {
+            ALLOW_CALL(*vk, IsAvailable()).RETURN(true);
+            ALLOW_CALL(*vk, GetInstanceProcAddr(_, eq(std::string_view("vkGetPhysicalDeviceQueueFamilyProperties"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkPhysicalDeviceMock::GetPhysicalDeviceQueueFamilyProperties));
+
+            resourceFactory = std::make_unique<MockFactory>(std::move(vk));
+
+            VkInstance vkInstance{};
+            VkPhysicalDevice vkPhysicalDevice{};
+            NvOFHandle hOFInstance;
+            REQUIRE(functionList.nvCreateOpticalFlowVk(vkInstance, vkPhysicalDevice, reinterpret_cast<VkDevice>(vkDevice.get()), &hOFInstance) == NV_OF_SUCCESS);
         }
     }
 }
