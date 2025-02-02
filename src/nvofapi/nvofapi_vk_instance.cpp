@@ -65,6 +65,12 @@ namespace dxvk {
         VK_GET_DEVICE_PROC_ADDR(vkBindOpticalFlowSessionImageNV);
         VK_GET_DEVICE_PROC_ADDR(vkCmdOpticalFlowExecuteNV);
 
+        // Confirm that OPTICAL_FLOW extension is available
+        if (!m_vkCreateOpticalFlowSessionNV || !m_vkDestroyOpticalFlowSessionNV || !m_vkBindOpticalFlowSessionImageNV || !m_vkCmdOpticalFlowExecuteNV) {
+            log::info("Missing VK_NV_optical_flow extension!");
+            return false;
+        }
+
         // Get the OFA queue
         VkCommandPoolCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;

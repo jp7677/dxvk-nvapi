@@ -33,6 +33,14 @@ class VkDeviceMock {
     }
 };
 
+class VkPhysicalDeviceMock {
+    MAKE_MOCK3(vkGetPhysicalDeviceQueueFamilyProperties, void(VkPhysicalDevice, uint32_t*, VkQueueFamilyProperties*));
+
+    static void GetPhysicalDeviceQueueFamilyProperties(VkPhysicalDevice physicalDevice, uint32_t* pQueueFamilyPropertyCount, VkQueueFamilyProperties* pQueueFamilyProperties) {
+        reinterpret_cast<VkPhysicalDeviceMock*>(physicalDevice)->vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, pQueueFamilyPropertyCount, pQueueFamilyProperties);
+    }
+};
+
 class VkQueueMock {
     MAKE_MOCK2(vkQueueNotifyOutOfBandNV, void(VkQueue, const VkOutOfBandQueueTypeInfoNV*));
 
