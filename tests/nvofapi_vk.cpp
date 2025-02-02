@@ -29,5 +29,20 @@ TEST_CASE("Vk methods succeed", "[.vk]") {
             NvOFHandle hOFInstance;
             REQUIRE(functionList.nvCreateOpticalFlowVk(vkInstance, vkPhysicalDevice, reinterpret_cast<VkDevice>(vkDevice.get()), &hOFInstance) == NV_OF_ERR_GENERIC);
         }
+
+        SECTION("CreateInstanceVk fails to initialize without VK_NV_optical_flow") {
+            ALLOW_CALL(*vk, IsAvailable()).RETURN(false);
+            ALLOW_CALL(*vk, GetInstanceProcAddr(_, eq(std::string_view("vkGetPhysicalDeviceQueueFamilyProperties"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkPhysicalDeviceMock::GetPhysicalDeviceQueueFamilyProperties));
+            ALLOW_CALL(*vk, GetDeviceProcAddr(_, _))
+                .RETURN(nullptr);
+
+            resourceFactory = std::make_unique<MockFactory>(std::move(vk));
+
+            VkInstance vkInstance{};
+            VkPhysicalDevice vkPhysicalDevice{};
+            NvOFHandle hOFInstance;
+            REQUIRE(functionList.nvCreateOpticalFlowVk(vkInstance, vkPhysicalDevice, reinterpret_cast<VkDevice>(vkDevice.get()), &hOFInstance) == NV_OF_ERR_GENERIC);
+        }
     }
 }
