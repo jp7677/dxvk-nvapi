@@ -126,7 +126,7 @@ extern "C" {
     }
 
     // ETBLs
-    NV_OF_STATUS __stdcall NvOFAPICreateInstanceD3D12(uint32_t apiVer, NV_OF_D3D12_API_FUNCTION_LIST* functionList) {
+    NV_OF_STATUS NVOFAPI NvOFAPICreateInstanceD3D12(uint32_t apiVer, NV_OF_D3D12_API_FUNCTION_LIST* functionList) {
         uint32_t apiVerMajor = (apiVer & 0xfffffff0) >> 4;
         uint32_t apiVerMinor = (apiVer & 0xf);
         constexpr auto n = __func__;

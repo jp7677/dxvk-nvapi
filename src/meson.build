@@ -63,5 +63,6 @@ if dxvk_cpu_family == 'x86_64'
     name_prefix         : '',
     dependencies        : [ lib_version ],
     include_directories : [ nvapi_headers, vk_headers ],
+    vs_module_defs      : target_name+'.def',
     install             : true)
 endif

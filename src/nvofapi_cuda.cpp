@@ -6,7 +6,7 @@ extern "C" {
 
     using namespace dxvk;
 
-    NV_OF_STATUS __cdecl NvOFAPICreateInstanceCuda(uint32_t apiVer, void* functionList) {
+    NV_OF_STATUS NVOFAPI NvOFAPICreateInstanceCuda(uint32_t apiVer, void* functionList) {
         constexpr auto n = __func__;
 
         if (log::tracing())
