@@ -3,8 +3,8 @@
 
 using namespace trompeloeil;
 
-TEST_CASE("CreateInstanceVk returns not-available", "[.cuda]") {
+TEST_CASE("CreateInstanceCuda returns not-available", "[.cuda]") {
     struct NV_OF_CUDA_API_FUNCTION_LIST {
     } functionList;
-    REQUIRE(NvOFAPICreateInstanceCuda(80, &functionList) == NV_OF_ERR_OF_NOT_AVAILABLE);
+    REQUIRE(NvOFAPICreateInstanceCuda(0, &functionList) == NV_OF_ERR_OF_NOT_AVAILABLE);
 }
