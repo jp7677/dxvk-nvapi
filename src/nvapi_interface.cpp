@@ -39,7 +39,7 @@ extern "C" {
             log::info(str::format("NvAPI_QueryInterface: Ignoring unrecognized entrypoints from ", disabledEnvName, ": ", str::implode(", ", unrecognized)));
     }
 
-    __declspec(dllexport) void* __cdecl nvapi_QueryInterface(NvU32 id) {
+    void* __cdecl nvapi_QueryInterface(NvU32 id) {
         static std::unordered_map<NvU32, void*> registry;
         static std::mutex registryMutex;
         std::scoped_lock lock(registryMutex);
