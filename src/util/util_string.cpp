@@ -50,7 +50,7 @@ namespace dxvk::str {
             return false;
 
         auto end = str.data() + str.size();
-        auto result = str.starts_with("0x") || str.starts_with("0X")
+        auto result = str.size() > 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X')
             ? std::from_chars(str.data() + 2, end, value, 16)
             : std::from_chars(str.data(), end, value, 10);
 
