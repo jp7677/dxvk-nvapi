@@ -55,10 +55,6 @@
 #undef __NVAPI_EMPTY_SAL
 #include "nvapi_lite_salend.h"
 
-// TODO: Remove those once they are part of NVAPI headers
-#define NV_GPU_ARCHITECTURE_GB200 (NV_GPU_ARCHITECTURE_ID)0x000001B0
-#define NV_GPU_ARCH_IMPLEMENTATION_GB202 (NV_GPU_ARCH_IMPLEMENTATION_ID)0x00000002
-
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif // __GNUC__
