@@ -55,8 +55,8 @@ static std::string ToGpuArchitecture(NV_GPU_ARCHITECTURE_ID id) {
         case NV_GPU_ARCHITECTURE_GF110:
             return "Fermi";
         default:
-            if (id > NV_GPU_ARCHITECTURE_AD100)
-                return "Post-Ada";
+            if (id > NV_GPU_ARCHITECTURE_GB200)
+                return "Post-Blackwell";
             else
                 return "Pre-Fermi";
     }
