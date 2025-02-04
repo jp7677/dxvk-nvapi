@@ -36,6 +36,13 @@ namespace dxvk::log {
             return str::format(f);
         }
 
+        inline std::string hex(const uint32_t h) {
+            if (h == 0)
+                return "0x0";
+
+            return str::format("0x", std::hex, h);
+        }
+
         inline std::string flags(const uint32_t h) {
             if (h == 0)
                 return "0x0";

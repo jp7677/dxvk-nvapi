@@ -40,9 +40,14 @@ extern "C" {
     }
 
     void* __cdecl nvapi_QueryInterface(NvU32 id) {
+        constexpr auto n = __func__;
+
         static std::unordered_map<NvU32, void*> registry;
         static std::mutex registryMutex;
         std::scoped_lock lock(registryMutex);
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hex(id));
 
         auto entry = registry.find(id);
         if (entry != registry.end())
@@ -56,14 +61,14 @@ extern "C" {
             [id](const auto& item) { return item.id == id; });
 
         if (it == std::end(nvapi_interface_table)) {
-            log::info(str::format("NvAPI_QueryInterface (0x", std::hex, id, "): Unknown function ID"));
+            log::info(str::format(n, " (0x", std::hex, id, "): Unknown function ID"));
             return registry.insert({id, nullptr}).first->second;
         }
 
         auto name = std::string_view(it->func);
 
         if (disabled.find(name) != disabled.end()) {
-            log::info(str::format("NvAPI_QueryInterface (", name, "): Disabled"));
+            log::info(str::format(n, " (", name, "): Disabled"));
             return registry.insert({id, nullptr}).first->second;
         }
 
@@ -202,7 +207,7 @@ extern "C" {
 
 #undef INSERT_AND_RETURN_WHEN_EQUALS
 
-        log::info(str::format("NvAPI_QueryInterface (", name, "): Not implemented method"));
+        log::info(str::format(n, " (", name, "): Not implemented method"));
         return registry.insert({id, nullptr}).first->second;
     }
 }
