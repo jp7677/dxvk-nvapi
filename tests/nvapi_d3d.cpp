@@ -419,6 +419,40 @@ TEST_CASE("D3D Reflex/LatencyFleX depending methods succeed", "[.d3d]") {
                 REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
             }
 
+            SECTION("SetLatencyMarker drops repeated frame IDs and returns OK") {
+                sequence seq1, seq2, seq3;
+
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(1ULL, VK_LATENCY_MARKER_PRESENT_START_NV))
+                    .IN_SEQUENCE(seq1)
+                    .TIMES(1)
+                    .RETURN(S_OK);
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(2ULL, VK_LATENCY_MARKER_PRESENT_START_NV))
+                    .IN_SEQUENCE(seq2)
+                    .TIMES(1)
+                    .RETURN(S_OK);
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(2ULL, VK_LATENCY_MARKER_PRESENT_END_NV))
+                    .IN_SEQUENCE(seq3)
+                    .TIMES(1)
+                    .RETURN(S_OK);
+
+                SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_LATENCY_MARKER_PARAMS latencyMarkerParams{};
+                latencyMarkerParams.version = NV_LATENCY_MARKER_PARAMS_VER1;
+                latencyMarkerParams.frameID = 1;
+                latencyMarkerParams.markerType = PRESENT_START;
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
+                latencyMarkerParams.frameID = 2;
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
+                latencyMarkerParams.frameID = 2;
+                latencyMarkerParams.markerType = PRESENT_END;
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(&unknown, &latencyMarkerParams) == NVAPI_OK);
+            }
+
             SECTION("SetLatencyMarker correctly produces monotonic frame ids for a sequence of unique application frame ids") {
                 REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(true, false, 750U))
                     .RETURN(S_OK);
