@@ -337,7 +337,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Unload() {
         constexpr auto n = __func__;
 
-        log::info(n);
+        if (log::tracing())
+            log::trace(n);
 
         std::scoped_lock lock(initializationMutex);
 
@@ -353,7 +354,8 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Initialize() {
         constexpr auto n = __func__;
 
-        log::info(n);
+        if (log::tracing())
+            log::trace(n);
 
         std::scoped_lock lock(initializationMutex);
 
