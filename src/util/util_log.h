@@ -109,6 +109,10 @@ namespace dxvk::log {
         append(str, args...);
     }
 
+    inline void trace(const std::string& name) {
+        log::write("trace", name);
+    }
+
     template <typename... Args>
     void trace(const std::string& name, const Args&... args) {
         std::stringstream stream;

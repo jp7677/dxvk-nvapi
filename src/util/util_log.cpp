@@ -4,11 +4,17 @@
 
 using PFN_wineDbgOutput = int(__cdecl*)(const char*);
 
-static PFN_wineDbgOutput wineDbgOutput = nullptr;
-static std::mutex fileStreamMutex;
-static bool traceEnabled = false;
-
 namespace dxvk::log {
+    constexpr auto logLevelEnvName = "DXVK_NVAPI_LOG_LEVEL";
+    constexpr auto logPathEnvName = "DXVK_NVAPI_LOG_PATH";
+    constexpr auto logFileName = DXVK_NVAPI_TARGET_NAME ".log";
+
+    static const auto logLevel = env::getEnvVariable(logLevelEnvName);
+    static const auto traceEnabled = logLevel == "trace";
+
+    static PFN_wineDbgOutput wineDbgOutput = nullptr;
+    static std::mutex fileStreamMutex;
+
     void print(const std::string& logMessage) {
         auto line = logMessage + '\n'; // Do not flush buffers
         if (wineDbgOutput)
@@ -23,17 +29,11 @@ namespace dxvk::log {
             wineDbgOutput = reinterpret_cast<PFN_wineDbgOutput>(reinterpret_cast<void*>(GetProcAddress(ntdllModule, "__wine_dbg_output")));
 #endif
 
-        constexpr auto logLevelEnvName = "DXVK_NVAPI_LOG_LEVEL";
-        constexpr auto logPathEnvName = "DXVK_NVAPI_LOG_PATH";
-        constexpr auto logFileName = DXVK_NVAPI_TARGET_NAME ".log";
-
-        auto logLevel = env::getEnvVariable(logLevelEnvName);
         if (logLevel != "info" && logLevel != "trace") {
             skipAllLogging = true;
             return;
         }
 
-        traceEnabled = logLevel == "trace";
         if (traceEnabled)
             print(str::format(logLevelEnvName, " is set to 'trace', writing all log statements, this has severe impact on performance"));
 
@@ -51,8 +51,6 @@ namespace dxvk::log {
     }
 
     bool tracing() {
-        // Before this method we need to call write() first to set `traceEnabled`, accept this
-        // glitch since NvAPI_Initialize() logs initially without checking for tracing.
         return traceEnabled;
     }
 
