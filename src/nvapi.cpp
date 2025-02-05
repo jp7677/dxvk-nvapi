@@ -140,7 +140,7 @@ extern "C" {
         auto adapter = nvapiAdapterRegistry->GetFirstAdapter();
         pVersion->drvVersion = adapter->GetDriverVersion();
         pVersion->bldChangeListNum = 0;
-        str::tonvss(pVersion->szBuildBranchString, str::format(NVAPI_VERSION, "_", DXVK_NVAPI_VERSION));
+        str::tonvss(pVersion->szBuildBranchString, str::format("r", NVAPI_SDK_VERSION, "_", DXVK_NVAPI_VERSION));
         str::tonvss(pVersion->szAdapterString, adapter->GetDeviceName());
 
         return Ok(n);
