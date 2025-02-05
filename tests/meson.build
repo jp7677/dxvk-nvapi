@@ -26,6 +26,7 @@ nvapi_src = files([
   '../src/nvapi_drs.cpp',
   '../src/nvapi_gpu.cpp',
   '../src/nvapi_mosaic.cpp',
+  '../src/nvapi_ngx.cpp',
   '../src/nvapi_sys.cpp',
   '../src/nvapi_vulkan.cpp',
 ])
@@ -37,6 +38,7 @@ nvapi_tests_src = files([
   'nvapi_d3d11.cpp',
   'nvapi_d3d12.cpp',
   'nvapi_drs.cpp',
+  'nvapi_ngx.cpp',
   'nvapi_sysinfo.cpp',
   'nvapi_sysinfo_topo.cpp',
   'nvapi_sysinfo_nvml.cpp',

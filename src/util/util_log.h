@@ -95,6 +95,14 @@ namespace dxvk::log {
         inline std::string d3d12_cpu_descriptor_handle(D3D12_CPU_DESCRIPTOR_HANDLE h) {
             return str::format("{ptr=", hex_prefix, std::hex, h.ptr, "}");
         }
+
+        inline std::string ngx_dlss_override_get_state_params(NV_NGX_DLSS_OVERRIDE_GET_STATE_PARAMS* p) {
+            return str::format("{version=", p->version, ",processIdentifier=", p->processIdentifier, "}");
+        }
+
+        inline std::string ngx_dlss_override_set_state_params(NV_NGX_DLSS_OVERRIDE_SET_STATE_PARAMS* p) {
+            return str::format("{version=", p->version, ",processIdentifier=", p->processIdentifier, ",feature=", p->feature, ",feedbackMask=0x", std::hex, p->feedbackMask, "}");
+        }
     }
 
     bool tracing();
