@@ -67,6 +67,22 @@ TEST_CASE("Log", "[.util]") {
         auto ptr = dxvk::str::format(std::hex, handle.ptr);
         REQUIRE(dxvk::log::fmt::d3d12_cpu_descriptor_handle(handle) == dxvk::str::format("{ptr=", dxvk::log::fmt::hex_prefix, ptr, "}"));
     }
+
+    {
+        NV_NGX_DLSS_OVERRIDE_GET_STATE_PARAMS params{};
+        params.version = NV_NGX_DLSS_OVERRIDE_GET_STATE_PARAMS_VER1;
+        params.processIdentifier = 5;
+        REQUIRE(dxvk::log::fmt::ngx_dlss_override_get_state_params(&params) == "{version=65600,processIdentifier=5}");
+    }
+
+    {
+        NV_NGX_DLSS_OVERRIDE_SET_STATE_PARAMS params{};
+        params.version = NV_NGX_DLSS_OVERRIDE_SET_STATE_PARAMS_VER1;
+        params.processIdentifier = 5;
+        params.feature = NV_NGX_DLSS_OVERRIDE_FEATURE_INDEX_FG;
+        params.feedbackMask = NV_NGX_DLSS_OVERRIDE_FLAG_ENABLED | NV_NGX_DLSS_OVERRIDE_FLAG_DLL_EXISTS;
+        REQUIRE(dxvk::log::fmt::ngx_dlss_override_set_state_params(&params) == "{version=65592,processIdentifier=5,feature=3,feedbackMask=0x6}");
+    }
 }
 
 TEST_CASE("String", "[.util]") {

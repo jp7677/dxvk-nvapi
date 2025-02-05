@@ -53,6 +53,7 @@ function prepare {
     src/nvapi_sys.cpp         \
     src/nvapi_disp.cpp        \
     src/nvapi_mosaic.cpp      \
+    src/nvapi_ngx.cpp         \
     src/nvapi_drs.cpp         \
     src/nvapi_gpu.cpp         \
     src/nvapi_d3d.cpp         \
