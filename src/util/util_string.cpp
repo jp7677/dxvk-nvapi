@@ -36,6 +36,11 @@ namespace dxvk::str {
         return {w.begin(), w.end()};
     }
 
+    void copynvus(NvAPI_UnicodeString dst, NvAPI_UnicodeString src) {
+        auto w = std::wstring(reinterpret_cast<wchar_t*>(src));
+        w.copy(reinterpret_cast<wchar_t*>(dst), std::min(w.size(), static_cast<size_t>(NVAPI_UNICODE_STRING_MAX)));
+    }
+
     void tonvss(NvAPI_ShortString nvss, std::string str) {
         str.resize(NVAPI_SHORT_STRING_MAX - 1);
         strcpy(nvss, str.c_str());

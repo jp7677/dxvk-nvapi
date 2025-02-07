@@ -70,8 +70,10 @@ extern "C" {
                 [[fallthrough]];
             case NVDRS_APPLICATION_VER_V1:
                 std::memset(pApplication->launcher, 0, sizeof(pApplication->launcher));
-                std::memcpy(pApplication->userFriendlyName, appName, sizeof(NvAPI_UnicodeString));
-                std::memcpy(pApplication->appName, appName, sizeof(NvAPI_UnicodeString));
+                std::memset(pApplication->userFriendlyName, 0, sizeof(pApplication->userFriendlyName));
+                std::memset(pApplication->appName, 0, sizeof(pApplication->appName));
+                str::copynvus(pApplication->userFriendlyName, appName);
+                str::copynvus(pApplication->appName, appName);
                 pApplication->isPredefined = 0;
                 break;
             default:

@@ -16,6 +16,8 @@ namespace dxvk::str {
 
     std::string fromnvus(NvAPI_UnicodeString nvus);
 
+    void copynvus(NvAPI_UnicodeString dst, NvAPI_UnicodeString src);
+
     void tonvss(NvAPI_ShortString nvss, std::string str);
 
     inline void append(std::stringstream&) {}

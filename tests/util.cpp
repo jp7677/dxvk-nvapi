@@ -75,6 +75,14 @@ TEST_CASE("String", "[.util]") {
         REQUIRE(dxvk::str::fromnvus(us) == "Unicode");
     }
 
+    SECTION("copynvus") {
+        NvAPI_UnicodeString us = {'U', 'n', 'i', 'c', 'o', 'd', 'e'};
+        NvAPI_UnicodeString dst{};
+
+        dxvk::str::copynvus(dst, us);
+        REQUIRE(dxvk::str::fromnvus(dst) == "Unicode");
+    }
+
     SECTION("tonvss") {
         NvAPI_ShortString ss{};
 
