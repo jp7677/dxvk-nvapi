@@ -29,6 +29,8 @@ namespace dxvk {
         static bool CaptureUAVInfo(ID3D12Device* device, NVAPI_UAV_INFO* uavInfo);
         static bool IsFatbinPTXSupported(ID3D12Device* device);
 
+        static void SetSharedMemory(NVDX_ObjectHandle handle, NvU32 size);
+
         static void Reset();
 
       private:

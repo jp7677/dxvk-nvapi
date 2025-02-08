@@ -128,6 +128,11 @@ namespace dxvk {
         return cubinDevice != nullptr;
     }
 
+    void NvapiD3d12Device::SetSharedMemory(NVDX_ObjectHandle handle, NvU32 size) {
+        std::scoped_lock lock(m_cubinSmemMutex);
+        m_cubinSmemMap.emplace(handle, size);
+    }
+
     // We are going to have single map for storing devices with extensions D3D12_VK_NVX_BINARY_IMPORT & D3D12_VK_NVX_IMAGE_VIEW_HANDLE.
     // These are specific to NVIDIA and both of these extensions goes together.
     Com<ID3D12DeviceExt> NvapiD3d12Device::GetCubinDevice(ID3D12Device* device) {
