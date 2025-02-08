@@ -122,6 +122,30 @@ extern "C" {
         return NotSupported(n);
     }
 
+    _SettingDWORDNameString* GetDwordSetting(NvU32 settingId) {
+        auto it = std::find_if(
+            std::begin(mapSettingDWORD),
+            std::end(mapSettingDWORD),
+            [&settingId](const auto& item) { return item.settingId == settingId; });
+
+        return it != std::end(mapSettingDWORD) ? it : nullptr;
+    }
+
+    std::string GetSettingName(NvU32 settingId) {
+        auto itD = GetDwordSetting(settingId);
+        if (itD)
+            return str::fromws(itD->settingNameString);
+
+        auto itW = std::find_if(
+            std::begin(mapSettingWSTRING),
+            std::end(mapSettingWSTRING),
+            [&settingId](const auto& item) { return item.settingId == settingId; });
+        if (itW != std::end(mapSettingWSTRING))
+            return str::fromws(itW->settingNameString);
+
+        return {"Unknown"};
+    }
+
     NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
         constexpr auto n = __func__;
         static const auto nvapiDrsSettingsEnvName = "DXVK_NVAPI_DRS_SETTINGS";
@@ -133,9 +157,12 @@ extern "C" {
 
         static std::once_flag once;
         std::call_once(once, []() {
+            if (nvapiDrsSettingsString.empty())
+                return;
+
             log::info(str::format(nvapiDrsSettingsEnvName, " is set, applying the following DRS settings when requested by the application (", nvapiDrsDwords.size(), " total):"));
             for (auto& [key, value] : nvapiDrsDwords)
-                log::info(str::format("    0x", std::hex, key, " = 0x", std::hex, value));
+                log::info(str::format("    0x", std::hex, key, "/", GetSettingName(key), " = 0x", std::hex, value));
         });
 
         if (!pSetting)
@@ -145,14 +172,6 @@ extern "C" {
             return IncompatibleStructVersion(n, pSetting->version);
 
         auto id = str::format("0x", std::hex, settingId);
-        auto name = std::string("Unknown");
-
-        auto itD = std::find_if(
-            std::begin(mapSettingDWORD),
-            std::end(mapSettingDWORD),
-            [&settingId](const auto& item) { return item.settingId == settingId; });
-        if (itD != std::end(mapSettingDWORD))
-            name = str::fromws(itD->settingNameString);
 
         if (auto it = nvapiDrsDwords.find(settingId); it != nvapiDrsDwords.end()) {
             auto value = it->second;
@@ -163,7 +182,8 @@ extern "C" {
             pSetting->isPredefinedValid = 1;
             pSetting->u32CurrentValue = value;
 
-            if (itD != std::end(mapSettingDWORD)) {
+            auto itD = GetDwordSetting(settingId);
+            if (itD) {
                 std::memcpy(pSetting->settingName, itD->settingNameString, sizeof(pSetting->settingName));
                 pSetting->u32PredefinedValue = itD->defaultValue;
             } else {
@@ -171,17 +191,11 @@ extern "C" {
                 pSetting->u32PredefinedValue = 0;
             }
 
+            auto name = itD ? str::fromws(itD->settingNameString) : "Unknown";
             return Ok(str::format(n, " (", id, "/", name, " = 0x", std::hex, value, ")"));
         }
 
-        auto itW = std::find_if(
-            std::begin(mapSettingWSTRING),
-            std::end(mapSettingWSTRING),
-            [&settingId](const auto& item) { return item.settingId == settingId; });
-        if (itW != std::end(mapSettingWSTRING))
-            name = str::fromws(itW->settingNameString);
-
-        return SettingNotFound(str::format(n, " (", id, "/", name, ")"));
+        return SettingNotFound(str::format(n, " (", id, "/", GetSettingName(settingId), ")"));
     }
 
     NvAPI_Status __cdecl NvAPI_DRS_DestroySession(NvDRSSessionHandle hSession) {
