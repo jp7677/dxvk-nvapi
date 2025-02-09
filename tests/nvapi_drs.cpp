@@ -107,8 +107,10 @@ TEST_CASE("DRS methods succeed", "[.drs]") {
     }
 
     SECTION("GetSetting") {
-        // this variable is read and cached the first time NvAPI_DRS_GetSetting is called
+        // these variables are read and cached the first time NvAPI_DRS_GetSetting is called
         ::SetEnvironmentVariableA("DXVK_NVAPI_DRS_SETTINGS", "0x10E41E01=1,0x10E41DF3=0xffffff,NGX_DLAA_OVERRIDE=DLAA_ON");
+        ::SetEnvironmentVariableA("DXVK_NVAPI_DRS_NGX_DLSS_SR_OVERRIDE_RENDER_PRESET_SELECTION", "render_preset_a");
+        ::SetEnvironmentVariableA("DXVK_NVAPI_DRS_NGX_DLSS_SR_MODE", "performance");
 
         SECTION("GetSetting with unknown struct version returns incompatible-struct-version") {
             NvDRSSessionHandle handle{};
@@ -142,8 +144,9 @@ TEST_CASE("DRS methods succeed", "[.drs]") {
         SECTION("GetSetting for DWORD settings found in environment returns OK") {
             auto [settingId, value] = GENERATE(
                 std::make_pair(0x10E41E01u, 1u),
-                std::make_pair(0x10E41DF3u, 0xffffffu),
-                std::make_pair(NGX_DLAA_OVERRIDE_ID, NGX_DLAA_OVERRIDE_DLAA_ON));
+                std::make_pair(NGX_DLSS_SR_OVERRIDE_RENDER_PRESET_SELECTION_ID, NGX_DLSS_SR_OVERRIDE_RENDER_PRESET_SELECTION_RENDER_PRESET_A),
+                std::make_pair(NGX_DLAA_OVERRIDE_ID, NGX_DLAA_OVERRIDE_DLAA_ON),
+                std::make_pair(NGX_DLSS_SR_MODE_ID, NGX_DLSS_SR_MODE_NGX_DLSS_SR_MODE_PERFORMANCE));
 
             NvDRSSessionHandle handle{};
             NvDRSProfileHandle profile{};

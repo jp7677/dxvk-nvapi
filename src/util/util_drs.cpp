@@ -45,4 +45,20 @@ namespace dxvk::drs {
 
         return result;
     }
+
+    std::unordered_map<NvU32, NvU32> enrichwithenv(std::unordered_map<NvU32, NvU32> map, const char* prefix) {
+        for (auto& [name, key] : settings) {
+            auto envname = std::string(prefix).append(name);
+            auto envvalue = env::getEnvVariable(envname);
+
+            if (envvalue.empty())
+                continue;
+
+            NvU32 value;
+            if (parsedrsdwordvalue(key, envvalue, value))
+                map[key] = value;
+        }
+
+        return map;
+    }
 }

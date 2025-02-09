@@ -164,4 +164,6 @@ namespace dxvk::drs {
     bool parsedrsdwordvalue(NvU32 key, const std::string_view& str, NvU32& value);
 
     std::unordered_map<NvU32, NvU32> parsedrsdwordsettings(const std::string& str);
+
+    std::unordered_map<NvU32, NvU32> enrichwithenv(std::unordered_map<NvU32, NvU32> map, const char* prefix);
 }
