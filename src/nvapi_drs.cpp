@@ -150,18 +150,19 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
         constexpr auto n = __func__;
         static const auto nvapiDrsSettingsEnvName = "DXVK_NVAPI_DRS_SETTINGS";
+        static const auto nvapiDrsSettingsEnvPrefix = "DXVK_NVAPI_DRS_";
         static const auto nvapiDrsSettingsString = dxvk::env::getEnvVariable(nvapiDrsSettingsEnvName);
-        static const auto nvapiDrsDwords = dxvk::drs::parsedrsdwordsettings(nvapiDrsSettingsString);
+        static const auto nvapiDrsDwords = dxvk::drs::enrichwithenv(dxvk::drs::parsedrsdwordsettings(nvapiDrsSettingsString), nvapiDrsSettingsEnvPrefix);
 
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), settingId, log::fmt::ptr(pSetting));
 
         static std::once_flag once;
         std::call_once(once, []() {
-            if (nvapiDrsSettingsString.empty())
+            if (nvapiDrsDwords.empty())
                 return;
 
-            log::info(str::format(nvapiDrsSettingsEnvName, " is set, applying the following DRS settings when requested by the application (", nvapiDrsDwords.size(), " total):"));
+            log::info(str::format("Applying the following DRS settings when requested by the application (", nvapiDrsDwords.size(), " total):"));
             for (auto& [key, value] : nvapiDrsDwords)
                 log::info(str::format("    0x", std::hex, key, "/", GetSettingName(key), " = 0x", std::hex, value));
         });
