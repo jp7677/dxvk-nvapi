@@ -4,6 +4,7 @@ nvapi_src = files([
   '../src/util/util_string.cpp',
   '../src/util/util_env.cpp',
   '../src/util/util_log.cpp',
+  '../src/util/util_drs.cpp',
   '../src/shared/vk.cpp',
   '../src/shared/resource_factory.cpp',
   '../src/nvapi/lfx.cpp',

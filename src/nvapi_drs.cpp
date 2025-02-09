@@ -1,5 +1,6 @@
 #include "nvapi_private.h"
 #include "NvApiDriverSettings.c"
+#include "util/util_drs.h"
 #include "util/util_env.h"
 #include "util/util_statuscode.h"
 #include "util/util_string.h"
@@ -150,7 +151,7 @@ extern "C" {
         constexpr auto n = __func__;
         static const auto nvapiDrsSettingsEnvName = "DXVK_NVAPI_DRS_SETTINGS";
         static const auto nvapiDrsSettingsString = dxvk::env::getEnvVariable(nvapiDrsSettingsEnvName);
-        static const auto nvapiDrsDwords = dxvk::str::parsedwords(nvapiDrsSettingsString);
+        static const auto nvapiDrsDwords = dxvk::drs::parsedrsdwordsettings(nvapiDrsSettingsString);
 
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), settingId, log::fmt::ptr(pSetting));
