@@ -1,9 +1,62 @@
 #include "nvapi_tests_private.h"
+#include "../src/util/util_drs.h"
 #include "../src/util/util_log.h"
 #include "../src/util/util_string.h"
 #include "../src/util/util_version.h"
 
 using namespace Catch::Matchers;
+
+TEST_CASE("DRS", "[.util]") {
+    SECTION("parsedrssetting") {
+        auto [str, setting] = GENERATE(
+            std::make_pair<std::string_view, NvU32>("NGX_DLAA_OVERRIDE", NGX_DLAA_OVERRIDE_ID),
+            std::make_pair<std::string_view, NvU32>("ngx_dlssg_multi_frame_count", NGX_DLSSG_MULTI_FRAME_COUNT_ID),
+            std::make_pair<std::string_view, NvU32>("283385347", NGX_DLSS_FG_OVERRIDE_ID),
+            std::make_pair<std::string_view, NvU32>("0x10BD9423", NGX_DLSS_RR_MODE_ID));
+
+        NvU32 result;
+        REQUIRE(dxvk::drs::parsedrssetting(str, result));
+        REQUIRE(result == setting);
+    }
+
+    SECTION("parsedrsdwordvalue") {
+        auto [setting, str, value] = GENERATE(
+            std::make_tuple<NvU32, std::string_view, NvU32>(NGX_DLAA_OVERRIDE_ID, "DLAA_ON", NGX_DLAA_OVERRIDE_DLAA_ON),
+            std::make_tuple<NvU32, std::string_view, NvU32>(NGX_DLSSG_MULTI_FRAME_COUNT_ID, "max", NGX_DLSSG_MULTI_FRAME_COUNT_MAX),
+            std::make_tuple<NvU32, std::string_view, NvU32>(NGX_DLSS_FG_OVERRIDE_ID, "1", NGX_DLSS_FG_OVERRIDE_ON),
+            std::make_tuple<NvU32, std::string_view, NvU32>(NGX_DLSS_RR_MODE_ID, "balanced", NGX_DLSS_RR_MODE_NGX_DLSS_RR_MODE_BALANCED),
+            std::make_tuple<NvU32, std::string_view, NvU32>(0, "1", 1),
+            std::make_tuple<NvU32, std::string_view, NvU32>(INVALID_SETTING_ID, "0x1", 1));
+
+        NvU32 result;
+        REQUIRE(dxvk::drs::parsedrsdwordvalue(setting, str, result));
+        REQUIRE(result == value);
+    }
+
+    SECTION("parsedrsdwordsettings") {
+        auto dwords = dxvk::drs::parsedrsdwordsettings("NGX_DLAA_OVERRIDE=DLAA_ON,ngx_dlssg_multi_frame_count=3,NGX_DLSS_FG_OVERRIDE=on,0x10E41E01=1,0x10E41DF3=render_preset_latest");
+
+        REQUIRE(dwords.size() == 5);
+        REQUIRE(dwords.at(NGX_DLAA_OVERRIDE_ID) == NGX_DLAA_OVERRIDE_DLAA_ON);
+        REQUIRE(dwords.at(NGX_DLSSG_MULTI_FRAME_COUNT_ID) == 3);
+        REQUIRE(dwords.at(NGX_DLSS_FG_OVERRIDE_ID) == NGX_DLSS_FG_OVERRIDE_ON);
+        REQUIRE(dwords.at(0x10E41E01) == 1);
+        REQUIRE(dwords.at(0x10E41DF3) == 0xffffff);
+    }
+
+    SECTION("enrichwithenv") {
+        ::SetEnvironmentVariableA("TEST_NGX_DLSS_SR_OVERRIDE", "1");
+        ::SetEnvironmentVariableA("TEST_NGX_DLSS_SR_OVERRIDE_RENDER_PRESET_SELECTION", "render_preset_latest");
+        ::SetEnvironmentVariableA("TEST_NGX_DLSS_SR_MODE", "PERFORMANCE");
+        auto dwords = dxvk::drs::enrichwithenv({{NGX_DLAA_OVERRIDE_ID, NGX_DLAA_OVERRIDE_DLAA_ON}, {NGX_DLSS_SR_OVERRIDE_ID, 0}}, "TEST_");
+
+        REQUIRE(dwords.size() == 4);
+        REQUIRE(dwords.at(NGX_DLAA_OVERRIDE_ID) == NGX_DLAA_OVERRIDE_DLAA_ON);
+        REQUIRE(dwords.at(NGX_DLSS_SR_OVERRIDE_ID) == 1);
+        REQUIRE(dwords.at(NGX_DLSS_SR_OVERRIDE_RENDER_PRESET_SELECTION_ID) == NGX_DLSS_SR_OVERRIDE_RENDER_PRESET_SELECTION_RENDER_PRESET_Latest);
+        REQUIRE(dwords.at(NGX_DLSS_SR_MODE_ID) == NGX_DLSS_SR_MODE_NGX_DLSS_SR_MODE_PERFORMANCE);
+    }
+}
 
 TEST_CASE("Log", "[.util]") {
     REQUIRE(dxvk::log::fmt::hnd(nullptr) == "hnd=0x0");
