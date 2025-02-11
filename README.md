@@ -134,6 +134,7 @@ The following environment variables tweak DXVK-NVAPI's runtime behavior:
   - `GB200` (Blackwell)
 - `DXVK_NVAPI_LOG_LEVEL` set to `info` prints log statements. The default behavior omits any logging. Please fill an issue if using log servery `info` creates log spam. Setting severity to `trace` logs all entry points enter and exits, this has a severe effect on performance. All other log levels will be interpreted as `none`.
 - `DXVK_NVAPI_LOG_PATH` enables file logging additionally to console output and sets the path where the log file `nvapi.log`/`nvapi64.log`/`nvofapi64.log` should be written to. Log statements are appended to an existing file. Please remove this file once in a while to prevent excessive grow. This requires `DXVK_NVAPI_LOG_LEVEL` set to `info` or `trace`.
+- `DXVK_NVAPI_SET_NGX_DEBUG_OPTIONS` allows to set various NGX debug registry keys with the format `setting1=value1,setting2=value2,…`, whereas values are of type DWORD (u32). Setting the registry keys for enabling DLSS indicators corresponds to `DXVK_NVAPI_SET_NGX_DEBUG_OPTIONS=DLSSIndicator=1024,DLSSGIndicator=2`, hiding the indicators to `DXVK_NVAPI_SET_NGX_DEBUG_OPTIONS=DLSSIndicator=0,DLSSGIndicator=0`. Be aware, this tweak permanently modifies the registry.
 
 The following environment variables tweak DXVK-NVAPI's Vulkan Reflex layer's runtime behavior:
 

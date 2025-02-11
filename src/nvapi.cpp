@@ -5,6 +5,7 @@
 #include "util/util_string.h"
 #include "util/util_env.h"
 #include "util/util_log.h"
+#include "util/util_ngx_debug.h"
 #include "../version.h"
 #include "../config.h"
 
@@ -380,6 +381,10 @@ extern "C" {
             --initializationCount;
             return NvidiaDeviceNotFound(n);
         }
+
+#if _WIN64
+        SetNgxDebugOptions(); // NGX is 64-bit only
+#endif
 
         return Ok(n);
     }

@@ -242,6 +242,17 @@ TEST_CASE("String", "[.util]") {
         REQUIRE(dwords.at(0x104d6667) == 3);
         REQUIRE(dwords.at(1) == 2);
     }
+
+    SECTION("parsekeydwords") {
+        std::set<std::string_view, dxvk::str::CaseInsensitiveCompare<std::string_view>> keys = {"Logging", "DLSSIndicator", "DLSSGIndicator"};
+        auto map = dxvk::str::parsekeydwords(",logging=0,dlssindicator=1,DLSSGIndicator=0x2,invalid,,9,=,4=,=5,,0x104D6667=3", keys);
+        keys.clear();
+
+        REQUIRE(map.size() == 3);
+        REQUIRE(map.at("Logging") == 0x0);
+        REQUIRE(map.at("DLSSIndicator") == 0x1);
+        REQUIRE(map.at("DLSSGIndicator") == 0x2);
+    }
 }
 
 TEST_CASE("Version", "[.util]") {

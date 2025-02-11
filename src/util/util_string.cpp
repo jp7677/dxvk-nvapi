@@ -84,4 +84,27 @@ namespace dxvk::str {
 
         return result;
     }
+
+    std::unordered_map<std::string_view, NvU32> parsekeydwords(const std::string& str, const std::set<std::string_view, str::CaseInsensitiveCompare<std::string_view>>& keys) {
+        std::unordered_map<std::string_view, NvU32> result;
+        auto entries = str::split<std::vector<std::string_view>>(str, std::regex(","));
+
+        for (auto entry : entries) {
+            auto eq = entry.find('=');
+
+            if (eq == entry.npos || eq == 0 || eq == entry.size() - 1)
+                continue;
+
+            auto key = entry.substr(0, eq);
+            auto it = keys.find(key);
+            if (it == keys.end())
+                continue;
+
+            NvU32 value;
+            if (str::parsedword(entry.substr(eq + 1), value))
+                result[*it] = value;
+        }
+
+        return result;
+    }
 }

@@ -122,4 +122,6 @@ namespace dxvk::str {
     bool parsedword(const std::string_view& str, NvU32& value);
 
     std::unordered_map<NvU32, NvU32> parsedwords(const std::string& str);
+
+    std::unordered_map<std::string_view, NvU32> parsekeydwords(const std::string& str, const std::set<std::string_view, str::CaseInsensitiveCompare<std::string_view>>& keys);
 }
