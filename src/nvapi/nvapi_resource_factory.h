@@ -5,7 +5,6 @@
 #include "../shared/resource_factory.h"
 #include "../shared/vk.h"
 #include "nvml.h"
-#include "lfx.h"
 
 namespace dxvk {
     class NvapiResourceFactory : ResourceFactory {
@@ -15,6 +14,5 @@ namespace dxvk {
         virtual std::unique_ptr<Vk> CreateVulkan(Com<IDXGIFactory1>& dxgiFactory);
         virtual Com<IDXGIFactory1> CreateDXGIFactory1();
         virtual std::unique_ptr<Nvml> CreateNvml();
-        virtual std::unique_ptr<Lfx> CreateLfx();
     };
 }

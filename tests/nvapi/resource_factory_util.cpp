@@ -20,9 +20,8 @@ DXGIOutput6Mock* CreateDXGIOutput6Mock() {
 void SetupResourceFactory(
     std::unique_ptr<DXGIDxvkFactoryMock> dxgiFactory,
     std::unique_ptr<VkMock> vk,
-    std::unique_ptr<NvmlMock> nvml,
-    std::unique_ptr<LfxMock> lfx) {
-    resourceFactory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+    std::unique_ptr<NvmlMock> nvml) {
+    resourceFactory = std::make_unique<MockFactory>(std::move(dxgiFactory), std::move(vk), std::move(nvml));
 }
 
 void ResetGlobals() {
@@ -54,7 +53,6 @@ void ResetGlobals() {
                 NAMED_ALLOW_CALL(*mock, Release()).RETURN(0));
         });
 
-    nvapiD3dInstance.reset();
     nvapiAdapterRegistry.reset();
     initializationCount = 0ULL;
     resourceFactory.reset();
@@ -63,11 +61,10 @@ void ResetGlobals() {
     m_dxgiOutputMocks.clear();
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 23> ConfigureDefaultTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 22> ConfigureDefaultTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
     VkMock& vk,
     NvmlMock& nvml,
-    LfxMock& lfx,
     DXGIDxvkAdapterMock& adapter,
     DXGIOutput6Mock& output) {
     return {
@@ -131,16 +128,13 @@ void ResetGlobals() {
                     })),
 
         NAMED_ALLOW_CALL(nvml, IsAvailable())
-            .RETURN(false),
-        NAMED_ALLOW_CALL(lfx, IsAvailable())
             .RETURN(false)};
 }
 
-[[nodiscard]] std::array<std::unique_ptr<expectation>, 40> ConfigureExtendedTestEnvironment(
+[[nodiscard]] std::array<std::unique_ptr<expectation>, 39> ConfigureExtendedTestEnvironment(
     DXGIDxvkFactoryMock& dxgiFactory,
     VkMock& vk,
     NvmlMock& nvml,
-    LfxMock& lfx,
     DXGIDxvkAdapterMock& adapter1,
     DXGIDxvkAdapterMock& adapter2,
     DXGIOutput6Mock& output1,
@@ -259,8 +253,6 @@ void ResetGlobals() {
                     })),
 
         NAMED_ALLOW_CALL(nvml, IsAvailable())
-            .RETURN(false),
-        NAMED_ALLOW_CALL(lfx, IsAvailable())
             .RETURN(false)};
 }
 

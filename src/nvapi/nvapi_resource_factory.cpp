@@ -27,8 +27,4 @@ namespace dxvk {
     std::unique_ptr<Nvml> NvapiResourceFactory::CreateNvml() {
         return std::make_unique<Nvml>();
     }
-
-    std::unique_ptr<Lfx> NvapiResourceFactory::CreateLfx() {
-        return std::make_unique<Lfx>();
-    }
 }

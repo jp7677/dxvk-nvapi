@@ -20,14 +20,13 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
     auto vk = std::make_unique<VkMock>();
     auto nvml = std::make_unique<NvmlMock>();
-    auto lfx = std::make_unique<LfxMock>();
     DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
     DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
 
-    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *lfx, *adapter, *output);
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *adapter, *output);
 
     SECTION("Initialize returns OK") {
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
         REQUIRE(NvAPI_Unload() == NVAPI_OK);
     }
@@ -36,7 +35,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
         ALLOW_CALL(*dxgiFactory, EnumAdapters1(_, _))
             .RETURN(DXGI_ERROR_NOT_FOUND);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
         REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
     }
@@ -48,7 +47,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
             .SIDE_EFFECT(_1->VendorId = 0x1002)
             .RETURN(S_OK);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
         REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
     }
@@ -73,7 +72,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
                         vkProps.driverProps->driverID = args.driverId;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
 
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
         REQUIRE(NvAPI_Unload() == NVAPI_OK);
@@ -87,7 +86,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
                         vkProps.driverProps->driverID = VK_DRIVER_ID_MESA_NVK;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
         REQUIRE(NvAPI_Unload() == NVAPI_OK);
     }
@@ -100,7 +99,7 @@ TEST_CASE("Initialize succeeds", "[.sysinfo]") {
                         vkProps.driverProps->driverID = VK_DRIVER_ID_MESA_RADV;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_NVIDIA_DEVICE_NOT_FOUND);
         REQUIRE(NvAPI_Unload() == NVAPI_API_NOT_INITIALIZED);
     }
@@ -110,15 +109,14 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
     auto vk = std::make_unique<VkMock>();
     auto nvml = std::make_unique<NvmlMock>();
-    auto lfx = std::make_unique<LfxMock>();
     DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
     DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
 
-    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *lfx, *adapter, *output);
+    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *adapter, *output);
     auto primaryDisplayId = 0x00010001;
 
     SECTION("Initialize and unloads return OK") {
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
         REQUIRE(NvAPI_Unload() == NVAPI_OK);
     }
@@ -132,7 +130,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         vkProps.props->driverVersion = (470 << 22) | (35 << 14) | 1 << 6;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvU32 version;
@@ -151,7 +149,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         vkProps.props->driverVersion = (470 << 22) | (35 << 14) | 1 << 6;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         SECTION("GetDisplayDriverInfo (V1) returns OK") {
@@ -216,7 +214,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                             vkProps.props->driverVersion = (args.major << 22) | (args.minor << 12) | args.patch;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvDisplayHandle handle;
@@ -254,7 +252,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         vkProps.props->driverVersion = (470 << 22) | (45 << 14) | (0 << 6);
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvDisplayHandle handle;
@@ -279,7 +277,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         vkProps.pciBusInfoProps->pciDevice = 0x03;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -324,7 +322,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                             vkProps.fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -357,7 +355,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         vkProps.props->deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -369,7 +367,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetSystemType returns OK") {
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -388,7 +386,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             })
             .RETURN(S_OK);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -412,7 +410,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         strcpy(vkProps.props->deviceName, name);
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -435,7 +433,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         vkProps.pciBusInfoProps->pciBus = id;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -458,7 +456,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         vkProps.pciBusInfoProps->pciDevice = id;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -489,7 +487,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -508,7 +506,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             })
             .RETURN(S_OK);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -528,7 +526,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             })
             .RETURN(S_OK);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -555,7 +553,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             })
             .RETURN(S_OK);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -624,7 +622,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             })
             .RETURN(S_OK);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -669,7 +667,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -692,7 +690,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvU32 count;
@@ -783,7 +781,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                             vkProps.computeShaderDerivativesProps->meshAndTaskShaderDerivatives = VK_TRUE;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -809,7 +807,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetArchInfo with unknown struct version returns incompatible-struct-version") {
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -822,7 +820,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
     SECTION("GetArchInfo with current struct version returns not incompatible-struct-version") {
         // This test should fail when a header update provides a newer not yet implemented struct version
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -843,7 +841,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                         vkProps.driverProps->driverID = VK_DRIVER_ID_MESA_RADV;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -899,7 +897,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
                             vkProps.fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
                     }));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -921,7 +919,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetGPUInfo with unknown struct version returns incompatible-struct-version") {
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -934,7 +932,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
 
     SECTION("GetGPUInfo with current struct version returns not incompatible-struct-version") {
         // This test should fail when a header update provides a newer not yet implemented struct version
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;
@@ -946,7 +944,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
     }
 
     SECTION("GetPstates20 returns no-implementation") {
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml), std::move(lfx));
+        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         NvPhysicalGpuHandle handle;

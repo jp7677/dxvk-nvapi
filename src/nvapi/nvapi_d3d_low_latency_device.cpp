@@ -78,7 +78,11 @@ namespace dxvk {
         if (d3dLowLatencyDevice == nullptr)
             return false;
 
-        return SUCCEEDED(d3dLowLatencyDevice->SetLatencySleepMode(lowLatencyMode, lowLatencyBoost, minimumIntervalUs));
+        auto success = SUCCEEDED(d3dLowLatencyDevice->SetLatencySleepMode(lowLatencyMode, lowLatencyBoost, minimumIntervalUs));
+        if (success)
+            m_lowLatencyMode = lowLatencyMode;
+
+        return success;
     }
 
     bool NvapiD3dLowLatencyDevice::GetLatencyInfo(IUnknown* device, D3D_LATENCY_RESULTS* latencyResults) {
@@ -125,6 +129,10 @@ namespace dxvk {
 
         return SUCCEEDED(d3dLowLatencyDevice->SetLatencyMarker(
             frameIdGenerator->GetLowLatencyDeviceFrameId(frameID), markerType));
+    }
+
+    bool NvapiD3dLowLatencyDevice::GetLowLatencyMode() {
+        return m_lowLatencyMode;
     }
 
     std::optional<uint32_t> NvapiD3dLowLatencyDevice::ToMarkerType(NV_LATENCY_MARKER_TYPE markerType) {

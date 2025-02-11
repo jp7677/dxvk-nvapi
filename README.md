@@ -8,7 +8,7 @@ This implementation currently offers entry points for supporting the following f
 
 - NVIDIA DLSS for Vulkan, by supporting the relevant adapter information by querying from [Vulkan](https://www.vulkan.org/).
 - NVIDIA DLSS for D3D11 and D3D12, by querying from Vulkan and forwarding the relevant calls into DXVK / VKD3D-Proton.
-- NVIDIA Reflex, by forwarding the relevant calls into either DXVK / VKD3D-Proton, its custom Vulkan layer or [LatencyFleX](https://github.com/ishitatsuyuki/LatencyFleX).
+- NVIDIA Reflex, by forwarding the relevant calls into either DXVK / VKD3D-Proton or its custom Vulkan layer.
 - Several NVAPI D3D11 extensions, among others `SetDepthBoundsTest` and `UAVOverlap`, by forwarding the relevant calls into DXVK.
 - NVIDIA PhysX, by supporting entry points for querying PhysX capabilities.
 - Several GPU topology related methods for adapter and display information, by querying from DXVK and Vulkan.
@@ -68,7 +68,7 @@ DXVK 1.10 and older does not support `DXVK_ENABLE_NVAPI`. Disable the `nvapiHack
 
 ### Non-NVIDIA GPU
 
-Using DXVK-NVAPI with other GPU vendors / drivers has very limited use. Outside of testing, only Reflex (LatencyFlex) or HDR entry points provide benefits. This requires DXVK to see the GPU as an NVIDIA GPU. Use `DXVK_CONFIG="dxgi.hideAmdGpu = True"` to spoof an AMD GPU as NVIDIA GPU. Use `DXVK_CONFIG="dxgi.customVendorId = 10de"` for generally spoofing an NVIDIA GPU.
+Using DXVK-NVAPI with other GPU vendors / drivers has very limited use. Outside of testing, only HDR entry points provide benefits. This requires DXVK to see the GPU as an NVIDIA GPU. Use `DXVK_CONFIG="dxgi.hideAmdGpu = True"` to spoof an AMD GPU as NVIDIA GPU. Use `DXVK_CONFIG="dxgi.customVendorId = 10de"` for generally spoofing an NVIDIA GPU.
 
 Setting `DXVK_NVAPI_ALLOW_OTHER_DRIVERS=1` is needed for successful DXVK-NVAPI initialization when using a driver other than the NVIDIA proprietary driver or Mesa NVK. The reported driver version on drivers other than the NVIDIA proprietary driver will be 999.99. Overriding the reported driver version is still recommended. The reported GPU arrchitecture for other vendors is always Pascal to prevent attempts to initialize DLSS. This behavior cannot be changed without modifying the source code.
 

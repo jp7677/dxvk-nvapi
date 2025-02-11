@@ -165,10 +165,10 @@ extern "C" {
         if (!pDevice)
             return InvalidArgument(n);
 
-        if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
+        if (!NvapiD3dLowLatencyDevice::SupportsLowLatency(pDevice))
             return NoImplementation(n, alreadyLoggedNoReflex);
 
-        if (!nvapiD3dInstance->Sleep(pDevice))
+        if (!NvapiD3dLowLatencyDevice::LatencySleep(pDevice))
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);
@@ -195,10 +195,10 @@ extern "C" {
         if (pSetSleepModeParams->version != NV_SET_SLEEP_MODE_PARAMS_VER1)
             return IncompatibleStructVersion(n, pSetSleepModeParams->version);
 
-        if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
+        if (!NvapiD3dLowLatencyDevice::SupportsLowLatency(pDevice))
             return NoImplementation(n, alreadyLoggedNoReflex);
 
-        if (!nvapiD3dInstance->SetReflexMode(pDevice, pSetSleepModeParams->bLowLatencyMode, pSetSleepModeParams->bLowLatencyBoost, pSetSleepModeParams->minimumIntervalUs))
+        if (!NvapiD3dLowLatencyDevice::SetLatencySleepMode(pDevice, pSetSleepModeParams->bLowLatencyMode, pSetSleepModeParams->bLowLatencyBoost, pSetSleepModeParams->minimumIntervalUs))
             return Error(n, alreadyLoggedError);
 
         if (lastLowLatencyMode != pSetSleepModeParams->bLowLatencyMode || lastMinimumIntervalUs != pSetSleepModeParams->minimumIntervalUs) {
@@ -226,10 +226,10 @@ extern "C" {
         if (pGetSleepStatusParams->version != NV_GET_SLEEP_STATUS_PARAMS_VER1)
             return IncompatibleStructVersion(n, pGetSleepStatusParams->version);
 
-        if (!nvapiD3dInstance->IsReflexAvailable(pDevice))
+        if (!NvapiD3dLowLatencyDevice::SupportsLowLatency(pDevice))
             return NoImplementation(n, alreadyLoggedNoReflex);
 
-        pGetSleepStatusParams->bLowLatencyMode = nvapiD3dInstance->IsLowLatencyEnabled();
+        pGetSleepStatusParams->bLowLatencyMode = NvapiD3dLowLatencyDevice::GetLowLatencyMode();
 
         return Ok(n, alreadyLoggedOk);
     }
@@ -252,7 +252,7 @@ extern "C" {
         if (pGetLatencyParams->version != NV_LATENCY_RESULT_PARAMS_VER1)
             return IncompatibleStructVersion(n, pGetLatencyParams->version);
 
-        if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
+        if (!NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
             return NoImplementation(n, alreadyLoggedNoImpl);
 
         if (!NvapiD3dLowLatencyDevice::GetLatencyInfo(pDev, reinterpret_cast<D3D_LATENCY_RESULTS*>(pGetLatencyParams)))
@@ -280,7 +280,7 @@ extern "C" {
         if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
             return IncompatibleStructVersion(n, pSetLatencyMarkerParams->version);
 
-        if (nvapiD3dInstance->IsUsingLfx() || !NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
+        if (!NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
             return NoImplementation(n, alreadyLoggedNoImpl);
 
         auto markerType = NvapiD3dLowLatencyDevice::ToMarkerType(pSetLatencyMarkerParams->markerType);
