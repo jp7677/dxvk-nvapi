@@ -109,6 +109,19 @@ The following environment variables tweak DXVK-NVAPI's runtime behavior:
 - `DXVK_NVAPI_ALLOW_OTHER_DRIVERS`, when set to `1`, allows DXVK-NVAPI to initialize for a non-NVIDIA GPU.
 - `DXVK_NVAPI_DISABLE_ENTRYPOINTS`, when set to a comma-separated list of NVAPI entrypoint names, will hide their implementation from the application. For example, `DXVK_NVAPI_DISABLE_ENTRYPOINTS=NvAPI_D3D11_BeginUAVOverlap,NvAPI_D3D11_EndUAVOverlap` will report D3D11 barrier control extensions as not available.
 - `DXVK_NVAPI_DRS_SETTINGS` allows providing custom values for arbitrary driver settings. Currently, only values of DWORD (u32) type are supported. Format is `setting1=value1,setting2=value2,…` where both `settingN` and `valueN` are unsigned 32-bit integers and can be prefixed with `0x` or `0X` to parse them as hexadecimal numbers. For example, `DXVK_NVAPI_DRS_SETTINGS=0x10E41DF3=0xffffff,0x10E41DF7=0xffffff` overrides presets for both DLSS Super Resolution and DLSS Ray Reconstruction to latest.
+  - Additionally, the following settings are supported in their named/text form:
+    - `NGX_DLAA_OVERRIDE`
+    - `NGX_DLSSG_MULTI_FRAME_COUNT`
+    - `NGX_DLSS_FG_OVERRIDE`
+    - `NGX_DLSS_RR_MODE`
+    - `NGX_DLSS_OVERRIDE_OPTIMAL_SETTINGS`
+    - `NGX_DLSS_RR_OVERRIDE`
+    - `NGX_DLSS_RR_OVERRIDE_RENDER_PRESET_SELECTION`
+    - `NGX_DLSS_SR_MODE`
+    - `NGX_DLSS_SR_OVERRIDE`
+    - `NGX_DLSS_SR_OVERRIDE_RENDER_PRESET_SELECTION`
+  - The corresponding values can be deduced from the [NVAPI `NvApiDriverSettings.h` header](https://github.com/NVIDIA/nvapi/blob/d08488fcc82eef313b0464db37d2955709691e94/NvApiDriverSettings.h#L700) with the setting type prefix omitted, for example `DXVK_NVAPI_DRS_SETTINGS=NGX_DLSS_FG_OVERRIDE=on`. Both setting name (`NGX_DLSS_FG_OVERRIDE`) and value (`on`) are case-insensitive.
+  - Furthermore, each supported named setting can also be configured with a dedicated environment variable, the name of which is constructed by prefixing setting name with `DXVK_NVAPI_DRS_`, for example `DXVK_NVAPI_DRS_NGX_DLSS_FG_OVERRIDE=on`. The name of environment variable is case-sensitive, the value is not. If a setting is set via both `DXVK_NVAPI_DRS_SETTINGS` and its own dedicated environment variable, the latter takes precedence.
 - `DXVK_NVAPI_GPU_ARCH`, when set to one of supported NVIDIA GPU architecture IDs will override reported GPU architecture. Currently supported values are:
   - `GK100` (Kepler)
   - `GM000` (Maxwell Gen1)
