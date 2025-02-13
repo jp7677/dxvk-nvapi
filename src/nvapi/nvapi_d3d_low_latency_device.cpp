@@ -79,8 +79,10 @@ namespace dxvk {
             return false;
 
         auto success = SUCCEEDED(d3dLowLatencyDevice->SetLatencySleepMode(lowLatencyMode, lowLatencyBoost, minimumIntervalUs));
-        if (success)
-            m_lowLatencyMode = lowLatencyMode;
+        if (success) {
+            std::scoped_lock lock(m_lowLatencyModeMutex);
+            m_lowLatencyModeMap[device] = lowLatencyMode;
+        }
 
         return success;
     }
@@ -131,8 +133,13 @@ namespace dxvk {
             frameIdGenerator->GetLowLatencyDeviceFrameId(frameID), markerType));
     }
 
-    bool NvapiD3dLowLatencyDevice::GetLowLatencyMode() {
-        return m_lowLatencyMode;
+    bool NvapiD3dLowLatencyDevice::GetLowLatencyMode(IUnknown* unknown) {
+        std::scoped_lock lock(m_lowLatencyModeMutex);
+        auto it = m_lowLatencyModeMap.find(unknown);
+        if (it != m_lowLatencyModeMap.end())
+            return it->second;
+
+        return false;
     }
 
     std::optional<uint32_t> NvapiD3dLowLatencyDevice::ToMarkerType(NV_LATENCY_MARKER_TYPE markerType) {

@@ -35,7 +35,7 @@ namespace dxvk {
         static bool GetLatencyInfo(IUnknown* device, D3D_LATENCY_RESULTS* latencyResults);
         static bool SetLatencyMarker(IUnknown* device, uint64_t frameID, uint32_t markerType);
         static bool SetLatencyMarker(ID3D12CommandQueue* commandQueue, uint64_t frameID, uint32_t markerType);
-        [[nodiscard]] static bool GetLowLatencyMode();
+        [[nodiscard]] static bool GetLowLatencyMode(IUnknown* device);
 
         [[nodiscard]] static std::optional<uint32_t> ToMarkerType(NV_LATENCY_MARKER_TYPE markerType);
 
@@ -44,11 +44,11 @@ namespace dxvk {
       private:
         inline static std::unordered_map<IUnknown*, ID3DLowLatencyDevice*> m_lowLatencyDeviceMap;
         inline static std::unordered_map<ID3DLowLatencyDevice*, std::unique_ptr<LowLatencyFrameIdGenerator>> m_frameIdGeneratorMap;
+        inline static std::unordered_map<IUnknown*, bool> m_lowLatencyModeMap;
 
         inline static std::mutex m_lowLatencyDeviceMutex;
         inline static std::mutex m_lowLatencyFrameIdGeneratorMutex;
-
-        inline static bool m_lowLatencyMode;
+        inline static std::mutex m_lowLatencyModeMutex;
 
         [[nodiscard]] static Com<ID3DLowLatencyDevice> GetLowLatencyDevice(IUnknown* device);
         [[nodiscard]] static Com<ID3DLowLatencyDevice> GetLowLatencyDevice(ID3D12CommandQueue* commandQueue);

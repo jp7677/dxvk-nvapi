@@ -229,7 +229,7 @@ extern "C" {
         if (!NvapiD3dLowLatencyDevice::SupportsLowLatency(pDevice))
             return NoImplementation(n, alreadyLoggedNoReflex);
 
-        pGetSleepStatusParams->bLowLatencyMode = NvapiD3dLowLatencyDevice::GetLowLatencyMode();
+        pGetSleepStatusParams->bLowLatencyMode = NvapiD3dLowLatencyDevice::GetLowLatencyMode(pDevice);
 
         return Ok(n, alreadyLoggedOk);
     }
