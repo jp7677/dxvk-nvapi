@@ -2,56 +2,35 @@
 
 #include "../nvapi_private.h"
 #include "../interfaces/shared_interfaces.h"
-#include "../util/com_pointer.h"
+#include "low_latency_frame_id_generator.h"
 
 namespace dxvk {
-    class LowLatencyFrameIdGenerator {
-      public:
-        LowLatencyFrameIdGenerator();
-        virtual ~LowLatencyFrameIdGenerator();
-        [[nodiscard]] bool LowLatencyDeviceFrameIdInWindow(uint64_t lowLatencyDeviceFrameId) const;
-        uint64_t GetLowLatencyDeviceFrameId(uint64_t applicationFrameId);
-        uint64_t GetApplicationFrameId(uint64_t lowLatencyDeviceFrameId);
-        [[nodiscard]] bool IsRepeatedFrame(uint64_t frameID, uint32_t markerType);
-
-      private:
-        std::mutex m_frameIdGeneratorMutex;
-
-        uint64_t m_nextLowLatencyDeviceFrameId;
-        std::unordered_map<uint64_t, uint64_t> m_applicationIdToDeviceId;
-
-        static constexpr uint32_t applicationIdListSize = 1000;
-        std::array<uint64_t, applicationIdListSize> m_applicationIdList;
-
-        std::array<uint64_t, 13> m_lastFrameId;
-    };
-
     class NvapiD3dLowLatencyDevice {
+
       public:
-        static bool SupportsLowLatency(IUnknown* device);
-        static bool SupportsLowLatency(ID3D12CommandQueue* commandQueue);
-        static bool LatencySleep(IUnknown* device);
-        static bool SetLatencySleepMode(IUnknown* device, bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs);
-        static bool GetLatencyInfo(IUnknown* device, D3D_LATENCY_RESULTS* latencyResults);
-        static bool SetLatencyMarker(IUnknown* device, uint64_t frameID, uint32_t markerType);
-        static bool SetLatencyMarker(ID3D12CommandQueue* commandQueue, uint64_t frameID, uint32_t markerType);
-        [[nodiscard]] static bool GetLowLatencyMode(IUnknown* device);
+        static void Reset();
+        [[nodiscard]] static NvapiD3dLowLatencyDevice* GetOrCreate(IUnknown* device);
+        [[nodiscard]] static NvapiD3dLowLatencyDevice* GetOrCreate(ID3D12CommandQueue* commandQueue);
 
         [[nodiscard]] static std::optional<uint32_t> ToMarkerType(NV_LATENCY_MARKER_TYPE markerType);
 
-        static void Reset();
+        explicit NvapiD3dLowLatencyDevice(ID3DLowLatencyDevice* m_d3dLowLatencyDevice);
+
+        [[nodiscard]] bool SupportsLowLatency() const;
+        [[nodiscard]] bool LatencySleep() const;
+        bool SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs);
+        bool GetLatencyInfo(D3D_LATENCY_RESULTS* latencyResults);
+        [[nodiscard]] bool SetLatencyMarker(uint64_t frameID, uint32_t markerType);
+        [[nodiscard]] bool GetLowLatencyMode() const;
 
       private:
-        inline static std::unordered_map<IUnknown*, ID3DLowLatencyDevice*> m_lowLatencyDeviceMap;
-        inline static std::unordered_map<ID3DLowLatencyDevice*, std::unique_ptr<LowLatencyFrameIdGenerator>> m_frameIdGeneratorMap;
-        inline static std::unordered_map<IUnknown*, bool> m_lowLatencyModeMap;
+        [[nodiscard]] static NvapiD3dLowLatencyDevice* Get(IUnknown*);
 
-        inline static std::mutex m_lowLatencyDeviceMutex;
-        inline static std::mutex m_lowLatencyFrameIdGeneratorMutex;
-        inline static std::mutex m_lowLatencyModeMutex;
+        static std::unordered_map<IUnknown*, NvapiD3dLowLatencyDevice> m_lowLatencyDeviceMap;
+        static std::mutex m_mutex;
 
-        [[nodiscard]] static Com<ID3DLowLatencyDevice> GetLowLatencyDevice(IUnknown* device);
-        [[nodiscard]] static Com<ID3DLowLatencyDevice> GetLowLatencyDevice(ID3D12CommandQueue* commandQueue);
-        [[nodiscard]] static LowLatencyFrameIdGenerator* GetFrameIdGenerator(ID3DLowLatencyDevice* device);
+        ID3DLowLatencyDevice* m_d3dLowLatencyDevice{};
+        bool m_lowLatencyMode{};
+        LowLatencyFrameIdGenerator m_frameIdGenerator;
     };
 }

@@ -6,6 +6,7 @@ nvapi_src = files([
   'shared/vk.cpp',
   'shared/resource_factory.cpp',
   'nvapi/nvml.cpp',
+  'nvapi/low_latency_frame_id_generator.cpp',
   'nvapi/nvapi_resource_factory.cpp',
   'nvapi/nvapi_d3d_low_latency_device.cpp',
   'nvapi/nvapi_vulkan_low_latency_device.cpp',

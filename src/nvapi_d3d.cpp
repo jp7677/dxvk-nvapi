@@ -165,10 +165,11 @@ extern "C" {
         if (!pDevice)
             return InvalidArgument(n);
 
-        if (!NvapiD3dLowLatencyDevice::SupportsLowLatency(pDevice))
+        auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pDevice);
+        if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
             return NoImplementation(n, alreadyLoggedNoReflex);
 
-        if (!NvapiD3dLowLatencyDevice::LatencySleep(pDevice))
+        if (!lowLatencyDevice->LatencySleep())
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);
@@ -195,10 +196,11 @@ extern "C" {
         if (pSetSleepModeParams->version != NV_SET_SLEEP_MODE_PARAMS_VER1)
             return IncompatibleStructVersion(n, pSetSleepModeParams->version);
 
-        if (!NvapiD3dLowLatencyDevice::SupportsLowLatency(pDevice))
+        auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pDevice);
+        if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
             return NoImplementation(n, alreadyLoggedNoReflex);
 
-        if (!NvapiD3dLowLatencyDevice::SetLatencySleepMode(pDevice, pSetSleepModeParams->bLowLatencyMode, pSetSleepModeParams->bLowLatencyBoost, pSetSleepModeParams->minimumIntervalUs))
+        if (!lowLatencyDevice->SetLatencySleepMode(pSetSleepModeParams->bLowLatencyMode, pSetSleepModeParams->bLowLatencyBoost, pSetSleepModeParams->minimumIntervalUs))
             return Error(n, alreadyLoggedError);
 
         if (lastLowLatencyMode != pSetSleepModeParams->bLowLatencyMode || lastMinimumIntervalUs != pSetSleepModeParams->minimumIntervalUs) {
@@ -226,10 +228,11 @@ extern "C" {
         if (pGetSleepStatusParams->version != NV_GET_SLEEP_STATUS_PARAMS_VER1)
             return IncompatibleStructVersion(n, pGetSleepStatusParams->version);
 
-        if (!NvapiD3dLowLatencyDevice::SupportsLowLatency(pDevice))
+        auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pDevice);
+        if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
             return NoImplementation(n, alreadyLoggedNoReflex);
 
-        pGetSleepStatusParams->bLowLatencyMode = NvapiD3dLowLatencyDevice::GetLowLatencyMode(pDevice);
+        pGetSleepStatusParams->bLowLatencyMode = lowLatencyDevice->GetLowLatencyMode();
 
         return Ok(n, alreadyLoggedOk);
     }
@@ -252,10 +255,11 @@ extern "C" {
         if (pGetLatencyParams->version != NV_LATENCY_RESULT_PARAMS_VER1)
             return IncompatibleStructVersion(n, pGetLatencyParams->version);
 
-        if (!NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
+        auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pDev);
+        if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
             return NoImplementation(n, alreadyLoggedNoImpl);
 
-        if (!NvapiD3dLowLatencyDevice::GetLatencyInfo(pDev, reinterpret_cast<D3D_LATENCY_RESULTS*>(pGetLatencyParams)))
+        if (!lowLatencyDevice->GetLatencyInfo(reinterpret_cast<D3D_LATENCY_RESULTS*>(pGetLatencyParams)))
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);
@@ -280,7 +284,8 @@ extern "C" {
         if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
             return IncompatibleStructVersion(n, pSetLatencyMarkerParams->version);
 
-        if (!NvapiD3dLowLatencyDevice::SupportsLowLatency(pDev))
+        auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pDev);
+        if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
             return NoImplementation(n, alreadyLoggedNoImpl);
 
         auto markerType = NvapiD3dLowLatencyDevice::ToMarkerType(pSetLatencyMarkerParams->markerType);
@@ -292,7 +297,7 @@ extern "C" {
             return Ok(n, alreadyLoggedOk);
         }
 
-        if (!NvapiD3dLowLatencyDevice::SetLatencyMarker(pDev, pSetLatencyMarkerParams->frameID, markerType.value()))
+        if (!lowLatencyDevice->SetLatencyMarker(pSetLatencyMarkerParams->frameID, markerType.value()))
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);

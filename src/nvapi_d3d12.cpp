@@ -453,7 +453,8 @@ extern "C" {
         if (!pCommandQueue)
             return InvalidPointer(n);
 
-        if (!NvapiD3dLowLatencyDevice::SupportsLowLatency(pCommandQueue))
+        auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pCommandQueue);
+        if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
             return NoImplementation(n);
 
         if (cqType == OUT_OF_BAND_IGNORE && !std::exchange(alreadyLoggedTypeIgnore, true))
@@ -486,7 +487,8 @@ extern "C" {
         if (pSetAsyncFrameMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
             return IncompatibleStructVersion(n, pSetAsyncFrameMarkerParams->version);
 
-        if (!NvapiD3dLowLatencyDevice::SupportsLowLatency(pCommandQueue))
+        auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pCommandQueue);
+        if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
             return NoImplementation(n);
 
         auto markerType = NvapiD3dLowLatencyDevice::ToMarkerType(pSetAsyncFrameMarkerParams->markerType);
@@ -498,7 +500,7 @@ extern "C" {
             return Ok(n, alreadyLoggedOk);
         }
 
-        if (!NvapiD3dLowLatencyDevice::SetLatencyMarker(pCommandQueue, pSetAsyncFrameMarkerParams->frameID, markerType.value()))
+        if (!lowLatencyDevice->SetLatencyMarker(pSetAsyncFrameMarkerParams->frameID, markerType.value()))
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);
