@@ -10,8 +10,6 @@ namespace dxvk {
       public:
         static void Reset();
         [[nodiscard]] static NvapiD3dLowLatencyDevice* GetOrCreate(IUnknown* device);
-        [[nodiscard]] static NvapiD3dLowLatencyDevice* GetOrCreate(ID3D12CommandQueue* commandQueue);
-
         [[nodiscard]] static std::optional<uint32_t> ToMarkerType(NV_LATENCY_MARKER_TYPE markerType);
 
         explicit NvapiD3dLowLatencyDevice(ID3DLowLatencyDevice* m_d3dLowLatencyDevice);
@@ -26,11 +24,11 @@ namespace dxvk {
       private:
         [[nodiscard]] static NvapiD3dLowLatencyDevice* Get(IUnknown*);
 
-        static std::unordered_map<IUnknown*, NvapiD3dLowLatencyDevice> m_lowLatencyDeviceMap;
+        static std::unordered_map<IUnknown*, std::shared_ptr<NvapiD3dLowLatencyDevice>> m_lowLatencyDeviceMap;
         static std::mutex m_mutex;
 
         ID3DLowLatencyDevice* m_d3dLowLatencyDevice{};
-        bool m_lowLatencyMode{};
         LowLatencyFrameIdGenerator m_frameIdGenerator;
+        bool m_lowLatencyMode{};
     };
 }

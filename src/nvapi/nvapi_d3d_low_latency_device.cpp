@@ -4,12 +4,33 @@
 #include "../util/util_log.h"
 
 namespace dxvk {
-    std::unordered_map<IUnknown*, NvapiD3dLowLatencyDevice> NvapiD3dLowLatencyDevice::m_lowLatencyDeviceMap = {};
+    std::unordered_map<IUnknown*, std::shared_ptr<NvapiD3dLowLatencyDevice>> NvapiD3dLowLatencyDevice::m_lowLatencyDeviceMap = {};
     std::mutex NvapiD3dLowLatencyDevice::m_mutex = {};
 
     void NvapiD3dLowLatencyDevice::Reset() {
         std::scoped_lock lock{m_mutex};
         m_lowLatencyDeviceMap.clear();
+    }
+
+    static Com<ID3DLowLatencyDevice> GetD3DLowLatencyDevice(IUnknown* device) {
+        Com<ID3DLowLatencyDevice> d3dLowLatencyDevice;
+
+        if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&d3dLowLatencyDevice))))
+            return d3dLowLatencyDevice;
+
+        if (Com<ID3D11DeviceChild> d3d11DeviceChild; SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&d3d11DeviceChild)))) {
+            Com<ID3D11Device> d3d11Device;
+            d3d11DeviceChild->GetDevice(&d3d11Device);
+            if (SUCCEEDED(d3d11Device->QueryInterface(IID_PPV_ARGS(&d3dLowLatencyDevice))))
+                return d3dLowLatencyDevice;
+        }
+
+        if (Com<ID3D12DeviceChild> d3d12DeviceChild; SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&d3d12DeviceChild)))) {
+            if (SUCCEEDED(d3d12DeviceChild->GetDevice(IID_PPV_ARGS(&d3dLowLatencyDevice))))
+                return d3dLowLatencyDevice;
+        }
+
+        return nullptr;
     }
 
     NvapiD3dLowLatencyDevice* NvapiD3dLowLatencyDevice::GetOrCreate(IUnknown* device) {
@@ -18,40 +39,27 @@ namespace dxvk {
         if (auto lowLatencyDevice = Get(device))
             return lowLatencyDevice;
 
-        Com<ID3DLowLatencyDevice> d3dLowLatencyDevice;
-        if (FAILED(device->QueryInterface(IID_PPV_ARGS(&d3dLowLatencyDevice))))
+        auto d3dLowLatencyDevice = GetD3DLowLatencyDevice(device);
+        if (d3dLowLatencyDevice == nullptr)
             return nullptr;
 
-        auto [it, inserted] = m_lowLatencyDeviceMap.emplace(
-            std::piecewise_construct,
-            std::forward_as_tuple(device),
-            std::forward_as_tuple(d3dLowLatencyDevice.ptr()));
+        // Look for a cache entry where NvapiD3dLowLatencyDevice's m_d3dLowLatencyDevice matches the one we found
+        auto itF = std::find_if(m_lowLatencyDeviceMap.begin(), m_lowLatencyDeviceMap.end(),
+            [&d3dLowLatencyDevice](auto& item) { return item.second->m_d3dLowLatencyDevice == d3dLowLatencyDevice.ptr(); });
+
+        auto [itI, inserted] = itF == m_lowLatencyDeviceMap.end()
+            ? m_lowLatencyDeviceMap.emplace(device, std::make_shared<NvapiD3dLowLatencyDevice>(d3dLowLatencyDevice.ptr()))
+            : m_lowLatencyDeviceMap.emplace(device, itF->second);
 
         if (!inserted)
             return nullptr;
 
-        return &it->second;
-    }
-
-    NvapiD3dLowLatencyDevice* NvapiD3dLowLatencyDevice::GetOrCreate(ID3D12CommandQueue* commandQueue) {
-        // some games like The Cycle: Frontier (868270) pass ID3D11DeviceContext to NvAPI_D3D12_SetAsyncFrameMarker,
-        // so let's not trust the caller and handle this somewhat gracefully instead of just crashing
-        if (Com<ID3D11DeviceChild> d3d11DeviceChild; SUCCEEDED(commandQueue->QueryInterface(IID_PPV_ARGS(&d3d11DeviceChild)))) {
-            Com<ID3D11Device> d3d11Device;
-            d3d11DeviceChild->GetDevice(&d3d11Device);
-            return GetOrCreate(d3d11Device.ptr());
-        }
-
-        Com<ID3D12Device> d3d12Device;
-        if (SUCCEEDED(commandQueue->GetDevice(IID_PPV_ARGS(&d3d12Device))))
-            return GetOrCreate(static_cast<IUnknown*>(d3d12Device.ptr()));
-
-        return nullptr;
+        return itI->second.get();
     }
 
     NvapiD3dLowLatencyDevice* NvapiD3dLowLatencyDevice::Get(IUnknown* device) {
         auto it = m_lowLatencyDeviceMap.find(device);
-        return it == m_lowLatencyDeviceMap.end() ? nullptr : &it->second;
+        return it == m_lowLatencyDeviceMap.end() ? nullptr : it->second.get();
     }
 
     std::optional<uint32_t> NvapiD3dLowLatencyDevice::ToMarkerType(NV_LATENCY_MARKER_TYPE markerType) {
