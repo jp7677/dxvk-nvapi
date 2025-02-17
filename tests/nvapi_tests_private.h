@@ -10,6 +10,8 @@
 #include "../src/nvapi/nvapi_d3d_low_latency_device.h"
 #include "../src/nvapi/nvapi_d3d11_device.h"
 #include "../src/nvapi/nvapi_d3d12_device.h"
+#include "../src/nvapi/nvapi_d3d12_graphics_command_list.h"
+#include "../src/nvapi/nvapi_d3d12_command_queue.h"
 
 #include "../inc/catch_amalgamated.hpp"
 #include "../inc/catch2/trompeloeil.hpp"

@@ -15,6 +15,8 @@ nvapi_src = files([
   'nvapi/nvapi_adapter_registry.cpp',
   'nvapi/nvapi_d3d11_device.cpp',
   'nvapi/nvapi_d3d12_device.cpp',
+  'nvapi/nvapi_d3d12_graphics_command_list.cpp',
+  'nvapi/nvapi_d3d12_command_queue.cpp',
   'nvapi_globals.cpp',
   'nvapi.cpp',
   'nvapi_d3d.cpp',

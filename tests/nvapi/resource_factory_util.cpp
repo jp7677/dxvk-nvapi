@@ -27,6 +27,8 @@ void SetupResourceFactory(
 void ResetGlobals() {
     NvapiD3d11Device::Reset();
     NvapiD3d12Device::Reset();
+    NvapiD3d12GraphicsCommandList::Reset();
+    NvapiD3d12CommandQueue::Reset();
     NvapiD3dLowLatencyDevice::Reset();
     NvapiVulkanLowLatencyDevice::Reset();
 

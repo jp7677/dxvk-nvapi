@@ -2,49 +2,64 @@
 #include "../util/util_log.h"
 
 namespace dxvk {
+    std::unordered_map<ID3D12Device*, NvapiD3d12Device> NvapiD3d12Device::m_nvapiDeviceMap;
+    std::mutex NvapiD3d12Device::m_mutex;
 
-    std::optional<LUID> NvapiD3d12Device::GetLuid(IUnknown* unknown) {
-        Com<ID3D12Device> device;
-        if (FAILED(unknown->QueryInterface(IID_PPV_ARGS(&device))))
-            return {};
+    std::unordered_map<NVDX_ObjectHandle, NvU32> NvapiD3d12Device::m_cubinSmemMap;
+    std::mutex NvapiD3d12Device::m_cubinSmemMutex;
 
-        return device->GetAdapterLuid();
+    void NvapiD3d12Device::Reset() {
+        std::scoped_lock lock{m_mutex, m_cubinSmemMutex};
+        m_nvapiDeviceMap.clear();
+        m_cubinSmemMap.clear();
     }
 
-    bool NvapiD3d12Device::CreateGraphicsPipelineState(ID3D12Device* device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pipelineStateDescription, NvU32 numberOfExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** extensions, ID3D12PipelineState** pipelineState) {
-        if (numberOfExtensions != 1 || extensions[0]->psoExtension != NV_PSO_ENABLE_DEPTH_BOUND_TEST_EXTENSION)
-            return false;
+    NvapiD3d12Device* NvapiD3d12Device::GetOrCreate(ID3D12Device* device) {
+        std::scoped_lock lock{m_mutex};
 
-        return SUCCEEDED(device->CreateGraphicsPipelineState(pipelineStateDescription, __uuidof(ID3D12PipelineState), reinterpret_cast<void**>(pipelineState)));
-    }
-
-    bool NvapiD3d12Device::SetDepthBoundsTestValues(ID3D12GraphicsCommandList* commandList, const float minDepth, const float maxDepth) {
-        Com<ID3D12GraphicsCommandList1> commandList1;
-        if (FAILED(commandList->QueryInterface(IID_PPV_ARGS(&commandList1)))) // There is no VKD3D-Proton version out there that does not implement ID3D12GraphicsCommandList1, this should always succeed
-            return false;
-
-        commandList1->OMSetDepthBounds(minDepth, maxDepth);
-        return true;
-    }
-
-    bool NvapiD3d12Device::CreateCubinComputeShaderWithName(ID3D12Device* device, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
-        auto cubinDevice = GetCubinDevice(device);
-        if (cubinDevice == nullptr)
-            return false;
-
-        return CreateCubinComputeShaderEx(device, cubinData, cubinSize, blockX, blockY, blockZ, 0 /* smemSize */, shaderName, pShader);
-    }
-
-    bool NvapiD3d12Device::CreateCubinComputeShaderEx(ID3D12Device* device, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader) {
-        auto cubinDevice = GetCubinDevice(device);
-        if (cubinDevice == nullptr)
-            return false;
+        auto itF = m_nvapiDeviceMap.find(device);
+        if (itF != m_nvapiDeviceMap.end())
+            return &itF->second;
 
         Com<ID3D12DeviceExt> deviceExt;
-        if (FAILED(cubinDevice->QueryInterface(IID_PPV_ARGS(&deviceExt))))
+        if (FAILED(device->QueryInterface(IID_PPV_ARGS(&deviceExt))))
+            return nullptr;
+
+        auto [itI, inserted] = m_nvapiDeviceMap.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(device),
+            std::forward_as_tuple(deviceExt.ptr()));
+
+        if (!inserted)
+            return nullptr;
+
+        return &itI->second;
+    }
+
+    uint32_t NvapiD3d12Device::FindCubinSmem(NVDX_ObjectHandle pShader) {
+        std::scoped_lock lock(m_cubinSmemMutex);
+        auto it = m_cubinSmemMap.find(pShader);
+        if (it != m_cubinSmemMap.end())
+            return it->second;
+
+        log::info("Failed to find CuBIN in m_cubinSmemMap, defaulting to 0");
+        return 0;
+    }
+
+    NvapiD3d12Device::NvapiD3d12Device(ID3D12DeviceExt* vkd3dDevice)
+        : m_vkd3dDevice(vkd3dDevice) {
+        m_supportsNvxBinaryImport = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_BINARY_IMPORT);
+    }
+
+    bool NvapiD3d12Device::CreateCubinComputeShaderWithName(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
+        return CreateCubinComputeShaderEx(cubinData, cubinSize, blockX, blockY, blockZ, 0 /* smemSize */, shaderName, pShader);
+    }
+
+    bool NvapiD3d12Device::CreateCubinComputeShaderEx(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader) {
+        if (!m_vkd3dDevice || !m_supportsNvxBinaryImport)
             return false;
 
-        if (FAILED(deviceExt->CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, reinterpret_cast<D3D12_CUBIN_DATA_HANDLE**>(pShader))))
+        if (FAILED(m_vkd3dDevice->CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, reinterpret_cast<D3D12_CUBIN_DATA_HANDLE**>(pShader))))
             return false;
 
         std::scoped_lock lock(m_cubinSmemMutex);
@@ -52,12 +67,11 @@ namespace dxvk {
         return true;
     }
 
-    bool NvapiD3d12Device::DestroyCubinComputeShader(ID3D12Device* device, NVDX_ObjectHandle shader) {
-        auto cubinDevice = GetCubinDevice(device);
-        if (cubinDevice == nullptr)
+    bool NvapiD3d12Device::DestroyCubinComputeShader(NVDX_ObjectHandle shader) {
+        if (!m_vkd3dDevice || !m_supportsNvxBinaryImport)
             return false;
 
-        if (FAILED(cubinDevice->DestroyCubinComputeShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(shader))))
+        if (FAILED(m_vkd3dDevice->DestroyCubinComputeShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(shader))))
             return false;
 
         std::scoped_lock lock(m_cubinSmemMutex);
@@ -65,143 +79,28 @@ namespace dxvk {
         return true;
     }
 
-    bool NvapiD3d12Device::GetCudaTextureObject(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle) {
-        auto cubinDevice = GetCubinDevice(device);
-        if (cubinDevice == nullptr)
+    bool NvapiD3d12Device::GetCudaTextureObject(D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle) const {
+        if (!m_vkd3dDevice || !m_supportsNvxBinaryImport)
             return false;
 
-        return SUCCEEDED(cubinDevice->GetCudaTextureObject(srvHandle, samplerHandle, reinterpret_cast<UINT32*>(cudaTextureHandle)));
+        return SUCCEEDED(m_vkd3dDevice->GetCudaTextureObject(srvHandle, samplerHandle, reinterpret_cast<UINT32*>(cudaTextureHandle)));
     }
 
-    bool NvapiD3d12Device::GetCudaSurfaceObject(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle) {
-        auto cubinDevice = GetCubinDevice(device);
-        if (cubinDevice == nullptr)
+    bool NvapiD3d12Device::GetCudaSurfaceObject(D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle) const {
+        if (!m_vkd3dDevice || !m_supportsNvxBinaryImport)
             return false;
 
-        return SUCCEEDED(cubinDevice->GetCudaSurfaceObject(uavHandle, reinterpret_cast<UINT32*>(cudaSurfaceHandle)));
+        return SUCCEEDED(m_vkd3dDevice->GetCudaSurfaceObject(uavHandle, reinterpret_cast<UINT32*>(cudaSurfaceHandle)));
     }
 
-    bool NvapiD3d12Device::NotifyOutOfBandCommandQueue(ID3D12CommandQueue* commandQueue, D3D12_OUT_OF_BAND_CQ_TYPE type) {
-        auto commandQueueExt = GetCommandQueueExt(commandQueue);
-        if (commandQueueExt == nullptr)
+    bool NvapiD3d12Device::CaptureUAVInfo(NVAPI_UAV_INFO* pUAVInfo) const {
+        if (!m_vkd3dDevice || !m_supportsNvxBinaryImport)
             return false;
 
-        return SUCCEEDED(commandQueueExt->NotifyOutOfBandCommandQueue(type));
+        return SUCCEEDED(m_vkd3dDevice->CaptureUAVInfo(reinterpret_cast<D3D12_UAV_INFO*>(pUAVInfo)));
     }
 
-    bool NvapiD3d12Device::LaunchCubinShader(ID3D12GraphicsCommandList* commandList, NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) {
-        auto commandListExt = GetCommandListExt(commandList);
-        if (!commandListExt.has_value())
-            return false;
-
-        auto cmdList = commandListExt.value().CommandListExt;
-        auto interfaceVersion = commandListExt.value().InterfaceVersion;
-
-        uint32_t smem = 0;
-        {
-            std::scoped_lock lock(m_cubinSmemMutex);
-            auto it = m_cubinSmemMap.find(pShader);
-            if (it != m_cubinSmemMap.end())
-                smem = it->second;
-            else
-                log::info("Failed to find CuBIN in m_cubinSmemMap, defaulting to 0");
-        }
-
-        if (interfaceVersion >= 1)
-            return SUCCEEDED(cmdList->LaunchCubinShaderEx(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, smem, params, paramSize, nullptr, 0));
-
-        if (smem != 0)
-            log::info("Non-zero SMEM value supplied for CuBIN but ID3D12GraphicsCommandListExt1 not supported! This may cause corruption");
-
-        return SUCCEEDED(cmdList->LaunchCubinShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, params, paramSize));
-    }
-
-    bool NvapiD3d12Device::CaptureUAVInfo(ID3D12Device* device, NVAPI_UAV_INFO* pUAVInfo) {
-        auto cubinDevice = GetCubinDevice(device);
-        if (cubinDevice == nullptr)
-            return false;
-
-        return SUCCEEDED(cubinDevice->CaptureUAVInfo(reinterpret_cast<D3D12_UAV_INFO*>(pUAVInfo)));
-    }
-
-    bool NvapiD3d12Device::IsFatbinPTXSupported(ID3D12Device* device) {
-        auto cubinDevice = GetCubinDevice(device);
-        return cubinDevice != nullptr;
-    }
-
-    // We are going to have single map for storing devices with extensions D3D12_VK_NVX_BINARY_IMPORT & D3D12_VK_NVX_IMAGE_VIEW_HANDLE.
-    // These are specific to NVIDIA and both of these extensions goes together.
-    Com<ID3D12DeviceExt> NvapiD3d12Device::GetCubinDevice(ID3D12Device* device) {
-        std::scoped_lock lock(m_cubinDeviceMutex);
-        auto it = m_cubinDeviceMap.find(device);
-        if (it != m_cubinDeviceMap.end())
-            return it->second;
-
-        auto cubinDevice = GetDeviceExt(device, D3D12_VK_NVX_BINARY_IMPORT);
-        if (cubinDevice != nullptr)
-            m_cubinDeviceMap.emplace(device, cubinDevice.ptr());
-
-        return cubinDevice;
-    }
-
-    Com<ID3D12DeviceExt> NvapiD3d12Device::GetDeviceExt(ID3D12Device* device, D3D12_VK_EXTENSION extension) {
-        Com<ID3D12DeviceExt> deviceExt;
-        if (FAILED(device->QueryInterface(IID_PPV_ARGS(&deviceExt))))
-            return nullptr;
-
-        if (!deviceExt->GetExtensionSupport(extension))
-            return nullptr;
-
-        return deviceExt;
-    }
-
-    Com<ID3D12CommandQueueExt> NvapiD3d12Device::GetCommandQueueExt(ID3D12CommandQueue* commandQueue) {
-        std::scoped_lock lock(m_commandQueueMutex);
-        auto it = m_commandQueueMap.find(commandQueue);
-        if (it != m_commandQueueMap.end())
-            return it->second;
-
-        Com<ID3D12CommandQueueExt> commandQueueExt;
-        if (FAILED(commandQueue->QueryInterface(IID_PPV_ARGS(&commandQueueExt))))
-            return nullptr;
-
-        if (commandQueueExt != nullptr)
-            m_commandQueueMap.emplace(commandQueue, commandQueueExt.ptr());
-
-        return commandQueueExt;
-    }
-
-    std::optional<NvapiD3d12Device::CommandListExtWithVersion> NvapiD3d12Device::GetCommandListExt(ID3D12GraphicsCommandList* commandList) {
-        std::scoped_lock lock(m_commandListMutex);
-        auto it = m_commandListMap.find(commandList);
-        if (it != m_commandListMap.end())
-            return it->second;
-
-        Com<ID3D12GraphicsCommandListExt1> commandListExt1 = nullptr;
-        if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt1)))) {
-            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{commandListExt1.ptr(), 1};
-            return std::make_optional(m_commandListMap.emplace(commandList, cmdListVer).first->second);
-        }
-
-        Com<ID3D12GraphicsCommandListExt> commandListExt = nullptr;
-        if (SUCCEEDED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt)))) {
-            NvapiD3d12Device::CommandListExtWithVersion cmdListVer{reinterpret_cast<ID3D12GraphicsCommandListExt1*>(commandListExt.ptr()), 0};
-            return std::make_optional(m_commandListMap.emplace(commandList, cmdListVer).first->second);
-        }
-
-        log::info("commandList has no ID3D12GraphicsCommandListExt compatible interface!");
-        return {};
-    }
-
-    void NvapiD3d12Device::Reset() {
-        std::scoped_lock commandQueueLock(m_commandQueueMutex);
-        std::scoped_lock commandListLock(m_commandListMutex);
-        std::scoped_lock cubinDeviceLock(m_cubinDeviceMutex);
-        std::scoped_lock cubinSmemLock(m_cubinSmemMutex);
-
-        m_cubinDeviceMap.clear();
-        m_commandQueueMap.clear();
-        m_commandListMap.clear();
-        m_cubinSmemMap.clear();
+    bool NvapiD3d12Device::IsFatbinPTXSupported() const {
+        return m_vkd3dDevice && m_supportsNvxBinaryImport;
     }
 }
