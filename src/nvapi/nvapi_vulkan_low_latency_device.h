@@ -40,7 +40,7 @@ namespace dxvk {
 
       private:
         static std::unique_ptr<Vk> m_vk;
-        static std::unordered_map<VkDevice, NvapiVulkanLowLatencyDevice> m_lowLatencyDeviceMap;
+        static std::unordered_map<VkDevice, NvapiVulkanLowLatencyDevice> m_nvapiDeviceMap;
         static std::mutex m_mutex;
 
         VkDevice m_device{};
