@@ -12,7 +12,7 @@ namespace dxvk {
         [[nodiscard]] static NvapiD3dLowLatencyDevice* GetOrCreate(IUnknown* device);
         [[nodiscard]] static std::optional<uint32_t> ToMarkerType(NV_LATENCY_MARKER_TYPE markerType);
 
-        explicit NvapiD3dLowLatencyDevice(ID3DLowLatencyDevice* m_d3dLowLatencyDevice);
+        explicit NvapiD3dLowLatencyDevice(ID3DLowLatencyDevice* d3dLowLatencyDevice);
 
         [[nodiscard]] bool SupportsLowLatency() const;
         [[nodiscard]] bool LatencySleep() const;
@@ -24,7 +24,7 @@ namespace dxvk {
       private:
         [[nodiscard]] static NvapiD3dLowLatencyDevice* Get(IUnknown*);
 
-        static std::unordered_map<IUnknown*, std::shared_ptr<NvapiD3dLowLatencyDevice>> m_lowLatencyDeviceMap;
+        static std::unordered_map<IUnknown*, std::shared_ptr<NvapiD3dLowLatencyDevice>> m_nvapiDeviceMap;
         static std::mutex m_mutex;
 
         ID3DLowLatencyDevice* m_d3dLowLatencyDevice{};
