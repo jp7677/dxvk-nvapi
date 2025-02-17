@@ -4,12 +4,12 @@
 #include "../util/util_log.h"
 
 namespace dxvk {
-    std::unordered_map<IUnknown*, std::shared_ptr<NvapiD3dLowLatencyDevice>> NvapiD3dLowLatencyDevice::m_lowLatencyDeviceMap = {};
+    std::unordered_map<IUnknown*, std::shared_ptr<NvapiD3dLowLatencyDevice>> NvapiD3dLowLatencyDevice::m_nvapiDeviceMap = {};
     std::mutex NvapiD3dLowLatencyDevice::m_mutex = {};
 
     void NvapiD3dLowLatencyDevice::Reset() {
         std::scoped_lock lock{m_mutex};
-        m_lowLatencyDeviceMap.clear();
+        m_nvapiDeviceMap.clear();
     }
 
     static Com<ID3DLowLatencyDevice> GetD3DLowLatencyDevice(IUnknown* device) {
@@ -44,12 +44,12 @@ namespace dxvk {
             return nullptr;
 
         // Look for a cache entry where NvapiD3dLowLatencyDevice's m_d3dLowLatencyDevice matches the one we found
-        auto itF = std::find_if(m_lowLatencyDeviceMap.begin(), m_lowLatencyDeviceMap.end(),
+        auto itF = std::find_if(m_nvapiDeviceMap.begin(), m_nvapiDeviceMap.end(),
             [&d3dLowLatencyDevice](auto& item) { return item.second->m_d3dLowLatencyDevice == d3dLowLatencyDevice.ptr(); });
 
-        auto [itI, inserted] = itF == m_lowLatencyDeviceMap.end()
-            ? m_lowLatencyDeviceMap.emplace(device, std::make_shared<NvapiD3dLowLatencyDevice>(d3dLowLatencyDevice.ptr()))
-            : m_lowLatencyDeviceMap.emplace(device, itF->second);
+        auto [itI, inserted] = itF == m_nvapiDeviceMap.end()
+            ? m_nvapiDeviceMap.emplace(device, std::make_shared<NvapiD3dLowLatencyDevice>(d3dLowLatencyDevice.ptr()))
+            : m_nvapiDeviceMap.emplace(device, itF->second);
 
         if (!inserted)
             return nullptr;
@@ -58,8 +58,8 @@ namespace dxvk {
     }
 
     NvapiD3dLowLatencyDevice* NvapiD3dLowLatencyDevice::Get(IUnknown* device) {
-        auto it = m_lowLatencyDeviceMap.find(device);
-        return it == m_lowLatencyDeviceMap.end() ? nullptr : it->second.get();
+        auto it = m_nvapiDeviceMap.find(device);
+        return it == m_nvapiDeviceMap.end() ? nullptr : it->second.get();
     }
 
     std::optional<uint32_t> NvapiD3dLowLatencyDevice::ToMarkerType(NV_LATENCY_MARKER_TYPE markerType) {

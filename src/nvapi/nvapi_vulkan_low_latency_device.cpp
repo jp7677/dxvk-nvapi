@@ -2,7 +2,7 @@
 
 namespace dxvk {
     std::unique_ptr<Vk> NvapiVulkanLowLatencyDevice::m_vk = nullptr;
-    std::unordered_map<VkDevice, NvapiVulkanLowLatencyDevice> NvapiVulkanLowLatencyDevice::m_lowLatencyDeviceMap = {};
+    std::unordered_map<VkDevice, NvapiVulkanLowLatencyDevice> NvapiVulkanLowLatencyDevice::m_nvapiDeviceMap = {};
     std::mutex NvapiVulkanLowLatencyDevice::m_mutex = {};
 
     bool NvapiVulkanLowLatencyDevice::Initialize(NvapiResourceFactory& resourceFactory) {
@@ -24,10 +24,10 @@ namespace dxvk {
     void NvapiVulkanLowLatencyDevice::Reset() {
         std::scoped_lock lock{m_mutex};
 
-        for (auto& [_, lowLatencyDevice] : m_lowLatencyDeviceMap)
+        for (auto& [_, lowLatencyDevice] : m_nvapiDeviceMap)
             lowLatencyDevice.m_vkDestroySemaphore(lowLatencyDevice.m_device, lowLatencyDevice.m_semaphore, nullptr);
 
-        m_lowLatencyDeviceMap.clear();
+        m_nvapiDeviceMap.clear();
         m_vk.reset();
     }
 
@@ -76,7 +76,7 @@ namespace dxvk {
         if (vr != VK_SUCCESS)
             return {nullptr, vr};
 
-        auto [it, inserted] = m_lowLatencyDeviceMap.emplace(
+        auto [it, inserted] = m_nvapiDeviceMap.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(device),
             std::forward_as_tuple(
@@ -96,14 +96,14 @@ namespace dxvk {
     }
 
     NvapiVulkanLowLatencyDevice* NvapiVulkanLowLatencyDevice::Get(VkDevice device) {
-        auto it = m_lowLatencyDeviceMap.find(device);
-        return it == m_lowLatencyDeviceMap.end() ? nullptr : &it->second;
+        auto it = m_nvapiDeviceMap.find(device);
+        return it == m_nvapiDeviceMap.end() ? nullptr : &it->second;
     }
 
     bool NvapiVulkanLowLatencyDevice::Destroy(VkDevice device) {
         std::scoped_lock lock{m_mutex};
 
-        auto node = m_lowLatencyDeviceMap.extract(device);
+        auto node = m_nvapiDeviceMap.extract(device);
 
         if (node.empty())
             return false;
