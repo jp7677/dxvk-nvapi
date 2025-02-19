@@ -41,6 +41,7 @@ namespace dxvk {
         bool m_supportsExtDepthBounds;
         bool m_supportsNvxBinaryImport;
         bool m_supportsExtBarrierControl;
+        bool m_supportsNvxImageViewHandle;
         bool m_supportsExtMultiDrawIndirect;
         bool m_supportsExtDevice1;
         bool m_supportsExtContext1;

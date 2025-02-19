@@ -63,6 +63,7 @@ namespace dxvk {
         m_supportsExtDepthBounds = m_dxvkDevice->GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS);
         m_supportsNvxBinaryImport = m_dxvkDevice->GetExtensionSupport(D3D11_VK_NVX_BINARY_IMPORT);
         m_supportsExtBarrierControl = m_dxvkDevice->GetExtensionSupport(D3D11_VK_EXT_BARRIER_CONTROL);
+        m_supportsNvxImageViewHandle = m_dxvkDevice->GetExtensionSupport(D3D11_VK_NVX_IMAGE_VIEW_HANDLE);
         m_supportsExtMultiDrawIndirect = m_dxvkDevice->GetExtensionSupport(D3D11_VK_EXT_MULTI_DRAW_INDIRECT);
 
         Com<ID3D11VkExtDevice1> dxvkDevice1;
@@ -140,41 +141,41 @@ namespace dxvk {
     }
 
     bool NvapiD3d11Device::GetResourceHandleGPUVirtualAddressAndSize(NVDX_ObjectHandle hObject, NvU64* gpuVAStart, NvU64* gpuVASize) const {
-        if (!m_supportsExtDevice1)
+        if (!m_supportsExtDevice1 || !m_supportsNvxImageViewHandle)
             return false;
 
-        return m_dxvkDevice->GetResourceHandleGPUVirtualAddressAndSizeNVX(reinterpret_cast<void*>(hObject), reinterpret_cast<uint64_t*>(gpuVAStart), reinterpret_cast<uint64_t*>(gpuVASize));
+        return m_dxvkDevice->GetResourceHandleGPUVirtualAddressAndSizeNVX(hObject, gpuVAStart, gpuVASize);
     }
 
     bool NvapiD3d11Device::CreateUnorderedAccessViewAndGetDriverHandle(ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC* pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle) const {
-        if (!m_supportsExtDevice1)
+        if (!m_supportsExtDevice1 || !m_supportsNvxImageViewHandle)
             return false;
 
         return m_dxvkDevice->CreateUnorderedAccessViewAndGetDriverHandleNVX(pResource, pDesc, ppUAV, reinterpret_cast<uint32_t*>(pDriverHandle));
     }
 
     bool NvapiD3d11Device::CreateShaderResourceViewAndGetDriverHandle(ID3D11Resource* pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc, ID3D11ShaderResourceView** ppSRV, NvU32* pDriverHandle) const {
-        if (!m_supportsExtDevice1)
+        if (!m_supportsExtDevice1 || !m_supportsNvxImageViewHandle)
             return false;
 
         return m_dxvkDevice->CreateShaderResourceViewAndGetDriverHandleNVX(pResource, pDesc, ppSRV, reinterpret_cast<uint32_t*>(pDriverHandle));
     }
 
     bool NvapiD3d11Device::GetCudaTextureObject(uint32_t srvDriverHandle, uint32_t samplerDriverHandle, uint32_t* pCudaTextureHandle) const {
-        if (!m_supportsExtDevice1)
+        if (!m_supportsExtDevice1 || !m_supportsNvxImageViewHandle)
             return false;
 
-        return m_dxvkDevice->GetCudaTextureObjectNVX(srvDriverHandle, samplerDriverHandle, reinterpret_cast<uint32_t*>(pCudaTextureHandle));
+        return m_dxvkDevice->GetCudaTextureObjectNVX(srvDriverHandle, samplerDriverHandle, pCudaTextureHandle);
     }
 
     bool NvapiD3d11Device::CreateSamplerStateAndGetDriverHandle(const D3D11_SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState, uint32_t* pDriverHandle) const {
-        if (!m_supportsExtDevice1)
+        if (!m_supportsExtDevice1 || !m_supportsNvxImageViewHandle)
             return false;
 
         return m_dxvkDevice->CreateSamplerStateAndGetDriverHandleNVX(pSamplerDesc, ppSamplerState, pDriverHandle);
     }
 
     bool NvapiD3d11Device::IsFatbinPTXSupported() const {
-        return m_supportsExtDevice1 && m_supportsExtContext1 && m_supportsNvxBinaryImport;
+        return m_supportsExtDevice1 && m_supportsExtContext1 && m_supportsNvxBinaryImport && m_supportsNvxImageViewHandle;
     }
 }

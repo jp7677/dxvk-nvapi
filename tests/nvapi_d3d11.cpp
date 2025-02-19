@@ -126,6 +126,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
     SECTION("LaunchCubinShader without DXVK extension support returns error") {
         ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_NVX_BINARY_IMPORT))
             .RETURN(false);
+        ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_NVX_IMAGE_VIEW_HANDLE))
+            .RETURN(false);
         FORBID_CALL(context, LaunchCubinShaderNVX(_, _, _, _, _, _, _, _, _, _));
 
         REQUIRE(NvAPI_D3D11_LaunchCubinShader(static_cast<ID3D11DeviceContext*>(&context), NVDX_ObjectHandle(), 0, 0, 0, nullptr, 0, nullptr, 0, nullptr, 0) == NVAPI_ERROR);
@@ -135,6 +137,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
 
     SECTION("IsFatbinPTXSupported without DXVK extension returns OK but reports unsupported") {
         ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_NVX_BINARY_IMPORT))
+            .RETURN(false);
+        ALLOW_CALL(device, GetExtensionSupport(D3D11_VK_NVX_IMAGE_VIEW_HANDLE))
             .RETURN(false);
 
         bool supported = true;
