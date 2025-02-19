@@ -32,5 +32,6 @@ namespace dxvk {
 
         ID3D12DeviceExt* m_vkd3dDevice{};
         bool m_supportsNvxBinaryImport = false;
+        bool m_supportsNvxImageViewHandle = false;
     };
 }

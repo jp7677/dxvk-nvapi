@@ -49,6 +49,7 @@ namespace dxvk {
     NvapiD3d12Device::NvapiD3d12Device(ID3D12DeviceExt* vkd3dDevice)
         : m_vkd3dDevice(vkd3dDevice) {
         m_supportsNvxBinaryImport = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_BINARY_IMPORT);
+        m_supportsNvxImageViewHandle = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_IMAGE_VIEW_HANDLE);
     }
 
     bool NvapiD3d12Device::CreateCubinComputeShaderWithName(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
@@ -80,27 +81,27 @@ namespace dxvk {
     }
 
     bool NvapiD3d12Device::GetCudaTextureObject(D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle) const {
-        if (!m_vkd3dDevice || !m_supportsNvxBinaryImport)
+        if (!m_vkd3dDevice || !m_supportsNvxImageViewHandle)
             return false;
 
         return SUCCEEDED(m_vkd3dDevice->GetCudaTextureObject(srvHandle, samplerHandle, reinterpret_cast<UINT32*>(cudaTextureHandle)));
     }
 
     bool NvapiD3d12Device::GetCudaSurfaceObject(D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle) const {
-        if (!m_vkd3dDevice || !m_supportsNvxBinaryImport)
+        if (!m_vkd3dDevice || !m_supportsNvxImageViewHandle)
             return false;
 
         return SUCCEEDED(m_vkd3dDevice->GetCudaSurfaceObject(uavHandle, reinterpret_cast<UINT32*>(cudaSurfaceHandle)));
     }
 
     bool NvapiD3d12Device::CaptureUAVInfo(NVAPI_UAV_INFO* pUAVInfo) const {
-        if (!m_vkd3dDevice || !m_supportsNvxBinaryImport)
+        if (!m_vkd3dDevice || !m_supportsNvxImageViewHandle)
             return false;
 
         return SUCCEEDED(m_vkd3dDevice->CaptureUAVInfo(reinterpret_cast<D3D12_UAV_INFO*>(pUAVInfo)));
     }
 
     bool NvapiD3d12Device::IsFatbinPTXSupported() const {
-        return m_vkd3dDevice && m_supportsNvxBinaryImport;
+        return m_vkd3dDevice && m_supportsNvxBinaryImport && m_supportsNvxImageViewHandle;
     }
 }

@@ -146,6 +146,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     SECTION("D3D12 methods without cubin extension return error") {
         ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_NVX_BINARY_IMPORT))
             .RETURN(false);
+        ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_NVX_IMAGE_VIEW_HANDLE))
+            .RETURN(false);
 
         FORBID_CALL(device, CreateCubinComputeShaderWithName(_, _, _, _, _, _, _));
         FORBID_CALL(device, DestroyCubinComputeShader(_));
