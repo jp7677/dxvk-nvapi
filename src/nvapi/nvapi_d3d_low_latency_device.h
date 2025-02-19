@@ -16,8 +16,8 @@ namespace dxvk {
 
         [[nodiscard]] bool SupportsLowLatency() const;
         [[nodiscard]] bool LatencySleep() const;
-        bool SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs);
-        bool GetLatencyInfo(D3D_LATENCY_RESULTS* latencyResults);
+        [[nodiscard]] bool SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs);
+        [[nodiscard]] bool GetLatencyInfo(D3D_LATENCY_RESULTS* latencyResults);
         [[nodiscard]] bool SetLatencyMarker(uint64_t frameID, uint32_t markerType);
         [[nodiscard]] bool GetLowLatencyMode() const;
 
