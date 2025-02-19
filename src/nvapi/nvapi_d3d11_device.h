@@ -16,17 +16,17 @@ namespace dxvk {
         [[nodiscard]] bool SetDepthBoundsTest(bool enable, float minDepth, float maxDepth) const;
         [[nodiscard]] bool BeginUAVOverlap() const;
         [[nodiscard]] bool EndUAVOverlap() const;
-        bool MultiDrawInstancedIndirect(NvU32 drawCount, ID3D11Buffer* buffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs) const;
-        bool MultiDrawIndexedInstancedIndirect(NvU32 drawCount, ID3D11Buffer* buffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs) const;
-        bool CreateCubinComputeShaderWithName(const void* pCubin, NvU32 size, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* pShaderName, NVDX_ObjectHandle* phShader) const;
-        bool LaunchCubinShader(NVDX_ObjectHandle hShader, NvU32 gridX, NvU32 gridY, NvU32 gridZ, const void* pParams, NvU32 paramSize, const NVDX_ObjectHandle* pReadResources, NvU32 numReadResources, const NVDX_ObjectHandle* pWriteResources, NvU32 numWriteResources) const;
-        bool DestroyCubinShader(NVDX_ObjectHandle hShader);
-        bool GetResourceDriverHandle(ID3D11Resource* pResource, NVDX_ObjectHandle* phObject);
-        bool GetResourceHandleGPUVirtualAddressAndSize(NVDX_ObjectHandle hObject, NvU64* gpuVAStart, NvU64* gpuVASize) const;
-        bool CreateUnorderedAccessViewAndGetDriverHandle(ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC* pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle) const;
-        bool CreateShaderResourceViewAndGetDriverHandle(ID3D11Resource* pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc, ID3D11ShaderResourceView** ppSRV, NvU32* pDriverHandle) const;
-        bool GetCudaTextureObject(uint32_t srvDriverHandle, uint32_t samplerDriverHandle, uint32_t* pCudaTextureHandle) const;
-        bool CreateSamplerStateAndGetDriverHandle(const D3D11_SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState, uint32_t* pDriverHandle) const;
+        [[nodiscard]] bool MultiDrawInstancedIndirect(NvU32 drawCount, ID3D11Buffer* buffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs) const;
+        [[nodiscard]] bool MultiDrawIndexedInstancedIndirect(NvU32 drawCount, ID3D11Buffer* buffer, NvU32 alignedByteOffsetForArgs, NvU32 alignedByteStrideForArgs) const;
+        [[nodiscard]] bool CreateCubinComputeShaderWithName(const void* pCubin, NvU32 size, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* pShaderName, NVDX_ObjectHandle* phShader) const;
+        [[nodiscard]] bool LaunchCubinShader(NVDX_ObjectHandle hShader, NvU32 gridX, NvU32 gridY, NvU32 gridZ, const void* pParams, NvU32 paramSize, const NVDX_ObjectHandle* pReadResources, NvU32 numReadResources, const NVDX_ObjectHandle* pWriteResources, NvU32 numWriteResources) const;
+        [[nodiscard]] bool DestroyCubinShader(NVDX_ObjectHandle hShader);
+        [[nodiscard]] bool GetResourceDriverHandle(ID3D11Resource* pResource, NVDX_ObjectHandle* phObject);
+        [[nodiscard]] bool GetResourceHandleGPUVirtualAddressAndSize(NVDX_ObjectHandle hObject, NvU64* gpuVAStart, NvU64* gpuVASize) const;
+        [[nodiscard]] bool CreateUnorderedAccessViewAndGetDriverHandle(ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC* pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle) const;
+        [[nodiscard]] bool CreateShaderResourceViewAndGetDriverHandle(ID3D11Resource* pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc, ID3D11ShaderResourceView** ppSRV, NvU32* pDriverHandle) const;
+        [[nodiscard]] bool GetCudaTextureObject(uint32_t srvDriverHandle, uint32_t samplerDriverHandle, uint32_t* pCudaTextureHandle) const;
+        [[nodiscard]] bool CreateSamplerStateAndGetDriverHandle(const D3D11_SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState, uint32_t* pDriverHandle) const;
         [[nodiscard]] bool IsFatbinPTXSupported() const;
 
       private:
