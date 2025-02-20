@@ -120,20 +120,10 @@ namespace dxvk::env {
         }
     }
 
-    bool isTheGreatCircle() {
-        static constexpr auto name = std::string_view("TheGreatCircle.exe");
-        return getExecutableName() == name;
-    }
-
     bool needsAmpereSpoofing(NV_GPU_ARCHITECTURE_ID architectureId, void* pReturnAddress) {
         // Check if we need to workaround NVIDIA Bug 3634851
         if (architectureId >= NV_GPU_ARCHITECTURE_AD100 && isDLSSVersion20To24(pReturnAddress)) {
             log::info("Spoofing Ampere for Ada and later due to DLSS version 2.0-2.4");
-            return true;
-        }
-
-        if (architectureId >= NV_GPU_ARCHITECTURE_AD100 && isTheGreatCircle()) {
-            log::info("Spoofing Ampere for Ada and later due to detecting TheGreatCircle.exe");
             return true;
         }
 
