@@ -158,6 +158,12 @@ namespace dxvk {
         return NVAPI_INSUFFICIENT_BUFFER;
     }
 
+    inline NvAPI_Status NoActiveSliTopology(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": No active SLI topology"));
+        return NVAPI_NO_ACTIVE_SLI_TOPOLOGY;
+    }
+
     inline NV_OF_STATUS Success() {
         return NV_OF_SUCCESS;
     }

@@ -35,28 +35,17 @@ TEST_CASE("D3D methods succeed", "[.d3d]") {
     }
 
     SECTION("GetCurrentSLIState succeeds") {
-        SECTION("GetCurrentSLIState (V1) returns OK") {
+        SECTION("GetCurrentSLIState (V1) returns NO_ACTIVE_SLI_TOPOLOGY") {
             NV_GET_CURRENT_SLI_STATE_V1 state;
             state.version = NV_GET_CURRENT_SLI_STATE_VER1;
-            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&unknown, reinterpret_cast<NV_GET_CURRENT_SLI_STATE*>(&state)) == NVAPI_OK);
-            REQUIRE(state.maxNumAFRGroups == 1);
-            REQUIRE(state.numAFRGroups == 1);
-            REQUIRE(state.currentAFRIndex == 0);
-            REQUIRE(state.nextFrameAFRIndex == 0);
-            REQUIRE(state.previousFrameAFRIndex == 0);
-            REQUIRE(state.bIsCurAFRGroupNew == false);
+            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&unknown, reinterpret_cast<NV_GET_CURRENT_SLI_STATE*>(&state)) == NVAPI_NO_ACTIVE_SLI_TOPOLOGY);
         }
 
-        SECTION("GetCurrentSLIState (V2) returns OK") {
+        SECTION("GetCurrentSLIState (V2) returns NO_ACTIVE_SLI_TOPOLOGY") {
             NV_GET_CURRENT_SLI_STATE_V2 state;
+            state.numVRSLIGpus = 0xdeadbeef;
             state.version = NV_GET_CURRENT_SLI_STATE_VER2;
-            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&unknown, &state) == NVAPI_OK);
-            REQUIRE(state.maxNumAFRGroups == 1);
-            REQUIRE(state.numAFRGroups == 1);
-            REQUIRE(state.currentAFRIndex == 0);
-            REQUIRE(state.nextFrameAFRIndex == 0);
-            REQUIRE(state.previousFrameAFRIndex == 0);
-            REQUIRE(state.bIsCurAFRGroupNew == false);
+            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&unknown, &state) == NVAPI_NO_ACTIVE_SLI_TOPOLOGY);
             REQUIRE(state.numVRSLIGpus == 0);
         }
 
