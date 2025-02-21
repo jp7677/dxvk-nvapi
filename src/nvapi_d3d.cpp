@@ -169,10 +169,14 @@ extern "C" {
         if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
             return NoImplementation(n, alreadyLoggedNoReflex);
 
-        if (!lowLatencyDevice->LatencySleep())
-            return Error(n, alreadyLoggedError);
-
-        return Ok(n, alreadyLoggedOk);
+        switch (lowLatencyDevice->LatencySleep()) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoReflex);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_SetSleepMode(IUnknown* pDevice, NV_SET_SLEEP_MODE_PARAMS* pSetSleepModeParams) {
@@ -200,15 +204,19 @@ extern "C" {
         if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
             return NoImplementation(n, alreadyLoggedNoReflex);
 
-        if (!lowLatencyDevice->SetLatencySleepMode(pSetSleepModeParams->bLowLatencyMode, pSetSleepModeParams->bLowLatencyBoost, pSetSleepModeParams->minimumIntervalUs))
-            return Error(n, alreadyLoggedError);
-
-        if (lastLowLatencyMode != pSetSleepModeParams->bLowLatencyMode || lastMinimumIntervalUs != pSetSleepModeParams->minimumIntervalUs) {
-            lastLowLatencyMode = pSetSleepModeParams->bLowLatencyMode;
-            lastMinimumIntervalUs = pSetSleepModeParams->minimumIntervalUs;
-            return Ok(str::format(n, " (", pSetSleepModeParams->bLowLatencyMode ? (str::format("Enabled/", pSetSleepModeParams->minimumIntervalUs, "us")) : "Disabled", ")"));
-        } else
-            return Ok(n, alreadyLoggedOk);
+        switch (lowLatencyDevice->SetLatencySleepMode(pSetSleepModeParams->bLowLatencyMode, pSetSleepModeParams->bLowLatencyBoost, pSetSleepModeParams->minimumIntervalUs)) {
+            case S_OK:
+                if (lastLowLatencyMode != pSetSleepModeParams->bLowLatencyMode || lastMinimumIntervalUs != pSetSleepModeParams->minimumIntervalUs) {
+                    lastLowLatencyMode = pSetSleepModeParams->bLowLatencyMode;
+                    lastMinimumIntervalUs = pSetSleepModeParams->minimumIntervalUs;
+                    return Ok(str::format(n, " (", pSetSleepModeParams->bLowLatencyMode ? (str::format("Enabled/", pSetSleepModeParams->minimumIntervalUs, "us")) : "Disabled", ")"));
+                }
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoReflex);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_GetSleepStatus(IUnknown* pDevice, NV_GET_SLEEP_STATUS_PARAMS* pGetSleepStatusParams) {
@@ -259,10 +267,14 @@ extern "C" {
         if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
             return NoImplementation(n, alreadyLoggedNoImpl);
 
-        if (!lowLatencyDevice->GetLatencyInfo(reinterpret_cast<D3D_LATENCY_RESULTS*>(pGetLatencyParams)))
-            return Error(n, alreadyLoggedError);
-
-        return Ok(n, alreadyLoggedOk);
+        switch (lowLatencyDevice->GetLatencyInfo(reinterpret_cast<D3D_LATENCY_RESULTS*>(pGetLatencyParams))) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImpl);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D_SetLatencyMarker(IUnknown* pDev, NV_LATENCY_MARKER_PARAMS* pSetLatencyMarkerParams) {
@@ -297,9 +309,13 @@ extern "C" {
             return Ok(n, alreadyLoggedOk);
         }
 
-        if (!lowLatencyDevice->SetLatencyMarker(pSetLatencyMarkerParams->frameID, markerType.value()))
-            return Error(n, alreadyLoggedError);
-
-        return Ok(n, alreadyLoggedOk);
+        switch (lowLatencyDevice->SetLatencyMarker(pSetLatencyMarkerParams->frameID, markerType.value())) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImpl);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 }

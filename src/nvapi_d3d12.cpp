@@ -541,6 +541,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_SetAsyncFrameMarker(ID3D12CommandQueue* pCommandQueue, NV_ASYNC_FRAME_MARKER_PARAMS* pSetAsyncFrameMarkerParams) {
         constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
         thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
         thread_local bool alreadyLoggedMarkerTypeNotSupported = false;
@@ -559,7 +560,7 @@ extern "C" {
 
         auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pCommandQueue);
         if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
-            return NoImplementation(n);
+            return NoImplementation(n, alreadyLoggedNoImplementation);
 
         auto markerType = NvapiD3dLowLatencyDevice::ToMarkerType(pSetAsyncFrameMarkerParams->markerType);
         if (!markerType.has_value()) {
@@ -570,9 +571,13 @@ extern "C" {
             return Ok(n, alreadyLoggedOk);
         }
 
-        if (!lowLatencyDevice->SetLatencyMarker(pSetAsyncFrameMarkerParams->frameID, markerType.value()))
-            return Error(n, alreadyLoggedError);
-
-        return Ok(n, alreadyLoggedOk);
+        switch (lowLatencyDevice->SetLatencyMarker(pSetAsyncFrameMarkerParams->frameID, markerType.value())) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 }

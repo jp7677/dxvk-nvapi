@@ -108,21 +108,22 @@ namespace dxvk {
         return m_d3dLowLatencyDevice->SupportsLowLatency();
     }
 
-    bool NvapiD3dLowLatencyDevice::LatencySleep() const {
-        return SUCCEEDED(m_d3dLowLatencyDevice->LatencySleep());
+    HRESULT NvapiD3dLowLatencyDevice::LatencySleep() const {
+        return m_d3dLowLatencyDevice->LatencySleep();
     }
 
-    bool NvapiD3dLowLatencyDevice::SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs) {
-        auto success = SUCCEEDED(m_d3dLowLatencyDevice->SetLatencySleepMode(lowLatencyMode, lowLatencyBoost, minimumIntervalUs));
-        if (success)
+    HRESULT NvapiD3dLowLatencyDevice::SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs) {
+        auto result = m_d3dLowLatencyDevice->SetLatencySleepMode(lowLatencyMode, lowLatencyBoost, minimumIntervalUs);
+        if (SUCCEEDED(result))
             m_lowLatencyMode = lowLatencyMode;
 
-        return success;
+        return result;
     }
 
-    bool NvapiD3dLowLatencyDevice::GetLatencyInfo(D3D_LATENCY_RESULTS* latencyResults) {
-        if (FAILED(m_d3dLowLatencyDevice->GetLatencyInfo(latencyResults)))
-            return false;
+    HRESULT NvapiD3dLowLatencyDevice::GetLatencyInfo(D3D_LATENCY_RESULTS* latencyResults) {
+        auto result = m_d3dLowLatencyDevice->GetLatencyInfo(latencyResults);
+        if (FAILED(result))
+            return result;
 
         for (auto& frameReport : latencyResults->frame_reports) {
             frameReport.frameID = m_frameIdGenerator.GetApplicationFrameId(frameReport.frameID);
@@ -132,15 +133,15 @@ namespace dxvk {
             }
         }
 
-        return true;
+        return result;
     }
 
-    bool NvapiD3dLowLatencyDevice::SetLatencyMarker(uint64_t frameID, uint32_t markerType) {
+    HRESULT NvapiD3dLowLatencyDevice::SetLatencyMarker(uint64_t frameID, uint32_t markerType) {
         if (m_frameIdGenerator.IsRepeatedFrame(frameID, markerType))
-            return true; // Silently drop repeated frame IDs
+            return S_OK; // Silently drop repeated frame IDs
 
-        return SUCCEEDED(m_d3dLowLatencyDevice->SetLatencyMarker(
-            m_frameIdGenerator.GetLowLatencyDeviceFrameId(frameID), markerType));
+        return m_d3dLowLatencyDevice->SetLatencyMarker(
+            m_frameIdGenerator.GetLowLatencyDeviceFrameId(frameID), markerType);
     }
 
     bool NvapiD3dLowLatencyDevice::GetLowLatencyMode() const {

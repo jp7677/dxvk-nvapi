@@ -15,10 +15,10 @@ namespace dxvk {
         explicit NvapiD3dLowLatencyDevice(ID3DLowLatencyDevice* d3dLowLatencyDevice);
 
         [[nodiscard]] bool SupportsLowLatency() const;
-        [[nodiscard]] bool LatencySleep() const;
-        [[nodiscard]] bool SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs);
-        [[nodiscard]] bool GetLatencyInfo(D3D_LATENCY_RESULTS* latencyResults);
-        [[nodiscard]] bool SetLatencyMarker(uint64_t frameID, uint32_t markerType);
+        [[nodiscard]] HRESULT LatencySleep() const;
+        [[nodiscard]] HRESULT SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs);
+        [[nodiscard]] HRESULT GetLatencyInfo(D3D_LATENCY_RESULTS* latencyResults);
+        [[nodiscard]] HRESULT SetLatencyMarker(uint64_t frameID, uint32_t markerType);
         [[nodiscard]] bool GetLowLatencyMode() const;
 
       private:
