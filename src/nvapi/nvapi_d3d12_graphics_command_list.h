@@ -2,7 +2,6 @@
 
 #include "../nvapi_private.h"
 #include "../interfaces/vkd3d-proton_interfaces.h"
-#include "../util/com_pointer.h"
 
 namespace dxvk {
     class NvapiD3d12GraphicsCommandList {
@@ -13,7 +12,7 @@ namespace dxvk {
 
         explicit NvapiD3d12GraphicsCommandList(ID3D12GraphicsCommandListExt* vkd3dCommandList);
 
-        [[nodiscard]] bool LaunchCubinShader(NVDX_ObjectHandle shader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) const;
+        [[nodiscard]] HRESULT LaunchCubinShader(NVDX_ObjectHandle shader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) const;
 
       private:
         static std::unordered_map<ID3D12GraphicsCommandList*, NvapiD3d12GraphicsCommandList> m_nvapiDeviceMap;

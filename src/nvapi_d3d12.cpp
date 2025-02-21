@@ -58,10 +58,14 @@ extern "C" {
         if (!device)
             return NoImplementation(n, alreadyLoggedNoImplementation);
 
-        if (!device->CreateCubinComputeShaderEx(cubinData, cubinSize, blockX, blockY, blockZ, smemSize, shaderName, pShader))
-            return Error(n, alreadyLoggedError);
-
-        return Ok(n, alreadyLoggedOk);
+        switch (device->CreateCubinComputeShaderEx(cubinData, cubinSize, blockX, blockY, blockZ, smemSize, shaderName, pShader)) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderWithName(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
@@ -80,10 +84,14 @@ extern "C" {
         if (!device)
             return NoImplementation(n, alreadyLoggedNoImplementation);
 
-        if (!device->CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, pShader))
-            return Error(n, alreadyLoggedError);
-
-        return Ok(n, alreadyLoggedOk);
+        switch (device->CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, pShader)) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShader(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NVDX_ObjectHandle* pShader) {
@@ -102,10 +110,14 @@ extern "C" {
         if (!device)
             return NoImplementation(n, alreadyLoggedNoImplementation);
 
-        if (!device->CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, "", pShader))
-            return Error(n, alreadyLoggedError);
-
-        return Ok(n, alreadyLoggedOk);
+        switch (device->CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, "", pShader)) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_DestroyCubinComputeShader(ID3D12Device* pDevice, NVDX_ObjectHandle pShader) {
@@ -124,10 +136,14 @@ extern "C" {
         if (!device)
             return NoImplementation(n, alreadyLoggedNoImplementation);
 
-        if (!device->DestroyCubinComputeShader(pShader))
-            return Error(n, alreadyLoggedError);
-
-        return Ok(n, alreadyLoggedOk);
+        switch (device->DestroyCubinComputeShader(pShader)) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetCudaTextureObject(ID3D12Device* pDevice, D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle) {
@@ -146,10 +162,14 @@ extern "C" {
         if (!device)
             return NoImplementation(n, alreadyLoggedNoImplementation);
 
-        if (!device->GetCudaTextureObject(srvHandle, samplerHandle, cudaTextureHandle))
-            return Error(n, alreadyLoggedError);
-
-        return Ok(n, alreadyLoggedOk);
+        switch (device->GetCudaTextureObject(srvHandle, samplerHandle, cudaTextureHandle)) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetCudaSurfaceObject(ID3D12Device* pDevice, D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle) {
@@ -168,10 +188,14 @@ extern "C" {
         if (!device)
             return NoImplementation(n, alreadyLoggedNoImplementation);
 
-        if (!device->GetCudaSurfaceObject(uavHandle, cudaSurfaceHandle))
-            return Error(n, alreadyLoggedError);
-
-        return Ok(n, alreadyLoggedOk);
+        switch (device->GetCudaSurfaceObject(uavHandle, cudaSurfaceHandle)) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_LaunchCubinShader(ID3D12GraphicsCommandList* pCmdList, NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) {
@@ -190,10 +214,14 @@ extern "C" {
         if (!device)
             return NoImplementation(n, alreadyLoggedNoImplementation);
 
-        if (!device->LaunchCubinShader(pShader, blockX, blockY, blockZ, params, paramSize))
-            return Error(n, alreadyLoggedError);
-
-        return Ok(n, alreadyLoggedOk);
+        switch (device->LaunchCubinShader(pShader, blockX, blockY, blockZ, params, paramSize)) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_CaptureUAVInfo(ID3D12Device* pDevice, NVAPI_UAV_INFO* pUAVInfo) {
@@ -212,10 +240,14 @@ extern "C" {
         if (!device)
             return NoImplementation(n, alreadyLoggedNoImplementation);
 
-        if (!device->CaptureUAVInfo(pUAVInfo))
-            return Error(n, alreadyLoggedError);
-
-        return Ok(n, alreadyLoggedOk);
+        switch (device->CaptureUAVInfo(pUAVInfo)) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetGraphicsCapabilities(IUnknown* pDevice, NvU32 structVersion, NV_D3D12_GRAPHICS_CAPS* pGraphicsCaps) {
@@ -533,10 +565,14 @@ extern "C" {
         if (!device)
             return NoImplementation(n, alreadyLoggedNoImplementation);
 
-        if (!device->NotifyOutOfBandCommandQueue(static_cast<D3D12_OUT_OF_BAND_CQ_TYPE>(cqType)))
-            return Error(n, alreadyLoggedError);
-
-        return Ok(n, alreadyLoggedOk);
+        switch (device->NotifyOutOfBandCommandQueue(static_cast<D3D12_OUT_OF_BAND_CQ_TYPE>(cqType))) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_SetAsyncFrameMarker(ID3D12CommandQueue* pCommandQueue, NV_ASYNC_FRAME_MARKER_PARAMS* pSetAsyncFrameMarkerParams) {

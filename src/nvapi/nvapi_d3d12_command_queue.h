@@ -2,7 +2,6 @@
 
 #include "../nvapi_private.h"
 #include "../interfaces/vkd3d-proton_interfaces.h"
-#include "../util/com_pointer.h"
 
 namespace dxvk {
     class NvapiD3d12CommandQueue {
@@ -13,7 +12,7 @@ namespace dxvk {
 
         explicit NvapiD3d12CommandQueue(ID3D12CommandQueueExt* vkd3dCommandQueue);
 
-        [[nodiscard]] bool NotifyOutOfBandCommandQueue(D3D12_OUT_OF_BAND_CQ_TYPE type) const;
+        [[nodiscard]] HRESULT NotifyOutOfBandCommandQueue(D3D12_OUT_OF_BAND_CQ_TYPE type) const;
 
       private:
         static std::unordered_map<ID3D12CommandQueue*, NvapiD3d12CommandQueue> m_nvapiDeviceMap;

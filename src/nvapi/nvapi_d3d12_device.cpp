@@ -1,4 +1,5 @@
 #include "nvapi_d3d12_device.h"
+#include "../util/com_pointer.h"
 #include "../util/util_log.h"
 
 namespace dxvk {
@@ -52,53 +53,57 @@ namespace dxvk {
         m_supportsNvxImageViewHandle = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_IMAGE_VIEW_HANDLE);
     }
 
-    bool NvapiD3d12Device::CreateCubinComputeShaderWithName(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
+    HRESULT NvapiD3d12Device::CreateCubinComputeShaderWithName(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
         return CreateCubinComputeShaderEx(cubinData, cubinSize, blockX, blockY, blockZ, 0 /* smemSize */, shaderName, pShader);
     }
 
-    bool NvapiD3d12Device::CreateCubinComputeShaderEx(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader) {
+    HRESULT NvapiD3d12Device::CreateCubinComputeShaderEx(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader) {
         if (!m_vkd3dDevice || !m_supportsNvxBinaryImport)
-            return false;
+            return E_NOTIMPL;
 
-        if (FAILED(m_vkd3dDevice->CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, reinterpret_cast<D3D12_CUBIN_DATA_HANDLE**>(pShader))))
-            return false;
+        auto result = m_vkd3dDevice->CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, reinterpret_cast<D3D12_CUBIN_DATA_HANDLE**>(pShader));
+        if (FAILED(result))
+            return result;
 
         std::scoped_lock lock(m_cubinSmemMutex);
         m_cubinSmemMap.emplace(*pShader, smemSize);
-        return true;
+
+        return result;
     }
 
-    bool NvapiD3d12Device::DestroyCubinComputeShader(NVDX_ObjectHandle shader) {
+    HRESULT NvapiD3d12Device::DestroyCubinComputeShader(NVDX_ObjectHandle shader) {
         if (!m_vkd3dDevice || !m_supportsNvxBinaryImport)
-            return false;
+            return E_NOTIMPL;
 
-        if (FAILED(m_vkd3dDevice->DestroyCubinComputeShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(shader))))
-            return false;
+        auto result = m_vkd3dDevice->DestroyCubinComputeShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(shader));
+        if (FAILED(result))
+            return result;
 
         std::scoped_lock lock(m_cubinSmemMutex);
         m_cubinSmemMap.erase(shader);
-        return true;
+
+        return result;
     }
 
-    bool NvapiD3d12Device::GetCudaTextureObject(D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle) const {
+    HRESULT NvapiD3d12Device::GetCudaTextureObject(D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle) const {
         if (!m_vkd3dDevice || !m_supportsNvxImageViewHandle)
-            return false;
+            return E_NOTIMPL;
 
-        return SUCCEEDED(m_vkd3dDevice->GetCudaTextureObject(srvHandle, samplerHandle, reinterpret_cast<UINT32*>(cudaTextureHandle)));
+        return m_vkd3dDevice->GetCudaTextureObject(srvHandle, samplerHandle, reinterpret_cast<UINT32*>(cudaTextureHandle));
     }
 
-    bool NvapiD3d12Device::GetCudaSurfaceObject(D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle) const {
+    HRESULT NvapiD3d12Device::GetCudaSurfaceObject(D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle) const {
         if (!m_vkd3dDevice || !m_supportsNvxImageViewHandle)
-            return false;
+            return E_NOTIMPL;
 
-        return SUCCEEDED(m_vkd3dDevice->GetCudaSurfaceObject(uavHandle, reinterpret_cast<UINT32*>(cudaSurfaceHandle)));
+        return m_vkd3dDevice->GetCudaSurfaceObject(uavHandle, reinterpret_cast<UINT32*>(cudaSurfaceHandle));
     }
 
-    bool NvapiD3d12Device::CaptureUAVInfo(NVAPI_UAV_INFO* pUAVInfo) const {
+    HRESULT NvapiD3d12Device::CaptureUAVInfo(NVAPI_UAV_INFO* pUAVInfo) const {
         if (!m_vkd3dDevice || !m_supportsNvxImageViewHandle)
-            return false;
+            return E_NOTIMPL;
 
-        return SUCCEEDED(m_vkd3dDevice->CaptureUAVInfo(reinterpret_cast<D3D12_UAV_INFO*>(pUAVInfo)));
+        return m_vkd3dDevice->CaptureUAVInfo(reinterpret_cast<D3D12_UAV_INFO*>(pUAVInfo));
     }
 
     bool NvapiD3d12Device::IsFatbinPTXSupported() const {

@@ -157,19 +157,19 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
         const void* cubinData = nullptr;
         NVDX_ObjectHandle handle{};
-        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderWithName(static_cast<ID3D12Device*>(&device), cubinData, 0, 0, 0, 0, "shader_name", &handle) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D12_CreateCubinComputeShader(static_cast<ID3D12Device*>(&device), cubinData, 0, 0, 0, 0, &handle) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderEx(static_cast<ID3D12Device*>(&device), cubinData, 0, 0, 0, 0, 0, "shader_name", &handle) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D12_DestroyCubinComputeShader(static_cast<ID3D12Device*>(&device), handle) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderWithName(static_cast<ID3D12Device*>(&device), cubinData, 0, 0, 0, 0, "shader_name", &handle) == NVAPI_NO_IMPLEMENTATION);
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShader(static_cast<ID3D12Device*>(&device), cubinData, 0, 0, 0, 0, &handle) == NVAPI_NO_IMPLEMENTATION);
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderEx(static_cast<ID3D12Device*>(&device), cubinData, 0, 0, 0, 0, 0, "shader_name", &handle) == NVAPI_NO_IMPLEMENTATION);
+        REQUIRE(NvAPI_D3D12_DestroyCubinComputeShader(static_cast<ID3D12Device*>(&device), handle) == NVAPI_NO_IMPLEMENTATION);
 
         D3D12_CPU_DESCRIPTOR_HANDLE srvHandle;
         NvU32 textureHandle;
         NvU32 surfaceHandle;
-        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, srvHandle, &textureHandle) == NVAPI_ERROR);
-        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, &surfaceHandle) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, srvHandle, &textureHandle) == NVAPI_NO_IMPLEMENTATION);
+        REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, &surfaceHandle) == NVAPI_NO_IMPLEMENTATION);
 
         NVAPI_UAV_INFO info{};
-        REQUIRE(NvAPI_D3D12_CaptureUAVInfo(static_cast<ID3D12Device*>(&device), &info) == NVAPI_ERROR);
+        REQUIRE(NvAPI_D3D12_CaptureUAVInfo(static_cast<ID3D12Device*>(&device), &info) == NVAPI_NO_IMPLEMENTATION);
         bool isPTXSupported;
         REQUIRE(NvAPI_D3D12_IsFatbinPTXSupported(static_cast<ID3D12Device*>(&device), &isPTXSupported) == NVAPI_ERROR);
         REQUIRE(deviceRefCount == 0);
@@ -425,7 +425,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
     SECTION("CaptureUAVInfo returns OK") {
         REQUIRE_CALL(device, CaptureUAVInfo(_))
-            .RETURN(true)
+            .RETURN(S_OK)
             .TIMES(1);
 
         NVAPI_UAV_INFO info{};

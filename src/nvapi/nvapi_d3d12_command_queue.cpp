@@ -1,5 +1,5 @@
 #include "nvapi_d3d12_command_queue.h"
-#include "../util/util_log.h"
+#include "../util/com_pointer.h"
 
 namespace dxvk {
     std::unordered_map<ID3D12CommandQueue*, NvapiD3d12CommandQueue> NvapiD3d12CommandQueue::m_nvapiDeviceMap;
@@ -35,10 +35,10 @@ namespace dxvk {
     NvapiD3d12CommandQueue::NvapiD3d12CommandQueue(ID3D12CommandQueueExt* vkd3dCommandQueue)
         : m_vkd3dCommandQueue(vkd3dCommandQueue) {}
 
-    bool NvapiD3d12CommandQueue::NotifyOutOfBandCommandQueue(D3D12_OUT_OF_BAND_CQ_TYPE type) const {
+    HRESULT NvapiD3d12CommandQueue::NotifyOutOfBandCommandQueue(D3D12_OUT_OF_BAND_CQ_TYPE type) const {
         if (!m_vkd3dCommandQueue)
-            return false;
+            return E_NOTIMPL;
 
-        return SUCCEEDED(m_vkd3dCommandQueue->NotifyOutOfBandCommandQueue(type));
+        return m_vkd3dCommandQueue->NotifyOutOfBandCommandQueue(type);
     }
 }

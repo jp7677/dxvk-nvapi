@@ -2,7 +2,6 @@
 
 #include "../nvapi_private.h"
 #include "../interfaces/vkd3d-proton_interfaces.h"
-#include "../util/com_pointer.h"
 
 namespace dxvk {
     class NvapiD3d12Device {
@@ -14,13 +13,13 @@ namespace dxvk {
 
         explicit NvapiD3d12Device(ID3D12DeviceExt* vkd3dDevice);
 
-        [[nodiscard]] bool CreateCubinComputeShaderWithName(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader);
-        [[nodiscard]] bool CreateCubinComputeShaderEx(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader);
-        [[nodiscard]] bool DestroyCubinComputeShader(NVDX_ObjectHandle shader);
-        [[nodiscard]] bool GetCudaTextureObject(D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle) const;
-        [[nodiscard]] bool GetCudaSurfaceObject(D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle) const;
+        [[nodiscard]] HRESULT CreateCubinComputeShaderWithName(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader);
+        [[nodiscard]] HRESULT CreateCubinComputeShaderEx(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader);
+        [[nodiscard]] HRESULT DestroyCubinComputeShader(NVDX_ObjectHandle shader);
 
-        [[nodiscard]] bool CaptureUAVInfo(NVAPI_UAV_INFO* uavInfo) const;
+        [[nodiscard]] HRESULT GetCudaTextureObject(D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle) const;
+        [[nodiscard]] HRESULT GetCudaSurfaceObject(D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle) const;
+        [[nodiscard]] HRESULT CaptureUAVInfo(NVAPI_UAV_INFO* uavInfo) const;
         [[nodiscard]] bool IsFatbinPTXSupported() const;
 
       private:
