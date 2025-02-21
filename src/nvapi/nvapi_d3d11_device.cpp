@@ -1,4 +1,5 @@
 #include "nvapi_d3d11_device.h"
+#include "../util/com_pointer.h"
 
 namespace dxvk {
     std::unordered_map<IUnknown*, std::shared_ptr<NvapiD3d11Device>> NvapiD3d11Device::m_nvapiDeviceMap;
@@ -72,107 +73,113 @@ namespace dxvk {
         m_supportsExtContext1 = SUCCEEDED(dxvkContext->QueryInterface(IID_PPV_ARGS(&dxvkContext1)));
     }
 
-    bool NvapiD3d11Device::SetDepthBoundsTest(const bool enable, const float minDepth, const float maxDepth) const {
+    HRESULT NvapiD3d11Device::SetDepthBoundsTest(const bool enable, const float minDepth, const float maxDepth) const {
         if (!m_supportsExtDepthBounds)
-            return false;
+            return E_NOTIMPL;
 
         m_dxvkContext->SetDepthBoundsTest(enable, minDepth, maxDepth);
-        return true;
+        return S_OK;
     }
 
-    bool NvapiD3d11Device::BeginUAVOverlap() const {
+    HRESULT NvapiD3d11Device::BeginUAVOverlap() const {
         if (!m_supportsExtBarrierControl)
-            return false;
+            return E_NOTIMPL;
 
         m_dxvkContext->SetBarrierControl(D3D11_VK_BARRIER_CONTROL_IGNORE_WRITE_AFTER_WRITE);
-        return true;
+        return S_OK;
     }
 
-    bool NvapiD3d11Device::EndUAVOverlap() const {
+    HRESULT NvapiD3d11Device::EndUAVOverlap() const {
         if (!m_supportsExtBarrierControl)
-            return false;
+            return E_NOTIMPL;
 
         m_dxvkContext->SetBarrierControl(0U);
-        return true;
+        return S_OK;
     }
 
-    bool NvapiD3d11Device::MultiDrawInstancedIndirect(const NvU32 drawCount, ID3D11Buffer* buffer, const NvU32 alignedByteOffsetForArgs, const NvU32 alignedByteStrideForArgs) const {
+    HRESULT NvapiD3d11Device::MultiDrawInstancedIndirect(const NvU32 drawCount, ID3D11Buffer* buffer, const NvU32 alignedByteOffsetForArgs, const NvU32 alignedByteStrideForArgs) const {
         if (!m_supportsExtMultiDrawIndirect)
-            return false;
+            return E_NOTIMPL;
 
         m_dxvkContext->MultiDrawIndirect(drawCount, buffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
-        return true;
+        return S_OK;
     }
 
-    bool NvapiD3d11Device::MultiDrawIndexedInstancedIndirect(const NvU32 drawCount, ID3D11Buffer* buffer, const NvU32 alignedByteOffsetForArgs, const NvU32 alignedByteStrideForArgs) const {
+    HRESULT NvapiD3d11Device::MultiDrawIndexedInstancedIndirect(const NvU32 drawCount, ID3D11Buffer* buffer, const NvU32 alignedByteOffsetForArgs, const NvU32 alignedByteStrideForArgs) const {
         if (!m_supportsExtMultiDrawIndirect)
-            return false;
+            return E_NOTIMPL;
 
         m_dxvkContext->MultiDrawIndexedIndirect(drawCount, buffer, alignedByteOffsetForArgs, alignedByteStrideForArgs);
-        return true;
+        return S_OK;
     }
 
-    bool NvapiD3d11Device::CreateCubinComputeShaderWithName(const void* pCubin, NvU32 size, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* pShaderName, NVDX_ObjectHandle* phShader) const {
+    HRESULT NvapiD3d11Device::CreateCubinComputeShaderWithName(const void* pCubin, NvU32 size, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* pShaderName, NVDX_ObjectHandle* phShader) const {
         if (!m_supportsExtDevice1 || !m_supportsNvxBinaryImport)
-            return false;
+            return E_NOTIMPL;
 
-        return m_dxvkDevice->CreateCubinComputeShaderWithNameNVX(pCubin, size, blockX, blockY, blockZ, pShaderName, reinterpret_cast<IUnknown**>(phShader));
+        auto success = m_dxvkDevice->CreateCubinComputeShaderWithNameNVX(pCubin, size, blockX, blockY, blockZ, pShaderName, reinterpret_cast<IUnknown**>(phShader));
+        return success ? S_OK : E_FAIL;
     }
 
-    bool NvapiD3d11Device::LaunchCubinShader(NVDX_ObjectHandle hShader, NvU32 gridX, NvU32 gridY, NvU32 gridZ, const void* pParams, NvU32 paramSize, const NVDX_ObjectHandle* pReadResources, NvU32 numReadResources, const NVDX_ObjectHandle* pWriteResources, NvU32 numWriteResources) const {
+    HRESULT NvapiD3d11Device::LaunchCubinShader(NVDX_ObjectHandle hShader, NvU32 gridX, NvU32 gridY, NvU32 gridZ, const void* pParams, NvU32 paramSize, const NVDX_ObjectHandle* pReadResources, NvU32 numReadResources, const NVDX_ObjectHandle* pWriteResources, NvU32 numWriteResources) const {
         if (!m_supportsExtContext1 || !m_supportsNvxBinaryImport)
-            return false;
+            return E_NOTIMPL;
 
-        return m_dxvkContext->LaunchCubinShaderNVX(reinterpret_cast<IUnknown*>(hShader), gridX, gridY, gridZ, pParams, paramSize, reinterpret_cast<void* const*>(pReadResources), numReadResources, reinterpret_cast<void* const*>(pWriteResources), numWriteResources);
+        auto success = m_dxvkContext->LaunchCubinShaderNVX(reinterpret_cast<IUnknown*>(hShader), gridX, gridY, gridZ, pParams, paramSize, reinterpret_cast<void* const*>(pReadResources), numReadResources, reinterpret_cast<void* const*>(pWriteResources), numWriteResources);
+        return success ? S_OK : E_FAIL;
     }
 
-    bool NvapiD3d11Device::DestroyCubinShader(NVDX_ObjectHandle hShader) {
+    HRESULT NvapiD3d11Device::DestroyCubinShader(NVDX_ObjectHandle hShader) {
         if (auto cubinShader = reinterpret_cast<IUnknown*>(hShader)) {
             cubinShader->Release();
-            return true;
+            return S_OK;
         }
 
-        return false;
+        return E_FAIL;
     }
 
-    bool NvapiD3d11Device::GetResourceDriverHandle(ID3D11Resource* pResource, NVDX_ObjectHandle* phObject) {
+    void NvapiD3d11Device::GetResourceDriverHandle(ID3D11Resource* pResource, NVDX_ObjectHandle* phObject) {
         *phObject = reinterpret_cast<NVDX_ObjectHandle>(pResource);
-        return true;
     }
 
-    bool NvapiD3d11Device::GetResourceHandleGPUVirtualAddressAndSize(NVDX_ObjectHandle hObject, NvU64* gpuVAStart, NvU64* gpuVASize) const {
+    HRESULT NvapiD3d11Device::GetResourceHandleGPUVirtualAddressAndSize(NVDX_ObjectHandle hObject, NvU64* gpuVAStart, NvU64* gpuVASize) const {
         if (!m_supportsExtDevice1 || !m_supportsNvxImageViewHandle)
-            return false;
+            return E_NOTIMPL;
 
-        return m_dxvkDevice->GetResourceHandleGPUVirtualAddressAndSizeNVX(hObject, gpuVAStart, gpuVASize);
+        auto success = m_dxvkDevice->GetResourceHandleGPUVirtualAddressAndSizeNVX(hObject, gpuVAStart, gpuVASize);
+        return success ? S_OK : E_FAIL;
     }
 
-    bool NvapiD3d11Device::CreateUnorderedAccessViewAndGetDriverHandle(ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC* pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle) const {
+    HRESULT NvapiD3d11Device::CreateUnorderedAccessViewAndGetDriverHandle(ID3D11Resource* pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC* pDesc, ID3D11UnorderedAccessView** ppUAV, NvU32* pDriverHandle) const {
         if (!m_supportsExtDevice1 || !m_supportsNvxImageViewHandle)
-            return false;
+            return E_NOTIMPL;
 
-        return m_dxvkDevice->CreateUnorderedAccessViewAndGetDriverHandleNVX(pResource, pDesc, ppUAV, reinterpret_cast<uint32_t*>(pDriverHandle));
+        auto success = m_dxvkDevice->CreateUnorderedAccessViewAndGetDriverHandleNVX(pResource, pDesc, ppUAV, reinterpret_cast<uint32_t*>(pDriverHandle));
+        return success ? S_OK : E_FAIL;
     }
 
-    bool NvapiD3d11Device::CreateShaderResourceViewAndGetDriverHandle(ID3D11Resource* pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc, ID3D11ShaderResourceView** ppSRV, NvU32* pDriverHandle) const {
+    HRESULT NvapiD3d11Device::CreateShaderResourceViewAndGetDriverHandle(ID3D11Resource* pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* pDesc, ID3D11ShaderResourceView** ppSRV, NvU32* pDriverHandle) const {
         if (!m_supportsExtDevice1 || !m_supportsNvxImageViewHandle)
-            return false;
+            return E_NOTIMPL;
 
-        return m_dxvkDevice->CreateShaderResourceViewAndGetDriverHandleNVX(pResource, pDesc, ppSRV, reinterpret_cast<uint32_t*>(pDriverHandle));
+        auto success = m_dxvkDevice->CreateShaderResourceViewAndGetDriverHandleNVX(pResource, pDesc, ppSRV, reinterpret_cast<uint32_t*>(pDriverHandle));
+        return success ? S_OK : E_FAIL;
     }
 
-    bool NvapiD3d11Device::GetCudaTextureObject(uint32_t srvDriverHandle, uint32_t samplerDriverHandle, uint32_t* pCudaTextureHandle) const {
+    HRESULT NvapiD3d11Device::GetCudaTextureObject(uint32_t srvDriverHandle, uint32_t samplerDriverHandle, uint32_t* pCudaTextureHandle) const {
         if (!m_supportsExtDevice1 || !m_supportsNvxImageViewHandle)
-            return false;
+            return E_NOTIMPL;
 
-        return m_dxvkDevice->GetCudaTextureObjectNVX(srvDriverHandle, samplerDriverHandle, pCudaTextureHandle);
+        auto success = m_dxvkDevice->GetCudaTextureObjectNVX(srvDriverHandle, samplerDriverHandle, pCudaTextureHandle);
+        return success ? S_OK : E_FAIL;
     }
 
-    bool NvapiD3d11Device::CreateSamplerStateAndGetDriverHandle(const D3D11_SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState, uint32_t* pDriverHandle) const {
+    HRESULT NvapiD3d11Device::CreateSamplerStateAndGetDriverHandle(const D3D11_SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState, uint32_t* pDriverHandle) const {
         if (!m_supportsExtDevice1 || !m_supportsNvxImageViewHandle)
-            return false;
+            return E_NOTIMPL;
 
-        return m_dxvkDevice->CreateSamplerStateAndGetDriverHandleNVX(pSamplerDesc, ppSamplerState, pDriverHandle);
+        auto success = m_dxvkDevice->CreateSamplerStateAndGetDriverHandleNVX(pSamplerDesc, ppSamplerState, pDriverHandle);
+        return success ? S_OK : E_FAIL;
     }
 
     bool NvapiD3d11Device::IsFatbinPTXSupported() const {
