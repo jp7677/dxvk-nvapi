@@ -1,5 +1,8 @@
 #pragma once
 
+#include <random>
+#include <shared_mutex>
+
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #endif // defined(__GNUC__) || defined(__clang__)

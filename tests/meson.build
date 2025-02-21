@@ -48,6 +48,7 @@ nvapi_tests_src = files([
   'nvapi_system.cpp',
   'nvapi_vulkan.cpp',
   'util.cpp',
+  'perf.cpp',
 ])
 
 target_name = 'nvapi'+target_suffix+'-tests'
