@@ -139,8 +139,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(NvAPI_D3D12_IsFatbinPTXSupported(static_cast<ID3D12Device*>(&device), &isPTXSupported) == NVAPI_NO_IMPLEMENTATION);
 
         REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), handle, 0, 0, 0, nullptr, 0) == NVAPI_NO_IMPLEMENTATION);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("D3D12 methods without cubin extension return error") {
@@ -172,8 +170,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(NvAPI_D3D12_CaptureUAVInfo(static_cast<ID3D12Device*>(&device), &info) == NVAPI_NO_IMPLEMENTATION);
         bool isPTXSupported;
         REQUIRE(NvAPI_D3D12_IsFatbinPTXSupported(static_cast<ID3D12Device*>(&device), &isPTXSupported) == NVAPI_ERROR);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("IsNvShaderExtnOpCodeSupported returns OK") {
@@ -228,7 +224,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             REQUIRE(graphicsCaps.bFastUAVClearSupported == true);
             REQUIRE(graphicsCaps.majorSMVersion == 0);
             REQUIRE(graphicsCaps.majorSMVersion == 0);
-            REQUIRE(deviceRefCount == 0);
         }
 
         SECTION("GetGraphicsCapabilities returns OK with valid SM") {
@@ -283,7 +278,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             REQUIRE(graphicsCaps.bFastUAVClearSupported == true);
             REQUIRE(graphicsCaps.bExclusiveScissorRectsSupported == false);
             REQUIRE(graphicsCaps.bVariablePixelRateShadingSupported == args.variablePixelRateShadingSupported);
-            REQUIRE(deviceRefCount == 0);
         }
 
         SECTION("GetGraphicsCapabilities with unknown struct version returns incompatible-struct-version") {
@@ -319,8 +313,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 .RETURN(S_OK);
 
             REQUIRE(NvAPI_D3D12_CreateGraphicsPipelineState(&device, &desc, 1, extensions, &pipelineState) == NVAPI_OK);
-            REQUIRE(deviceRefCount == 0);
-            REQUIRE(commandListRefCount == 0);
         }
 
         SECTION("CreateGraphicsPipelineState with unknown struct version returns incompatible-struct-version") {
@@ -352,8 +344,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE_CALL(commandList, OMSetDepthBounds(min, max));
 
         REQUIRE(NvAPI_D3D12_SetDepthBoundsTestValues(&commandList, min, max) == NVAPI_OK);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("CreateCubinComputeShader returns OK") {
@@ -370,8 +360,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             .TIMES(1);
 
         REQUIRE(NvAPI_D3D12_CreateCubinComputeShader(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, reinterpret_cast<NVDX_ObjectHandle*>(handle)) == NVAPI_OK);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("CreateCubinComputeShaderWithName returns OK") {
@@ -389,8 +377,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             .TIMES(1);
 
         REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderWithName(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, shaderName, reinterpret_cast<NVDX_ObjectHandle*>(handle)) == NVAPI_OK);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("DestroyCubinComputeShader returns OK") {
@@ -400,8 +386,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             .TIMES(1);
 
         REQUIRE(NvAPI_D3D12_DestroyCubinComputeShader(static_cast<ID3D12Device*>(&device), reinterpret_cast<NVDX_ObjectHandle>(shaderHandle)) == NVAPI_OK);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("GetCudaTextureObject/GetCudaSurfaceObject returns OK") {
@@ -419,8 +403,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
         REQUIRE(NvAPI_D3D12_GetCudaTextureObject(static_cast<ID3D12Device*>(&device), srvHandle, samplerHandle, &handle) == NVAPI_OK);
         REQUIRE(NvAPI_D3D12_GetCudaSurfaceObject(static_cast<ID3D12Device*>(&device), srvHandle, &handle) == NVAPI_OK);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("CaptureUAVInfo returns OK") {
@@ -430,16 +412,12 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
         NVAPI_UAV_INFO info{};
         REQUIRE(NvAPI_D3D12_CaptureUAVInfo(static_cast<ID3D12Device*>(&device), &info) == NVAPI_OK);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("IsFatbinPTXSupported returns OK") {
         auto isPTXSupported = false;
         REQUIRE(NvAPI_D3D12_IsFatbinPTXSupported(static_cast<ID3D12Device*>(&device), &isPTXSupported) == NVAPI_OK);
         REQUIRE(isPTXSupported == true);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("LaunchCubinShader returns OK") {
@@ -457,8 +435,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             .TIMES(1);
 
         REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), pShader, blockX, blockY, blockZ, params, paramSize) == NVAPI_OK);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("Create and Launch CuBIN with SMEM returns OK") {
@@ -484,8 +460,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
         REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderEx(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, smemSize, shaderName, reinterpret_cast<NVDX_ObjectHandle*>(handle)) == NVAPI_OK);
         REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), reinterpret_cast<NVDX_ObjectHandle>(shaderHandle), blockX, blockY, blockZ, params, paramSize) == NVAPI_OK);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("Launch CuBIN without ID3D12GraphicsCommandListExt1 returns OK") {
@@ -504,8 +478,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         FORBID_CALL(commandList, LaunchCubinShaderEx(_, _, _, _, _, _, _, _, _));
 
         REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), reinterpret_cast<NVDX_ObjectHandle>(shaderHandle), blockX, blockY, blockZ, params, paramSize) == NVAPI_OK);
-        REQUIRE(deviceRefCount == 0);
-        REQUIRE(commandListRefCount == 0);
     }
 
     SECTION("GetRaytracingCaps returns OK and claims that thread reordering is not supported") {
@@ -948,10 +920,10 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 REQUIRE(NvAPI_D3D12_SetAsyncFrameMarker(nullptr, &params) == NVAPI_INVALID_POINTER);
             }
         }
-
-        CHECK(deviceRefCount == 0);
-        CHECK(commandListRefCount == 0);
-        CHECK(commandQueueRefCount == 0);
-        CHECK(lowLatencyDeviceRefCount == 0);
     }
+
+    CHECK(deviceRefCount == 0);
+    CHECK(commandListRefCount == 0);
+    CHECK(commandQueueRefCount == 0);
+    CHECK(lowLatencyDeviceRefCount == 0);
 }
