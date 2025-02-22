@@ -22,6 +22,8 @@ namespace dxvk {
         [[nodiscard]] HRESULT CaptureUAVInfo(NVAPI_UAV_INFO* uavInfo) const;
         [[nodiscard]] bool IsFatbinPTXSupported() const;
 
+        [[nodiscard]] HRESULT CreateCubinComputeShaderExV2(D3D12_CREATE_CUBIN_SHADER_PARAMS* params);
+
       private:
         static std::unordered_map<ID3D12Device*, NvapiD3d12Device> m_nvapiDeviceMap;
         static std::mutex m_mutex;

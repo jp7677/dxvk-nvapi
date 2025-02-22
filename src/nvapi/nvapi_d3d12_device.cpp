@@ -115,4 +115,18 @@ namespace dxvk {
     bool NvapiD3d12Device::IsFatbinPTXSupported() const {
         return m_vkd3dDevice && m_supportsNvxBinaryImport && m_supportsNvxImageViewHandle;
     }
+
+    HRESULT NvapiD3d12Device::CreateCubinComputeShaderExV2(D3D12_CREATE_CUBIN_SHADER_PARAMS* params) {
+        if (!m_supportsCubin64bit)
+            return E_NOTIMPL;
+
+        auto result = m_vkd3dDevice->CreateCubinComputeShaderExV2(params);
+
+        if (result == S_OK) {
+            std::scoped_lock lock(m_cubinSmemMutex);
+            m_cubinSmemMap.emplace(reinterpret_cast<NVDX_ObjectHandle>(params->hShader), params->dynSharedMemBytes);
+        }
+
+        return result;
+    }
 }
