@@ -113,6 +113,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_GetCudaTextureObject)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_GetCudaSurfaceObject)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_GetCudaMergedTextureSamplerObject)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_GetCudaIndependentDescriptorObject)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_LaunchCubinShader)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_CaptureUAVInfo)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_GetGraphicsCapabilities)

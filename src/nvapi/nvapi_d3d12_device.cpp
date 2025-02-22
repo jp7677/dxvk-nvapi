@@ -136,4 +136,11 @@ namespace dxvk {
 
         return m_vkd3dDevice->GetCudaMergedTextureSamplerObject(params);
     }
+
+    HRESULT NvapiD3d12Device::GetCudaIndependentDescriptorObject(D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS* params) const {
+        if (!m_supportsCubin64bit)
+            return E_NOTIMPL;
+
+        return m_vkd3dDevice->GetCudaIndependentDescriptorObject(params);
+    }
 }
