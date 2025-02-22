@@ -32,6 +32,7 @@
 #include <utility>
 #include <vector>
 
+#include <d3d9.h>
 #include <dxgi1_6.h>
 #include <d3d11_1.h>
 #ifdef _MSC_VER
