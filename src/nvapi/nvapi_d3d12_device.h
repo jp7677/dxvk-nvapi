@@ -29,7 +29,8 @@ namespace dxvk {
         static std::unordered_map<NVDX_ObjectHandle, NvU32> m_cubinSmemMap;
         static std::mutex m_cubinSmemMutex;
 
-        ID3D12DeviceExt* m_vkd3dDevice{};
+        ID3D12DeviceExt2* m_vkd3dDevice{};
+        bool m_supportsCubin64bit = false;
         bool m_supportsNvxBinaryImport = false;
         bool m_supportsNvxImageViewHandle = false;
     };
