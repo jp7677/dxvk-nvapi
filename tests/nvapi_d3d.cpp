@@ -7,6 +7,21 @@ using namespace trompeloeil;
 
 TEST_CASE("D3D methods succeed", "[.d3d]") {
     UnknownMock unknown;
+    UnknownMock d3d9Device;
+    UnknownMock d3d11Device;
+
+    ALLOW_CALL(unknown, QueryInterface(__uuidof(IDirect3DDevice9), _))
+        .RETURN(E_NOINTERFACE);
+    ALLOW_CALL(unknown, QueryInterface(__uuidof(ID3D11Device), _))
+        .RETURN(E_NOINTERFACE);
+    ALLOW_CALL(d3d9Device, QueryInterface(__uuidof(IDirect3DDevice9), _))
+        .RETURN(S_OK);
+    ALLOW_CALL(d3d9Device, QueryInterface(__uuidof(ID3D11Device), _))
+        .RETURN(E_NOINTERFACE);
+    ALLOW_CALL(d3d11Device, QueryInterface(__uuidof(IDirect3DDevice9), _))
+        .RETURN(E_NOINTERFACE);
+    ALLOW_CALL(d3d11Device, QueryInterface(__uuidof(ID3D11Device), _))
+        .RETURN(S_OK);
 
     SECTION("RegisterDevice returns OK") {
         REQUIRE(NvAPI_D3D_RegisterDevice(&unknown) == NVAPI_OK);
@@ -35,31 +50,77 @@ TEST_CASE("D3D methods succeed", "[.d3d]") {
     }
 
     SECTION("GetCurrentSLIState succeeds") {
-        SECTION("GetCurrentSLIState (V1) returns NO_ACTIVE_SLI_TOPOLOGY") {
+        SECTION("GetCurrentSLIState (V1) returns OK") {
             NV_GET_CURRENT_SLI_STATE_V1 state;
             state.version = NV_GET_CURRENT_SLI_STATE_VER1;
-            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&unknown, reinterpret_cast<NV_GET_CURRENT_SLI_STATE*>(&state)) == NVAPI_NO_ACTIVE_SLI_TOPOLOGY);
+            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&d3d11Device, reinterpret_cast<NV_GET_CURRENT_SLI_STATE*>(&state)) == NVAPI_OK);
+            REQUIRE(state.maxNumAFRGroups == 1);
+            REQUIRE(state.numAFRGroups == 1);
+            REQUIRE(state.currentAFRIndex == 0);
+            REQUIRE(state.nextFrameAFRIndex == 0);
+            REQUIRE(state.previousFrameAFRIndex == 0);
+            REQUIRE(state.bIsCurAFRGroupNew == false);
         }
 
-        SECTION("GetCurrentSLIState (V2) returns NO_ACTIVE_SLI_TOPOLOGY") {
+        SECTION("GetCurrentSLIState (V2) returns OK") {
+            NV_GET_CURRENT_SLI_STATE_V2 state;
+            state.version = NV_GET_CURRENT_SLI_STATE_VER2;
+            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&d3d11Device, &state) == NVAPI_OK);
+            REQUIRE(state.maxNumAFRGroups == 1);
+            REQUIRE(state.numAFRGroups == 1);
+            REQUIRE(state.currentAFRIndex == 0);
+            REQUIRE(state.nextFrameAFRIndex == 0);
+            REQUIRE(state.previousFrameAFRIndex == 0);
+            REQUIRE(state.bIsCurAFRGroupNew == false);
+            REQUIRE(state.numVRSLIGpus == 0);
+        }
+    }
+
+    SECTION("GetCurrentSLIState fails") {
+        SECTION("GetCurrentSLIState with null pointers returns invalid-argument") {
+            NV_GET_CURRENT_SLI_STATE_V1 state;
+            state.version = NV_GET_CURRENT_SLI_STATE_VER1;
+            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&d3d9Device, nullptr) == NVAPI_INVALID_ARGUMENT);
+            REQUIRE(NvAPI_D3D_GetCurrentSLIState(nullptr, reinterpret_cast<NV_GET_CURRENT_SLI_STATE*>(&state)) == NVAPI_INVALID_ARGUMENT);
+        }
+
+        SECTION("GetCurrentSLIState with objects that arent devices returns invalid-argument") {
+            UnknownMock notADevice;
+            ALLOW_CALL(notADevice, QueryInterface(__uuidof(IDirect3DDevice9), _))
+                .RETURN(E_NOINTERFACE);
+            ALLOW_CALL(notADevice, QueryInterface(__uuidof(ID3D11Device), _))
+                .RETURN(E_NOINTERFACE);
+
+            NV_GET_CURRENT_SLI_STATE_V1 state;
+            state.version = NV_GET_CURRENT_SLI_STATE_VER1;
+            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&notADevice, reinterpret_cast<NV_GET_CURRENT_SLI_STATE*>(&state)) == NVAPI_INVALID_ARGUMENT);
+        }
+
+        SECTION("GetCurrentSLIState (V1) for D3D9 returns no-active-sli-topology") {
+            NV_GET_CURRENT_SLI_STATE_V1 state;
+            state.version = NV_GET_CURRENT_SLI_STATE_VER1;
+            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&d3d9Device, reinterpret_cast<NV_GET_CURRENT_SLI_STATE*>(&state)) == NVAPI_NO_ACTIVE_SLI_TOPOLOGY);
+        }
+
+        SECTION("GetCurrentSLIState (V2) for D3D9 returns no-active-sli-topology") {
             NV_GET_CURRENT_SLI_STATE_V2 state;
             state.numVRSLIGpus = 0xdeadbeef;
             state.version = NV_GET_CURRENT_SLI_STATE_VER2;
-            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&unknown, &state) == NVAPI_NO_ACTIVE_SLI_TOPOLOGY);
+            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&d3d9Device, &state) == NVAPI_NO_ACTIVE_SLI_TOPOLOGY);
             REQUIRE(state.numVRSLIGpus == 0);
         }
 
         SECTION("GetCurrentSLIState with unknown struct version returns incompatible-struct-version") {
             NV_GET_CURRENT_SLI_STATE state;
             state.version = NV_GET_CURRENT_SLI_STATE_VER2 + 1;
-            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&unknown, &state) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&d3d11Device, &state) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
 
         SECTION("GetCurrentSLIState with current struct version returns not incompatible-struct-version") {
             // This test fails when a header update provides a newer not yet implemented struct version
             NV_GET_CURRENT_SLI_STATE state;
             state.version = NV_GET_CURRENT_SLI_STATE_VER;
-            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&unknown, &state) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            REQUIRE(NvAPI_D3D_GetCurrentSLIState(&d3d11Device, &state) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
     }
 
