@@ -70,7 +70,7 @@ DXVK 1.10 and older does not support `DXVK_ENABLE_NVAPI`. Disable the `nvapiHack
 
 Using DXVK-NVAPI with other GPU vendors / drivers has very limited use. Outside of testing, only HDR entry points provide benefits. This requires DXVK to see the GPU as an NVIDIA GPU. Use `DXVK_CONFIG="dxgi.hideAmdGpu = True"` to spoof an AMD GPU as NVIDIA GPU. Use `DXVK_CONFIG="dxgi.customVendorId = 10de"` for generally spoofing an NVIDIA GPU.
 
-Setting `DXVK_NVAPI_ALLOW_OTHER_DRIVERS=1` is needed for successful DXVK-NVAPI initialization when using a driver other than the NVIDIA proprietary driver or Mesa NVK. The reported driver version on drivers other than the NVIDIA proprietary driver will be 999.99. Overriding the reported driver version is still recommended. The reported GPU arrchitecture for other vendors is always Pascal to prevent attempts to initialize DLSS. This behavior cannot be changed without modifying the source code.
+Setting `DXVK_NVAPI_ALLOW_OTHER_DRIVERS=1` is needed for successful DXVK-NVAPI initialization when using a driver other than the NVIDIA proprietary driver or Mesa NVK. The reported driver version on drivers other than the NVIDIA proprietary driver will be 999.99. Overriding the reported driver version is still recommended. The reported GPU architecture for other vendors is, unless overriden, always Pascal to prevent attempts to initialize DLSS.
 
 ### Vulkan Reflex layer
 
@@ -122,7 +122,7 @@ The following environment variables tweak DXVK-NVAPI's runtime behavior:
     - `NGX_DLSS_SR_OVERRIDE_RENDER_PRESET_SELECTION`
   - The corresponding values can be deduced from the [NVAPI `NvApiDriverSettings.h` header](https://github.com/NVIDIA/nvapi/blob/d08488fcc82eef313b0464db37d2955709691e94/NvApiDriverSettings.h#L700) with the setting type prefix omitted, for example `DXVK_NVAPI_DRS_SETTINGS=NGX_DLSS_FG_OVERRIDE=on`. Both setting name (`NGX_DLSS_FG_OVERRIDE`) and value (`on`) are case-insensitive.
   - Furthermore, each supported named setting can also be configured with a dedicated environment variable, the name of which is constructed by prefixing setting name with `DXVK_NVAPI_DRS_`, for example `DXVK_NVAPI_DRS_NGX_DLSS_FG_OVERRIDE=on`. The name of environment variable is case-sensitive, the value is not. If a setting is set via both `DXVK_NVAPI_DRS_SETTINGS` and its own dedicated environment variable, the latter takes precedence.
-  - See the [Passing-driver-settings](https://github.com/jp7677/dxvk-nvapi/wiki/Passing-driver-settings) wiki page for more information.
+  - See the [Passing driver settings](https://github.com/jp7677/dxvk-nvapi/wiki/Passing-driver-settings) wiki page for more information and examples.
 - `DXVK_NVAPI_GPU_ARCH`, when set to one of supported NVIDIA GPU architecture IDs will override reported GPU architecture. Currently supported values are:
   - `GK100` (Kepler)
   - `GM000` (Maxwell Gen1)
