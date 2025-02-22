@@ -198,6 +198,56 @@ extern "C" {
         }
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderExV2(NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS* pParams) {
+        static constexpr auto V1StructSize = offsetof(NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS, hShader) + sizeof(NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS::hShader);
+        // static_assert(V1StructSize == sizeof(NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS));
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::nvapi_d3d12_create_cubin_shader_params(pParams));
+
+        if (!pParams)
+            return InvalidPointer(n);
+
+        pParams->structSizeOut = V1StructSize;
+
+        if (pParams->structSizeIn < V1StructSize)
+            return IncompatibleStructVersion(n, pParams->structSizeIn);
+
+        if (!pParams->pDevice || !pParams->pShaderName)
+            return InvalidArgument(n);
+
+        auto device = NvapiD3d12Device::GetOrCreate(pParams->pDevice);
+        if (!device)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        D3D12_CREATE_CUBIN_SHADER_PARAMS params;
+        params.pNext = nullptr;
+        params.pCubin = pParams->pCubin;
+        params.size = pParams->size;
+        params.blockX = pParams->blockX;
+        params.blockY = pParams->blockY;
+        params.blockZ = pParams->blockZ;
+        params.dynSharedMemBytes = pParams->dynSharedMemBytes;
+        params.pShaderName = pParams->pShaderName;
+        params.flags = pParams->flags;
+
+        switch (device->CreateCubinComputeShaderExV2(&params)) {
+            case S_OK:
+                pParams->hShader = reinterpret_cast<NVDX_ObjectHandle>(params.hShader);
+                return Ok(n, alreadyLoggedOk);
+            case E_INVALIDARG:
+                return InvalidArgument(n);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D12_LaunchCubinShader(ID3D12GraphicsCommandList* pCmdList, NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedNoImplementation = false;
