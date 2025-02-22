@@ -292,6 +292,50 @@ extern "C" {
         }
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D12_GetCudaIndependentDescriptorObject(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS* pParams) {
+        static constexpr auto V1StructSize = offsetof(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS, handle) + sizeof(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS::handle);
+        // static_assert(V1StructSize == sizeof(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS));
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedError = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::nvapi_d3d12_get_cuda_independent_descriptor_object_params(pParams));
+
+        if (!pParams)
+            return InvalidPointer(n);
+
+        pParams->structSizeOut = V1StructSize;
+
+        if (pParams->structSizeIn < V1StructSize)
+            return IncompatibleStructVersion(n, pParams->structSizeIn);
+
+        if (!pParams->pDevice || !pParams->desc.ptr)
+            return InvalidArgument(n);
+
+        auto device = NvapiD3d12Device::GetOrCreate(pParams->pDevice);
+        if (!device)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS params;
+        params.pNext = nullptr;
+        params.type = static_cast<D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_TYPE>(pParams->type);
+        params.desc = pParams->desc.ptr;
+
+        switch (device->GetCudaIndependentDescriptorObject(&params)) {
+            case S_OK:
+                pParams->handle = params.handle;
+                return Ok(n, alreadyLoggedOk);
+            case E_INVALIDARG:
+                return InvalidArgument(n);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D12_LaunchCubinShader(ID3D12GraphicsCommandList* pCmdList, NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedNoImplementation = false;

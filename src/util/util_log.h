@@ -82,6 +82,13 @@ namespace dxvk::log {
             return str::format("{structSizeIn=", p->structSizeIn, ",pDevice=", ptr(p->pDevice), ",texDesc=", d3d12_cpu_descriptor_handle(p->texDesc), ",smpDesc=", d3d12_cpu_descriptor_handle(p->smpDesc), "}");
         }
 
+        inline std::string nvapi_d3d12_get_cuda_independent_descriptor_object_params(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS* p) {
+            if (!p)
+                return "nullptr";
+
+            return str::format("{structSizeIn=", p->structSizeIn, ",pDevice=", ptr(p->pDevice), ",type=", p->type, ",desc=", d3d12_cpu_descriptor_handle(p->desc), "}");
+        }
+
         inline std::string nv_vk_get_sleep_status_params(NV_VULKAN_GET_SLEEP_STATUS_PARAMS* p) {
             if (!p)
                 return "nullptr";
