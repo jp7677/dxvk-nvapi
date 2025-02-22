@@ -64,6 +64,13 @@ namespace dxvk::log {
             return str::format("{version=", p->version, ",frameID=", p->frameID, ",markerType=", fromLatencyMarkerType(p->markerType), ",presentFrameID=", p->presentFrameID, ",rsvd}");
         }
 
+        inline std::string nvapi_d3d12_create_cubin_shader_params(NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS* p) {
+            if (!p)
+                return "nullptr";
+
+            return str::format("{structSizeIn=", p->structSizeIn, ",pDevice=", ptr(p->pDevice), ",pCubin=", ptr(p->pCubin), ",size=", p->size, ",blockX=", p->blockX, ",blockY=", p->blockY, ",blockZ=", p->blockZ, ",dynSharedMemBytes=", p->dynSharedMemBytes, ",pShaderName=", p->pShaderName, ",flags=", p->flags, "}");
+        }
+
         inline std::string nv_vk_get_sleep_status_params(NV_VULKAN_GET_SLEEP_STATUS_PARAMS* p) {
             if (!p)
                 return "nullptr";
