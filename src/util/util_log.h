@@ -50,6 +50,10 @@ namespace dxvk::log {
             return str::format("flags=0x", std::setfill('0'), std::setw(4), std::hex, h);
         }
 
+        inline std::string d3d12_cpu_descriptor_handle(D3D12_CPU_DESCRIPTOR_HANDLE h) {
+            return str::format("{ptr=", hex_prefix, std::hex, h.ptr, "}");
+        }
+
         inline std::string nv_latency_marker_params(NV_LATENCY_MARKER_PARAMS* p) {
             if (!p)
                 return "nullptr";
@@ -69,6 +73,13 @@ namespace dxvk::log {
                 return "nullptr";
 
             return str::format("{structSizeIn=", p->structSizeIn, ",pDevice=", ptr(p->pDevice), ",pCubin=", ptr(p->pCubin), ",size=", p->size, ",blockX=", p->blockX, ",blockY=", p->blockY, ",blockZ=", p->blockZ, ",dynSharedMemBytes=", p->dynSharedMemBytes, ",pShaderName=", p->pShaderName, ",flags=", p->flags, "}");
+        }
+
+        inline std::string nvapi_d3d12_get_cuda_merged_texture_sampler_object_params(NVAPI_D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS* p) {
+            if (!p)
+                return "nullptr";
+
+            return str::format("{structSizeIn=", p->structSizeIn, ",pDevice=", ptr(p->pDevice), ",texDesc=", d3d12_cpu_descriptor_handle(p->texDesc), ",smpDesc=", d3d12_cpu_descriptor_handle(p->smpDesc), "}");
         }
 
         inline std::string nv_vk_get_sleep_status_params(NV_VULKAN_GET_SLEEP_STATUS_PARAMS* p) {
@@ -97,10 +108,6 @@ namespace dxvk::log {
                 return "nullptr";
 
             return str::format("{version=", p->version, ",frameID=", p->frameID, ",markerType=", p->markerType, ",rsvd}");
-        }
-
-        inline std::string d3d12_cpu_descriptor_handle(D3D12_CPU_DESCRIPTOR_HANDLE h) {
-            return str::format("{ptr=", hex_prefix, std::hex, h.ptr, "}");
         }
 
         inline std::string ngx_dlss_override_get_state_params(NV_NGX_DLSS_OVERRIDE_GET_STATE_PARAMS* p) {
