@@ -129,4 +129,11 @@ namespace dxvk {
 
         return result;
     }
+
+    HRESULT NvapiD3d12Device::GetCudaMergedTextureSamplerObject(D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS* params) const {
+        if (!m_supportsCubin64bit)
+            return E_NOTIMPL;
+
+        return m_vkd3dDevice->GetCudaMergedTextureSamplerObject(params);
+    }
 }
