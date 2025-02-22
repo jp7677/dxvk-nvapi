@@ -24,6 +24,7 @@ namespace dxvk {
 
         [[nodiscard]] HRESULT CreateCubinComputeShaderExV2(D3D12_CREATE_CUBIN_SHADER_PARAMS* params);
         [[nodiscard]] HRESULT GetCudaMergedTextureSamplerObject(D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS* params) const;
+        [[nodiscard]] HRESULT GetCudaIndependentDescriptorObject(D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS* params) const;
 
       private:
         static std::unordered_map<ID3D12Device*, NvapiD3d12Device> m_nvapiDeviceMap;
