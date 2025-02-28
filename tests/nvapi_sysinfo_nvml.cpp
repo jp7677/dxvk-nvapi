@@ -358,6 +358,22 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             }
         }
 
+        SECTION("GetTachReading returns OK") {
+            ALLOW_CALL(*nvml, DeviceGetFanSpeedRPM(_, _))
+                .SIDE_EFFECT(_2->speed = 800)
+                .RETURN(NVML_SUCCESS);
+
+            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NvPhysicalGpuHandle handle;
+            REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
+
+            NvU32 value;
+            REQUIRE(NvAPI_GPU_GetTachReading(handle, &value) == NVAPI_OK);
+            REQUIRE(value == 800);
+        }
+
         SECTION("GetCurrentPstate returns OK") {
             ALLOW_CALL(*nvml, DeviceGetPerformanceState(_, _))
                 .LR_SIDE_EFFECT(*_2 = NVML_PSTATE_2)
@@ -499,6 +515,8 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             NV_GPU_THERMAL_SETTINGS settings;
             settings.version = NV_GPU_THERMAL_SETTINGS_VER;
             REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_NO_IMPLEMENTATION);
+            NvU32 value;
+            REQUIRE(NvAPI_GPU_GetTachReading(handle, &value) == NVAPI_NO_IMPLEMENTATION);
             NV_GPU_PERF_PSTATE_ID pstate;
             REQUIRE(NvAPI_GPU_GetCurrentPstate(handle, &pstate) == NVAPI_NO_IMPLEMENTATION);
             NV_GPU_CLOCK_FREQUENCIES frequencies;
@@ -541,6 +559,8 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             NV_GPU_THERMAL_SETTINGS settings;
             settings.version = NV_GPU_THERMAL_SETTINGS_VER;
             REQUIRE(NvAPI_GPU_GetThermalSettings(handle, NVAPI_THERMAL_TARGET_ALL, &settings) == NVAPI_HANDLE_INVALIDATED);
+            NvU32 value;
+            REQUIRE(NvAPI_GPU_GetTachReading(handle, &value) == NVAPI_HANDLE_INVALIDATED);
             NV_GPU_PERF_PSTATE_ID pstate;
             REQUIRE(NvAPI_GPU_GetCurrentPstate(handle, &pstate) == NVAPI_HANDLE_INVALIDATED);
             NV_GPU_CLOCK_FREQUENCIES frequencies;

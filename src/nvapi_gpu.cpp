@@ -1002,6 +1002,47 @@ extern "C" {
         }
     }
 
+    NvAPI_Status __cdecl NvAPI_GPU_GetTachReading(NvPhysicalGpuHandle hPhysicalGPU, NvU32* pValue) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoNvml = false;
+        thread_local bool alreadyLoggedHandleInvalidated = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGPU), log::fmt::ptr(pValue));
+
+        if (!nvapiAdapterRegistry)
+            return ApiNotInitialized(n);
+
+        if (!pValue)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGPU);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        if (!adapter->HasNvml())
+            return NoImplementation(n, alreadyLoggedNoNvml);
+
+        if (!adapter->HasNvmlDevice())
+            return HandleInvalidated(str::format(n, ": NVML available but current adapter is not NVML compatible"), alreadyLoggedHandleInvalidated);
+
+        nvmlFanSpeedInfo_t fanSpeedInfo{};
+        fanSpeedInfo.fan = 0; // Use first fan index, since GetTachReading doesn't support fan indices
+        fanSpeedInfo.version = nvmlFanSpeedInfo_v1;
+        switch (auto result = adapter->GetNvmlDeviceGetFanSpeedRPM(&fanSpeedInfo)) {
+            case NVML_SUCCESS:
+                *pValue = fanSpeedInfo.speed;
+                return Ok(n, alreadyLoggedOk);
+            case NVML_ERROR_NOT_SUPPORTED:
+                return NotSupported(n);
+            case NVML_ERROR_GPU_IS_LOST:
+                return HandleInvalidated(n);
+            default:
+                return Error(str::format(n, ": ", adapter->GetNvmlErrorString(result)));
+        }
+    }
+
     NvAPI_Status __cdecl NvAPI_GPU_GetCurrentPstate(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_PERF_PSTATE_ID* pCurrentPstate) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedNoNvml = false;

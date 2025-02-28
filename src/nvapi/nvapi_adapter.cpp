@@ -329,6 +329,10 @@ namespace dxvk {
         return m_nvml.DeviceGetPerformanceState(m_nvmlDevice, pState);
     }
 
+    nvmlReturn_t NvapiAdapter::GetNvmlDeviceGetFanSpeedRPM(nvmlFanSpeedInfo_t* fanSpeed) const {
+        return m_nvml.DeviceGetFanSpeedRPM(m_nvmlDevice, fanSpeed);
+    }
+
     nvmlReturn_t NvapiAdapter::GetNvmlDeviceUtilizationRates(nvmlUtilization_t* utilization) const {
         return m_nvml.DeviceGetUtilizationRates(m_nvmlDevice, utilization);
     }

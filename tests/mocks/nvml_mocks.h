@@ -12,6 +12,7 @@ class NvmlMock final : public trompeloeil::mock_interface<dxvk::Nvml> {
     IMPLEMENT_CONST_MOCK3(DeviceGetClockInfo);
     IMPLEMENT_CONST_MOCK3(DeviceGetTemperature);
     IMPLEMENT_CONST_MOCK3(DeviceGetThermalSettings);
+    IMPLEMENT_CONST_MOCK2(DeviceGetFanSpeedRPM);
     IMPLEMENT_CONST_MOCK2(DeviceGetPerformanceState);
     IMPLEMENT_CONST_MOCK2(DeviceGetUtilizationRates);
     IMPLEMENT_CONST_MOCK3(DeviceGetVbiosVersion);

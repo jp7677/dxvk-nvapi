@@ -112,6 +112,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     GETNVAPIPROCADDR(GPU_GetVbiosVersionString);
     GETNVAPIPROCADDR(GPU_GetDynamicPstatesInfoEx);
     GETNVAPIPROCADDR(GPU_GetThermalSettings);
+    GETNVAPIPROCADDR(GPU_GetTachReading);
     GETNVAPIPROCADDR(GPU_GetCurrentPstate);
     GETNVAPIPROCADDR(GPU_GetAllClockFrequencies);
     GETNVAPIPROCADDR(GPU_GetConnectedDisplayIds);
@@ -145,6 +146,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     CHECK(nvAPI_GPU_GetVbiosVersionString);
     CHECK(nvAPI_GPU_GetDynamicPstatesInfoEx);
     CHECK(nvAPI_GPU_GetThermalSettings);
+    CHECK(nvAPI_GPU_GetTachReading);
     CHECK(nvAPI_GPU_GetCurrentPstate);
     CHECK(nvAPI_GPU_GetAllClockFrequencies);
     CHECK(nvAPI_GPU_GetConnectedDisplayIds);
@@ -391,6 +393,16 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
             std::cout << "    Current video clock:        ";
             if (result == NVAPI_OK && frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent)
                 std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency / 1000 << "MHz" << std::endl;
+            else
+                std::cout << "N/A" << std::endl;
+        }
+
+        if (nvAPI_GPU_GetTachReading) {
+            NvU32 reading{};
+            result = nvAPI_GPU_GetTachReading(handle, &reading);
+            std::cout << "    Current fan speed:          ";
+            if (result == NVAPI_OK)
+                std::cout << std::dec << reading << "RPM" << std::endl;
             else
                 std::cout << "N/A" << std::endl;
         }
