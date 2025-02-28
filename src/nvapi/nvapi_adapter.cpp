@@ -186,7 +186,7 @@ namespace dxvk {
     }
 
     uint32_t NvapiAdapter::GetSubSystemId() const {
-        if (!this->HasNvmlDevice())
+        if (!this->GetNvml())
             return 0;
 
         nvmlPciInfo_t pciInfo{};
@@ -301,63 +301,17 @@ namespace dxvk {
         return m_vkExtensions.find(name) != m_vkExtensions.end();
     }
 
-    bool NvapiAdapter::HasNvml() const {
-        return m_nvml.IsAvailable();
+    Nvml* NvapiAdapter::GetNvml() const {
+        if (!this->m_nvml.IsAvailable())
+            return nullptr;
+
+        return &m_nvml;
     }
 
-    bool NvapiAdapter::HasNvmlDevice() const {
-        return m_nvml.IsAvailable() && m_nvmlDevice != nullptr;
-    }
+    nvmlDevice_t NvapiAdapter::GetNvmlDevice() const {
+        if (!this->m_nvml.IsAvailable())
+            return nullptr;
 
-    std::string NvapiAdapter::GetNvmlErrorString(nvmlReturn_t result) const {
-        return {m_nvml.ErrorString(result)};
-    }
-
-    nvmlReturn_t NvapiAdapter::GetNvmlDeviceClockInfo(nvmlClockType_t type, unsigned int* clock) const {
-        return m_nvml.DeviceGetClockInfo(m_nvmlDevice, type, clock);
-    }
-
-    nvmlReturn_t NvapiAdapter::GetNvmlDeviceTemperature(nvmlTemperatureSensors_t sensorType, unsigned int* temp) const {
-        return m_nvml.DeviceGetTemperature(m_nvmlDevice, sensorType, temp);
-    }
-
-    nvmlReturn_t NvapiAdapter::GetNvmlDeviceThermalSettings(unsigned int sensorIndex, nvmlGpuThermalSettings_t* pThermalSettings) const {
-        return m_nvml.DeviceGetThermalSettings(m_nvmlDevice, sensorIndex, pThermalSettings);
-    }
-
-    nvmlReturn_t NvapiAdapter::GetNvmlDevicePerformanceState(nvmlPstates_t* pState) const {
-        return m_nvml.DeviceGetPerformanceState(m_nvmlDevice, pState);
-    }
-
-    nvmlReturn_t NvapiAdapter::GetNvmlDeviceGetFanSpeedRPM(nvmlFanSpeedInfo_t* fanSpeed) const {
-        return m_nvml.DeviceGetFanSpeedRPM(m_nvmlDevice, fanSpeed);
-    }
-
-    nvmlReturn_t NvapiAdapter::GetNvmlDeviceUtilizationRates(nvmlUtilization_t* utilization) const {
-        return m_nvml.DeviceGetUtilizationRates(m_nvmlDevice, utilization);
-    }
-
-    nvmlReturn_t NvapiAdapter::GetNvmlDeviceVbiosVersion(char* version, unsigned int length) const {
-        return m_nvml.DeviceGetVbiosVersion(m_nvmlDevice, version, length);
-    }
-
-    nvmlReturn_t NvapiAdapter::GetNvmlDeviceGetCurrPcieLinkWidth(unsigned int* width) const {
-        return m_nvml.DeviceGetCurrPcieLinkWidth(m_nvmlDevice, width);
-    }
-
-    nvmlReturn_t NvapiAdapter::GetNvmlDeviceGetIrqNum(unsigned int* irq) const {
-        return m_nvml.DeviceGetIrqNum(m_nvmlDevice, irq);
-    }
-
-    nvmlReturn_t NvapiAdapter::GetNvmlDeviceNumGpuCores(unsigned int* numCores) const {
-        return m_nvml.DeviceGetNumGpuCores(m_nvmlDevice, numCores);
-    }
-
-    nvmlReturn_t NvapiAdapter::GetNvmlDeviceBusType(nvmlBusType_t* type) const {
-        return m_nvml.DeviceGetBusType(m_nvmlDevice, type);
-    }
-
-    nvmlReturn_t NvapiAdapter::GetNvmlDeviceDynamicPstatesInfo(nvmlGpuDynamicPstatesInfo_t* pDynamicPstatesInfo) const {
-        return m_nvml.DeviceGetDynamicPstatesInfo(m_nvmlDevice, pDynamicPstatesInfo);
+        return m_nvmlDevice;
     }
 }
