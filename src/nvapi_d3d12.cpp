@@ -356,6 +356,32 @@ extern "C" {
         return Ok(str::format(n, " (", numExtensions, "/", extensionNames, ")"), alreadyLoggedOk);
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D12_SetNvShaderExtnSlotSpace(IUnknown* pDevice, NvU32 uavSlot, NvU32 uavSpace) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), uavSlot, uavSpace);
+
+        if (!pDevice)
+            return InvalidArgument(n);
+
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_SetNvShaderExtnSlotSpaceLocalThread(IUnknown* pDev, NvU32 uavSlot, NvU32 uavSpace) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDev), uavSlot, uavSpace);
+
+        if (!pDev)
+            return InvalidArgument(n);
+
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+    }
+
     bool SetDepthBoundsTestValues(ID3D12GraphicsCommandList* commandList, const float minDepth, const float maxDepth) {
         Com<ID3D12GraphicsCommandList1> commandList1;
         if (FAILED(commandList->QueryInterface(IID_PPV_ARGS(&commandList1)))) // There is no VKD3D-Proton version out there that does not implement ID3D12GraphicsCommandList1, this should always succeed

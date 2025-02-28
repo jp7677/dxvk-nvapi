@@ -185,6 +185,14 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(count == 0);
     }
 
+    SECTION("SetNvShaderExtnSlotSpace returns no-implementation") {
+        REQUIRE(NvAPI_D3D12_SetNvShaderExtnSlotSpace(static_cast<ID3D12Device*>(&device), 1U, 1U) == NVAPI_NO_IMPLEMENTATION);
+    }
+
+    SECTION("SetNvShaderExtnSlotSpaceLocalThread returns no-implementation") {
+        REQUIRE(NvAPI_D3D12_SetNvShaderExtnSlotSpaceLocalThread(static_cast<ID3D12Device*>(&device), 1U, 1U) == NVAPI_NO_IMPLEMENTATION);
+    }
+
     SECTION("GetGraphicsCapabilities succeeds") {
         auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
         auto vk = std::make_unique<VkMock>();

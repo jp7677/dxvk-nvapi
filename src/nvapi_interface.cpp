@@ -115,6 +115,8 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_CaptureUAVInfo)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_GetGraphicsCapabilities)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_IsFatbinPTXSupported)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_SetNvShaderExtnSlotSpace)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_SetNvShaderExtnSlotSpaceLocalThread)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_GetRaytracingCaps)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx)
