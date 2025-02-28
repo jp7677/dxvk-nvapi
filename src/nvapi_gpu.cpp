@@ -1189,6 +1189,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_GPU_GetPstates20(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_PERF_PSTATES20_INFO* pPstatesInfo) {
         constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedOk = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pPstatesInfo));
@@ -1205,9 +1207,9 @@ extern "C" {
 
         if (env::needsSucceededGpuQuery()) {
             pPstatesInfo->numPstates = 0;
-            return Ok(n);
+            return Ok(n, alreadyLoggedOk);
         }
 
-        return NoImplementation(n);
+        return NoImplementation(n, alreadyLoggedNoImplementation);
     }
 }
