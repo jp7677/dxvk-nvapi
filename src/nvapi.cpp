@@ -315,6 +315,7 @@ extern "C" {
         if (!szDesc)
             return InvalidArgument(n);
 
+        // This is used in the field to detect DXVK-NVAPI, not a good idea to change it
         str::tonvss(szDesc, "NVAPI Open Source Interface (DXVK-NVAPI)");
 
         return Ok(n);
