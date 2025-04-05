@@ -285,8 +285,39 @@ extern "C" {
         // Note: One might think that SM here is D3D12 Shader Model, in fact it is the "Streaming Multiprocessor" architecture version
         // Values are valid for Turing and newer only, due to VK_NV_cuda_kernel_launch not being supported by earlier generations
         auto computeCapability = adapter->GetComputeCapability();
-        pGraphicsCaps->majorSMVersion = computeCapability.first;
-        pGraphicsCaps->minorSMVersion = computeCapability.second;
+        if (computeCapability.has_value()) {
+            pGraphicsCaps->majorSMVersion = computeCapability.value().first;
+            pGraphicsCaps->minorSMVersion = computeCapability.value().second;
+        } else if (adapter->HasNvProprietaryDriver()) {
+            // Fallback because older than Turing or no support for VK_NV_cuda_kernel_launch
+            // Based on https://gitlab.freedesktop.org/mesa/mesa/-/blob/main/src/nouveau/winsys/nouveau_device.c
+            auto architectureId = adapter->GetArchitectureId();
+            if (architectureId >= NV_GPU_ARCHITECTURE_GB200) {
+                pGraphicsCaps->majorSMVersion = 12; // Report highest known version also for future generations
+                pGraphicsCaps->minorSMVersion = 0;
+            } else if (architectureId == NV_GPU_ARCHITECTURE_AD100) {
+                pGraphicsCaps->majorSMVersion = 8;
+                pGraphicsCaps->minorSMVersion = 9;
+            } else if (architectureId == NV_GPU_ARCHITECTURE_GA100) {
+                pGraphicsCaps->majorSMVersion = 8;
+                pGraphicsCaps->minorSMVersion = 6; // Take the risk that no one uses an NVIDIA A100 with this implementation
+            } else if (architectureId == NV_GPU_ARCHITECTURE_TU100) {
+                pGraphicsCaps->majorSMVersion = 7;
+                pGraphicsCaps->minorSMVersion = 5;
+            } else if (architectureId == NV_GPU_ARCHITECTURE_GV100) {
+                pGraphicsCaps->majorSMVersion = 7;
+                pGraphicsCaps->minorSMVersion = 0;
+            } else if (architectureId == NV_GPU_ARCHITECTURE_GP100) {
+                pGraphicsCaps->majorSMVersion = 6;
+                pGraphicsCaps->minorSMVersion = 0;
+            } else if (architectureId == NV_GPU_ARCHITECTURE_GM200) {
+                pGraphicsCaps->majorSMVersion = 5;
+                pGraphicsCaps->minorSMVersion = 2;
+            } else if (architectureId == NV_GPU_ARCHITECTURE_GM000) {
+                pGraphicsCaps->majorSMVersion = 5;
+                pGraphicsCaps->minorSMVersion = 0;
+            }
+        }
 
         // Might be related to VK_NV_scissor_exclusive (which isn't used by VKD3D-Proton), but unknown in the context of D3D12
         // pGraphicsCaps->bExclusiveScissorRectsSupported = adapter->IsVkDeviceExtensionSupported(VK_NV_SCISSOR_EXCLUSIVE_EXTENSION_NAME);

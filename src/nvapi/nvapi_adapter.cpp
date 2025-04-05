@@ -293,8 +293,14 @@ namespace dxvk {
         return NV_GPU_ARCHITECTURE_GK100;
     }
 
-    std::pair<uint32_t, uint32_t> NvapiAdapter::GetComputeCapability() const {
-        return std::make_pair(m_vkCudaKernelLaunchProperties.computeCapabilityMajor, m_vkCudaKernelLaunchProperties.computeCapabilityMinor);
+    std::optional<std::pair<uint32_t, uint32_t>> NvapiAdapter::GetComputeCapability() const {
+        if (!IsVkDeviceExtensionSupported(VK_NV_CUDA_KERNEL_LAUNCH_EXTENSION_NAME))
+            return {};
+
+        return std::make_optional(
+            std::make_pair(
+                m_vkCudaKernelLaunchProperties.computeCapabilityMajor,
+                m_vkCudaKernelLaunchProperties.computeCapabilityMinor));
     }
 
     bool NvapiAdapter::IsVkDeviceExtensionSupported(const std::string& name) const {
