@@ -244,7 +244,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 bool variablePixelRateShadingSupported;
             };
             auto args = GENERATE(
-                Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, {VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, VK_NV_CUDA_KERNEL_LAUNCH_EXTENSION_NAME}, 8, 6, true},
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, {VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME}, 8, 6, true},
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, {}, 0, 0, false},
                 Data{VK_DRIVER_ID_MESA_NVK, 0x2600, {VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME}, 0, 0, true},
@@ -272,10 +271,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                             vkProps.props->deviceID = args.deviceId;
                             if (args.extensionNames.contains(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME))
                                 vkProps.fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
-                            if (args.extensionNames.contains(VK_NV_CUDA_KERNEL_LAUNCH_EXTENSION_NAME)) {
-                                vkProps.cudaKernelLaunchProperties->computeCapabilityMajor = 8;
-                                vkProps.cudaKernelLaunchProperties->computeCapabilityMinor = 6;
-                            }
                         }));
 
             SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));

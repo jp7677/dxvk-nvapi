@@ -39,7 +39,6 @@ struct ConfigureProps {
     VkPhysicalDeviceDriverPropertiesKHR* driverProps;
     VkPhysicalDeviceFragmentShadingRatePropertiesKHR* fragmentShadingRateProps;
     VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR* computeShaderDerivativesProps;
-    VkPhysicalDeviceCudaKernelLaunchPropertiesNV* cudaKernelLaunchProperties;
 };
 
 void ConfigureGetPhysicalDeviceProperties2(
