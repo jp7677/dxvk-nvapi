@@ -283,13 +283,7 @@ extern "C" {
 
         // From https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/ and https://en.wikipedia.org/wiki/CUDA#GPUs_supported
         // Note: One might think that SM here is D3D12 Shader Model, in fact it is the "Streaming Multiprocessor" architecture version
-        // Values are valid for Turing and newer only, due to VK_NV_cuda_kernel_launch not being supported by earlier generations
-        auto computeCapability = adapter->GetComputeCapability();
-        if (computeCapability.has_value()) {
-            pGraphicsCaps->majorSMVersion = computeCapability.value().first;
-            pGraphicsCaps->minorSMVersion = computeCapability.value().second;
-        } else if (adapter->HasNvProprietaryDriver()) {
-            // Fallback because older than Turing or no support for VK_NV_cuda_kernel_launch
+        if (adapter->HasNvProprietaryDriver()) {
             // Based on https://gitlab.freedesktop.org/mesa/mesa/-/blob/main/src/nouveau/winsys/nouveau_device.c
             auto architectureId = adapter->GetArchitectureId();
             if (architectureId >= NV_GPU_ARCHITECTURE_GB200) {
