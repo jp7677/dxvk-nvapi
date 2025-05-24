@@ -117,9 +117,11 @@ The following environment variables tweak DXVK-NVAPI's runtime behavior:
     - `NGX_DLSS_OVERRIDE_OPTIMAL_SETTINGS`
     - `NGX_DLSS_RR_OVERRIDE`
     - `NGX_DLSS_RR_OVERRIDE_RENDER_PRESET_SELECTION`
+    - `NGX_DLSS_RR_OVERRIDE_SCALING_RATIO`
     - `NGX_DLSS_SR_MODE`
     - `NGX_DLSS_SR_OVERRIDE`
     - `NGX_DLSS_SR_OVERRIDE_RENDER_PRESET_SELECTION`
+    - `NGX_DLSS_SR_OVERRIDE_SCALING_RATIO`
   - The corresponding values can be deduced from the [NVAPI `NvApiDriverSettings.h` header](https://github.com/NVIDIA/nvapi/blob/d08488fcc82eef313b0464db37d2955709691e94/NvApiDriverSettings.h#L700) with the setting type prefix omitted, for example `DXVK_NVAPI_DRS_SETTINGS=NGX_DLSS_FG_OVERRIDE=on`. Both setting name (`NGX_DLSS_FG_OVERRIDE`) and value (`on`) are case-insensitive.
   - Furthermore, each supported named setting can also be configured with a dedicated environment variable, the name of which is constructed by prefixing setting name with `DXVK_NVAPI_DRS_`, for example `DXVK_NVAPI_DRS_NGX_DLSS_FG_OVERRIDE=on`. The name of environment variable is case-sensitive, the value is not. If a setting is set via both `DXVK_NVAPI_DRS_SETTINGS` and its own dedicated environment variable, the latter takes precedence.
   - See the [Passing driver settings](https://github.com/jp7677/dxvk-nvapi/wiki/Passing-driver-settings) wiki page for more information and examples.
