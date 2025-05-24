@@ -673,6 +673,52 @@ extern "C" {
         return Ok(str::format(n, " (", type, "): ", *static_cast<int*>(pData)));
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D12_SetCreatePipelineStateOptions(ID3D12Device5* pDevice, const NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS* pState) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pState));
+
+        if (!pDevice || !pState)
+            return InvalidPointer(n);
+
+        auto device = NvapiD3d12Device::GetOrCreate(pDevice);
+        if (!device)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        auto result = device->SetCreatePipelineStateOptions(pState);
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+
+        log::info(str::format("<-", n, ": ", result));
+        return result;
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_CheckDriverMatchingIdentifierEx(ID3D12Device5* pDevice, NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
+
+        if (!pDevice || !pParams)
+            return InvalidPointer(n);
+
+        auto device = NvapiD3d12Device::GetOrCreate(pDevice);
+        if (!device)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        auto result = device->CheckDriverMatchingIdentifierEx(pParams);
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+
+        log::info(str::format("<-", n, ": ", result));
+        return result;
+    }
+
     static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
         d3dDesc->Type = nvDesc->type;
         // assume that none of OMM, DMM, Spheres or LSS is supported, allow only standard flags to be passed
@@ -769,6 +815,75 @@ extern "C" {
         return Ok(n, alreadyLoggedOk);
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo(ID3D12Device5* pDevice, NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
+
+        if (!pDevice || !pParams)
+            return InvalidPointer(n);
+
+        auto device = NvapiD3d12Device::GetOrCreate(pDevice);
+        if (!device || !device->IsOpacityMicromapSupported())
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        auto result = device->GetRaytracingOpacityMicromapArrayPrebuildInfo(pParams);
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+
+        log::info(str::format("<-", n, ": ", result));
+        return result;
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingMultiIndirectClusterOperationRequirementsInfo(ID3D12Device5* pDevice, const NVAPI_GET_RAYTRACING_MULTI_INDIRECT_CLUSTER_OPERATION_REQUIREMENTS_INFO_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
+
+        if (!pDevice || !pParams)
+            return InvalidPointer(n);
+
+        auto device = NvapiD3d12Device::GetOrCreate(pDevice);
+        if (!device || !device->IsClusterAccelerationStructureSupported())
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        auto result = device->GetRaytracingMultiIndirectClusterOperationRequirementsInfo(pParams);
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+
+        log::info(str::format("<-", n, ": ", result));
+        return result;
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingPartitionedTlasIndirectPrebuildInfo(ID3D12Device5* pDevice, const NVAPI_GET_BUILD_RAYTRACING_PARTITIONED_TLAS_INDIRECT_PREBUILD_INFO_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
+
+        if (!pDevice || !pParams)
+            return InvalidPointer(n);
+
+        auto device = NvapiD3d12Device::GetOrCreate(pDevice);
+        if (!device || !device->IsPartitionedAccelerationStructureSupported())
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        auto result = device->GetRaytracingPartitionedTlasIndirectPrebuildInfo(pParams);
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+
+        log::info(str::format("<-", n, ": ", result));
+        return result;
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS* pParams) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedOk = false;
@@ -808,6 +923,121 @@ extern "C" {
         pCommandList->BuildRaytracingAccelerationStructure(&desc, pParams->numPostbuildInfoDescs, pParams->pPostbuildInfoDescs);
 
         return Ok(n, alreadyLoggedOk);
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_BuildRaytracingOpacityMicromapArray(ID3D12GraphicsCommandList4* pCommandList, NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pCommandList), log::fmt::ptr(pParams));
+
+        if (!pCommandList || !pParams)
+            return InvalidPointer(n);
+
+        auto commandList = NvapiD3d12GraphicsCommandList::GetOrCreate(pCommandList);
+        if (!commandList)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        auto result = commandList->BuildRaytracingOpacityMicromapArray(pParams);
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+
+        log::info(str::format("<-", n, ": ", result));
+        return result;
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_RelocateRaytracingOpacityMicromapArray(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pCommandList), log::fmt::ptr(pParams));
+
+        if (!pCommandList || !pParams)
+            return InvalidPointer(n);
+
+        auto commandList = NvapiD3d12GraphicsCommandList::GetOrCreate(pCommandList);
+        if (!commandList)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        auto result = commandList->RelocateRaytracingOpacityMicromapArray(pParams);
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+
+        log::info(str::format("<-", n, ": ", result));
+        return result;
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_EmitRaytracingOpacityMicromapArrayPostbuildInfo(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pCommandList), log::fmt::ptr(pParams));
+
+        if (!pCommandList || !pParams)
+            return InvalidPointer(n);
+
+        auto commandList = NvapiD3d12GraphicsCommandList::GetOrCreate(pCommandList);
+        if (!commandList)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        auto result = commandList->EmitRaytracingOpacityMicromapArrayPostbuildInfo(pParams);
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+
+        log::info(str::format("<-", n, ": ", result));
+        return result;
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_RaytracingExecuteMultiIndirectClusterOperation(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_RAYTRACING_EXECUTE_MULTI_INDIRECT_CLUSTER_OPERATION_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pCommandList), log::fmt::ptr(pParams));
+
+        if (!pCommandList || !pParams)
+            return InvalidPointer(n);
+
+        auto commandList = NvapiD3d12GraphicsCommandList::GetOrCreate(pCommandList);
+        if (!commandList)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        auto result = commandList->RaytracingExecuteMultiIndirectClusterOperation(pParams);
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+
+        log::info(str::format("<-", n, ": ", result));
+        return result;
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_BuildRaytracingPartitionedTlasIndirect(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_BUILD_RAYTRACING_PARTITIONED_TLAS_INDIRECT_PARAMS* pParams) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pCommandList), log::fmt::ptr(pParams));
+
+        if (!pCommandList || !pParams)
+            return InvalidPointer(n);
+
+        auto commandList = NvapiD3d12GraphicsCommandList::GetOrCreate(pCommandList);
+        if (!commandList)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        auto result = commandList->BuildRaytracingPartitionedTlasIndirect(pParams);
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+
+        log::info(str::format("<-", n, ": ", result));
+        return result;
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
