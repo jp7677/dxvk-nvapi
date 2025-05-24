@@ -798,6 +798,15 @@ NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D
     if (!pDevice || !pParams)
         return InvalidArgument(n);
 
+    if (auto device = NvapiD3d12Device::GetOrCreate(pDevice)) {
+        auto result = device->GetRaytracingAccelerationStructurePrebuildInfoEx(pParams);
+
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+        else
+            log::info(str::format("<-", n, ": ", result, ", trying fallback"));
+    }
+
     if (pParams->version != NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS_VER1)
         return IncompatibleStructVersion(n, pParams->version);
 
@@ -824,6 +833,15 @@ NVAPI_FUNCTION NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(ID3D12Graphics
 
     if (!pCommandList || !pParams)
         return InvalidArgument(n);
+
+    if (auto commandList = NvapiD3d12GraphicsCommandList::GetOrCreate(pCommandList)) {
+        auto result = commandList->BuildRaytracingAccelerationStructureEx(pParams);
+
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+        else
+            log::info(str::format("<-", n, ": ", result, ", trying fallback"));
+    }
 
     if (pParams->version != NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER1)
         return IncompatibleStructVersion(n, pParams->version);
