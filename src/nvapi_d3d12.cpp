@@ -22,10 +22,11 @@ extern "C" {
         if (!pDevice || !pSupported)
             return InvalidArgument(n);
 
-        // VKD3D-Proton does not know any NVIDIA intrinsics
-        *pSupported = false;
+        auto device = NvapiD3d12Device::GetOrCreate(pDevice);
 
-        return Ok(str::format(n, " (", opCode, "/", fromCode(opCode), ")"));
+        *pSupported = device && device->IsNvShaderExtnOpCodeSupported(opCode);
+
+        return Ok(str::format(n, " (", opCode, "/", fromCode(opCode), "): ", *pSupported));
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_EnumerateMetaCommands(ID3D12Device* pDevice, NvU32* pNumMetaCommands, NVAPI_META_COMMAND_DESC* pDescs) {
@@ -528,6 +529,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D12_SetNvShaderExtnSlotSpace(IUnknown* pDevice, NvU32 uavSlot, NvU32 uavSpace) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedOk = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), uavSlot, uavSpace);
@@ -535,12 +537,22 @@ extern "C" {
         if (!pDevice)
             return InvalidArgument(n);
 
-        return NoImplementation(n, alreadyLoggedNoImplementation);
+        auto device = NvapiD3d12Device::GetOrCreate(static_cast<ID3D12Device*>(pDevice));
+        if (!device)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        auto result = device->SetNvShaderExtnSlotSpace(uavSlot, uavSpace, false);
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+
+        log::info(str::format("<-", n, ": ", result));
+        return result;
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_SetNvShaderExtnSlotSpaceLocalThread(IUnknown* pDev, NvU32 uavSlot, NvU32 uavSpace) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedOk = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDev), uavSlot, uavSpace);
@@ -548,7 +560,16 @@ extern "C" {
         if (!pDev)
             return InvalidArgument(n);
 
-        return NoImplementation(n, alreadyLoggedNoImplementation);
+        auto device = NvapiD3d12Device::GetOrCreate(static_cast<ID3D12Device*>(pDev));
+        if (!device)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        auto result = device->SetNvShaderExtnSlotSpace(uavSlot, uavSpace, true);
+        if (result == NVAPI_OK)
+            return Ok(n, alreadyLoggedOk);
+
+        log::info(str::format("<-", n, ": ", result));
+        return result;
     }
 
     bool SetDepthBoundsTestValues(ID3D12GraphicsCommandList* commandList, const float minDepth, const float maxDepth) {
@@ -586,6 +607,8 @@ extern "C" {
         if (!pDevice || !pData)
             return InvalidPointer(n);
 
+        auto device = NvapiD3d12Device::GetOrCreate(pDevice);
+
         switch (type) {
             case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING:
                 if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS))
@@ -599,7 +622,9 @@ extern "C" {
                 if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS))
                     return InvalidArgument(n);
 
-                *static_cast<NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE;
+                *static_cast<NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS*>(pData) = device && device->IsOpacityMicromapSupported()
+                    ? NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_STANDARD
+                    : NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE;
                 break;
 
             case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_DISPLACEMENT_MICROMAP:
@@ -609,16 +634,48 @@ extern "C" {
                 *static_cast<NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_NONE;
                 break;
 
+            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_CLUSTER_OPERATIONS:
+                if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAPS))
+                    return InvalidArgument(n);
+
+                *static_cast<NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAPS*>(pData) = device && device->IsClusterAccelerationStructureSupported()
+                    ? NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAP_STANDARD
+                    : NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAP_NONE;
+                break;
+
+            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_PARTITIONED_TLAS:
+                if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAPS))
+                    return InvalidArgument(n);
+
+                *static_cast<NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAPS*>(pData) = device && device->IsPartitionedAccelerationStructureSupported()
+                    ? NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAP_STANDARD
+                    : NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAP_NONE;
+                break;
+
+            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_SPHERES:
+                if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_SPHERES_CAPS))
+                    return InvalidArgument(n);
+
+                *static_cast<NVAPI_D3D12_RAYTRACING_SPHERES_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_SPHERES_CAP_NONE;
+                break;
+
+            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_LINEAR_SWEPT_SPHERES:
+                if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS))
+                    return InvalidArgument(n);
+
+                *static_cast<NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_NONE;
+                break;
+
             default:
-                return InvalidArgument(n);
+                return InvalidArgument(str::format(n, " (", type, ")"));
         }
 
-        return Ok(str::format(n, " (", type, ")"));
+        return Ok(str::format(n, " (", type, "): ", *static_cast<int*>(pData)));
     }
 
     static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
         d3dDesc->Type = nvDesc->type;
-        // assume that OMM via VK_EXT_opacity_micromap and DMM via VK_NV_displacement_micromap are not supported, allow only standard flags to be passed
+        // assume that none of OMM, DMM, Spheres or LSS is supported, allow only standard flags to be passed
         d3dDesc->Flags = static_cast<D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS>(nvDesc->flags & 0x3f);
         d3dDesc->NumDescs = nvDesc->numDescs;
         d3dDesc->DescsLayout = nvDesc->descsLayout;
@@ -657,6 +714,12 @@ extern "C" {
                     case NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_DMM_TRIANGLES_EX: // GetRaytracingCaps reports no DMM caps, we shouldn't reach this
                         log::info("Triangles with DMM attachment passed to acceleration structure build when DMM is not supported");
                         return false;
+                    case NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_SPHERES_EX: // GetRaytracingCaps reports no Spheres caps, we shouldn't reach this
+                        log::info("Spheres passed to acceleration structure build when Spheres are not supported");
+                        return false;
+                    case NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_LSS_EX: // GetRaytracingCaps reports no LSS caps, we shouldn't reach this
+                        log::info("LSS passed to acceleration structure build when LSS are not supported");
+                        return false;
                     default:
                         log::info(str::format("Unknown NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_EX: ", nvGeoDesc.type));
                         return false;
@@ -679,6 +742,15 @@ extern "C" {
 
         if (!pDevice || !pParams)
             return InvalidArgument(n);
+
+        if (auto device = NvapiD3d12Device::GetOrCreate(pDevice)) {
+            auto result = device->GetRaytracingAccelerationStructurePrebuildInfoEx(pParams);
+
+            if (result == NVAPI_OK)
+                return Ok(n, alreadyLoggedOk);
+            else
+                log::info(str::format("<-", n, ": ", result, ", trying fallback"));
+        }
 
         if (pParams->version != NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS_VER1)
             return IncompatibleStructVersion(n, pParams->version);
@@ -706,6 +778,15 @@ extern "C" {
 
         if (!pCommandList || !pParams)
             return InvalidArgument(n);
+
+        if (auto commandList = NvapiD3d12GraphicsCommandList::GetOrCreate(pCommandList)) {
+            auto result = commandList->BuildRaytracingAccelerationStructureEx(pParams);
+
+            if (result == NVAPI_OK)
+                return Ok(n, alreadyLoggedOk);
+            else
+                log::info(str::format("<-", n, ": ", result, ", trying fallback"));
+        }
 
         if (pParams->version != NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER1)
             return IncompatibleStructVersion(n, pParams->version);
