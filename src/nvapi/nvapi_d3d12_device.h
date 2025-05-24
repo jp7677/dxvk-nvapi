@@ -31,6 +31,17 @@ namespace dxvk {
         [[nodiscard]] bool IsNvShaderExtnOpCodeSupported(UINT32 opCode) const;
         [[nodiscard]] HRESULT SetNvShaderExtnSlotSpace(UINT32 uavSlot, UINT32 uavSpace, bool localThread) const;
 
+        [[nodiscard]] bool IsOpacityMicromapSupported() const;
+        [[nodiscard]] NvAPI_Status SetCreatePipelineStateOptions(const NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS* params) const;
+        [[nodiscard]] NvAPI_Status CheckDriverMatchingIdentifierEx(NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS* params) const;
+        [[nodiscard]] NvAPI_Status GetRaytracingAccelerationStructurePrebuildInfoEx(NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* params) const;
+        [[nodiscard]] NvAPI_Status GetRaytracingOpacityMicromapArrayPrebuildInfo(NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS* params) const;
+
+        [[nodiscard]] bool IsClusterAccelerationStructureSupported() const;
+        [[nodiscard]] bool IsPartitionedAccelerationStructureSupported() const;
+        [[nodiscard]] NvAPI_Status GetRaytracingMultiIndirectClusterOperationRequirementsInfo(const NVAPI_GET_RAYTRACING_MULTI_INDIRECT_CLUSTER_OPERATION_REQUIREMENTS_INFO_PARAMS* params) const;
+        [[nodiscard]] NvAPI_Status GetRaytracingPartitionedTlasIndirectPrebuildInfo(const NVAPI_GET_BUILD_RAYTRACING_PARTITIONED_TLAS_INDIRECT_PREBUILD_INFO_PARAMS* params) const;
+
       private:
         static std::unordered_map<ID3D12Device*, NvapiD3d12Device> m_nvapiDeviceMap;
         static std::mutex m_mutex;
@@ -40,10 +51,15 @@ namespace dxvk {
 
         static std::optional<bool> m_cubin64bitSupportAvailable;
 
-        ID3D12DeviceExt4* m_vkd3dDevice{};
+        ID3D12DeviceExt6* m_vkd3dDevice{};
         bool m_supportsCubin64bit = false;
         bool m_supportsNvShaderExtn = false;
         bool m_supportsNvxBinaryImport = false;
         bool m_supportsNvxImageViewHandle = false;
+        bool m_supportsDeviceExt5 = false;
+        bool m_supportsOpacityMicromap = false;
+        bool m_supportsDeviceExt6 = false;
+        bool m_supportsClusterAccelerationStructure = false;
+        bool m_supportsPartitionedAccelerationStructure = false;
     };
 }
