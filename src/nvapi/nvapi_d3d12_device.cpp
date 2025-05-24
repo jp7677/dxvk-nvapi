@@ -48,7 +48,7 @@ namespace dxvk {
     }
 
     NvapiD3d12Device::NvapiD3d12Device(ID3D12DeviceExt* vkd3dDevice)
-        : m_vkd3dDevice(static_cast<ID3D12DeviceExt2*>(vkd3dDevice)) {
+        : m_vkd3dDevice(static_cast<ID3D12DeviceExt4*>(vkd3dDevice)) {
         m_supportsNvxBinaryImport = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_BINARY_IMPORT);
         m_supportsNvxImageViewHandle = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_IMAGE_VIEW_HANDLE);
 
@@ -56,6 +56,17 @@ namespace dxvk {
             if (Com<ID3D12DeviceExt2> deviceExt2; SUCCEEDED(m_vkd3dDevice->QueryInterface(IID_PPV_ARGS(&deviceExt2)))) {
                 m_supportsCubin64bit = deviceExt2->SupportsCubin64bit();
             }
+        }
+
+        if (Com<ID3D12DeviceExt3> deviceExt3; SUCCEEDED(m_vkd3dDevice->QueryInterface(IID_PPV_ARGS(&deviceExt3)))) {
+            m_supportsDeviceExt3 = true;
+            m_supportsOpacityMicromap = vkd3dDevice->GetExtensionSupport(D3D12_VK_EXT_OPACITY_MICROMAP);
+        }
+
+        if (Com<ID3D12DeviceExt4> deviceExt4; SUCCEEDED(m_vkd3dDevice->QueryInterface(IID_PPV_ARGS(&deviceExt4)))) {
+            m_supportsDeviceExt4 = true;
+            m_supportsClusterAccelerationStructure = vkd3dDevice->GetExtensionSupport(D3D12_VK_NV_CLUSTER_ACCELERATION_STRUCTURE);
+            m_supportsPartitionedAccelerationStructure = vkd3dDevice->GetExtensionSupport(D3D12_VK_NV_PARTITIONED_ACCELERATION_STRUCTURE);
         }
     }
 
@@ -142,5 +153,70 @@ namespace dxvk {
             return E_NOTIMPL;
 
         return m_vkd3dDevice->GetCudaIndependentDescriptorObject(params);
+    }
+
+    bool NvapiD3d12Device::IsOpacityMicromapSupported() const {
+        return m_supportsOpacityMicromap;
+    }
+
+    NvAPI_Status NvapiD3d12Device::SetCreatePipelineStateOptions(const NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS* params) const {
+        if (!m_supportsDeviceExt3)
+            return NVAPI_NO_IMPLEMENTATION;
+
+        return static_cast<NvAPI_Status>(m_vkd3dDevice->SetCreatePipelineStateOptions(params));
+    }
+
+    NvAPI_Status NvapiD3d12Device::CheckDriverMatchingIdentifierEx(NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS* params) const {
+        if (!m_supportsDeviceExt3)
+            return NVAPI_NO_IMPLEMENTATION;
+
+        return static_cast<NvAPI_Status>(m_vkd3dDevice->CheckDriverMatchingIdentifierEx(params));
+    }
+
+    NvAPI_Status NvapiD3d12Device::GetRaytracingAccelerationStructurePrebuildInfoEx(NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* params) const {
+        if (!m_supportsDeviceExt3)
+            return NVAPI_NO_IMPLEMENTATION;
+
+        return static_cast<NvAPI_Status>(m_vkd3dDevice->GetRaytracingAccelerationStructurePrebuildInfoEx(params));
+    }
+
+    NvAPI_Status NvapiD3d12Device::GetRaytracingOpacityMicromapArrayPrebuildInfo(NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS* params) const {
+        if (!m_supportsDeviceExt3 || !m_supportsOpacityMicromap)
+            return NVAPI_NO_IMPLEMENTATION;
+
+        return static_cast<NvAPI_Status>(m_vkd3dDevice->GetRaytracingOpacityMicromapArrayPrebuildInfo(params));
+    }
+
+    bool NvapiD3d12Device::IsClusterAccelerationStructureSupported() const {
+        return m_supportsClusterAccelerationStructure;
+    }
+
+    bool NvapiD3d12Device::IsPartitionedAccelerationStructureSupported() const {
+        return m_supportsPartitionedAccelerationStructure;
+    }
+
+    bool NvapiD3d12Device::IsNvShaderExtnOpCodeSupported(uint32_t opCode) const {
+        return m_supportsDeviceExt4 && m_vkd3dDevice->IsNvShaderExtnOpCodeSupported(opCode);
+    }
+
+    NvAPI_Status NvapiD3d12Device::SetNvShaderExtnSlotSpace(uint32_t uavSlot, uint32_t uavSpace, bool localThread) const {
+        if (!m_supportsDeviceExt4)
+            return NVAPI_NO_IMPLEMENTATION;
+
+        return static_cast<NvAPI_Status>(m_vkd3dDevice->SetNvShaderExtnSlotSpace(uavSlot, uavSpace, localThread));
+    }
+
+    NvAPI_Status NvapiD3d12Device::GetRaytracingMultiIndirectClusterOperationRequirementsInfo(const NVAPI_GET_RAYTRACING_MULTI_INDIRECT_CLUSTER_OPERATION_REQUIREMENTS_INFO_PARAMS* params) const {
+        if (!m_supportsDeviceExt4 || !m_supportsClusterAccelerationStructure)
+            return NVAPI_NO_IMPLEMENTATION;
+
+        return static_cast<NvAPI_Status>(m_vkd3dDevice->GetRaytracingMultiIndirectClusterOperationRequirementsInfo(params));
+    }
+
+    NvAPI_Status NvapiD3d12Device::GetRaytracingPartitionedTlasIndirectPrebuildInfo(const NVAPI_GET_BUILD_RAYTRACING_PARTITIONED_TLAS_INDIRECT_PREBUILD_INFO_PARAMS* params) const {
+        if (!m_supportsDeviceExt4 || !m_supportsPartitionedAccelerationStructure)
+            return NVAPI_NO_IMPLEMENTATION;
+
+        return static_cast<NvAPI_Status>(m_vkd3dDevice->GetRaytracingPartitionedTlasIndirectPrebuildInfo(params));
     }
 }
