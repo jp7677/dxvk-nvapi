@@ -58,6 +58,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt5*>(&device))
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
+    ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt6), _))
+        .RETURN(E_NOINTERFACE);
     ALLOW_CALL(device, AddRef())
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(deviceRefCount);
@@ -1111,6 +1113,8 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt5*>(&device))
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
+    ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt6), _))
+        .RETURN(E_NOINTERFACE);
     ALLOW_CALL(device, AddRef())
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(deviceRefCount);
