@@ -38,6 +38,11 @@ namespace dxvk {
         [[nodiscard]] bool IsOpacityMicromapSupported() const;
         [[nodiscard]] bool SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG pipeline_state_flags);
 
+        [[nodiscard]] bool IsClusterAccelerationStructureSupported() const;
+        [[nodiscard]] bool IsPartitionedAccelerationStructureSupported() const;
+        [[nodiscard]] NvAPI_Status GetRaytracingMultiIndirectClusterOperationRequirementsInfo(const NVAPI_GET_RAYTRACING_MULTI_INDIRECT_CLUSTER_OPERATION_REQUIREMENTS_INFO_PARAMS* params) const;
+        [[nodiscard]] NvAPI_Status GetRaytracingPartitionedTlasIndirectPrebuildInfo(const NVAPI_GET_BUILD_RAYTRACING_PARTITIONED_TLAS_INDIRECT_PREBUILD_INFO_PARAMS* params) const;
+
       private:
         static std::atomic<LONGLONG> m_resetTimestamp;
         static std::mutex m_mutex;
@@ -48,12 +53,14 @@ namespace dxvk {
         static std::optional<bool> m_cubin64bitSupportAvailable;
 
         LONGLONG m_creationTimestamp{};
-        ID3D12DeviceExt5* m_vkd3dDevice{};
+        ID3D12DeviceExt6* m_vkd3dDevice{};
         bool m_supportsCubin64bit = false;
         bool m_supportsNvShaderExtn = false;
         bool m_supportsNvxBinaryImport = false;
         bool m_supportsNvxImageViewHandle = false;
         bool m_supportsGlobalPipelineStateFlags = false;
         bool m_supportsOpacityMicromap = false;
+        bool m_supportsClusterAccelerationStructure = false;
+        bool m_supportsPartitionedAccelerationStructure = false;
     };
 }
