@@ -15,9 +15,11 @@ namespace dxvk::drs {
         ENTRY(NGX_DLSS_OVERRIDE_OPTIMAL_SETTINGS),
         ENTRY(NGX_DLSS_RR_OVERRIDE),
         ENTRY(NGX_DLSS_RR_OVERRIDE_RENDER_PRESET_SELECTION),
+        ENTRY(NGX_DLSS_RR_OVERRIDE_SCALING_RATIO),
         ENTRY(NGX_DLSS_SR_MODE),
         ENTRY(NGX_DLSS_SR_OVERRIDE),
         ENTRY(NGX_DLSS_SR_OVERRIDE_RENDER_PRESET_SELECTION),
+        ENTRY(NGX_DLSS_SR_OVERRIDE_SCALING_RATIO),
 #undef ENTRY
 #undef SETTING_ID
     };
@@ -75,6 +77,13 @@ namespace dxvk::drs {
                    ENTRY1(DEFAULT),
                }},
 #undef SETTING
+#define SETTING NGX_DLSS_RR_OVERRIDE_SCALING_RATIO
+        {ID(), {
+                   ENTRY1(MIN),
+                   ENTRY1(MAX),
+                   ENTRY1(DEFAULT),
+               }},
+#undef SETTING
 #define SETTING NGX_DLSS_RR_OVERRIDE
         {ID(), {
                    ENTRY1(OFF),
@@ -91,15 +100,6 @@ namespace dxvk::drs {
                    ENTRY1(RENDER_PRESET_D),
                    ENTRY1(RENDER_PRESET_E),
                    ENTRY1(RENDER_PRESET_F),
-                   ENTRY1(RENDER_PRESET_G),
-                   ENTRY1(RENDER_PRESET_H),
-                   ENTRY1(RENDER_PRESET_I),
-                   ENTRY1(RENDER_PRESET_J),
-                   ENTRY1(RENDER_PRESET_K),
-                   ENTRY1(RENDER_PRESET_L),
-                   ENTRY1(RENDER_PRESET_M),
-                   ENTRY1(RENDER_PRESET_N),
-                   ENTRY1(RENDER_PRESET_O),
                    ENTRY1(RENDER_PRESET_Latest),
                    ENTRY1(DEFAULT),
                }},
@@ -113,6 +113,13 @@ namespace dxvk::drs {
                    ENTRY2(DLAA),
                    ENTRY2(ULTRA_PERFORMANCE),
                    ENTRY2(CUSTOM),
+                   ENTRY1(DEFAULT),
+               }},
+#undef SETTING
+#define SETTING NGX_DLSS_SR_OVERRIDE_SCALING_RATIO
+        {ID(), {
+                   ENTRY1(MIN),
+                   ENTRY1(MAX),
                    ENTRY1(DEFAULT),
                }},
 #undef SETTING
@@ -136,11 +143,6 @@ namespace dxvk::drs {
                    ENTRY1(RENDER_PRESET_H),
                    ENTRY1(RENDER_PRESET_I),
                    ENTRY1(RENDER_PRESET_J),
-                   ENTRY1(RENDER_PRESET_K),
-                   ENTRY1(RENDER_PRESET_L),
-                   ENTRY1(RENDER_PRESET_M),
-                   ENTRY1(RENDER_PRESET_N),
-                   ENTRY1(RENDER_PRESET_O),
                    ENTRY1(RENDER_PRESET_Latest),
                    ENTRY1(DEFAULT),
                }},
