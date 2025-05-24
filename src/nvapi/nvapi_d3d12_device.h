@@ -26,6 +26,19 @@ namespace dxvk {
         [[nodiscard]] HRESULT GetCudaMergedTextureSamplerObject(D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS* params) const;
         [[nodiscard]] HRESULT GetCudaIndependentDescriptorObject(D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS* params) const;
 
+        [[nodiscard]] bool IsOpacityMicromapSupported() const;
+        [[nodiscard]] NvAPI_Status SetCreatePipelineStateOptions(const NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS* params) const;
+        [[nodiscard]] NvAPI_Status CheckDriverMatchingIdentifierEx(NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS* params) const;
+        [[nodiscard]] NvAPI_Status GetRaytracingAccelerationStructurePrebuildInfoEx(NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* params) const;
+        [[nodiscard]] NvAPI_Status GetRaytracingOpacityMicromapArrayPrebuildInfo(NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS* params) const;
+
+        [[nodiscard]] bool IsClusterAccelerationStructureSupported() const;
+        [[nodiscard]] bool IsPartitionedAccelerationStructureSupported() const;
+        [[nodiscard]] bool IsNvShaderExtnOpCodeSupported(uint32_t opCode) const;
+        [[nodiscard]] NvAPI_Status SetNvShaderExtnSlotSpace(uint32_t uavSlot, uint32_t uavSpace, bool localThread) const;
+        [[nodiscard]] NvAPI_Status GetRaytracingMultiIndirectClusterOperationRequirementsInfo(const NVAPI_GET_RAYTRACING_MULTI_INDIRECT_CLUSTER_OPERATION_REQUIREMENTS_INFO_PARAMS* params) const;
+        [[nodiscard]] NvAPI_Status GetRaytracingPartitionedTlasIndirectPrebuildInfo(const NVAPI_GET_BUILD_RAYTRACING_PARTITIONED_TLAS_INDIRECT_PREBUILD_INFO_PARAMS* params) const;
+
       private:
         static std::unordered_map<ID3D12Device*, NvapiD3d12Device> m_nvapiDeviceMap;
         static std::mutex m_mutex;
@@ -33,9 +46,14 @@ namespace dxvk {
         static std::unordered_map<NVDX_ObjectHandle, NvU32> m_cubinSmemMap;
         static std::mutex m_cubinSmemMutex;
 
-        ID3D12DeviceExt2* m_vkd3dDevice{};
+        ID3D12DeviceExt4* m_vkd3dDevice{};
         bool m_supportsCubin64bit = false;
         bool m_supportsNvxBinaryImport = false;
         bool m_supportsNvxImageViewHandle = false;
+        bool m_supportsDeviceExt3 = false;
+        bool m_supportsOpacityMicromap = false;
+        bool m_supportsDeviceExt4 = false;
+        bool m_supportsClusterAccelerationStructure = false;
+        bool m_supportsPartitionedAccelerationStructure = false;
     };
 }
