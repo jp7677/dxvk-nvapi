@@ -47,13 +47,14 @@ namespace dxvk {
     }
 
     NvapiD3d12GraphicsCommandList::NvapiD3d12GraphicsCommandList(ID3D12GraphicsCommandListExt* vkd3dCommandList)
-        : m_vkd3dGraphicsCommandList(static_cast<ID3D12GraphicsCommandListExt2*>(vkd3dCommandList)) { // NOLINT(*-pro-type-static-cast-downcast)
+        : m_vkd3dGraphicsCommandList(static_cast<ID3D12GraphicsCommandListExt3*>(vkd3dCommandList)) { // NOLINT(*-pro-type-static-cast-downcast)
         if (!vkd3dCommandList)
             return;
 
         uint32_t commandListTier = probeInterfaceChain(vkd3dCommandList, {
                                                                              __uuidof(ID3D12GraphicsCommandListExt1),
                                                                              __uuidof(ID3D12GraphicsCommandListExt2),
+                                                                             __uuidof(ID3D12GraphicsCommandListExt3),
                                                                          });
         m_supportsCubinSMem = commandListTier >= 1;
 
@@ -61,8 +62,14 @@ namespace dxvk {
         if (SUCCEEDED(vkd3dCommandList->QueryInterface(IID_PPV_ARGS(&d3d12CommandList)))) {
             Com<ID3D12Device> device;
             if (SUCCEEDED(d3d12CommandList->GetDevice(IID_PPV_ARGS(&device)))) {
-                if (auto nvapiDevice = NvapiD3d12Device::GetOrCreate(device.ptr()))
+                if (auto nvapiDevice = NvapiD3d12Device::GetOrCreate(device.ptr())) {
                     m_supportsOpacityMicromap = nvapiDevice->IsOpacityMicromapSupported();
+
+                    if (commandListTier >= 3) {
+                        m_supportsClusterAccelerationStructure = nvapiDevice->IsClusterAccelerationStructureSupported();
+                        m_supportsPartitionedAccelerationStructure = nvapiDevice->IsPartitionedAccelerationStructureSupported();
+                    }
+                }
             }
         }
     }
@@ -84,5 +91,19 @@ namespace dxvk {
 
     bool NvapiD3d12GraphicsCommandList::VerifyOpacityMicromapArrayNVAPI(D3D12_GPU_VIRTUAL_ADDRESS opacity_micromap_array) const {
         return m_supportsOpacityMicromap && m_vkd3dGraphicsCommandList->VerifyOpacityMicromapArrayNVAPI(opacity_micromap_array);
+    }
+
+    NvAPI_Status NvapiD3d12GraphicsCommandList::RaytracingExecuteMultiIndirectClusterOperation(const NVAPI_RAYTRACING_EXECUTE_MULTI_INDIRECT_CLUSTER_OPERATION_PARAMS* params) const {
+        if (!m_supportsClusterAccelerationStructure)
+            return NVAPI_NO_IMPLEMENTATION;
+
+        return static_cast<NvAPI_Status>(m_vkd3dGraphicsCommandList->RaytracingExecuteMultiIndirectClusterOperation(params));
+    }
+
+    NvAPI_Status NvapiD3d12GraphicsCommandList::BuildRaytracingPartitionedTlasIndirect(const NVAPI_BUILD_RAYTRACING_PARTITIONED_TLAS_INDIRECT_PARAMS* params) const {
+        if (!m_supportsPartitionedAccelerationStructure)
+            return NVAPI_NO_IMPLEMENTATION;
+
+        return static_cast<NvAPI_Status>(m_vkd3dGraphicsCommandList->BuildRaytracingPartitionedTlasIndirect(params));
     }
 }
