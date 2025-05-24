@@ -714,14 +714,18 @@ NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingCaps(ID3D12Device* pDevice, NVAPI_D3D12_
             if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAPS))
                 return InvalidArgument(n);
 
-            *static_cast<NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAP_NONE;
+            *static_cast<NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAPS*>(pData) = env::isD3d12NvShaderExtnEnabled() && device && device->IsClusterAccelerationStructureSupported()
+                ? NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAP_STANDARD
+                : NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAP_NONE;
             break;
 
         case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_PARTITIONED_TLAS:
             if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAPS))
                 return InvalidArgument(n);
 
-            *static_cast<NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAP_NONE;
+            *static_cast<NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAPS*>(pData) = device && device->IsPartitionedAccelerationStructureSupported()
+                ? NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAP_STANDARD
+                : NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAP_NONE;
             break;
 
         case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_SPHERES:
@@ -893,16 +897,28 @@ NVAPI_FUNCTION NvAPI_D3D12_SetCreatePipelineStateOptions(ID3D12Device5* pDevice,
     if (!device)
         return NoImplementation(n, alreadyLoggedNoImplementation);
 
-    if (!device->IsOpacityMicromapSupported())
-        return NotSupported(n);
+    static constexpr auto supportedNvapiFlags =
+        static_cast<NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS>(
+            NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT | NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_CLUSTER_SUPPORT);
 
-    auto flags = D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_NONE;
-    static constexpr auto supportedNvapiFlags = NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT;
     if (pState->flags & ~supportedNvapiFlags)
         return NotSupported(n);
 
-    if (pState->flags & NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT)
-        flags = static_cast<D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG>(flags | D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT);
+    auto flags = D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_NONE;
+
+    if (pState->flags & NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT) {
+        if (device->IsOpacityMicromapSupported())
+            flags = static_cast<D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG>(flags | D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT);
+        else
+            return NotSupported(n);
+    }
+
+    if (pState->flags & NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_CLUSTER_SUPPORT) {
+        if (device->IsClusterAccelerationStructureSupported())
+            flags = static_cast<D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG>(flags | D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_CLUSTER_SUPPORT);
+        else
+            return NotSupported(n);
+    }
 
     if (!device->SetCreatePipelineStateFlagsNVAPI(flags))
         return NotSupported(n);
@@ -1083,6 +1099,98 @@ NVAPI_FUNCTION NvAPI_D3D12_EmitRaytracingOpacityMicromapArrayPostbuildInfo(ID3D1
         pParams->pSources);
 
     return Ok(n, alreadyLoggedOk);
+}
+
+NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingMultiIndirectClusterOperationRequirementsInfo(ID3D12Device5* pDevice, const NVAPI_GET_RAYTRACING_MULTI_INDIRECT_CLUSTER_OPERATION_REQUIREMENTS_INFO_PARAMS* pParams) {
+    static constexpr auto n = FUNC;
+    thread_local bool alreadyLoggedNoImplementation = false;
+    thread_local bool alreadyLoggedOk = false;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
+
+    if (!pDevice || !pParams)
+        return InvalidPointer(n);
+
+    auto device = NvapiD3d12Device::GetOrCreate(pDevice);
+    if (!device || !device->IsClusterAccelerationStructureSupported())
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+
+    auto result = device->GetRaytracingMultiIndirectClusterOperationRequirementsInfo(pParams);
+    if (result == NVAPI_OK)
+        return Ok(n, alreadyLoggedOk);
+
+    log::info(str::format("<-", n, ": ", result));
+    return result;
+}
+
+NVAPI_FUNCTION NvAPI_D3D12_RaytracingExecuteMultiIndirectClusterOperation(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_RAYTRACING_EXECUTE_MULTI_INDIRECT_CLUSTER_OPERATION_PARAMS* pParams) {
+    static constexpr auto n = FUNC;
+    thread_local bool alreadyLoggedNoImplementation = false;
+    thread_local bool alreadyLoggedOk = false;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::ptr(pCommandList), log::fmt::ptr(pParams));
+
+    if (!pCommandList || !pParams)
+        return InvalidPointer(n);
+
+    auto commandList = NvapiD3d12GraphicsCommandList::GetOrCreate(pCommandList);
+    if (!commandList)
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+
+    auto result = commandList->RaytracingExecuteMultiIndirectClusterOperation(pParams);
+    if (result == NVAPI_OK)
+        return Ok(n, alreadyLoggedOk);
+
+    log::info(str::format("<-", n, ": ", result));
+    return result;
+}
+
+NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingPartitionedTlasIndirectPrebuildInfo(ID3D12Device5* pDevice, const NVAPI_GET_BUILD_RAYTRACING_PARTITIONED_TLAS_INDIRECT_PREBUILD_INFO_PARAMS* pParams) {
+    static constexpr auto n = FUNC;
+    thread_local bool alreadyLoggedNoImplementation = false;
+    thread_local bool alreadyLoggedOk = false;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
+
+    if (!pDevice || !pParams)
+        return InvalidPointer(n);
+
+    auto device = NvapiD3d12Device::GetOrCreate(pDevice);
+    if (!device || !device->IsPartitionedAccelerationStructureSupported())
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+
+    auto result = device->GetRaytracingPartitionedTlasIndirectPrebuildInfo(pParams);
+    if (result == NVAPI_OK)
+        return Ok(n, alreadyLoggedOk);
+
+    log::info(str::format("<-", n, ": ", result));
+    return result;
+}
+
+NVAPI_FUNCTION NvAPI_D3D12_BuildRaytracingPartitionedTlasIndirect(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_BUILD_RAYTRACING_PARTITIONED_TLAS_INDIRECT_PARAMS* pParams) {
+    static constexpr auto n = FUNC;
+    thread_local bool alreadyLoggedNoImplementation = false;
+    thread_local bool alreadyLoggedOk = false;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::ptr(pCommandList), log::fmt::ptr(pParams));
+
+    if (!pCommandList || !pParams)
+        return InvalidPointer(n);
+
+    auto commandList = NvapiD3d12GraphicsCommandList::GetOrCreate(pCommandList);
+    if (!commandList)
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+
+    auto result = commandList->BuildRaytracingPartitionedTlasIndirect(pParams);
+    if (result == NVAPI_OK)
+        return Ok(n, alreadyLoggedOk);
+
+    log::info(str::format("<-", n, ": ", result));
+    return result;
 }
 
 NVAPI_FUNCTION NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
