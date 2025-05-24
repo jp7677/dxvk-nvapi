@@ -20,14 +20,19 @@ namespace dxvk {
 
         [[nodiscard]] bool VerifyOpacityMicromapArrayNVAPI(D3D12_GPU_VIRTUAL_ADDRESS opacity_micromap_array) const;
 
+        [[nodiscard]] NvAPI_Status RaytracingExecuteMultiIndirectClusterOperation(const NVAPI_RAYTRACING_EXECUTE_MULTI_INDIRECT_CLUSTER_OPERATION_PARAMS* params) const;
+        [[nodiscard]] NvAPI_Status BuildRaytracingPartitionedTlasIndirect(const NVAPI_BUILD_RAYTRACING_PARTITIONED_TLAS_INDIRECT_PARAMS* params) const;
+
       private:
         static std::atomic<LONGLONG> m_resetTimestamp;
         static std::mutex m_mutex;
 
         LONGLONG m_creationTimestamp{};
-        ID3D12GraphicsCommandListExt2* m_vkd3dGraphicsCommandList{};
+        ID3D12GraphicsCommandListExt3* m_vkd3dGraphicsCommandList{};
         bool m_supportsCubinSMem = false;
         bool m_supportsOpacityMicromap = false;
+        bool m_supportsClusterAccelerationStructure = false;
+        bool m_supportsPartitionedAccelerationStructure = false;
 
         // Reused across calls so the per-build geometry-desc scratch settles at
         // its max-N and stops hitting the heap. Not thread-safe.

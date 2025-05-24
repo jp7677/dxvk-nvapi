@@ -101,6 +101,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt2*>(&commandList))
         .LR_SIDE_EFFECT(commandListRefCount++)
         .RETURN(S_OK);
+    ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt3), _))
+        .RETURN(E_NOINTERFACE);
     ALLOW_CALL(commandList, AddRef())
         .LR_SIDE_EFFECT(commandListRefCount++)
         .RETURN(commandListRefCount);
@@ -1156,6 +1158,8 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt2*>(&commandList))
         .LR_SIDE_EFFECT(commandListRefCount++)
         .RETURN(S_OK);
+    ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt3), _))
+        .RETURN(E_NOINTERFACE);
     ALLOW_CALL(commandList, AddRef())
         .LR_SIDE_EFFECT(commandListRefCount++)
         .RETURN(commandListRefCount);
