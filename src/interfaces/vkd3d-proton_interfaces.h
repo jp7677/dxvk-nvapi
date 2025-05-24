@@ -24,10 +24,13 @@
 #endif // defined(__GNUC__) || defined(__clang__)
 
 enum D3D12_VK_EXTENSION : uint32_t {
+    D3D12_VK_EXT_OPACITY_MICROMAP = 0x0,
     D3D12_VK_NVX_BINARY_IMPORT = 0x1,
     D3D12_VK_NVX_IMAGE_VIEW_HANDLE = 0x2,
     D3D12_VK_NV_LOW_LATENCY_2 = 0x3,
-    D3D12_VK_NV_OPTICAL_FLOW = 0x4
+    D3D12_VK_NV_OPTICAL_FLOW = 0x4,
+    D3D12_VK_NV_CLUSTER_ACCELERATION_STRUCTURE = 0x5,
+    D3D12_VK_NV_PARTITIONED_ACCELERATION_STRUCTURE = 0x6,
 };
 
 enum D3D12_OUT_OF_BAND_CQ_TYPE : uint32_t {
@@ -163,6 +166,20 @@ ID3D12DeviceExt4 : public ID3D12DeviceExt3 {
     virtual HRESULT SetNvShaderExtnSlotSpace(UINT32 uav_slot, UINT32 uav_space, BOOL local_thread) = 0;
 };
 
+MIDL_INTERFACE("a91b5617-a06a-4d6f-b437-03ebbef91416")
+ID3D12DeviceExt5 : public ID3D12DeviceExt4 {
+    virtual HRESULT SetCreatePipelineStateOptions(const void* params) = 0;
+    virtual HRESULT CheckDriverMatchingIdentifierEx(void* params) = 0;
+    virtual HRESULT GetRaytracingAccelerationStructurePrebuildInfoEx(void* params) = 0;
+    virtual HRESULT GetRaytracingOpacityMicromapArrayPrebuildInfo(void* params) = 0;
+};
+
+MIDL_INTERFACE("a91b5617-a06a-4d6f-b437-03ebbef91417")
+ID3D12DeviceExt6 : public ID3D12DeviceExt5 {
+    virtual HRESULT GetRaytracingMultiIndirectClusterOperationRequirementsInfo(const void* params) = 0;
+    virtual HRESULT GetRaytracingPartitionedTlasIndirectPrebuildInfo(const void* params) = 0;
+};
+
 MIDL_INTERFACE("39da4e09-bd1c-4198-9fae-86bbe3be41fd")
 ID3D12DXVKInteropDevice : public IUnknown {
     virtual HRESULT STDMETHODCALLTYPE GetDXGIAdapter(
@@ -261,6 +278,20 @@ ID3D12GraphicsCommandListExt1 : public ID3D12GraphicsCommandListExt {
         UINT32 raw_params_count) = 0;
 };
 
+MIDL_INTERFACE("d53b0028-afb4-4b65-a4f1-7b0daaa65b50")
+ID3D12GraphicsCommandListExt2 : ID3D12GraphicsCommandListExt1 {
+    virtual HRESULT BuildRaytracingAccelerationStructureEx(const void* params) = 0;
+    virtual HRESULT BuildRaytracingOpacityMicromapArray(void* params) = 0;
+    virtual HRESULT RelocateRaytracingOpacityMicromapArray(const void* params) = 0;
+    virtual HRESULT EmitRaytracingOpacityMicromapArrayPostbuildInfo(const void* params) = 0;
+};
+
+MIDL_INTERFACE("d53b0028-afb4-4b65-a4f1-7b0daaa65b51")
+ID3D12GraphicsCommandListExt3 : ID3D12GraphicsCommandListExt2 {
+    virtual HRESULT RaytracingExecuteMultiIndirectClusterOperation(const void* params) = 0;
+    virtual HRESULT BuildRaytracingPartitionedTlasIndirect(const void* params) = 0;
+};
+
 MIDL_INTERFACE("40ed3f96-e773-e9bc-fc0c-e95560c99ad6")
 ID3D12CommandQueueExt : public IUnknown {
     virtual HRESULT STDMETHODCALLTYPE NotifyOutOfBandCommandQueue(
@@ -273,9 +304,13 @@ __CRT_UUID_DECL(ID3D12DeviceExt1, 0x099a73fd, 0x2199, 0x4f45, 0xbf, 0x48, 0x0e, 
 __CRT_UUID_DECL(ID3D12DeviceExt2, 0xe859c4ac, 0xba8f, 0x41c4, 0x8e, 0xac, 0x11, 0x37, 0xfd, 0xe6, 0x15, 0x8d);
 __CRT_UUID_DECL(ID3D12DeviceExt3, 0x3aefa75c, 0xc9f3, 0x4b7f, 0xa1, 0x80, 0x5d, 0xf6, 0x95, 0xd0, 0x83, 0xbf);
 __CRT_UUID_DECL(ID3D12DeviceExt4, 0xa91b5617, 0xa06a, 0x4d6f, 0xb4, 0x37, 0x03, 0xeb, 0xbe, 0xf9, 0x14, 0x15);
+__CRT_UUID_DECL(ID3D12DeviceExt5, 0xa91b5617, 0xa06a, 0x4d6f, 0xb4, 0x37, 0x03, 0xeb, 0xbe, 0xf9, 0x14, 0x16);
+__CRT_UUID_DECL(ID3D12DeviceExt6, 0xa91b5617, 0xa06a, 0x4d6f, 0xb4, 0x37, 0x03, 0xeb, 0xbe, 0xf9, 0x14, 0x17);
 __CRT_UUID_DECL(ID3D12DXVKInteropDevice, 0x39da4e09, 0xbd1c, 0x4198, 0x9f, 0xae, 0x86, 0xbb, 0xe3, 0xbe, 0x41, 0xfd);
 __CRT_UUID_DECL(ID3D12DXVKInteropDevice1, 0x902d8115, 0x59eb, 0x4406, 0x95, 0x18, 0xfe, 0x00, 0xf9, 0x91, 0xee, 0x65);
 __CRT_UUID_DECL(ID3D12GraphicsCommandListExt, 0x77a86b09, 0x2bea, 0x4801, 0xb8, 0x9a, 0x37, 0x64, 0x8e, 0x10, 0x4a, 0xf1);
 __CRT_UUID_DECL(ID3D12GraphicsCommandListExt1, 0xd53b0028, 0xafb4, 0x4b65, 0xa4, 0xf1, 0x7b, 0x0d, 0xaa, 0xa6, 0x5b, 0x4f);
+__CRT_UUID_DECL(ID3D12GraphicsCommandListExt2, 0xd53b0028, 0xafb4, 0x4b65, 0xa4, 0xf1, 0x7b, 0x0d, 0xaa, 0xa6, 0x5b, 0x50);
+__CRT_UUID_DECL(ID3D12GraphicsCommandListExt3, 0xd53b0028, 0xafb4, 0x4b65, 0xa4, 0xf1, 0x7b, 0x0d, 0xaa, 0xa6, 0x5b, 0x51);
 __CRT_UUID_DECL(ID3D12CommandQueueExt, 0x40ed3f96, 0xe773, 0xe9bc, 0xfc, 0x0c, 0xe9, 0x55, 0x60, 0xc9, 0x9a, 0xd6);
 #endif
