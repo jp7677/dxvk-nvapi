@@ -1131,7 +1131,13 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         .RETURN(true);
     ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_OPACITY_MICROMAP))
         .RETURN(false);
+    ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_NV_CLUSTER_ACCELERATION_STRUCTURE))
+        .RETURN(false);
+    ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_NV_PARTITIONED_ACCELERATION_STRUCTURE))
+        .RETURN(false);
     ALLOW_CALL(device, SupportsCubin64bit())
+        .RETURN(true);
+    ALLOW_CALL(device, SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_NONE))
         .RETURN(true);
 
     ALLOW_CALL(commandList, QueryInterface(__uuidof(IUnknown), _))
