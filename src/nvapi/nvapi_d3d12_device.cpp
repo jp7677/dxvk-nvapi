@@ -48,9 +48,15 @@ namespace dxvk {
     }
 
     NvapiD3d12Device::NvapiD3d12Device(ID3D12DeviceExt* vkd3dDevice)
-        : m_vkd3dDevice(vkd3dDevice) {
+        : m_vkd3dDevice(static_cast<ID3D12DeviceExt2*>(vkd3dDevice)) {
         m_supportsNvxBinaryImport = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_BINARY_IMPORT);
         m_supportsNvxImageViewHandle = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_IMAGE_VIEW_HANDLE);
+
+        if (m_supportsNvxBinaryImport && m_supportsNvxImageViewHandle) {
+            if (Com<ID3D12DeviceExt2> deviceExt2; SUCCEEDED(m_vkd3dDevice->QueryInterface(IID_PPV_ARGS(&deviceExt2)))) {
+                m_supportsCubin64bit = deviceExt2->SupportsCubin64bit();
+            }
+        }
     }
 
     HRESULT NvapiD3d12Device::CreateCubinComputeShaderWithName(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
@@ -108,5 +114,33 @@ namespace dxvk {
 
     bool NvapiD3d12Device::IsFatbinPTXSupported() const {
         return m_vkd3dDevice && m_supportsNvxBinaryImport && m_supportsNvxImageViewHandle;
+    }
+
+    HRESULT NvapiD3d12Device::CreateCubinComputeShaderExV2(D3D12_CREATE_CUBIN_SHADER_PARAMS* params) {
+        if (!m_supportsCubin64bit)
+            return E_NOTIMPL;
+
+        auto result = m_vkd3dDevice->CreateCubinComputeShaderExV2(params);
+
+        if (result == S_OK) {
+            std::scoped_lock lock(m_cubinSmemMutex);
+            m_cubinSmemMap.emplace(reinterpret_cast<NVDX_ObjectHandle>(params->hShader), params->dynSharedMemBytes);
+        }
+
+        return result;
+    }
+
+    HRESULT NvapiD3d12Device::GetCudaMergedTextureSamplerObject(D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS* params) const {
+        if (!m_supportsCubin64bit)
+            return E_NOTIMPL;
+
+        return m_vkd3dDevice->GetCudaMergedTextureSamplerObject(params);
+    }
+
+    HRESULT NvapiD3d12Device::GetCudaIndependentDescriptorObject(D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS* params) const {
+        if (!m_supportsCubin64bit)
+            return E_NOTIMPL;
+
+        return m_vkd3dDevice->GetCudaIndependentDescriptorObject(params);
     }
 }
