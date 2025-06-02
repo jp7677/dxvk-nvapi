@@ -35,6 +35,15 @@ extern "C" {
         return Ok(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_DRS_SaveSettings(NvDRSSessionHandle hSession) {
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hSession));
+
+        return NotSupported(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_DRS_FindProfileByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString profileName, NvDRSProfileHandle* phProfile) {
         constexpr auto n = __func__;
 
@@ -119,6 +128,15 @@ extern "C" {
 
         if (log::tracing())
             log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(pProfileInfo), log::fmt::ptr(phProfile));
+
+        return NotSupported(n);
+    }
+
+    NvAPI_Status __cdecl NvAPI_DRS_DeleteProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile) {
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hSession));
 
         return NotSupported(n);
     }
