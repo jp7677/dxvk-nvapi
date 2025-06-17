@@ -44,6 +44,15 @@ extern "C" {
         return NotSupported(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_DRS_SetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_SETTING* pSetting) {
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), log::fmt::ptr(pSetting));
+
+        return NotSupported(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_DRS_FindProfileByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString profileName, NvDRSProfileHandle* phProfile) {
         constexpr auto n = __func__;
 

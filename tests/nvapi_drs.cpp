@@ -19,6 +19,13 @@ TEST_CASE("DRS methods succeed", "[.drs]") {
         REQUIRE(NvAPI_DRS_SaveSettings(handle) == NVAPI_NOT_SUPPORTED);
     }
 
+    SECTION("SetSetting returns not-supported") {
+        NvDRSSessionHandle handle{};
+        NvDRSProfileHandle profile{};
+        NVDRS_SETTING setting{};
+        REQUIRE(NvAPI_DRS_SetSetting(handle, profile, &setting) == NVAPI_NOT_SUPPORTED);
+    }
+
     SECTION("FindProfileByName with null profile returns invalid-argument") {
         NvDRSSessionHandle handle{};
         NvAPI_UnicodeString name;
