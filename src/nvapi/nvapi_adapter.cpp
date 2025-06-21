@@ -72,6 +72,12 @@ namespace dxvk {
             deviceProperties2.pNext = &m_vkComputeShaderDerivativesProperties;
         }
 
+        if (IsVkDeviceExtensionSupported(VK_NV_RAY_TRACING_INVOCATION_REORDER_EXTENSION_NAME)) {
+            m_vkRayTracingInvocationReorderProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_PROPERTIES_NV;
+            m_vkRayTracingInvocationReorderProperties.pNext = deviceProperties2.pNext;
+            deviceProperties2.pNext = &m_vkRayTracingInvocationReorderProperties;
+        }
+
         if (IsVkDeviceExtensionSupported(VK_NV_CUDA_KERNEL_LAUNCH_EXTENSION_NAME)) {
             m_vkCudaKernelLaunchProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUDA_KERNEL_LAUNCH_PROPERTIES_NV;
             m_vkCudaKernelLaunchProperties.pNext = deviceProperties2.pNext;
@@ -291,6 +297,10 @@ namespace dxvk {
 
         // Fall back to Kepler
         return NV_GPU_ARCHITECTURE_GK100;
+    }
+
+    VkRayTracingInvocationReorderModeNV NvapiAdapter::GetReorderingHint() const {
+        return m_vkRayTracingInvocationReorderProperties.rayTracingInvocationReorderReorderingHint;
     }
 
     std::optional<std::pair<uint32_t, uint32_t>> NvapiAdapter::GetComputeCapability() const {
