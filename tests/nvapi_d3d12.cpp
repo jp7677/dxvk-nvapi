@@ -633,46 +633,64 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         CHECK(otherDeviceRefCount == 0);
     }
 
-    SECTION("GetRaytracingCaps returns OK and claims that thread reordering is not supported") {
-        NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS caps;
-        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING, &caps, sizeof(caps)) == NVAPI_OK);
-        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE);
-    }
+    SECTION("GetRaytracingCaps succeeds") {
+        auto t = std::make_unique<DefaultTestEnvironment>();
+        auto e = t->ConfigureExpectations();
 
-    SECTION("GetRaytracingCaps returns OK and claims that Opacity Micromap is not supported") {
-        NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS caps;
-        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
-        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE);
-    }
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-    SECTION("GetRaytracingCaps returns OK and claims that Displacement Micromap is not supported") {
-        NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS caps;
-        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_DISPLACEMENT_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
-        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_NONE);
-    }
+        SECTION("GetRaytracingCaps returns OK and claims that thread reordering is not supported") {
+            LUID luid{};
 
-    SECTION("GetRaytracingCaps returns OK and claims that Cluster Operations is not supported") {
-        NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAPS caps;
-        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_CLUSTER_OPERATIONS, &caps, sizeof(caps)) == NVAPI_OK);
-        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAP_NONE);
-    }
+#if defined(_MSC_VER)
+            ALLOW_CALL(device, GetAdapterLuid())
+                .LR_RETURN(luid);
+#else
+            ALLOW_CALL(device, GetAdapterLuid(_))
+                .LR_SIDE_EFFECT(*_1 = luid)
+                .LR_RETURN(_1);
+#endif
 
-    SECTION("GetRaytracingCaps returns OK and claims that Partitioned TLAS is not supported") {
-        NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAPS caps;
-        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_PARTITIONED_TLAS, &caps, sizeof(caps)) == NVAPI_OK);
-        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAP_NONE);
-    }
+            NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS caps;
+            REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING, &caps, sizeof(caps)) == NVAPI_OK);
+            REQUIRE(caps == NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE);
+        }
 
-    SECTION("GetRaytracingCaps returns OK and claims that Spheres is not supported") {
-        NVAPI_D3D12_RAYTRACING_SPHERES_CAPS caps;
-        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_SPHERES, &caps, sizeof(caps)) == NVAPI_OK);
-        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_SPHERES_CAP_NONE);
-    }
+        SECTION("GetRaytracingCaps returns OK and claims that Opacity Micromap is not supported") {
+            NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS caps;
+            REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
+            REQUIRE(caps == NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE);
+        }
 
-    SECTION("GetRaytracingCaps returns OK and claims that Linear Swept Spheres is not supported") {
-        NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS caps;
-        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_LINEAR_SWEPT_SPHERES, &caps, sizeof(caps)) == NVAPI_OK);
-        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_NONE);
+        SECTION("GetRaytracingCaps returns OK and claims that Displacement Micromap is not supported") {
+            NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS caps;
+            REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_DISPLACEMENT_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
+            REQUIRE(caps == NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_NONE);
+        }
+
+        SECTION("GetRaytracingCaps returns OK and claims that Cluster Operations is not supported") {
+            NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAPS caps;
+            REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_CLUSTER_OPERATIONS, &caps, sizeof(caps)) == NVAPI_OK);
+            REQUIRE(caps == NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAP_NONE);
+        }
+
+        SECTION("GetRaytracingCaps returns OK and claims that Partitioned TLAS is not supported") {
+            NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAPS caps;
+            REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_PARTITIONED_TLAS, &caps, sizeof(caps)) == NVAPI_OK);
+            REQUIRE(caps == NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAP_NONE);
+        }
+
+        SECTION("GetRaytracingCaps returns OK and claims that Spheres is not supported") {
+            NVAPI_D3D12_RAYTRACING_SPHERES_CAPS caps;
+            REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_SPHERES, &caps, sizeof(caps)) == NVAPI_OK);
+            REQUIRE(caps == NVAPI_D3D12_RAYTRACING_SPHERES_CAP_NONE);
+        }
+
+        SECTION("GetRaytracingCaps returns OK and claims that Linear Swept Spheres is not supported") {
+            NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS caps;
+            REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_LINEAR_SWEPT_SPHERES, &caps, sizeof(caps)) == NVAPI_OK);
+            REQUIRE(caps == NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_NONE);
+        }
     }
 
     SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx succeeds") {
