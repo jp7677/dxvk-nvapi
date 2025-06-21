@@ -623,13 +623,25 @@ extern "C" {
         auto device = NvapiD3d12Device::GetOrCreate(pDevice);
 
         switch (type) {
-            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING:
+            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING: {
                 if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS))
                     return InvalidArgument(n);
 
-                // let's hope that NvAPI_D3D12_IsNvShaderExtnOpCodeSupported returning false is enough to discourage games from attempting to use Shader Execution Reordering
-                *static_cast<NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
+#if defined(_MSC_VER)
+                LUID luid = pDevice->GetAdapterLuid();
+#else
+                LUID luid;
+                pDevice->GetAdapterLuid(&luid);
+#endif
+                auto adapter = nvapiAdapterRegistry->FindAdapter(luid);
+                auto adapterSupport = adapter && adapter->GetReorderingHint() == VK_RAY_TRACING_INVOCATION_REORDER_MODE_REORDER_NV;
+                auto deviceSupport = device && device->IsNvShaderExtnOpCodeSupported(NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD);
+
+                *static_cast<NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS*>(pData) = adapterSupport && deviceSupport
+                    ? NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD
+                    : NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
                 break;
+            }
 
             case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP:
                 if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS))
