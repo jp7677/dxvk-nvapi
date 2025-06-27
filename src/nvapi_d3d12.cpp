@@ -15,8 +15,23 @@
 
 using namespace dxvk;
 
+inline static std::unordered_set<NvU32> parsedwords(const std::vector<std::string_view>& dwords) {
+    std::unordered_set<NvU32> result;
+    result.reserve(dwords.size());
+
+    for (auto& str : dwords) {
+        NvU32 dword;
+        if (str::parsedword(str, dword))
+            result.insert(dword);
+    }
+
+    return result;
+}
+
 NVAPI_FUNCTION NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device* pDevice, NvU32 opCode, bool* pSupported) {
     static constexpr auto n = FUNC;
+    static const auto nvapiForceNvShaderExtnOpCodesString = env::getEnvVariable("DXVK_NVAPI_FORCE_NV_SHADER_EXTN_OP_CODES");
+    static const auto nvapiForceNvShaderExtnOpCodes = parsedwords(str::split<std::vector<std::string_view>>(nvapiForceNvShaderExtnOpCodesString, std::regex(",")));
     thread_local bool alreadyLoggedNoImplementation = false;
 
     if (log::tracing())
@@ -24,6 +39,12 @@ NVAPI_FUNCTION NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device* pDevice, 
 
     if (!pDevice || !pSupported)
         return InvalidArgument(n);
+
+    if (nvapiForceNvShaderExtnOpCodes.contains(opCode)) {
+        *pSupported = true;
+
+        return Ok(str::format(n, " (", opCode, "/", fromCode(opCode), "): Forced"));
+    }
 
     auto device = NvapiD3d12Device::GetOrCreate(pDevice);
     if (!device)
