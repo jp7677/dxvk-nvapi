@@ -123,6 +123,13 @@ namespace dxvk {
         return NVAPI_NOT_SUPPORTED;
     }
 
+    inline NvAPI_Status DeviceBusy(const std::string& logMessage, bool& alreadyLogged) {
+        if (log::tracing() || !std::exchange(alreadyLogged, true))
+            log::info(str::format("<-", logMessage, ": Device busy"));
+
+        return NVAPI_DEVICE_BUSY;
+    }
+
     inline NvAPI_Status InvalidDisplayId(const std::string& logMessage) {
         log::info(str::format("<-", logMessage, ": Invalid display ID"));
         return NVAPI_INVALID_DISPLAY_ID;

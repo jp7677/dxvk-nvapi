@@ -171,6 +171,30 @@ extern "C" {
         return Ok(n, alreadyLoggedOk);
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D1x_Present(IUnknown* pDevice, IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedDeviceBusy = false;
+        thread_local bool alreadyLoggedOk = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pSwapChain), SyncInterval, Flags);
+
+        if (!pSwapChain)
+            return InvalidArgument(n);
+
+        switch (pSwapChain->Present(SyncInterval, Flags)) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case DXGI_STATUS_OCCLUDED:
+            case DXGI_ERROR_DEVICE_RESET:
+            case DXGI_ERROR_DEVICE_REMOVED:
+            case MAKE_HRESULT(1, 0x876, 2160): // 0x88760870, D3DDDIERR_DEVICEREMOVED
+                return DeviceBusy(n, alreadyLoggedDeviceBusy);
+            default:
+                return Error(n);
+        }
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D_Sleep(IUnknown* pDevice) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedNoReflex = false;
