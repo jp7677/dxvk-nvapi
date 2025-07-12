@@ -50,6 +50,39 @@ typedef struct D3D12_UAV_INFO {
     UINT64 gpuVASize;
 } D3D12_UAV_INFO;
 
+typedef struct D3D12_CREATE_CUBIN_SHADER_PARAMS {
+    void* pNext;
+    const void* pCubin;
+    UINT32 size;
+    UINT32 blockX;
+    UINT32 blockY;
+    UINT32 blockZ;
+    UINT32 dynSharedMemBytes;
+    const char* pShaderName;
+    UINT32 flags;
+    D3D12_CUBIN_DATA_HANDLE* hShader;
+} D3D12_CREATE_CUBIN_SHADER_PARAMS;
+
+typedef struct D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS {
+    void* pNext;
+    SIZE_T texDesc;
+    SIZE_T smpDesc;
+    UINT64 textureHandle;
+} D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS;
+
+typedef enum D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_TYPE {
+    D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_SURFACE = 0,
+    D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_TEXTURE = 1,
+    D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_SAMPLER = 2,
+} D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_TYPE;
+
+typedef struct D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS {
+    void* pNext;
+    D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_TYPE type;
+    SIZE_T desc;
+    UINT64 handle;
+} D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS;
+
 MIDL_INTERFACE("11ea7a1a-0f6a-49bf-b612-3e30f8e201dd")
 ID3D12DeviceExt : public IUnknown {
     virtual HRESULT STDMETHODCALLTYPE GetVulkanHandles(
@@ -83,6 +116,20 @@ ID3D12DeviceExt : public IUnknown {
 
     virtual HRESULT STDMETHODCALLTYPE CaptureUAVInfo(
         D3D12_UAV_INFO * uav_info) = 0;
+};
+
+MIDL_INTERFACE("099a73fd-2199-4f45-bf48-0eb86f6fdb65")
+ID3D12DeviceExt1 : public ID3D12DeviceExt {
+    virtual HRESULT CreateResourceFromBorrowedHandle(const D3D12_RESOURCE_DESC1* desc, UINT64 vk_handle, ID3D12Resource** resource) = 0;
+    virtual HRESULT GetVulkanQueueInfoEx(ID3D12CommandQueue * queue, VkQueue * vk_queue, UINT32 * vk_queue_index, UINT32 * vk_queue_flags, UINT32 * vk_queue_family) = 0;
+};
+
+MIDL_INTERFACE("e859c4ac-ba8f-41c4-8eac-1137fde6158d")
+ID3D12DeviceExt2 : public ID3D12DeviceExt1 {
+    virtual BOOL SupportsCubin64bit() = 0;
+    virtual HRESULT CreateCubinComputeShaderExV2(D3D12_CREATE_CUBIN_SHADER_PARAMS * params) = 0;
+    virtual HRESULT GetCudaMergedTextureSamplerObject(D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS * params) = 0;
+    virtual HRESULT GetCudaIndependentDescriptorObject(D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS * params) = 0;
 };
 
 MIDL_INTERFACE("39da4e09-bd1c-4198-9fae-86bbe3be41fd")
@@ -191,6 +238,8 @@ ID3D12CommandQueueExt : public IUnknown {
 
 #ifndef _MSC_VER
 __CRT_UUID_DECL(ID3D12DeviceExt, 0x11ea7a1a, 0x0f6a, 0x49bf, 0xb6, 0x12, 0x3e, 0x30, 0xf8, 0xe2, 0x01, 0xdd);
+__CRT_UUID_DECL(ID3D12DeviceExt1, 0x099a73fd, 0x2199, 0x4f45, 0xbf, 0x48, 0x0e, 0xb8, 0x6f, 0x6f, 0xdb, 0x65);
+__CRT_UUID_DECL(ID3D12DeviceExt2, 0xe859c4ac, 0xba8f, 0x41c4, 0x8e, 0xac, 0x11, 0x37, 0xfd, 0xe6, 0x15, 0x8d);
 __CRT_UUID_DECL(ID3D12DXVKInteropDevice, 0x39da4e09, 0xbd1c, 0x4198, 0x9f, 0xae, 0x86, 0xbb, 0xe3, 0xbe, 0x41, 0xfd);
 __CRT_UUID_DECL(ID3D12DXVKInteropDevice1, 0x902d8115, 0x59eb, 0x4406, 0x95, 0x18, 0xfe, 0x00, 0xf9, 0x91, 0xee, 0x65);
 __CRT_UUID_DECL(ID3D12GraphicsCommandListExt, 0x77a86b09, 0x2bea, 0x4801, 0xb8, 0x9a, 0x37, 0x64, 0x8e, 0x10, 0x4a, 0xf1);

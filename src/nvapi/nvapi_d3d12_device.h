@@ -22,6 +22,10 @@ namespace dxvk {
         [[nodiscard]] HRESULT CaptureUAVInfo(NVAPI_UAV_INFO* uavInfo) const;
         [[nodiscard]] bool IsFatbinPTXSupported() const;
 
+        [[nodiscard]] HRESULT CreateCubinComputeShaderExV2(D3D12_CREATE_CUBIN_SHADER_PARAMS* params);
+        [[nodiscard]] HRESULT GetCudaMergedTextureSamplerObject(D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS* params) const;
+        [[nodiscard]] HRESULT GetCudaIndependentDescriptorObject(D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS* params) const;
+
       private:
         static std::unordered_map<ID3D12Device*, NvapiD3d12Device> m_nvapiDeviceMap;
         static std::mutex m_mutex;
@@ -29,7 +33,8 @@ namespace dxvk {
         static std::unordered_map<NVDX_ObjectHandle, NvU32> m_cubinSmemMap;
         static std::mutex m_cubinSmemMutex;
 
-        ID3D12DeviceExt* m_vkd3dDevice{};
+        ID3D12DeviceExt2* m_vkd3dDevice{};
+        bool m_supportsCubin64bit = false;
         bool m_supportsNvxBinaryImport = false;
         bool m_supportsNvxImageViewHandle = false;
     };
