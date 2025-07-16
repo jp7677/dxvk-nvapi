@@ -3,9 +3,7 @@
 namespace dxvk {
     LowLatencyFrameIdGenerator::LowLatencyFrameIdGenerator()
         : m_nextLowLatencyDeviceFrameId(1),
-          m_applicationIdList({0}) {
-        m_lastFrameId.fill(std::numeric_limits<uint64_t>::max());
-    }
+          m_applicationIdList({0}) { }
 
     LowLatencyFrameIdGenerator::~LowLatencyFrameIdGenerator() = default;
 
@@ -42,8 +40,4 @@ namespace dxvk {
         return m_applicationIdList[((lowLatencyDeviceFrameId - 1) % applicationIdListSize)];
     }
 
-    bool LowLatencyFrameIdGenerator::IsRepeatedFrame(uint64_t frameID, uint32_t markerType) {
-        // Should always be within bounds since we drop unsupported marker types in the entrypoints
-        return std::exchange(m_lastFrameId[markerType], frameID) == frameID;
-    }
 }
