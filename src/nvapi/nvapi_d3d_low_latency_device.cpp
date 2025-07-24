@@ -136,10 +136,25 @@ namespace dxvk {
         return result;
     }
 
-    HRESULT NvapiD3dLowLatencyDevice::SetLatencyMarker(uint64_t frameID, uint32_t markerType) {
-        if (m_frameIdGenerator.IsRepeatedFrame(frameID, markerType))
-            return S_OK; // Silently drop repeated frame IDs
+    uint32_t NvapiD3dLowLatencyDevice::CanMarkerTypeRepeat(uint32_t markerType) {
+        switch (markerType) {
+            case VK_LATENCY_MARKER_PRESENT_START_NV:
+            case VK_LATENCY_MARKER_PRESENT_END_NV:
+            case VK_LATENCY_MARKER_SIMULATION_START_NV:
+            case VK_LATENCY_MARKER_SIMULATION_END_NV:
+            case VK_LATENCY_MARKER_RENDERSUBMIT_START_NV:
+            case VK_LATENCY_MARKER_RENDERSUBMIT_END_NV:
+                return false;
+            default:
+                return true;
+        }
+    }
 
+    HRESULT NvapiD3dLowLatencyDevice::SetLatencyMarker(uint64_t frameID, uint32_t markerType) {
+        // Skip some types of duplicate markers to workaround apps that send extra markers
+        if (m_frameIdGenerator.IsRepeatedFrame(frameID, markerType) && !CanMarkerTypeRepeat(markerType)) {
+            return S_OK;
+        }
         return m_d3dLowLatencyDevice->SetLatencyMarker(
             m_frameIdGenerator.GetLowLatencyDeviceFrameId(frameID), markerType);
     }
