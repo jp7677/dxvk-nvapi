@@ -11,6 +11,7 @@ namespace dxvk {
         static void Reset();
         [[nodiscard]] static NvapiD3dLowLatencyDevice* GetOrCreate(IUnknown* device);
         [[nodiscard]] static std::optional<uint32_t> ToMarkerType(NV_LATENCY_MARKER_TYPE markerType);
+        [[nodiscard]] static uint32_t CanMarkerTypeRepeat(uint32_t markerType);
 
         explicit NvapiD3dLowLatencyDevice(ID3DLowLatencyDevice* d3dLowLatencyDevice);
 
