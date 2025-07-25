@@ -49,7 +49,23 @@ namespace dxvk {
         VK_GET_DEVICE_PROC_ADDR(vkGetLatencyTimingsNV);
         VK_GET_DEVICE_PROC_ADDR(vkSetLatencyMarkerNV);
         VK_GET_DEVICE_PROC_ADDR(vkQueueNotifyOutOfBandNV);
-        VK_GET_DEVICE_PROC_ADDR(vkSignalSemaphoreKHR);
+        VK_GET_DEVICE_PROC_ADDR(vkSignalSemaphore);
+
+        if (!vkSetLatencySleepModeNV || !vkLatencySleepNV || !vkGetLatencyTimingsNV || !vkSetLatencyMarkerNV || !vkQueueNotifyOutOfBandNV) {
+            // VK_NV_low_latency2 was not requested -> our Vulkan Reflex layer is not present -> grab vkSignalSemaphore to fake that reflex is working
+            //
+            // The app should have requested either the Vulkan 1.2 or the VK_KHR_timeline_semaphore extension
+            // We'll query whichever is available
+            if (!vkSignalSemaphore) {
+                VK_GET_DEVICE_PROC_ADDR(vkSignalSemaphoreKHR);
+                vkSignalSemaphore = vkSignalSemaphoreKHR;
+            }
+
+            if (!vkSignalSemaphore)
+                return {nullptr, VK_ERROR_EXTENSION_NOT_PRESENT};
+        } else {
+            vkSignalSemaphore = nullptr; // We don't need this, we're signalling with vkLatencySleepNV
+        }
 
         if (!vkCreateSemaphore || !vkDestroySemaphore)
             return {nullptr, VK_ERROR_INCOMPATIBLE_DRIVER};
@@ -86,7 +102,7 @@ namespace dxvk {
                 vkGetLatencyTimingsNV,
                 vkSetLatencyMarkerNV,
                 vkQueueNotifyOutOfBandNV,
-                vkSignalSemaphoreKHR));
+                vkSignalSemaphore));
 
         if (!inserted)
             return {nullptr, VK_ERROR_UNKNOWN};
@@ -158,7 +174,7 @@ namespace dxvk {
         PFN_PARAM(vkGetLatencyTimingsNV),
         PFN_PARAM(vkSetLatencyMarkerNV),
         PFN_PARAM(vkQueueNotifyOutOfBandNV),
-        PFN_PARAM(vkSignalSemaphoreKHR))
+        PFN_PARAM(vkSignalSemaphore))
         : m_device(device),
           m_semaphore(semaphore),
           // If the Vulkan Reflex Layer is present it will enable VK_NV_low_latency2 which will let us query
@@ -172,7 +188,11 @@ namespace dxvk {
           PFN_INIT(vkGetLatencyTimingsNV),
           PFN_INIT(vkSetLatencyMarkerNV),
           PFN_INIT(vkQueueNotifyOutOfBandNV),
-          PFN_INIT(vkSignalSemaphoreKHR) {}
+          PFN_INIT(vkSignalSemaphore) {}
+
+    bool NvapiVulkanLowLatencyDevice::IsLayerPresent() const {
+        return m_layerPresent;
+    }
 
     VkSemaphore NvapiVulkanLowLatencyDevice::GetSemaphore() const {
         return m_semaphore;
@@ -238,7 +258,7 @@ namespace dxvk {
                 .semaphore = m_semaphore,
                 .value = value};
 
-            return m_vkSignalSemaphoreKHR(m_device, &info);
+            return m_vkSignalSemaphore(m_device, &info);
         }
     }
 

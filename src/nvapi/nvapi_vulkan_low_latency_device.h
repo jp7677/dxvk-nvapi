@@ -25,9 +25,10 @@ namespace dxvk {
             PFN_PARAM(vkGetLatencyTimingsNV),
             PFN_PARAM(vkSetLatencyMarkerNV),
             PFN_PARAM(vkQueueNotifyOutOfBandNV),
-            PFN_PARAM(vkSignalSemaphoreKHR));
+            PFN_PARAM(vkSignalSemaphore));
 #undef PFN_PARAM
 
+        [[nodiscard]] bool IsLayerPresent() const;
         [[nodiscard]] VkSemaphore GetSemaphore() const;
 
         [[nodiscard]] bool GetLowLatencyMode() const;
@@ -56,7 +57,7 @@ namespace dxvk {
         PFN_MEMBER(vkGetLatencyTimingsNV);
         PFN_MEMBER(vkSetLatencyMarkerNV);
         PFN_MEMBER(vkQueueNotifyOutOfBandNV);
-        PFN_MEMBER(vkSignalSemaphoreKHR);
+        PFN_MEMBER(vkSignalSemaphore);
 #undef PFN_MEMBER
     };
 }
