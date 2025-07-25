@@ -49,12 +49,26 @@ namespace dxvk {
         VK_GET_DEVICE_PROC_ADDR(vkGetLatencyTimingsNV);
         VK_GET_DEVICE_PROC_ADDR(vkSetLatencyMarkerNV);
         VK_GET_DEVICE_PROC_ADDR(vkQueueNotifyOutOfBandNV);
+        VK_GET_DEVICE_PROC_ADDR(vkSignalSemaphore);
+
+        if (!vkSetLatencySleepModeNV || !vkLatencySleepNV || !vkGetLatencyTimingsNV || !vkSetLatencyMarkerNV || !vkQueueNotifyOutOfBandNV) {
+            // VK_NV_low_latency2 was not requested -> our Vulkan Reflex layer is not present -> grab vkSignalSemaphore to fake that reflex is working
+            //
+            // The app should have requested either the Vulkan 1.2 or the VK_KHR_timeline_semaphore extension
+            // We'll query whichever is available
+            if (!vkSignalSemaphore) {
+                VK_GET_DEVICE_PROC_ADDR(vkSignalSemaphoreKHR);
+                vkSignalSemaphore = vkSignalSemaphoreKHR;
+            }
+
+            if (!vkSignalSemaphore)
+                return {nullptr, VK_ERROR_EXTENSION_NOT_PRESENT};
+        } else {
+            vkSignalSemaphore = nullptr; // We don't need this, we're signalling with vkLatencySleepNV
+        }
 
         if (!vkCreateSemaphore || !vkDestroySemaphore)
             return {nullptr, VK_ERROR_INCOMPATIBLE_DRIVER};
-
-        if (!vkSetLatencySleepModeNV || !vkLatencySleepNV || !vkGetLatencyTimingsNV || !vkSetLatencyMarkerNV || !vkQueueNotifyOutOfBandNV)
-            return {nullptr, VK_ERROR_EXTENSION_NOT_PRESENT};
 
         auto semaphoreTypeCreateInfo = VkSemaphoreTypeCreateInfo{
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
@@ -87,7 +101,8 @@ namespace dxvk {
                 vkLatencySleepNV,
                 vkGetLatencyTimingsNV,
                 vkSetLatencyMarkerNV,
-                vkQueueNotifyOutOfBandNV));
+                vkQueueNotifyOutOfBandNV,
+                vkSignalSemaphore));
 
         if (!inserted)
             return {nullptr, VK_ERROR_UNKNOWN};
@@ -158,15 +173,26 @@ namespace dxvk {
         PFN_PARAM(vkLatencySleepNV),
         PFN_PARAM(vkGetLatencyTimingsNV),
         PFN_PARAM(vkSetLatencyMarkerNV),
-        PFN_PARAM(vkQueueNotifyOutOfBandNV))
+        PFN_PARAM(vkQueueNotifyOutOfBandNV),
+        PFN_PARAM(vkSignalSemaphore))
         : m_device(device),
           m_semaphore(semaphore),
+          // If the Vulkan Reflex Layer is present it will enable VK_NV_low_latency2 which will let us query
+          // these function pointers.
+          // Without the layer we'll pretend that Reflex is happening so that apps don't get a pink tint.
+          m_layerPresent(vkSetLatencySleepModeNV && vkLatencySleepNV && vkGetLatencyTimingsNV
+              && vkSetLatencyMarkerNV && vkQueueNotifyOutOfBandNV),
           PFN_INIT(vkDestroySemaphore),
           PFN_INIT(vkSetLatencySleepModeNV),
           PFN_INIT(vkLatencySleepNV),
           PFN_INIT(vkGetLatencyTimingsNV),
           PFN_INIT(vkSetLatencyMarkerNV),
-          PFN_INIT(vkQueueNotifyOutOfBandNV) {}
+          PFN_INIT(vkQueueNotifyOutOfBandNV),
+          PFN_INIT(vkSignalSemaphore) {}
+
+    bool NvapiVulkanLowLatencyDevice::IsLayerPresent() const {
+        return m_layerPresent;
+    }
 
     VkSemaphore NvapiVulkanLowLatencyDevice::GetSemaphore() const {
         return m_semaphore;
@@ -184,6 +210,9 @@ namespace dxvk {
     }
 
     VkResult NvapiVulkanLowLatencyDevice::SetLatencySleepMode(std::nullptr_t) {
+        if (!m_layerPresent)
+            return VK_SUCCESS;
+
         auto vr = m_vkSetLatencySleepModeNV(m_device, GetSwapchain(m_device), nullptr);
 
         if (vr == VK_SUCCESS)
@@ -193,6 +222,9 @@ namespace dxvk {
     }
 
     VkResult NvapiVulkanLowLatencyDevice::SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs) {
+        if (!m_layerPresent)
+            return VK_SUCCESS;
+
         auto info = VkLatencySleepModeInfoNV{
             .sType = VK_STRUCTURE_TYPE_LATENCY_SLEEP_MODE_INFO_NV,
             .pNext = nullptr,
@@ -210,17 +242,30 @@ namespace dxvk {
     }
 
     VkResult NvapiVulkanLowLatencyDevice::LatencySleep(uint64_t value) {
-        auto info = VkLatencySleepInfoNV{
-            .sType = VK_STRUCTURE_TYPE_LATENCY_SLEEP_INFO_NV,
-            .pNext = nullptr,
-            .signalSemaphore = m_semaphore,
-            .value = value,
-        };
+        if (m_layerPresent) {
+            auto info = VkLatencySleepInfoNV{
+                .sType = VK_STRUCTURE_TYPE_LATENCY_SLEEP_INFO_NV,
+                .pNext = nullptr,
+                .signalSemaphore = m_semaphore,
+                .value = value,
+            };
 
-        return m_vkLatencySleepNV(m_device, GetSwapchain(m_device), &info);
+            return m_vkLatencySleepNV(m_device, GetSwapchain(m_device), &info);
+        } else {
+            auto info = VkSemaphoreSignalInfoKHR{
+                .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO_KHR,
+                .pNext = nullptr,
+                .semaphore = m_semaphore,
+                .value = value};
+
+            return m_vkSignalSemaphore(m_device, &info);
+        }
     }
 
     bool NvapiVulkanLowLatencyDevice::GetLatencyTimings(std::array<VkLatencyTimingsFrameReportNV, 64>& timings) {
+        if (!m_layerPresent)
+            return false;
+
         for (auto& timing : timings) {
             timing.sType = VK_STRUCTURE_TYPE_LATENCY_TIMINGS_FRAME_REPORT_NV;
             timing.pNext = nullptr;
@@ -239,6 +284,9 @@ namespace dxvk {
     }
 
     void NvapiVulkanLowLatencyDevice::SetLatencyMarker(uint64_t presentID, VkLatencyMarkerNV marker) {
+        if (!m_layerPresent)
+            return;
+
         auto info = VkSetLatencyMarkerInfoNV{
             .sType = VK_STRUCTURE_TYPE_SET_LATENCY_MARKER_INFO_NV,
             .pNext = nullptr,
@@ -250,6 +298,9 @@ namespace dxvk {
     }
 
     void NvapiVulkanLowLatencyDevice::QueueNotifyOutOfBand(VkQueue queue, VkOutOfBandQueueTypeNV queueType) {
+        if (!m_layerPresent)
+            return;
+
         auto info = VkOutOfBandQueueTypeInfoNV{
             .sType = VK_STRUCTURE_TYPE_OUT_OF_BAND_QUEUE_TYPE_INFO_NV,
             .pNext = nullptr,
