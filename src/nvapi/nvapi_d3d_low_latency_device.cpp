@@ -136,7 +136,7 @@ namespace dxvk {
         return result;
     }
 
-    uint32_t NvapiD3dLowLatencyDevice::CanMarkerTypeRepeat(uint32_t markerType) {
+    bool NvapiD3dLowLatencyDevice::CanMarkerTypeRepeat(uint32_t markerType) {
         switch (markerType) {
             case VK_LATENCY_MARKER_PRESENT_START_NV:
             case VK_LATENCY_MARKER_PRESENT_END_NV:
