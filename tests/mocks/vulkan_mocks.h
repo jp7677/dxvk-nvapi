@@ -8,6 +8,7 @@ using namespace trompeloeil;
 class VkDeviceMock {
     MAKE_MOCK4(vkCreateSemaphore, VkResult(VkDevice, const VkSemaphoreCreateInfo*, const VkAllocationCallbacks*, VkSemaphore*));
     MAKE_MOCK3(vkDestroySemaphore, void(VkDevice, VkSemaphore, const VkAllocationCallbacks*));
+    MAKE_MOCK2(vkSignalSemaphore, VkResult(VkDevice, const VkSemaphoreSignalInfo*));
     MAKE_MOCK3(vkSetLatencySleepModeNV, VkResult(VkDevice, VkSwapchainKHR, const VkLatencySleepModeInfoNV*));
     MAKE_MOCK3(vkLatencySleepNV, VkResult(VkDevice, VkSwapchainKHR, const VkLatencySleepInfoNV*));
     MAKE_MOCK3(vkGetLatencyTimingsNV, void(VkDevice, VkSwapchainKHR, VkGetLatencyMarkerInfoNV*));
@@ -18,6 +19,9 @@ class VkDeviceMock {
     }
     static void DestroySemaphore(VkDevice device, VkSemaphore semaphore, const VkAllocationCallbacks* pAllocator) {
         reinterpret_cast<VkDeviceMock*>(device)->vkDestroySemaphore(device, semaphore, pAllocator);
+    }
+    static VkResult SignalSemaphore(VkDevice device, const VkSemaphoreSignalInfo* pSignalInfo) {
+        return reinterpret_cast<VkDeviceMock*>(device)->vkSignalSemaphore(device, pSignalInfo);
     }
     static VkResult SetLatencySleepModeNV(VkDevice device, VkSwapchainKHR swapchain, const VkLatencySleepModeInfoNV* pSleepModeInfo) {
         return reinterpret_cast<VkDeviceMock*>(device)->vkSetLatencySleepModeNV(device, swapchain, pSleepModeInfo);
@@ -64,8 +68,18 @@ class VkMock final : public mock_interface<dxvk::Vk> {
                 .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::DestroySemaphore))};
     }
 
-    [[nodiscard]] static std::array<std::unique_ptr<expectation>, 5> ConfigureLL2PFN(VkMock& mock) {
+    [[nodiscard]] static std::array<std::unique_ptr<expectation>, 2> ConfigureSignalSemaphorePFN(VkMock& mock, bool khr) {
         return {
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkSignalSemaphore"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(khr ? nullptr : VkDeviceMock::SignalSemaphore)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkSignalSemaphoreKHR"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(khr ? VkDeviceMock::SignalSemaphore : nullptr))};
+    }
+
+    [[nodiscard]] static std::array<std::unique_ptr<expectation>, 6> ConfigureLL2PFN(VkMock& mock) {
+        return {
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkSignalSemaphore"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::SignalSemaphore)),
             NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencySleepModeNV"))))
                 .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::SetLatencySleepModeNV)),
             NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkLatencySleepNV"))))
