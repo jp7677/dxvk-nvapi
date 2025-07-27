@@ -31,7 +31,7 @@ extern "C" {
         if (!lowLatencyDevice) {
             switch (vr) {
                 case VK_ERROR_EXTENSION_NOT_PRESENT:
-                    log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 or vkSignalSemaphore commands in VkDevice's dispatch table, please ensure that DXVK-NVAPI's Vulkan layer is present. We will not pretend that Reflex is working");
+                    log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 or vkSignalSemaphore commands in VkDevice's dispatch table, returning failure to the application due to no fallback possible");
                     return NotSupported(n);
                 case VK_ERROR_INITIALIZATION_FAILED:
                     log::info("Initializing Vulkan Low-Latency failed: could not find usable Vulkan loader (or winevulkan) module in the current process");
@@ -42,7 +42,7 @@ extern "C" {
         }
 
         if (!lowLatencyDevice->IsLayerPresent()) {
-            log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 commands in VkDevice's dispatch table, please ensure that DXVK-NVAPI's Vulkan layer is present. We will pretend that Reflex is working");
+            log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 commands in VkDevice's dispatch table, faking success as a workaround but latency will not be reduced, please ensure that DXVK-NVAPI's Vulkan layer is present for real Reflex support");
         }
 
         *semaphore = lowLatencyDevice->GetSemaphore();
