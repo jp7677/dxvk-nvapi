@@ -413,18 +413,23 @@ TEST_CASE("D3D Reflex depending methods succeed", "[.d3d]") {
                 REQUIRE(NvAPI_D3D_SetLatencyMarker(reinterpret_cast<IUnknown*>(&d3d11Device), &latencyMarkerParams) == NVAPI_OK);
             }
 
-            SECTION("SetLatencyMarker drops repeated frame IDs and returns OK") {
+            SECTION("SetLatencyMarker drops repeated markers of {SIMULATION,RENDERSUBMIT,PRESENT}_{START,END} type and returns OK") {
                 sequence seq1, seq2, seq3;
 
-                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(1ULL, VK_LATENCY_MARKER_PRESENT_START_NV))
+                auto [d3dStartMarkerType, vkStartMarkerType] = GENERATE(
+                    std::make_pair(SIMULATION_START, VK_LATENCY_MARKER_SIMULATION_START_NV),
+                    std::make_pair(RENDERSUBMIT_START, VK_LATENCY_MARKER_RENDERSUBMIT_START_NV),
+                    std::make_pair(PRESENT_START, VK_LATENCY_MARKER_PRESENT_START_NV));
+
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(1ULL, vkStartMarkerType))
                     .IN_SEQUENCE(seq1)
                     .TIMES(1)
                     .RETURN(S_OK);
-                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(2ULL, VK_LATENCY_MARKER_PRESENT_START_NV))
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(2ULL, vkStartMarkerType))
                     .IN_SEQUENCE(seq2)
                     .TIMES(1)
                     .RETURN(S_OK);
-                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(2ULL, VK_LATENCY_MARKER_PRESENT_END_NV))
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(2ULL, vkStartMarkerType + 1))
                     .IN_SEQUENCE(seq3)
                     .TIMES(1)
                     .RETURN(S_OK);
@@ -434,14 +439,46 @@ TEST_CASE("D3D Reflex depending methods succeed", "[.d3d]") {
                 NV_LATENCY_MARKER_PARAMS latencyMarkerParams{};
                 latencyMarkerParams.version = NV_LATENCY_MARKER_PARAMS_VER1;
                 latencyMarkerParams.frameID = 1;
-                latencyMarkerParams.markerType = PRESENT_START;
+                latencyMarkerParams.markerType = d3dStartMarkerType;
                 REQUIRE(NvAPI_D3D_SetLatencyMarker(reinterpret_cast<IUnknown*>(&d3d11Device), &latencyMarkerParams) == NVAPI_OK);
                 REQUIRE(NvAPI_D3D_SetLatencyMarker(reinterpret_cast<IUnknown*>(&d3d11Device), &latencyMarkerParams) == NVAPI_OK);
                 latencyMarkerParams.frameID = 2;
                 REQUIRE(NvAPI_D3D_SetLatencyMarker(reinterpret_cast<IUnknown*>(&d3d11Device), &latencyMarkerParams) == NVAPI_OK);
                 REQUIRE(NvAPI_D3D_SetLatencyMarker(reinterpret_cast<IUnknown*>(&d3d11Device), &latencyMarkerParams) == NVAPI_OK);
+                latencyMarkerParams.markerType = static_cast<NV_LATENCY_MARKER_TYPE>(d3dStartMarkerType + 1);
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(reinterpret_cast<IUnknown*>(&d3d11Device), &latencyMarkerParams) == NVAPI_OK);
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(reinterpret_cast<IUnknown*>(&d3d11Device), &latencyMarkerParams) == NVAPI_OK);
+            }
+
+            SECTION("SetLatencyMarker passes through all markers of other types") {
+                sequence seq1, seq2;
+
+                auto [d3dMarkerType, vkMarkerType] = GENERATE(
+                    std::make_pair(INPUT_SAMPLE, VK_LATENCY_MARKER_INPUT_SAMPLE_NV),
+                    std::make_pair(TRIGGER_FLASH, VK_LATENCY_MARKER_TRIGGER_FLASH_NV),
+                    std::make_pair(OUT_OF_BAND_RENDERSUBMIT_START, VK_LATENCY_MARKER_OUT_OF_BAND_RENDERSUBMIT_START_NV),
+                    std::make_pair(OUT_OF_BAND_RENDERSUBMIT_END, VK_LATENCY_MARKER_OUT_OF_BAND_RENDERSUBMIT_END_NV),
+                    std::make_pair(OUT_OF_BAND_PRESENT_START, VK_LATENCY_MARKER_OUT_OF_BAND_PRESENT_START_NV),
+                    std::make_pair(OUT_OF_BAND_PRESENT_END, VK_LATENCY_MARKER_OUT_OF_BAND_PRESENT_END_NV));
+
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(1ULL, vkMarkerType))
+                    .IN_SEQUENCE(seq1)
+                    .TIMES(2)
+                    .RETURN(S_OK);
+                REQUIRE_CALL(lowLatencyDevice, SetLatencyMarker(2ULL, vkMarkerType))
+                    .IN_SEQUENCE(seq2)
+                    .TIMES(2)
+                    .RETURN(S_OK);
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_LATENCY_MARKER_PARAMS latencyMarkerParams{};
+                latencyMarkerParams.version = NV_LATENCY_MARKER_PARAMS_VER1;
+                latencyMarkerParams.frameID = 1;
+                latencyMarkerParams.markerType = d3dMarkerType;
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(reinterpret_cast<IUnknown*>(&d3d11Device), &latencyMarkerParams) == NVAPI_OK);
+                REQUIRE(NvAPI_D3D_SetLatencyMarker(reinterpret_cast<IUnknown*>(&d3d11Device), &latencyMarkerParams) == NVAPI_OK);
                 latencyMarkerParams.frameID = 2;
-                latencyMarkerParams.markerType = PRESENT_END;
                 REQUIRE(NvAPI_D3D_SetLatencyMarker(reinterpret_cast<IUnknown*>(&d3d11Device), &latencyMarkerParams) == NVAPI_OK);
                 REQUIRE(NvAPI_D3D_SetLatencyMarker(reinterpret_cast<IUnknown*>(&d3d11Device), &latencyMarkerParams) == NVAPI_OK);
             }
