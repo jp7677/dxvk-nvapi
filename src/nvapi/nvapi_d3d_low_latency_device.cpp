@@ -137,9 +137,6 @@ namespace dxvk {
     }
 
     HRESULT NvapiD3dLowLatencyDevice::SetLatencyMarker(uint64_t frameID, uint32_t markerType) {
-        if (m_frameIdGenerator.IsRepeatedFrame(frameID, markerType))
-            return S_OK; // Silently drop repeated frame IDs
-
         return m_d3dLowLatencyDevice->SetLatencyMarker(
             m_frameIdGenerator.GetLowLatencyDeviceFrameId(frameID), markerType);
     }
