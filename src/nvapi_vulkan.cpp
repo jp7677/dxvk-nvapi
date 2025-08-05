@@ -41,9 +41,10 @@ extern "C" {
             }
         }
 
-        if (!lowLatencyDevice->IsLayerPresent()) {
+        if (lowLatencyDevice->IsLayerPresent())
+            log::info("Successfully initialized Vulkan Low-Latency, DXVK-NVAPI's Vulkan layer is present");
+        else
             log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 commands in VkDevice's dispatch table, faking success as a workaround but latency will not be reduced, please ensure that DXVK-NVAPI's Vulkan layer is present for real Reflex support");
-        }
 
         *semaphore = lowLatencyDevice->GetSemaphore();
 
