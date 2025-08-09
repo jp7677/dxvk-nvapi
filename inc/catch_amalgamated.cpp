@@ -6,8 +6,8 @@
 
 // SPDX-License-Identifier: BSL-1.0
 
-//  Catch v3.7.1
-//  Generated: 2024-09-17 10:36:45.608896
+//  Catch v3.9.1
+//  Generated: 2025-08-09 00:29:21.552225
 //  ----------------------------------------------------------
 //  This file is an amalgamation of multiple different files.
 //  You probably shouldn't edit it directly.
@@ -332,7 +332,7 @@ namespace Catch {
                                              double diff = b - m;
                                              return a + diff * diff;
                                          } ) /
-                        ( last - first );
+                        static_cast<double>( last - first );
                     return std::sqrt( variance );
                 }
 
@@ -367,7 +367,7 @@ namespace Catch {
                                               double* first,
                                               double* last ) {
                 auto count = last - first;
-                double idx = (count - 1) * k / static_cast<double>(q);
+                double idx = static_cast<double>((count - 1) * k) / static_cast<double>(q);
                 int j = static_cast<int>(idx);
                 double g = idx - j;
                 std::nth_element(first, first + j, last);
@@ -470,10 +470,10 @@ namespace Catch {
 
                 double accel = sum_cubes / ( 6 * std::pow( sum_squares, 1.5 ) );
                 long n = static_cast<long>( resample.size() );
-                double prob_n =
+                double prob_n = static_cast<double>(
                     std::count_if( resample.begin(),
                                    resample.end(),
-                                   [point]( double x ) { return x < point; } ) /
+                                   [point]( double x ) { return x < point; } )) /
                     static_cast<double>( n );
                 // degenerate case with uniform samples
                 if ( Catch::Detail::directCompare( prob_n, 0. ) ) {
@@ -986,7 +986,7 @@ namespace Catch {
     }
 
     ScopedMessage::~ScopedMessage() {
-        if ( !uncaught_exceptions() && !m_moved ){
+        if ( !m_moved ){
             getResultCapture().popScopedMessage(m_info);
         }
     }
@@ -1056,11 +1056,9 @@ namespace Catch {
         m_messages.back().message += " := ";
     }
     Capturer::~Capturer() {
-        if ( !uncaught_exceptions() ){
-            assert( m_captured == m_messages.size() );
-            for( size_t i = 0; i < m_captured; ++i  )
-                m_resultCapture.popScopedMessage( m_messages[i] );
-        }
+        assert( m_captured == m_messages.size() );
+        for ( size_t i = 0; i < m_captured; ++i )
+            m_resultCapture.popScopedMessage( m_messages[i] );
     }
 
     void Capturer::captureValue( size_t index, std::string const& value ) {
@@ -1161,7 +1159,6 @@ namespace Catch {
 
 
 
-#include <algorithm>
 #include <cassert>
 #include <exception>
 #include <iomanip>
@@ -1170,14 +1167,6 @@ namespace Catch {
 namespace Catch {
 
     namespace {
-        static constexpr int TestFailureExitCode = 42;
-        static constexpr int UnspecifiedErrorExitCode = 1;
-        static constexpr int AllTestsSkippedExitCode = 4;
-        static constexpr int NoTestsRunExitCode = 2;
-        static constexpr int UnmatchedTestSpecExitCode = 3;
-        static constexpr int InvalidTestSpecExitCode = 5;
-
-
         IEventListenerPtr createReporter(std::string const& reporterName, ReporterConfig&& config) {
             auto reporter = Catch::getRegistryHub().getReporterRegistry().create(reporterName, CATCH_MOVE(config));
             CATCH_ENFORCE(reporter, "No reporter registered with name: '" << reporterName << '\'');
@@ -1926,7 +1915,7 @@ namespace Catch {
         return static_cast<unsigned int>(getElapsedMicroseconds()/1000);
     }
     auto Timer::getElapsedSeconds() const -> double {
-        return getElapsedMicroseconds()/1000000.0;
+        return static_cast<double>(getElapsedMicroseconds())/1000000.0;
     }
 
 
@@ -1935,7 +1924,6 @@ namespace Catch {
 
 
 
-#include <cmath>
 #include <iomanip>
 
 namespace Catch {
@@ -1946,7 +1934,10 @@ namespace Detail {
         const int hexThreshold = 255;
 
         struct Endianness {
-            enum Arch { Big, Little };
+            enum Arch : uint8_t {
+                Big,
+                Little
+            };
 
             static Arch which() {
                 int one = 1;
@@ -2035,6 +2026,13 @@ namespace Detail {
              rss << std::setw(2) << static_cast<unsigned>(bytes[i]);
        return rss.str();
     }
+
+    std::string makeExceptionHappenedString() {
+        return "{ stringification failed with an exception: \"" +
+               translateActiveException() + "\" }";
+
+    }
+
 } // end Detail namespace
 
 
@@ -2280,7 +2278,7 @@ namespace Catch {
     }
 
     Version const& libraryVersion() {
-        static Version version( 3, 7, 1, "", 0 );
+        static Version version( 3, 9, 1, "", 0 );
         return version;
     }
 
@@ -3516,7 +3514,7 @@ namespace {
 #endif // Windows/ ANSI/ None
 
 
-#if defined( CATCH_PLATFORM_LINUX ) || defined( CATCH_PLATFORM_MAC )
+#if defined( CATCH_PLATFORM_LINUX ) || defined( CATCH_PLATFORM_MAC ) || defined( __GLIBC__ )
 #    define CATCH_INTERNAL_HAS_ISATTY
 #    include <unistd.h>
 #endif
@@ -3990,10 +3988,10 @@ namespace Catch {
         // To avoid having to handle TFE explicitly everywhere, we just
         // rethrow it so that it goes back up the caller.
         catch( TestFailureException& ) {
-            std::rethrow_exception(std::current_exception());
+            return "{ nested assertion failed }";
         }
         catch( TestSkipException& ) {
-            std::rethrow_exception(std::current_exception());
+            return "{ nested SKIP() called }";
         }
         catch( std::exception const& ex ) {
             return ex.what();
@@ -4085,7 +4083,7 @@ namespace Catch {
     // There is no 1-1 mapping between signals and windows exceptions.
     // Windows can easily distinguish between SO and SigSegV,
     // but SigInt, SigTerm, etc are handled differently.
-    static SignalDefs signalDefs[] = {
+    static constexpr SignalDefs signalDefs[] = {
         { EXCEPTION_ILLEGAL_INSTRUCTION,  "SIGILL - Illegal instruction signal" },
         { EXCEPTION_STACK_OVERFLOW, "SIGSEGV - Stack overflow" },
         { EXCEPTION_ACCESS_VIOLATION, "SIGSEGV - Segmentation violation signal" },
@@ -4156,7 +4154,7 @@ namespace Catch {
         const char* name;
     };
 
-    static SignalDefs signalDefs[] = {
+    static constexpr SignalDefs signalDefs[] = {
         { SIGINT,  "SIGINT - Terminal interrupt signal" },
         { SIGILL,  "SIGILL - Illegal instruction signal" },
         { SIGFPE,  "SIGFPE - Floating point error signal" },
@@ -4320,8 +4318,6 @@ namespace Catch {
 
 #include <cstdio>
 #include <fstream>
-#include <sstream>
-#include <vector>
 
 namespace Catch {
 
@@ -4762,7 +4758,7 @@ namespace Catch {
 namespace Catch {
     CATCH_INTERNAL_START_WARNINGS_SUPPRESSION
     CATCH_INTERNAL_SUPPRESS_GLOBALS_WARNINGS
-    static LeakDetector leakDetector;
+    static const LeakDetector leakDetector;
     CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION
 }
 
@@ -5213,6 +5209,12 @@ namespace Catch {
 
 
 
+#if defined( __clang__ )
+#    define CATCH2_CLANG_NO_SANITIZE_INTEGER \
+        __attribute__( ( no_sanitize( "unsigned-integer-overflow" ) ) )
+#else
+#    define CATCH2_CLANG_NO_SANITIZE_INTEGER
+#endif
 namespace Catch {
 
 namespace {
@@ -5222,6 +5224,7 @@ namespace {
 #pragma warning(disable:4146) // we negate uint32 during the rotate
 #endif
         // Safe rotr implementation thanks to John Regehr
+        CATCH2_CLANG_NO_SANITIZE_INTEGER
         uint32_t rotate_right(uint32_t val, uint32_t count) {
             const uint32_t mask = 31;
             count &= mask;
@@ -5255,10 +5258,11 @@ namespace {
         }
     }
 
+    CATCH2_CLANG_NO_SANITIZE_INTEGER
     SimplePcg32::result_type SimplePcg32::operator()() {
         // prepare the output value
         const uint32_t xorshifted = static_cast<uint32_t>(((m_state >> 18u) ^ m_state) >> 27u);
-        const auto output = rotate_right(xorshifted, m_state >> 59u);
+        const auto output = rotate_right(xorshifted, static_cast<uint32_t>(m_state >> 59u));
 
         // advance state
         m_state = m_state * 6364136223846793005ULL + s_inc;
@@ -5739,23 +5743,55 @@ namespace Catch {
         } // namespace
     }
 
+    namespace Detail {
+        // Assertions are owned by the thread that is executing them.
+        // This allows for lock-free progress in common cases where we
+        // do not need to send the assertion events to the reporter.
+        // This also implies that messages are owned by their respective
+        // threads, and should not be shared across different threads.
+        //
+        // For simplicity, we disallow messages in multi-threaded contexts,
+        // but in the future we can enable them under this logic.
+        //
+        // This implies that various pieces of metadata referring to last
+        // assertion result/source location/message handling, etc
+        // should also be thread local. For now we just use naked globals
+        // below, in the future we will want to allocate piece of memory
+        // from heap, to avoid consuming too much thread-local storage.
+
+        // This is used for the "if" part of CHECKED_IF/CHECKED_ELSE
+        static thread_local bool g_lastAssertionPassed = false;
+        // Should we clear message scopes before sending off the messages to
+        // reporter? Set in `assertionPassedFastPath` to avoid doing the full
+        // clear there for performance reasons.
+        static thread_local bool g_clearMessageScopes = false;
+        // This is the source location for last encountered macro. It is
+        // used to provide the users with more precise location of error
+        // when an unexpected exception/fatal error happens.
+        static thread_local SourceLineInfo g_lastKnownLineInfo("DummyLocation", static_cast<size_t>(-1));
+    }
+
     RunContext::RunContext(IConfig const* _config, IEventListenerPtr&& reporter)
     :   m_runInfo(_config->name()),
         m_config(_config),
         m_reporter(CATCH_MOVE(reporter)),
-        m_lastAssertionInfo{ StringRef(), SourceLineInfo("",0), StringRef(), ResultDisposition::Normal },
         m_outputRedirect( makeOutputRedirect( m_reporter->getPreferences().shouldRedirectStdOut ) ),
-        m_includeSuccessfulResults( m_config->includeSuccessfulResults() || m_reporter->getPreferences().shouldReportAllAssertions )
+        m_abortAfterXFailedAssertions( m_config->abortAfter() ),
+        m_reportAssertionStarting( m_reporter->getPreferences().shouldReportAllAssertionStarts ),
+        m_includeSuccessfulResults( m_config->includeSuccessfulResults() || m_reporter->getPreferences().shouldReportAllAssertions ),
+        m_shouldDebugBreak( m_config->shouldDebugBreak() )
     {
         getCurrentMutableContext().setResultCapture( this );
         m_reporter->testRunStarting(m_runInfo);
     }
 
     RunContext::~RunContext() {
+        updateTotalsFromAtomics();
         m_reporter->testRunEnded(TestRunStats(m_runInfo, m_totals, aborting()));
     }
 
     Totals RunContext::runTest(TestCaseHandle const& testCase) {
+        updateTotalsFromAtomics();
         const Totals prevTotals = m_totals;
 
         auto const& testInfo = testCase.getTestCaseInfo();
@@ -5810,6 +5846,7 @@ namespace Catch {
 
             m_reporter->testCasePartialStarting(testInfo, testRuns);
 
+            updateTotalsFromAtomics();
             const auto beforeRunTotals = m_totals;
             runCurrentTest();
             std::string oneRunCout = m_outputRedirect->getStdout();
@@ -5818,6 +5855,7 @@ namespace Catch {
             redirectedCout += oneRunCout;
             redirectedCerr += oneRunCerr;
 
+            updateTotalsFromAtomics();
             const auto singleRunTotals = m_totals.delta(beforeRunTotals);
             auto statsForOneRun = TestCaseStats(testInfo, singleRunTotals, CATCH_MOVE(oneRunCout), CATCH_MOVE(oneRunCerr), aborting());
             m_reporter->testCasePartialEnded(statsForOneRun, testRuns);
@@ -5847,27 +5885,35 @@ namespace Catch {
 
 
     void RunContext::assertionEnded(AssertionResult&& result) {
+        Detail::g_lastKnownLineInfo = result.m_info.lineInfo;
         if (result.getResultType() == ResultWas::Ok) {
-            m_totals.assertions.passed++;
-            m_lastAssertionPassed = true;
+            m_atomicAssertionCount.passed++;
+            Detail::g_lastAssertionPassed = true;
         } else if (result.getResultType() == ResultWas::ExplicitSkip) {
-            m_totals.assertions.skipped++;
-            m_lastAssertionPassed = true;
+            m_atomicAssertionCount.skipped++;
+            Detail::g_lastAssertionPassed = true;
         } else if (!result.succeeded()) {
-            m_lastAssertionPassed = false;
+            Detail::g_lastAssertionPassed = false;
             if (result.isOk()) {
             }
-            else if( m_activeTestCase->getTestCaseInfo().okToFail() )
-                m_totals.assertions.failedButOk++;
+            else if( m_activeTestCase->getTestCaseInfo().okToFail() ) // Read from a shared state established before the threads could start, this is fine
+                m_atomicAssertionCount.failedButOk++;
             else
-                m_totals.assertions.failed++;
+                m_atomicAssertionCount.failed++;
         }
         else {
-            m_lastAssertionPassed = true;
+            Detail::g_lastAssertionPassed = true;
         }
 
+        // From here, we are touching shared state and need mutex.
+        Detail::LockGuard lock( m_assertionMutex );
         {
+            if ( Detail::g_clearMessageScopes ) {
+                m_messageScopes.clear();
+                Detail::g_clearMessageScopes = false;
+            }
             auto _ = scopedDeactivate( *m_outputRedirect );
+            updateTotalsFromAtomics();
             m_reporter->assertionEnded( AssertionStats( result, m_messages, m_totals ) );
         }
 
@@ -5879,15 +5925,13 @@ namespace Catch {
         // populateReaction is run if it is needed
         m_lastResult = CATCH_MOVE( result );
     }
-    void RunContext::resetAssertionInfo() {
-        m_lastAssertionInfo.macroName = StringRef();
-        m_lastAssertionInfo.capturedExpression = "{Unknown expression after the reported line}"_sr;
-        m_lastAssertionInfo.resultDisposition = ResultDisposition::Normal;
-    }
 
     void RunContext::notifyAssertionStarted( AssertionInfo const& info ) {
-        auto _ = scopedDeactivate( *m_outputRedirect );
-        m_reporter->assertionStarting( info );
+        if (m_reportAssertionStarting) {
+            Detail::LockGuard lock( m_assertionMutex );
+            auto _ = scopedDeactivate( *m_outputRedirect );
+            m_reporter->assertionStarting( info );
+        }
     }
 
     bool RunContext::sectionStarted( StringRef sectionName,
@@ -5903,13 +5947,14 @@ namespace Catch {
         m_activeSections.push_back(&sectionTracker);
 
         SectionInfo sectionInfo( sectionLineInfo, static_cast<std::string>(sectionName) );
-        m_lastAssertionInfo.lineInfo = sectionInfo.lineInfo;
+        Detail::g_lastKnownLineInfo = sectionLineInfo;
 
         {
             auto _ = scopedDeactivate( *m_outputRedirect );
             m_reporter->sectionStarting( sectionInfo );
         }
 
+        updateTotalsFromAtomics();
         assertions = m_totals.assertions;
 
         return true;
@@ -5917,12 +5962,11 @@ namespace Catch {
     IGeneratorTracker*
     RunContext::acquireGeneratorTracker( StringRef generatorName,
                                          SourceLineInfo const& lineInfo ) {
-        using namespace Generators;
-        GeneratorTracker* tracker = GeneratorTracker::acquire(
+        auto* tracker = Generators::GeneratorTracker::acquire(
             m_trackerContext,
             TestCaseTracking::NameAndLocationRef(
                  generatorName, lineInfo ) );
-        m_lastAssertionInfo.lineInfo = lineInfo;
+        Detail::g_lastKnownLineInfo = lineInfo;
         return tracker;
     }
 
@@ -5935,7 +5979,7 @@ namespace Catch {
         auto& currentTracker = m_trackerContext.currentTracker();
         assert(
             currentTracker.nameAndLocation() != nameAndLoc &&
-            "Trying to create tracker for a genreator that already has one" );
+            "Trying to create tracker for a generator that already has one" );
 
         auto newTracker = Catch::Detail::make_unique<Generators::GeneratorTracker>(
             CATCH_MOVE(nameAndLoc), m_trackerContext, &currentTracker );
@@ -5954,12 +5998,13 @@ namespace Catch {
             return false;
         if (m_trackerContext.currentTracker().hasChildren())
             return false;
-        m_totals.assertions.failed++;
+        m_atomicAssertionCount.failed++;
         assertions.failed++;
         return true;
     }
 
     void RunContext::sectionEnded(SectionEndInfo&& endInfo) {
+        updateTotalsFromAtomics();
         Counts assertions = m_totals.assertions - endInfo.prevAssertions;
         bool missingAssertions = testForMissingAssertions(assertions);
 
@@ -5976,9 +6021,6 @@ namespace Catch {
                               endInfo.durationInSeconds,
                               missingAssertions ) );
         }
-
-        m_messages.clear();
-        m_messageScopes.clear();
     }
 
     void RunContext::sectionEndedEarly(SectionEndInfo&& endInfo) {
@@ -6013,8 +6055,18 @@ namespace Catch {
         m_messages.push_back(message);
     }
 
-    void RunContext::popScopedMessage(MessageInfo const & message) {
-        m_messages.erase(std::remove(m_messages.begin(), m_messages.end(), message), m_messages.end());
+    void RunContext::popScopedMessage( MessageInfo const& message ) {
+        // Note: On average, it would probably be better to look for the message
+        //       backwards. However, we do not expect to have to deal with more
+        //       messages than low single digits, so the optimization is tiny,
+        //       and we would have to hand-write the loop to avoid terrible
+        //       codegen of reverse iterators in debug mode.
+        m_messages.erase(
+            std::find_if( m_messages.begin(),
+                          m_messages.end(),
+                          [id = message.sequence]( MessageInfo const& msg ) {
+                              return msg.sequence == id;
+                          } ) );
     }
 
     void RunContext::emplaceUnscopedMessage( MessageBuilder&& builder ) {
@@ -6028,6 +6080,18 @@ namespace Catch {
     }
 
     const AssertionResult * RunContext::getLastResult() const {
+        // m_lastResult is updated inside the assertion slow-path, under
+        // a mutex, so the read needs to happen under mutex as well.
+
+        // TBD: The last result only makes sense if it is a thread-local
+        //      thing, because the answer is different per thread, like
+        //      last line info, whether last assertion passed, and so on.
+        //
+        //      However, the last result was also never updated in the
+        //      assertion fast path, so it was always somewhat broken,
+        //      and since IResultCapture::getLastResult is deprecated,
+        //      we will leave it as is, until it is finally removed.
+        Detail::LockGuard _( m_assertionMutex );
         return &(*m_lastResult);
     }
 
@@ -6036,28 +6100,44 @@ namespace Catch {
     }
 
     void RunContext::handleFatalErrorCondition( StringRef message ) {
-        // TODO: scoped deactivate here? Just give up and do best effort?
-        //       the deactivation can break things further, OTOH so can the
-        //       capture
-        auto _ = scopedDeactivate( *m_outputRedirect );
+        // We lock only when touching the reporters directly, to avoid
+        // deadlocks when we call into other functions that also want
+        // to lock the mutex before touching reporters.
+        //
+        // This does mean that we allow other threads to run while handling
+        // a fatal error, but this is all a best effort attempt anyway.
+        {
+            Detail::LockGuard lock( m_assertionMutex );
+            // TODO: scoped deactivate here? Just give up and do best effort?
+            //       the deactivation can break things further, OTOH so can the
+            //       capture
+            auto _ = scopedDeactivate( *m_outputRedirect );
 
-        // First notify reporter that bad things happened
-        m_reporter->fatalErrorEncountered( message );
+            // First notify reporter that bad things happened
+            m_reporter->fatalErrorEncountered( message );
+        }
 
         // Don't rebuild the result -- the stringification itself can cause more fatal errors
         // Instead, fake a result data.
         AssertionResultData tempResult( ResultWas::FatalErrorCondition, { false } );
         tempResult.message = static_cast<std::string>(message);
-        AssertionResult result(m_lastAssertionInfo, CATCH_MOVE(tempResult));
+        AssertionResult result( makeDummyAssertionInfo(),
+                                CATCH_MOVE( tempResult ) );
 
         assertionEnded(CATCH_MOVE(result) );
-        resetAssertionInfo();
+
+
+        // At this point we touch sections/test cases from this thread
+        // to try and end them. Technically that is not supported when
+        // using multiple threads, but the worst thing that can happen
+        // is that the process aborts harder :-D
+        Detail::LockGuard lock( m_assertionMutex );
 
         // Best effort cleanup for sections that have not been destructed yet
         // Since this is a fatal error, we have not had and won't have the opportunity to destruct them properly
         while (!m_activeSections.empty()) {
-            auto nl = m_activeSections.back()->nameAndLocation();
-            SectionEndInfo endInfo{ SectionInfo(CATCH_MOVE(nl.location), CATCH_MOVE(nl.name)), {}, 0.0 };
+            auto const& nl = m_activeSections.back()->nameAndLocation();
+            SectionEndInfo endInfo{ SectionInfo(nl.location, nl.name), {}, 0.0 };
             sectionEndedEarly(CATCH_MOVE(endInfo));
         }
         handleUnfinishedSections();
@@ -6082,32 +6162,44 @@ namespace Catch {
                                   std::string(),
                                   false));
         m_totals.testCases.failed++;
+        updateTotalsFromAtomics();
         m_reporter->testRunEnded(TestRunStats(m_runInfo, m_totals, false));
     }
 
     bool RunContext::lastAssertionPassed() {
-         return m_lastAssertionPassed;
+        return Detail::g_lastAssertionPassed;
     }
 
-    void RunContext::assertionPassed() {
-        m_lastAssertionPassed = true;
-        ++m_totals.assertions.passed;
-        resetAssertionInfo();
-        m_messageScopes.clear();
+    void RunContext::assertionPassedFastPath(SourceLineInfo lineInfo) {
+        // We want to save the line info for better experience with unexpected assertions
+        Detail::g_lastKnownLineInfo = lineInfo;
+        ++m_atomicAssertionCount.passed;
+        Detail::g_lastAssertionPassed = true;
+        Detail::g_clearMessageScopes = true;
+    }
+
+    void RunContext::updateTotalsFromAtomics() {
+        m_totals.assertions = Counts{
+            m_atomicAssertionCount.passed,
+            m_atomicAssertionCount.failed,
+            m_atomicAssertionCount.failedButOk,
+            m_atomicAssertionCount.skipped,
+        };
     }
 
     bool RunContext::aborting() const {
-        return m_totals.assertions.failed >= static_cast<std::size_t>(m_config->abortAfter());
+        return m_atomicAssertionCount.failed >= m_abortAfterXFailedAssertions;
     }
 
     void RunContext::runCurrentTest() {
         auto const& testCaseInfo = m_activeTestCase->getTestCaseInfo();
         SectionInfo testCaseSection(testCaseInfo.lineInfo, testCaseInfo.name);
         m_reporter->sectionStarting(testCaseSection);
+        updateTotalsFromAtomics();
         Counts prevAssertions = m_totals.assertions;
         double duration = 0;
         m_shouldReportUnexpected = true;
-        m_lastAssertionInfo = { "TEST_CASE"_sr, testCaseInfo.lineInfo, StringRef(), ResultDisposition::Normal };
+        Detail::g_lastKnownLineInfo = testCaseInfo.lineInfo;
 
         Timer timer;
         CATCH_TRY {
@@ -6124,18 +6216,23 @@ namespace Catch {
         } CATCH_CATCH_ALL {
             // Under CATCH_CONFIG_FAST_COMPILE, unexpected exceptions under REQUIRE assertions
             // are reported without translation at the point of origin.
-            if( m_shouldReportUnexpected ) {
+            if ( m_shouldReportUnexpected ) {
                 AssertionReaction dummyReaction;
-                handleUnexpectedInflightException( m_lastAssertionInfo, translateActiveException(), dummyReaction );
+                handleUnexpectedInflightException( makeDummyAssertionInfo(),
+                                                   translateActiveException(),
+                                                   dummyReaction );
             }
         }
+        updateTotalsFromAtomics();
         Counts assertions = m_totals.assertions - prevAssertions;
         bool missingAssertions = testForMissingAssertions(assertions);
 
         m_testCaseTracker->close();
         handleUnfinishedSections();
-        m_messages.clear();
         m_messageScopes.clear();
+        // TBD: At this point, m_messages should be empty. Do we want to
+        //      assert that this is true, or keep the defensive clear call?
+        m_messages.clear();
 
         SectionStats testCaseSectionStats(CATCH_MOVE(testCaseSection), assertions, duration, missingAssertions);
         m_reporter->sectionEnded(testCaseSectionStats);
@@ -6176,7 +6273,7 @@ namespace Catch {
 
         if( result ) {
             if (!m_includeSuccessfulResults) {
-                assertionPassed();
+                assertionPassedFastPath(info.lineInfo);
             }
             else {
                 reportExpr(info, ResultWas::Ok, &expr, negated);
@@ -6184,9 +6281,9 @@ namespace Catch {
         }
         else {
             reportExpr(info, ResultWas::ExpressionFailed, &expr, negated );
-            populateReaction( reaction );
+            populateReaction(
+                reaction, info.resultDisposition & ResultDisposition::Normal );
         }
-        resetAssertionInfo();
     }
     void RunContext::reportExpr(
             AssertionInfo const &info,
@@ -6194,7 +6291,7 @@ namespace Catch {
             ITransientExpression const *expr,
             bool negated ) {
 
-        m_lastAssertionInfo = info;
+        Detail::g_lastKnownLineInfo = info.lineInfo;
         AssertionResultData data( resultType, LazyExpression( negated ) );
 
         AssertionResult assertionResult{ info, CATCH_MOVE( data ) };
@@ -6209,24 +6306,25 @@ namespace Catch {
             std::string&& message,
             AssertionReaction& reaction
     ) {
-        m_lastAssertionInfo = info;
+        Detail::g_lastKnownLineInfo = info.lineInfo;
 
         AssertionResultData data( resultType, LazyExpression( false ) );
         data.message = CATCH_MOVE( message );
-        AssertionResult assertionResult{ m_lastAssertionInfo,
+        AssertionResult assertionResult{ info,
                                          CATCH_MOVE( data ) };
 
         const auto isOk = assertionResult.isOk();
         assertionEnded( CATCH_MOVE(assertionResult) );
         if ( !isOk ) {
-            populateReaction( reaction );
+            populateReaction(
+                reaction, info.resultDisposition & ResultDisposition::Normal );
         } else if ( resultType == ResultWas::ExplicitSkip ) {
             // TODO: Need to handle this explicitly, as ExplicitSkip is
             // considered "OK"
             reaction.shouldSkip = true;
         }
-        resetAssertionInfo();
     }
+
     void RunContext::handleUnexpectedExceptionNotThrown(
             AssertionInfo const& info,
             AssertionReaction& reaction
@@ -6239,49 +6337,67 @@ namespace Catch {
             std::string&& message,
             AssertionReaction& reaction
     ) {
-        m_lastAssertionInfo = info;
+        Detail::g_lastKnownLineInfo = info.lineInfo;
 
         AssertionResultData data( ResultWas::ThrewException, LazyExpression( false ) );
         data.message = CATCH_MOVE(message);
         AssertionResult assertionResult{ info, CATCH_MOVE(data) };
         assertionEnded( CATCH_MOVE(assertionResult) );
-        populateReaction( reaction );
-        resetAssertionInfo();
+        populateReaction( reaction,
+                          info.resultDisposition & ResultDisposition::Normal );
     }
 
-    void RunContext::populateReaction( AssertionReaction& reaction ) {
-        reaction.shouldDebugBreak = m_config->shouldDebugBreak();
-        reaction.shouldThrow = aborting() || (m_lastAssertionInfo.resultDisposition & ResultDisposition::Normal);
+    void RunContext::populateReaction( AssertionReaction& reaction,
+                                       bool has_normal_disposition ) {
+        reaction.shouldDebugBreak = m_shouldDebugBreak;
+        reaction.shouldThrow = aborting() || has_normal_disposition;
+    }
+
+    AssertionInfo RunContext::makeDummyAssertionInfo() {
+        const bool testCaseJustStarted =
+            Detail::g_lastKnownLineInfo ==
+            m_activeTestCase->getTestCaseInfo().lineInfo;
+
+        return AssertionInfo{
+            testCaseJustStarted ? "TEST_CASE"_sr : StringRef(),
+            Detail::g_lastKnownLineInfo,
+            testCaseJustStarted ? StringRef() : "{Unknown expression after the reported line}"_sr,
+            ResultDisposition::Normal
+        };
     }
 
     void RunContext::handleIncomplete(
             AssertionInfo const& info
     ) {
         using namespace std::string_literals;
-        m_lastAssertionInfo = info;
+        Detail::g_lastKnownLineInfo = info.lineInfo;
 
         AssertionResultData data( ResultWas::ThrewException, LazyExpression( false ) );
         data.message = "Exception translation was disabled by CATCH_CONFIG_FAST_COMPILE"s;
         AssertionResult assertionResult{ info, CATCH_MOVE( data ) };
         assertionEnded( CATCH_MOVE(assertionResult) );
-        resetAssertionInfo();
     }
+
     void RunContext::handleNonExpr(
             AssertionInfo const &info,
             ResultWas::OfType resultType,
             AssertionReaction &reaction
     ) {
-        m_lastAssertionInfo = info;
-
         AssertionResultData data( resultType, LazyExpression( false ) );
         AssertionResult assertionResult{ info, CATCH_MOVE( data ) };
 
         const auto isOk = assertionResult.isOk();
-        assertionEnded( CATCH_MOVE(assertionResult) );
-        if ( !isOk ) { populateReaction( reaction ); }
-        resetAssertionInfo();
-    }
+        if ( isOk && !m_includeSuccessfulResults ) {
+            assertionPassedFastPath( info.lineInfo );
+            return;
+        }
 
+        assertionEnded( CATCH_MOVE(assertionResult) );
+        if ( !isOk ) {
+            populateReaction(
+                reaction, info.resultDisposition & ResultDisposition::Normal );
+        }
+    }
 
     IResultCapture& getResultCapture() {
         if (auto* capture = getCurrentContext().getResultCapture())
@@ -6513,7 +6629,7 @@ namespace Catch {
         std::string origStr = CATCH_MOVE(str);
         str.clear();
         // There is at least one replacement, so reserve with the best guess
-        // we can make without actually counting the number of occurences.
+        // we can make without actually counting the number of occurrences.
         str.reserve(origStr.size() - replaceThis.size() + withThis.size());
         do {
             str.append(origStr, copyBegin, i-copyBegin );
@@ -6559,7 +6675,6 @@ namespace Catch {
 #include <algorithm>
 #include <ostream>
 #include <cstring>
-#include <cstdint>
 
 namespace Catch {
     StringRef::StringRef( char const* rawChars ) noexcept
@@ -8874,7 +8989,8 @@ private:
                          << m_config->testSpec()
                          << '\n';
             }
-            m_stream << "RNG seed: " << getSeed() << '\n';
+            m_stream << "RNG seed: " << getSeed() << '\n'
+                     << std::flush;
         }
 
         void CompactReporter::assertionEnded( AssertionStats const& _assertionStats ) {
@@ -9108,7 +9224,7 @@ struct RowBreak {};
 struct OutputFlush {};
 
 class Duration {
-    enum class Unit {
+    enum class Unit : uint8_t {
         Auto,
         Nanoseconds,
         Microseconds,
@@ -9180,7 +9296,10 @@ public:
 };
 } // end anon namespace
 
-enum class Justification { Left, Right };
+enum class Justification : uint8_t {
+    Left,
+    Right
+};
 
 struct ColumnInfo {
     std::string name;
@@ -9292,7 +9411,10 @@ ConsoleReporter::ConsoleReporter(ReporterConfig&& config):
                 { "est run time high mean  high std dev", 14, Justification::Right }
             };
         }
-    }())) {}
+    }())) {
+    m_preferences.shouldReportAllAssertionStarts = false;
+}
+
 ConsoleReporter::~ConsoleReporter() = default;
 
 std::string ConsoleReporter::getDescription() {
@@ -9306,8 +9428,6 @@ void ConsoleReporter::noMatchingTestCases( StringRef unmatchedSpec ) {
 void ConsoleReporter::reportInvalidTestSpec( StringRef arg ) {
     m_stream << "Invalid Filter: " << arg << '\n';
 }
-
-void ConsoleReporter::assertionStarting(AssertionInfo const&) {}
 
 void ConsoleReporter::assertionEnded(AssertionStats const& _assertionStats) {
     AssertionResult const& result = _assertionStats.assertionResult;
@@ -9420,7 +9540,8 @@ void ConsoleReporter::testRunStarting(TestRunInfo const& _testRunInfo) {
         m_stream << m_colour->guardColour( Colour::BrightYellow ) << "Filters: "
                  << m_config->testSpec() << '\n';
     }
-    m_stream << "Randomness seeded to: " << getSeed() << '\n';
+    m_stream << "Randomness seeded to: " << getSeed() << '\n'
+             << std::flush;
 }
 
 void ConsoleReporter::lazyPrint() {
@@ -9748,6 +9869,7 @@ namespace Catch {
 
 #include <algorithm>
 #include <cfloat>
+#include <cmath>
 #include <cstdio>
 #include <ostream>
 #include <iomanip>
@@ -9911,9 +10033,29 @@ namespace Catch {
             out << "All available tags:\n";
         }
 
+        // minimum whitespace to pad tag counts, possibly overwritten below
+        size_t maxTagCountLen = 2;
+
+        // determine necessary padding for tag count column
+        if ( ! tags.empty() ) {
+            const auto maxTagCount =
+                std::max_element( tags.begin(),
+                                  tags.end(),
+                                  []( auto const& lhs, auto const& rhs ) {
+                                      return lhs.count < rhs.count;
+                                  } )
+                    ->count;
+            
+            // more padding necessary for 3+ digits
+            if (maxTagCount >= 100) {
+                auto numDigits = 1 + std::floor( std::log10( maxTagCount ) );
+                maxTagCountLen = static_cast<size_t>( numDigits );
+            }
+        }
+
         for ( auto const& tagCount : tags ) {
             ReusableStringStream rss;
-            rss << "  " << std::setw( 2 ) << tagCount.count << "  ";
+            rss << "  " << std::setw( maxTagCountLen ) << tagCount.count << "  ";
             auto str = rss.str();
             auto wrapper = TextFlow::Column( tagCount.all() )
                                .initialIndent( 0 )
@@ -10111,6 +10253,8 @@ namespace Catch {
         //      not, but for machine-parseable reporters I think the answer
         //      should be yes.
         m_preferences.shouldReportAllAssertions = true;
+        // We only handle assertions when they end
+        m_preferences.shouldReportAllAssertionStarts = false;
 
         m_objectWriters.emplace( m_stream );
         m_writers.emplace( Writer::Object );
@@ -10340,7 +10484,6 @@ namespace Catch {
         endObject();
     }
 
-    void JsonReporter::assertionStarting( AssertionInfo const& /*assertionInfo*/ ) {}
     void JsonReporter::assertionEnded( AssertionStats const& assertionStats ) {
         // TODO: There is lot of different things to handle here, but
         //       we can fill it in later, after we show that the basic
@@ -10507,6 +10650,7 @@ namespace Catch {
         {
             m_preferences.shouldRedirectStdOut = true;
             m_preferences.shouldReportAllAssertions = false;
+            m_preferences.shouldReportAllAssertionStarts = false;
             m_shouldStoreSuccesfulAssertions = false;
         }
 
@@ -10737,6 +10881,8 @@ namespace Catch {
             reporterish.getPreferences().shouldRedirectStdOut;
         m_preferences.shouldReportAllAssertions |=
             reporterish.getPreferences().shouldReportAllAssertions;
+        m_preferences.shouldReportAllAssertionStarts |=
+            reporterish.getPreferences().shouldReportAllAssertionStarts;
     }
 
     void MultiReporter::addListener( IEventListenerPtr&& listener ) {
@@ -11294,7 +11440,8 @@ namespace Catch {
         if ( m_config->testSpec().hasFilters() ) {
             m_stream << "# filters: " << m_config->testSpec() << '\n';
         }
-        m_stream << "# rng-seed: " << m_config->rngSeed() << '\n';
+        m_stream << "# rng-seed: " << m_config->rngSeed() << '\n'
+                 << std::flush;
     }
 
     void TAPReporter::noMatchingTestCases( StringRef unmatchedSpec ) {
@@ -11508,6 +11655,7 @@ namespace Catch {
     {
         m_preferences.shouldRedirectStdOut = true;
         m_preferences.shouldReportAllAssertions = true;
+        m_preferences.shouldReportAllAssertionStarts = false;
     }
 
     XmlReporter::~XmlReporter() = default;
@@ -11563,8 +11711,6 @@ namespace Catch {
             m_xml.ensureTagClosed();
         }
     }
-
-    void XmlReporter::assertionStarting( AssertionInfo const& ) { }
 
     void XmlReporter::assertionEnded( AssertionStats const& assertionStats ) {
 
