@@ -344,21 +344,21 @@ struct VkInstanceOverrides {
     }
 
     static void DestroyInstance(
-        const vkroots::VkInstanceDispatch* pDispatch,
+        const vkroots::VkInstanceDispatch& pDispatch,
         VkInstance instance,
         const VkAllocationCallbacks* pAllocator) {
-        pDispatch->DestroyInstance(instance, pAllocator);
+        pDispatch.DestroyInstance(instance, pAllocator);
         ReflexInstanceContext::remove(instance);
     }
 
     static VkResult EnumerateDeviceExtensionProperties(
-        const vkroots::VkInstanceDispatch* pDispatch,
+        const vkroots::VkPhysicalDeviceDispatch& pDispatch,
         VkPhysicalDevice physicalDevice,
         const char* pLayerName,
         uint32_t* pPropertyCount,
         VkExtensionProperties* pProperties) {
         if (!exposeExtension)
-            return pDispatch->EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
+            return pDispatch.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
 
         static constexpr auto layerName = "VK_LAYER_DXVK_NVAPI_reflex"sv;
         static constexpr auto exts = std::array<VkExtensionProperties, 1>{
@@ -370,33 +370,33 @@ struct VkInstanceOverrides {
 
         if (pLayerName) {
             if (pLayerName == layerName) {
-                if (PhysicalDeviceSupportsExtension(pDispatch->EnumerateDeviceExtensionProperties, physicalDevice, ll2.data(), 2))
-                    return vkroots::helpers::array(exts, pPropertyCount, pProperties);
+                if (PhysicalDeviceSupportsExtension(pDispatch.EnumerateDeviceExtensionProperties, physicalDevice, ll2.data(), 2))
+                    return vkroots::array(exts, pPropertyCount, pProperties);
                 else
                     return *pPropertyCount = 0, VK_SUCCESS;
             } else {
-                return pDispatch->EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
+                return pDispatch.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
             }
         }
 
-        if (PhysicalDeviceSupportsExtension(pDispatch->EnumerateDeviceExtensionProperties, physicalDevice, ll2.data(), 2))
-            return vkroots::helpers::append(pDispatch->EnumerateDeviceExtensionProperties, exts, pPropertyCount, pProperties, physicalDevice, pLayerName);
+        if (PhysicalDeviceSupportsExtension(pDispatch.EnumerateDeviceExtensionProperties, physicalDevice, ll2.data(), 2))
+            return vkroots::append(vkr_dispatch_bind(pDispatch, EnumerateDeviceExtensionProperties), exts, pPropertyCount, pProperties, physicalDevice, pLayerName);
         else
-            return pDispatch->EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
+            return pDispatch.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
     }
 
     static VkResult CreateDevice(
-        const vkroots::VkInstanceDispatch* pDispatch,
+        const vkroots::VkPhysicalDeviceDispatch& pDispatch,
         VkPhysicalDevice physicalDevice,
         const VkDeviceCreateInfo* pCreateInfo,
         const VkAllocationCallbacks* pAllocator,
         VkDevice* pDevice) {
         if (!pCreateInfo)
-            return pDispatch->CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
+            return pDispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
 
-        if (!PhysicalDeviceSupportsExtension(pDispatch->EnumerateDeviceExtensionProperties, physicalDevice, ll2.data(), 2)) {
+        if (!PhysicalDeviceSupportsExtension(pDispatch.EnumerateDeviceExtensionProperties, physicalDevice, ll2.data(), 2)) {
             INFO("%s not supported by physical device, skipping setup of compatibility layer", ll2.data());
-            return pDispatch->CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
+            return pDispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
         }
 
         auto info = *pCreateInfo;
@@ -404,7 +404,7 @@ struct VkInstanceOverrides {
         for (auto ext = info.ppEnabledExtensionNames; ext && ext < info.ppEnabledExtensionNames + info.enabledExtensionCount; ++ext) {
             if (*ext == ll2) {
                 INFO("%s already requested by the application, skipping setup of compatibility layer", ll2.data());
-                return pDispatch->CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
+                return pDispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
             }
         }
 
@@ -445,7 +445,7 @@ struct VkInstanceOverrides {
         if (!hasLL2)
             extensions.push_back(ll2.data());
 
-        if (auto instanceContext = ReflexInstanceContext::get(pDispatch->Instance); instanceContext && instanceContext.get()->apiVersion < VK_API_VERSION_1_2) {
+        if (auto instanceContext = ReflexInstanceContext::get(pDispatch.pInstanceDispatch->Instance); instanceContext && instanceContext.get()->apiVersion < VK_API_VERSION_1_2) {
             if (std::ranges::find(extensions, ts) == extensions.end())
                 extensions.push_back(ts.data());
         }
@@ -472,7 +472,7 @@ struct VkInstanceOverrides {
         info.ppEnabledExtensionNames = extensions.data();
         info.enabledExtensionCount = extensions.size();
 
-        auto vr = pDispatch->CreateDevice(physicalDevice, &info, pAllocator, pDevice);
+        auto vr = pDispatch.CreateDevice(physicalDevice, &info, pAllocator, pDevice);
 
         if (vr == VK_SUCCESS)
             ReflexDeviceContext::create(*pDevice, {});
@@ -483,7 +483,7 @@ struct VkInstanceOverrides {
 
 struct VkDeviceOverrides {
     static void DestroyDevice(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkDeviceDispatch& pDispatch,
         VkDevice device,
         const VkAllocationCallbacks* pAllocator) {
         auto node = ReflexDeviceContext::get(device);
@@ -497,11 +497,11 @@ struct VkDeviceOverrides {
             ReflexDeviceContext::remove(device);
         }
 
-        pDispatch->DestroyDevice(device, pAllocator);
+        pDispatch.DestroyDevice(device, pAllocator);
     }
 
     static VkResult CreateSwapchainKHR(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkDeviceDispatch& pDispatch,
         VkDevice device,
         const VkSwapchainCreateInfoKHR* pCreateInfo,
         const VkAllocationCallbacks* pAllocator,
@@ -509,7 +509,7 @@ struct VkDeviceOverrides {
         auto context = ::GetContext(device);
 
         if (!context)
-            return pDispatch->CreateSwapchainKHR(device, pCreateInfo, pAllocator, pSwapchain);
+            return pDispatch.CreateSwapchainKHR(device, pCreateInfo, pAllocator, pSwapchain);
 
         auto info = *pCreateInfo;
 
@@ -521,14 +521,14 @@ struct VkDeviceOverrides {
 
         info.pNext = &swapchainLatencyCreateInfo;
 
-        auto vr = pDispatch->CreateSwapchainKHR(device, &info, pAllocator, pSwapchain);
+        auto vr = pDispatch.CreateSwapchainKHR(device, &info, pAllocator, pSwapchain);
 
         if (vr == VK_SUCCESS) {
             if (context->latencySleepModeInfo.sType == VK_STRUCTURE_TYPE_LATENCY_SLEEP_MODE_INFO_NV) {
-                vr = pDispatch->SetLatencySleepModeNV(device, *pSwapchain, &context->latencySleepModeInfo);
+                vr = pDispatch.SetLatencySleepModeNV(device, *pSwapchain, &context->latencySleepModeInfo);
 
                 if (vr != VK_SUCCESS) {
-                    pDispatch->DestroySwapchainKHR(device, *pSwapchain, pAllocator);
+                    pDispatch.DestroySwapchainKHR(device, *pSwapchain, pAllocator);
 
                     return vr;
                 }
@@ -541,63 +541,63 @@ struct VkDeviceOverrides {
     }
 
     static void DestroySwapchainKHR(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkDeviceDispatch& pDispatch,
         VkDevice device,
         VkSwapchainKHR swapchain,
         const VkAllocationCallbacks* pAllocator) {
         auto context = ::GetContext(device);
 
-        pDispatch->DestroySwapchainKHR(device, swapchain, pAllocator);
+        pDispatch.DestroySwapchainKHR(device, swapchain, pAllocator);
 
         if (context && context->swapchain == swapchain)
             context->swapchain = VK_NULL_HANDLE;
     }
 
     static void GetDeviceQueue(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkDeviceDispatch& pDispatch,
         VkDevice device,
         uint32_t queueFamilyIndex,
         uint32_t queueIndex,
         VkQueue* pQueue) {
-        pDispatch->GetDeviceQueue(device, queueFamilyIndex, queueIndex, pQueue);
+        pDispatch.GetDeviceQueue(device, queueFamilyIndex, queueIndex, pQueue);
 
         ::ProcessDeviceQueue(device, pQueue);
     }
 
     static void GetDeviceQueue2(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkDeviceDispatch& pDispatch,
         VkDevice device,
         const VkDeviceQueueInfo2* pQueueInfo,
         VkQueue* pQueue) {
-        pDispatch->GetDeviceQueue2(device, pQueueInfo, pQueue);
+        pDispatch.GetDeviceQueue2(device, pQueueInfo, pQueue);
 
         ::ProcessDeviceQueue(device, pQueue);
     }
 
     static VkResult WaitSemaphores(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkDeviceDispatch& pDispatch,
         VkDevice device,
         const VkSemaphoreWaitInfo* pWaitInfo,
         uint64_t timeout) {
-        return ::WaitSemaphores(pDispatch->WaitSemaphores, device, pWaitInfo, timeout);
+        return ::WaitSemaphores(pDispatch.WaitSemaphores, device, pWaitInfo, timeout);
     }
 
     static VkResult WaitSemaphoresKHR(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkDeviceDispatch& pDispatch,
         VkDevice device,
         const VkSemaphoreWaitInfoKHR* pWaitInfo,
         uint64_t timeout) {
-        return ::WaitSemaphores(pDispatch->WaitSemaphoresKHR, device, pWaitInfo, timeout);
+        return ::WaitSemaphores(pDispatch.WaitSemaphoresKHR, device, pWaitInfo, timeout);
     }
 
     static VkResult QueueSubmit(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkQueueDispatch& pDispatch,
         VkQueue queue,
         uint32_t submitCount,
         const VkSubmitInfo* pSubmits,
         VkFence fence) {
         if (!injectSubmitFrameIDs)
-            return pDispatch->QueueSubmit(queue, submitCount, pSubmits, fence);
+            return pDispatch.QueueSubmit(queue, submitCount, pSubmits, fence);
 
         auto [queueContext, deviceContext] = ::GetContexts(queue);
 
@@ -623,37 +623,37 @@ struct VkDeviceOverrides {
                     info->presentID = id;
                 }
 
-                return pDispatch->QueueSubmit(queue, submitCount, submitInfos.data(), fence);
+                return pDispatch.QueueSubmit(queue, submitCount, submitInfos.data(), fence);
             }
         }
 
-        return pDispatch->QueueSubmit(queue, submitCount, pSubmits, fence);
+        return pDispatch.QueueSubmit(queue, submitCount, pSubmits, fence);
     }
 
     static VkResult QueueSubmit2(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkQueueDispatch& pDispatch,
         VkQueue queue,
         uint32_t submitCount,
         const VkSubmitInfo2* pSubmits,
         VkFence fence) {
-        return ::QueueSubmit2(pDispatch->QueueSubmit2, queue, submitCount, pSubmits, fence);
+        return ::QueueSubmit2(pDispatch.QueueSubmit2, queue, submitCount, pSubmits, fence);
     }
 
     static VkResult QueueSubmit2KHR(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkQueueDispatch& pDispatch,
         VkQueue queue,
         uint32_t submitCount,
         const VkSubmitInfo2KHR* pSubmits,
         VkFence fence) {
-        return ::QueueSubmit2(pDispatch->QueueSubmit2KHR, queue, submitCount, pSubmits, fence);
+        return ::QueueSubmit2(pDispatch.QueueSubmit2KHR, queue, submitCount, pSubmits, fence);
     }
 
     static VkResult QueuePresentKHR(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkQueueDispatch& pDispatch,
         VkQueue queue,
         const VkPresentInfoKHR* pPresentInfo) {
         if (!injectPresentFrameIDs)
-            return pDispatch->QueuePresentKHR(queue, pPresentInfo);
+            return pDispatch.QueuePresentKHR(queue, pPresentInfo);
 
         auto [queueContext, deviceContext] = ::GetContexts(queue);
 
@@ -697,23 +697,23 @@ struct VkDeviceOverrides {
                 auto info = *pPresentInfo;
                 info.pNext = &presentId;
 
-                return pDispatch->QueuePresentKHR(queue, &info);
+                return pDispatch.QueuePresentKHR(queue, &info);
             }
         }
 
     end:
-        return pDispatch->QueuePresentKHR(queue, pPresentInfo);
+        return pDispatch.QueuePresentKHR(queue, pPresentInfo);
     }
 
     static VkResult SetLatencySleepModeNV(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkDeviceDispatch& pDispatch,
         VkDevice device,
         VkSwapchainKHR swapchain,
         const VkLatencySleepModeInfoNV* pSleepModeInfo) {
         auto context = ::GetContext(device);
 
         if (!context)
-            return pDispatch->SetLatencySleepModeNV(device, swapchain, pSleepModeInfo);
+            return pDispatch.SetLatencySleepModeNV(device, swapchain, pSleepModeInfo);
 
         if (pSleepModeInfo)
             TRACE("(%p, %p = %p, %p { %" PRIu32 ", %" PRIu32 ", %" PRIu32 " })",
@@ -727,7 +727,7 @@ struct VkDeviceOverrides {
         auto vr = VK_SUCCESS;
 
         if (swapchain)
-            vr = pDispatch->SetLatencySleepModeNV(device, swapchain, pSleepModeInfo);
+            vr = pDispatch.SetLatencySleepModeNV(device, swapchain, pSleepModeInfo);
 
         if (vr == VK_SUCCESS) {
             if (pSleepModeInfo) {
@@ -742,7 +742,7 @@ struct VkDeviceOverrides {
     }
 
     static VkResult LatencySleepNV(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkDeviceDispatch& pDispatch,
         VkDevice device,
         VkSwapchainKHR swapchain,
         const VkLatencySleepInfoNV* pSleepInfo) {
@@ -752,7 +752,7 @@ struct VkDeviceOverrides {
         auto context = ::GetContext(device);
 
         if (!context)
-            return pDispatch->LatencySleepNV(device, swapchain, pSleepInfo);
+            return pDispatch.LatencySleepNV(device, swapchain, pSleepInfo);
 
         TRACE("(%p, %p = %p, %p { %p, %" PRIu64 " })",
             device, swapchain, context->swapchain, pSleepInfo, pSleepInfo->signalSemaphore, pSleepInfo->value);
@@ -760,7 +760,7 @@ struct VkDeviceOverrides {
         swapchain = context->swapchain;
 
         if (swapchain)
-            return pDispatch->LatencySleepNV(device, swapchain, pSleepInfo);
+            return pDispatch.LatencySleepNV(device, swapchain, pSleepInfo);
 
         auto semaphoreSignalInfo = VkSemaphoreSignalInfo{
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO,
@@ -768,11 +768,11 @@ struct VkDeviceOverrides {
             .value = pSleepInfo->value,
         };
 
-        return pDispatch->SignalSemaphore(device, &semaphoreSignalInfo);
+        return pDispatch.SignalSemaphore(device, &semaphoreSignalInfo);
     }
 
     static void SetLatencyMarkerNV(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkDeviceDispatch& pDispatch,
         VkDevice device,
         VkSwapchainKHR swapchain,
         const VkSetLatencyMarkerInfoNV* pLatencyMarkerInfo) {
@@ -782,7 +782,7 @@ struct VkDeviceOverrides {
         auto context = ::GetContext(device);
 
         if (!context) {
-            pDispatch->SetLatencyMarkerNV(device, swapchain, pLatencyMarkerInfo);
+            pDispatch.SetLatencyMarkerNV(device, swapchain, pLatencyMarkerInfo);
             return;
         }
 
@@ -792,7 +792,7 @@ struct VkDeviceOverrides {
         swapchain = context->swapchain;
 
         if (swapchain)
-            pDispatch->SetLatencyMarkerNV(device, swapchain, pLatencyMarkerInfo);
+            pDispatch.SetLatencyMarkerNV(device, swapchain, pLatencyMarkerInfo);
 
         if (!injectFrameIDs)
             return;
@@ -843,7 +843,7 @@ struct VkDeviceOverrides {
     }
 
     static void GetLatencyTimingsNV(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkDeviceDispatch& pDispatch,
         VkDevice device,
         VkSwapchainKHR swapchain,
         VkGetLatencyMarkerInfoNV* pLatencyMarkerInfo) {
@@ -853,7 +853,7 @@ struct VkDeviceOverrides {
         auto context = ::GetContext(device);
 
         if (!context) {
-            pDispatch->GetLatencyTimingsNV(device, swapchain, pLatencyMarkerInfo);
+            pDispatch.GetLatencyTimingsNV(device, swapchain, pLatencyMarkerInfo);
             return;
         }
 
@@ -863,13 +863,13 @@ struct VkDeviceOverrides {
         swapchain = context->swapchain;
 
         if (swapchain)
-            pDispatch->GetLatencyTimingsNV(device, swapchain, pLatencyMarkerInfo);
+            pDispatch.GetLatencyTimingsNV(device, swapchain, pLatencyMarkerInfo);
         else
             pLatencyMarkerInfo->timingCount = 0;
     }
 
     static void QueueNotifyOutOfBandNV(
-        const vkroots::VkDeviceDispatch* pDispatch,
+        const vkroots::VkQueueDispatch& pDispatch,
         VkQueue queue,
         const VkOutOfBandQueueTypeInfoNV* pQueueTypeInfo) {
         if (!pQueueTypeInfo)
@@ -878,7 +878,7 @@ struct VkDeviceOverrides {
         TRACE("(%p, %p { %s })",
             queue, pQueueTypeInfo, vkroots::helpers::enumString(pQueueTypeInfo->queueType));
 
-        pDispatch->QueueNotifyOutOfBandNV(queue, pQueueTypeInfo);
+        pDispatch.QueueNotifyOutOfBandNV(queue, pQueueTypeInfo);
 
         if (!injectFrameIDs)
             return;
@@ -898,4 +898,4 @@ struct VkDeviceOverrides {
     }
 };
 
-VKROOTS_DEFINE_LAYER_INTERFACES(VkInstanceOverrides, vkroots::NoOverrides, VkDeviceOverrides);
+VKROOTS_DEFINE_LAYER_INTERFACES(VkInstanceOverrides, VkDeviceOverrides);
