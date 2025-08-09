@@ -153,27 +153,23 @@ struct ReflexInstanceContextData {
     uint32_t apiVersion;
 };
 
-VKROOTS_DEFINE_SYNCHRONIZED_MAP_TYPE(ReflexInstanceContext, VkInstance);
-VKROOTS_DEFINE_SYNCHRONIZED_MAP_TYPE(ReflexDeviceContext, VkDevice);
-VKROOTS_DEFINE_SYNCHRONIZED_MAP_TYPE(ReflexQueueContext, VkQueue);
-
-VKROOTS_IMPLEMENT_SYNCHRONIZED_MAP_TYPE(ReflexInstanceContext);
-VKROOTS_IMPLEMENT_SYNCHRONIZED_MAP_TYPE(ReflexDeviceContext);
-VKROOTS_IMPLEMENT_SYNCHRONIZED_MAP_TYPE(ReflexQueueContext);
+::vkroots::ObjectMap<VkInstance, ReflexInstanceContextData> ReflexInstanceContext;
+::vkroots::ObjectMap<VkDevice, ReflexDeviceContextData> ReflexDeviceContext;
+::vkroots::ObjectMap<VkQueue, ReflexQueueContextData> ReflexQueueContext;
 
 static inline auto GetContext(VkDevice device) {
-    return ReflexDeviceContext::get(device);
+    return ReflexDeviceContext.find(device);
 }
 
 static inline auto GetContexts(VkQueue queue) {
-    auto queueContext = ReflexQueueContext::get(queue);
+    auto queueContext = ReflexQueueContext.find(queue);
 
     if (queueContext) {
-        auto deviceContext = ReflexDeviceContext::get(queueContext->device);
+        auto deviceContext = ReflexDeviceContext.find(queueContext->device);
 
-        return std::make_pair(std::move(queueContext), std::move(deviceContext));
+        return std::make_pair(queueContext, deviceContext);
     } else {
-        return std::make_pair(ReflexQueueContext{nullptr}, ReflexDeviceContext{nullptr});
+        return std::make_pair(new ReflexQueueContextData{nullptr}, new ReflexDeviceContextData{nullptr});
     }
 }
 
@@ -212,7 +208,7 @@ static inline void ProcessDeviceQueue(VkDevice device, VkQueue* pQueue) {
     if (auto context = ::GetContext(device); context && pQueue) {
         if (auto queue = *pQueue) {
             if (auto [it, inserted] = context->queues.insert(queue); inserted)
-                ReflexQueueContext::create(queue, {.device = device});
+                ReflexQueueContext.create(queue, ReflexQueueContextData{.device = device});
         }
     }
 }
@@ -269,7 +265,7 @@ static VkResult QueueSubmit2(
     auto [queueContext, deviceContext] = ::GetContexts(queue);
 
     if (deviceContext && deviceContext->latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
-        uint64_t id = ::GetFrameId(deviceContext.get(), false, queueContext->outOfBandRenderSubmit);
+        uint64_t id = ::GetFrameId(deviceContext, false, queueContext->outOfBandRenderSubmit);
 
         DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
             queue, submitCount, pSubmits, fence, id, queueContext->outOfBandRenderSubmit);
@@ -338,7 +334,7 @@ struct VkInstanceOverrides {
         auto vr = pfnCreateInstanceProc(&info, pAllocator, pInstance);
 
         if (vr == VK_SUCCESS)
-            ReflexInstanceContext::create(*pInstance, {.apiVersion = apiVersion});
+            ReflexInstanceContext.create(*pInstance, ReflexInstanceContextData{.apiVersion = apiVersion});
 
         return vr;
     }
@@ -348,7 +344,7 @@ struct VkInstanceOverrides {
         VkInstance instance,
         const VkAllocationCallbacks* pAllocator) {
         dispatch.DestroyInstance(instance, pAllocator);
-        ReflexInstanceContext::remove(instance);
+        ReflexInstanceContext.erase(instance);
     }
 
     static VkResult EnumerateDeviceExtensionProperties(
@@ -445,7 +441,7 @@ struct VkInstanceOverrides {
         if (!hasLL2)
             extensions.push_back(ll2.data());
 
-        if (auto instanceContext = ReflexInstanceContext::get(dispatch.pInstanceDispatch->Instance); instanceContext && instanceContext.get()->apiVersion < VK_API_VERSION_1_2) {
+        if (auto instanceContext = ReflexInstanceContext.find(dispatch.pInstanceDispatch->Instance); instanceContext && instanceContext->apiVersion < VK_API_VERSION_1_2) {
             if (std::ranges::find(extensions, ts) == extensions.end())
                 extensions.push_back(ts.data());
         }
@@ -475,7 +471,7 @@ struct VkInstanceOverrides {
         auto vr = dispatch.CreateDevice(physicalDevice, &info, pAllocator, pDevice);
 
         if (vr == VK_SUCCESS)
-            ReflexDeviceContext::create(*pDevice, {});
+            ReflexDeviceContext.create(*pDevice, ReflexDeviceContextData{});
 
         return vr;
     }
@@ -486,15 +482,13 @@ struct VkDeviceOverrides {
         const vkroots::VkDeviceDispatch& dispatch,
         VkDevice device,
         const VkAllocationCallbacks* pAllocator) {
-        auto node = ReflexDeviceContext::get(device);
+        auto context = ReflexDeviceContext.find(device);
 
-        if (node) {
-            auto context = node.get();
-
+        if (context) {
             for (auto queue : context->queues)
-                ReflexQueueContext::remove(queue);
+                ReflexQueueContext.erase(queue);
 
-            ReflexDeviceContext::remove(device);
+            ReflexDeviceContext.erase(device);
         }
 
         dispatch.DestroyDevice(device, pAllocator);
@@ -602,7 +596,7 @@ struct VkDeviceOverrides {
         auto [queueContext, deviceContext] = ::GetContexts(queue);
 
         if (deviceContext && deviceContext->latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
-            uint64_t id = ::GetFrameId(deviceContext.get(), false, queueContext->outOfBandRenderSubmit);
+            uint64_t id = ::GetFrameId(deviceContext, false, queueContext->outOfBandRenderSubmit);
 
             DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
                 queue, submitCount, pSubmits, fence, id, queueContext->outOfBandRenderSubmit);
@@ -659,7 +653,7 @@ struct VkDeviceOverrides {
 
         if (deviceContext && deviceContext->latencySleepModeInfo.lowLatencyMode && pPresentInfo && pPresentInfo->pSwapchains && pPresentInfo->swapchainCount) {
             uint32_t i;
-            uint64_t id = ::GetFrameId(deviceContext.get(), true, queueContext->outOfBandPresent);
+            uint64_t id = ::GetFrameId(deviceContext, true, queueContext->outOfBandPresent);
 
             DBG("(%p, %p) frameID = %" PRIu64 ", oob = %d",
                 queue, pPresentInfo, id, queueContext->outOfBandPresent);
