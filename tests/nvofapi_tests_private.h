@@ -8,5 +8,9 @@
 #include "../src/nvofapi_entrypoints.h"
 #include "../src/nvofapi_globals.h"
 
+#if defined(DEPRECATED)
+#undef DEPRECATED
+#endif // defined(DEPRECATED)
+
 #include "../inc/catch_amalgamated.hpp"
 #include "../inc/catch2/trompeloeil.hpp"
