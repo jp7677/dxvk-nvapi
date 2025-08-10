@@ -5,7 +5,6 @@
 #include <mutex>
 #include <optional>
 #include <string_view>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -49,7 +48,6 @@ struct ReflexMarker {
 struct ReflexDeviceContextData {
     VkSwapchainKHR swapchain;
     VkLatencySleepModeInfoNV latencySleepModeInfo;
-    std::unordered_set<VkQueue> queues;
     struct
     {
         ReflexMarker simulation;
@@ -115,7 +113,7 @@ static void Init() {
 #undef LOG_FLAG
 }
 
-static uint64_t GetFrameId(const ReflexDeviceContextData* deviceContext, bool present, bool outOfBand) {
+static uint64_t GetFrameId(const ReflexDeviceContextData& deviceContext, bool present, bool outOfBand) {
 #define TRY_MARKER(marker)       \
     do {                         \
         if ((marker)->ongoing)   \
@@ -123,20 +121,20 @@ static uint64_t GetFrameId(const ReflexDeviceContextData* deviceContext, bool pr
     } while (0)
     if (!present) {
         if (!outOfBand)
-            TRY_MARKER(&deviceContext->markers.renderSubmit);
+            TRY_MARKER(&deviceContext.markers.renderSubmit);
 
         if (outOfBand || allowFallbackToOutOfBandFrameID)
-            TRY_MARKER(&deviceContext->markers.outOfBandRenderSubmit);
+            TRY_MARKER(&deviceContext.markers.outOfBandRenderSubmit);
 
         if (allowFallbackToSimulationFrameID)
-            TRY_MARKER(&deviceContext->markers.simulation);
+            TRY_MARKER(&deviceContext.markers.simulation);
     }
     if (present || allowFallbackToPresentFrameID) {
         if (!outOfBand)
-            TRY_MARKER(&deviceContext->markers.present);
+            TRY_MARKER(&deviceContext.markers.present);
 
         if (outOfBand || allowFallbackToOutOfBandFrameID)
-            TRY_MARKER(&deviceContext->markers.outOfBandPresent);
+            TRY_MARKER(&deviceContext.markers.outOfBandPresent);
     }
 #undef TRY_MARKER
 
@@ -144,7 +142,6 @@ static uint64_t GetFrameId(const ReflexDeviceContextData* deviceContext, bool pr
 }
 
 struct ReflexQueueContextData {
-    VkDevice device;
     bool outOfBandRenderSubmit;
     bool outOfBandPresent;
 };
@@ -152,26 +149,6 @@ struct ReflexQueueContextData {
 struct ReflexInstanceContextData {
     uint32_t apiVersion;
 };
-
-::vkroots::ObjectMap<VkInstance, ReflexInstanceContextData> ReflexInstanceContext;
-::vkroots::ObjectMap<VkDevice, ReflexDeviceContextData> ReflexDeviceContext;
-::vkroots::ObjectMap<VkQueue, ReflexQueueContextData> ReflexQueueContext;
-
-static inline auto GetContext(VkDevice device) {
-    return ReflexDeviceContext.find(device);
-}
-
-static inline auto GetContexts(VkQueue queue) {
-    auto queueContext = ReflexQueueContext.find(queue);
-
-    if (queueContext) {
-        auto deviceContext = ReflexDeviceContext.find(queueContext->device);
-
-        return std::make_pair(queueContext, deviceContext);
-    } else {
-        return std::make_pair(new ReflexQueueContextData{nullptr}, new ReflexDeviceContextData{nullptr});
-    }
-}
 
 static bool PhysicalDeviceSupportsExtension(
     const std::function<VkResult(VkPhysicalDevice, const char*, uint32_t*, VkExtensionProperties*)>& pvkEnumerateDeviceExtensionProperties,
@@ -208,18 +185,6 @@ static bool PhysicalDeviceSupportsExtension(
 template <typename Type, typename AnyStruct>
 static inline void AddToChain(AnyStruct* pParent, Type* pType) {
     pType->pNext = const_cast<void*>(std::exchange(pParent->pNext, pType));
-}
-
-static inline void ProcessDeviceQueue(VkDevice device, VkQueue* pQueue) {
-    if (!injectFrameIDs)
-        return;
-
-    if (auto context = ::GetContext(device); context && pQueue) {
-        if (auto queue = *pQueue) {
-            if (auto [it, inserted] = context->queues.insert(queue); inserted)
-                ReflexQueueContext.create(queue, ReflexQueueContextData{.device = device});
-        }
-    }
 }
 
 static VkResult WaitSemaphores(
@@ -260,46 +225,6 @@ static VkResult WaitSemaphores(
     DBG("waited for %" PRIi32 " ms", diff);
 
     return result;
-}
-
-static VkResult QueueSubmit2(
-    const std::function<VkResult(VkQueue, uint32_t, const VkSubmitInfo2*, VkFence)>& pvkQueueSubmit2,
-    VkQueue queue,
-    uint32_t submitCount,
-    const VkSubmitInfo2* pSubmits,
-    VkFence fence) {
-    if (!injectSubmitFrameIDs)
-        return pvkQueueSubmit2(queue, submitCount, pSubmits, fence);
-
-    auto [queueContext, deviceContext] = ::GetContexts(queue);
-
-    if (deviceContext && deviceContext->latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
-        uint64_t id = ::GetFrameId(deviceContext, false, queueContext->outOfBandRenderSubmit);
-
-        DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
-            queue, submitCount, pSubmits, fence, id, queueContext->outOfBandRenderSubmit);
-
-        if (id) {
-            auto submitInfos = std::vector<VkSubmitInfo2>{
-                pSubmits,
-                pSubmits + submitCount,
-            };
-
-            auto latencySubmissionPresentIds = std::vector<VkLatencySubmissionPresentIdNV>{submitCount};
-
-            for (auto i = 0u; i < submitCount; ++i) {
-                auto info = &latencySubmissionPresentIds[i];
-
-                info->sType = VK_STRUCTURE_TYPE_LATENCY_SUBMISSION_PRESENT_ID_NV;
-                info->pNext = std::exchange(submitInfos[i].pNext, info);
-                info->presentID = id;
-            }
-
-            return pvkQueueSubmit2(queue, submitCount, submitInfos.data(), fence);
-        }
-    }
-
-    return pvkQueueSubmit2(queue, submitCount, pSubmits, fence);
 }
 
 static constexpr auto gpdp2 = std::string_view{VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME};
@@ -343,17 +268,9 @@ struct VkInstanceOverrides {
         auto vr = pfnCreateInstanceProc(&info, pAllocator, pInstance);
 
         if (vr == VK_SUCCESS)
-            ReflexInstanceContext.create(*pInstance, ReflexInstanceContextData{.apiVersion = apiVersion});
+            vkroots::LookupDispatch(*pInstance)->UserData.emplace<ReflexInstanceContextData>(apiVersion);
 
         return vr;
-    }
-
-    static void DestroyInstance(
-        const vkroots::VkInstanceDispatch& dispatch,
-        VkInstance instance,
-        const VkAllocationCallbacks* pAllocator) {
-        dispatch.DestroyInstance(instance, pAllocator);
-        ReflexInstanceContext.erase(instance);
     }
 
     static VkResult EnumerateDeviceExtensionProperties(
@@ -450,7 +367,7 @@ struct VkInstanceOverrides {
         if (!hasLL2)
             extensions.push_back(ll2.data());
 
-        if (auto instanceContext = ReflexInstanceContext.find(dispatch.pInstanceDispatch->Instance); instanceContext && instanceContext->apiVersion < VK_API_VERSION_1_2) {
+        if (dispatch.pInstanceDispatch->UserData && dispatch.pInstanceDispatch->UserData.cast<ReflexInstanceContextData>().apiVersion < VK_API_VERSION_1_2) {
             if (std::ranges::find(extensions, ts) == extensions.end())
                 extensions.push_back(ts.data());
         }
@@ -480,40 +397,24 @@ struct VkInstanceOverrides {
         auto vr = dispatch.CreateDevice(physicalDevice, &info, pAllocator, pDevice);
 
         if (vr == VK_SUCCESS)
-            ReflexDeviceContext.create(*pDevice, ReflexDeviceContextData{});
+            vkroots::LookupDispatch(*pDevice)->UserData.emplace<ReflexDeviceContextData>();
 
         return vr;
     }
 };
 
 struct VkDeviceOverrides {
-    static void DestroyDevice(
-        const vkroots::VkDeviceDispatch& dispatch,
-        VkDevice device,
-        const VkAllocationCallbacks* pAllocator) {
-        auto context = ReflexDeviceContext.find(device);
-
-        if (context) {
-            for (auto queue : context->queues)
-                ReflexQueueContext.erase(queue);
-
-            ReflexDeviceContext.erase(device);
-        }
-
-        dispatch.DestroyDevice(device, pAllocator);
-    }
-
     static VkResult CreateSwapchainKHR(
         const vkroots::VkDeviceDispatch& dispatch,
         VkDevice device,
         const VkSwapchainCreateInfoKHR* pCreateInfo,
         const VkAllocationCallbacks* pAllocator,
         VkSwapchainKHR* pSwapchain) {
-        auto context = ::GetContext(device);
 
-        if (!context)
+        if (!dispatch.UserData)
             return dispatch.CreateSwapchainKHR(device, pCreateInfo, pAllocator, pSwapchain);
 
+        auto& context = dispatch.UserData.cast<ReflexDeviceContextData>();
         auto info = *pCreateInfo;
 
         auto swapchainLatencyCreateInfo = VkSwapchainLatencyCreateInfoNV{
@@ -527,8 +428,8 @@ struct VkDeviceOverrides {
         auto vr = dispatch.CreateSwapchainKHR(device, &info, pAllocator, pSwapchain);
 
         if (vr == VK_SUCCESS) {
-            if (context->latencySleepModeInfo.sType == VK_STRUCTURE_TYPE_LATENCY_SLEEP_MODE_INFO_NV) {
-                vr = dispatch.SetLatencySleepModeNV(device, *pSwapchain, &context->latencySleepModeInfo);
+            if (context.latencySleepModeInfo.sType == VK_STRUCTURE_TYPE_LATENCY_SLEEP_MODE_INFO_NV) {
+                vr = dispatch.SetLatencySleepModeNV(device, *pSwapchain, &context.latencySleepModeInfo);
 
                 if (vr != VK_SUCCESS) {
                     dispatch.DestroySwapchainKHR(device, *pSwapchain, pAllocator);
@@ -537,7 +438,7 @@ struct VkDeviceOverrides {
                 }
             }
 
-            context->swapchain = *pSwapchain;
+            context.swapchain = *pSwapchain;
         }
 
         return vr;
@@ -548,12 +449,12 @@ struct VkDeviceOverrides {
         VkDevice device,
         VkSwapchainKHR swapchain,
         const VkAllocationCallbacks* pAllocator) {
-        auto context = ::GetContext(device);
-
         dispatch.DestroySwapchainKHR(device, swapchain, pAllocator);
 
-        if (context && context->swapchain == swapchain)
-            context->swapchain = VK_NULL_HANDLE;
+        if (dispatch.UserData) {
+            if (auto& context = dispatch.UserData.cast<ReflexDeviceContextData>(); context.swapchain == swapchain)
+                context.swapchain = VK_NULL_HANDLE;
+        }
     }
 
     static void GetDeviceQueue(
@@ -564,7 +465,10 @@ struct VkDeviceOverrides {
         VkQueue* pQueue) {
         dispatch.GetDeviceQueue(device, queueFamilyIndex, queueIndex, pQueue);
 
-        ::ProcessDeviceQueue(device, pQueue);
+        if (!injectFrameIDs)
+            return;
+
+        vkroots::LookupDispatch(*pQueue)->UserData.emplace<ReflexQueueContextData>();
     }
 
     static void GetDeviceQueue2(
@@ -574,7 +478,10 @@ struct VkDeviceOverrides {
         VkQueue* pQueue) {
         dispatch.GetDeviceQueue2(device, pQueueInfo, pQueue);
 
-        ::ProcessDeviceQueue(device, pQueue);
+        if (injectFrameIDs)
+            return;
+
+        vkroots::LookupDispatch(*pQueue)->UserData.emplace<ReflexQueueContextData>();
     }
 
     static VkResult WaitSemaphores(
@@ -602,13 +509,17 @@ struct VkDeviceOverrides {
         if (!injectSubmitFrameIDs)
             return dispatch.QueueSubmit(queue, submitCount, pSubmits, fence);
 
-        auto [queueContext, deviceContext] = ::GetContexts(queue);
+        if (!dispatch.UserData || !dispatch.pDeviceDispatch->UserData)
+            return dispatch.QueueSubmit(queue, submitCount, pSubmits, fence);
 
-        if (deviceContext && deviceContext->latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
-            uint64_t id = ::GetFrameId(deviceContext, false, queueContext->outOfBandRenderSubmit);
+        auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
+        auto& queueContext = dispatch.UserData.cast<ReflexQueueContextData>();
+
+        if (deviceContext.latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
+            uint64_t id = ::GetFrameId(deviceContext, false, queueContext.outOfBandRenderSubmit);
 
             DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
-                queue, submitCount, pSubmits, fence, id, queueContext->outOfBandRenderSubmit);
+                queue, submitCount, pSubmits, fence, id, queueContext.outOfBandRenderSubmit);
 
             if (id) {
                 auto submitInfos = std::vector<VkSubmitInfo>{
@@ -639,7 +550,42 @@ struct VkDeviceOverrides {
         uint32_t submitCount,
         const VkSubmitInfo2* pSubmits,
         VkFence fence) {
-        return ::QueueSubmit2(dispatch_bind(dispatch, QueueSubmit2), queue, submitCount, pSubmits, fence);
+        if (!injectSubmitFrameIDs)
+            return dispatch.QueueSubmit2(queue, submitCount, pSubmits, fence);
+
+        if (!dispatch.UserData || !dispatch.pDeviceDispatch->UserData)
+            return dispatch.QueueSubmit2(queue, submitCount, pSubmits, fence);
+
+        auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
+        auto& queueContext = dispatch.UserData.cast<ReflexQueueContextData>();
+
+        if (deviceContext.latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
+            uint64_t id = ::GetFrameId(deviceContext, false, queueContext.outOfBandRenderSubmit);
+
+            DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
+                queue, submitCount, pSubmits, fence, id, queueContext.outOfBandRenderSubmit);
+
+            if (id) {
+                auto submitInfos = std::vector<VkSubmitInfo2>{
+                    pSubmits,
+                    pSubmits + submitCount,
+                };
+
+                auto latencySubmissionPresentIds = std::vector<VkLatencySubmissionPresentIdNV>{submitCount};
+
+                for (auto i = 0u; i < submitCount; ++i) {
+                    auto info = &latencySubmissionPresentIds[i];
+
+                    info->sType = VK_STRUCTURE_TYPE_LATENCY_SUBMISSION_PRESENT_ID_NV;
+                    info->pNext = std::exchange(submitInfos[i].pNext, info);
+                    info->presentID = id;
+                }
+
+                return dispatch.QueueSubmit2(queue, submitCount, submitInfos.data(), fence);
+            }
+        }
+
+        return dispatch.QueueSubmit2(queue, submitCount, pSubmits, fence);
     }
 
     static VkResult QueueSubmit2KHR(
@@ -648,7 +594,42 @@ struct VkDeviceOverrides {
         uint32_t submitCount,
         const VkSubmitInfo2KHR* pSubmits,
         VkFence fence) {
-        return ::QueueSubmit2(dispatch_bind(dispatch, QueueSubmit2KHR), queue, submitCount, pSubmits, fence);
+        if (!injectSubmitFrameIDs)
+            return dispatch.QueueSubmit2KHR(queue, submitCount, pSubmits, fence);
+
+        if (!dispatch.UserData || !dispatch.pDeviceDispatch->UserData)
+            return dispatch.QueueSubmit2KHR(queue, submitCount, pSubmits, fence);
+
+        auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
+        auto& queueContext = dispatch.UserData.cast<ReflexQueueContextData>();
+
+        if (deviceContext.latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
+            uint64_t id = ::GetFrameId(deviceContext, false, queueContext.outOfBandRenderSubmit);
+
+            DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
+                queue, submitCount, pSubmits, fence, id, queueContext.outOfBandRenderSubmit);
+
+            if (id) {
+                auto submitInfos = std::vector<VkSubmitInfo2>{
+                    pSubmits,
+                    pSubmits + submitCount,
+                };
+
+                auto latencySubmissionPresentIds = std::vector<VkLatencySubmissionPresentIdNV>{submitCount};
+
+                for (auto i = 0u; i < submitCount; ++i) {
+                    auto info = &latencySubmissionPresentIds[i];
+
+                    info->sType = VK_STRUCTURE_TYPE_LATENCY_SUBMISSION_PRESENT_ID_NV;
+                    info->pNext = std::exchange(submitInfos[i].pNext, info);
+                    info->presentID = id;
+                }
+
+                return dispatch.QueueSubmit2KHR(queue, submitCount, submitInfos.data(), fence);
+            }
+        }
+
+        return dispatch.QueueSubmit2KHR(queue, submitCount, pSubmits, fence);
     }
 
     static VkResult QueuePresentKHR(
@@ -658,20 +639,24 @@ struct VkDeviceOverrides {
         if (!injectPresentFrameIDs)
             return dispatch.QueuePresentKHR(queue, pPresentInfo);
 
-        auto [queueContext, deviceContext] = ::GetContexts(queue);
+        if (!dispatch.UserData || !dispatch.pDeviceDispatch->UserData)
+            return dispatch.QueuePresentKHR(queue, pPresentInfo);
 
-        if (deviceContext && deviceContext->latencySleepModeInfo.lowLatencyMode && pPresentInfo && pPresentInfo->pSwapchains && pPresentInfo->swapchainCount) {
+        auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
+        auto& queueContext = dispatch.UserData.cast<ReflexQueueContextData>();
+
+        if (deviceContext.latencySleepModeInfo.lowLatencyMode && pPresentInfo && pPresentInfo->pSwapchains && pPresentInfo->swapchainCount) {
             uint32_t i;
-            uint64_t id = ::GetFrameId(deviceContext, true, queueContext->outOfBandPresent);
+            uint64_t id = ::GetFrameId(deviceContext, true, queueContext.outOfBandPresent);
 
             DBG("(%p, %p) frameID = %" PRIu64 ", oob = %d",
-                queue, pPresentInfo, id, queueContext->outOfBandPresent);
+                queue, pPresentInfo, id, queueContext.outOfBandPresent);
 
             if (!id)
                 goto end;
 
             for (i = 0; i < pPresentInfo->swapchainCount; ++i) {
-                if (pPresentInfo->pSwapchains[i] == deviceContext->swapchain)
+                if (pPresentInfo->pSwapchains[i] == deviceContext.swapchain)
                     break;
             }
 
@@ -713,19 +698,19 @@ struct VkDeviceOverrides {
         VkDevice device,
         VkSwapchainKHR swapchain,
         const VkLatencySleepModeInfoNV* pSleepModeInfo) {
-        auto context = ::GetContext(device);
-
-        if (!context)
+        if (!dispatch.UserData)
             return dispatch.SetLatencySleepModeNV(device, swapchain, pSleepModeInfo);
+
+        auto& context = dispatch.UserData.cast<ReflexDeviceContextData>();
 
         if (pSleepModeInfo)
             TRACE("(%p, %p = %p, %p { %" PRIu32 ", %" PRIu32 ", %" PRIu32 " })",
-                device, swapchain, context->swapchain, pSleepModeInfo, pSleepModeInfo->lowLatencyMode, pSleepModeInfo->lowLatencyBoost, pSleepModeInfo->minimumIntervalUs);
+                device, swapchain, context.swapchain, pSleepModeInfo, pSleepModeInfo->lowLatencyMode, pSleepModeInfo->lowLatencyBoost, pSleepModeInfo->minimumIntervalUs);
         else
             TRACE("(%p, %p = %p, %p)",
-                device, swapchain, context->swapchain, pSleepModeInfo);
+                device, swapchain, context.swapchain, pSleepModeInfo);
 
-        swapchain = context->swapchain;
+        swapchain = context.swapchain;
 
         auto vr = VK_SUCCESS;
 
@@ -734,10 +719,10 @@ struct VkDeviceOverrides {
 
         if (vr == VK_SUCCESS) {
             if (pSleepModeInfo) {
-                context->latencySleepModeInfo = *pSleepModeInfo;
-                context->latencySleepModeInfo.pNext = nullptr;
+                context.latencySleepModeInfo = *pSleepModeInfo;
+                context.latencySleepModeInfo.pNext = nullptr;
             } else {
-                context->latencySleepModeInfo = VkLatencySleepModeInfoNV{};
+                context.latencySleepModeInfo = VkLatencySleepModeInfoNV{};
             }
         }
 
@@ -752,15 +737,15 @@ struct VkDeviceOverrides {
         if (!pSleepInfo)
             return VK_ERROR_UNKNOWN;
 
-        auto context = ::GetContext(device);
-
-        if (!context)
+        if (!dispatch.UserData)
             return dispatch.LatencySleepNV(device, swapchain, pSleepInfo);
 
-        TRACE("(%p, %p = %p, %p { %p, %" PRIu64 " })",
-            device, swapchain, context->swapchain, pSleepInfo, pSleepInfo->signalSemaphore, pSleepInfo->value);
+        auto& context = dispatch.UserData.cast<ReflexDeviceContextData>();
 
-        swapchain = context->swapchain;
+        TRACE("(%p, %p = %p, %p { %p, %" PRIu64 " })",
+            device, swapchain, context.swapchain, pSleepInfo, pSleepInfo->signalSemaphore, pSleepInfo->value);
+
+        swapchain = context.swapchain;
 
         if (swapchain)
             return dispatch.LatencySleepNV(device, swapchain, pSleepInfo);
@@ -782,17 +767,17 @@ struct VkDeviceOverrides {
         if (!pLatencyMarkerInfo)
             return;
 
-        auto context = ::GetContext(device);
-
-        if (!context) {
+        if (!dispatch.UserData) {
             dispatch.SetLatencyMarkerNV(device, swapchain, pLatencyMarkerInfo);
             return;
         }
 
-        TRACE("(%p, %p = %p, %p { %" PRIu64 ", %s })",
-            device, swapchain, context->swapchain, pLatencyMarkerInfo, pLatencyMarkerInfo->presentID, vkroots::helpers::enumString(pLatencyMarkerInfo->marker));
+        auto& context = dispatch.UserData.cast<ReflexDeviceContextData>();
 
-        swapchain = context->swapchain;
+        TRACE("(%p, %p = %p, %p { %" PRIu64 ", %s })",
+            device, swapchain, context.swapchain, pLatencyMarkerInfo, pLatencyMarkerInfo->presentID, vkroots::helpers::enumString(pLatencyMarkerInfo->marker));
+
+        swapchain = context.swapchain;
 
         if (swapchain)
             dispatch.SetLatencyMarkerNV(device, swapchain, pLatencyMarkerInfo);
@@ -802,43 +787,43 @@ struct VkDeviceOverrides {
 
         switch (pLatencyMarkerInfo->marker) {
             case VK_LATENCY_MARKER_SIMULATION_START_NV:
-                context->markers.simulation.id = pLatencyMarkerInfo->presentID;
-                context->markers.simulation.ongoing = true;
+                context.markers.simulation.id = pLatencyMarkerInfo->presentID;
+                context.markers.simulation.ongoing = true;
                 break;
             case VK_LATENCY_MARKER_SIMULATION_END_NV:
-                context->markers.simulation.ongoing = false;
+                context.markers.simulation.ongoing = false;
                 break;
             case VK_LATENCY_MARKER_RENDERSUBMIT_START_NV:
-                context->markers.renderSubmit.id = pLatencyMarkerInfo->presentID;
-                context->markers.renderSubmit.ongoing = true;
+                context.markers.renderSubmit.id = pLatencyMarkerInfo->presentID;
+                context.markers.renderSubmit.ongoing = true;
                 break;
             case VK_LATENCY_MARKER_RENDERSUBMIT_END_NV:
-                context->markers.renderSubmit.ongoing = false;
+                context.markers.renderSubmit.ongoing = false;
                 break;
             case VK_LATENCY_MARKER_PRESENT_START_NV:
-                context->markers.present.id = pLatencyMarkerInfo->presentID;
-                context->markers.present.ongoing = true;
+                context.markers.present.id = pLatencyMarkerInfo->presentID;
+                context.markers.present.ongoing = true;
                 break;
             case VK_LATENCY_MARKER_PRESENT_END_NV:
-                context->markers.present.ongoing = false;
+                context.markers.present.ongoing = false;
                 break;
             case VK_LATENCY_MARKER_INPUT_SAMPLE_NV:
                 break;
             case VK_LATENCY_MARKER_TRIGGER_FLASH_NV:
                 break;
             case VK_LATENCY_MARKER_OUT_OF_BAND_RENDERSUBMIT_START_NV:
-                context->markers.outOfBandRenderSubmit.id = pLatencyMarkerInfo->presentID;
-                context->markers.outOfBandRenderSubmit.ongoing = true;
+                context.markers.outOfBandRenderSubmit.id = pLatencyMarkerInfo->presentID;
+                context.markers.outOfBandRenderSubmit.ongoing = true;
                 break;
             case VK_LATENCY_MARKER_OUT_OF_BAND_RENDERSUBMIT_END_NV:
-                context->markers.outOfBandRenderSubmit.ongoing = false;
+                context.markers.outOfBandRenderSubmit.ongoing = false;
                 break;
             case VK_LATENCY_MARKER_OUT_OF_BAND_PRESENT_START_NV:
-                context->markers.outOfBandPresent.id = pLatencyMarkerInfo->presentID;
-                context->markers.outOfBandPresent.ongoing = true;
+                context.markers.outOfBandPresent.id = pLatencyMarkerInfo->presentID;
+                context.markers.outOfBandPresent.ongoing = true;
                 break;
             case VK_LATENCY_MARKER_OUT_OF_BAND_PRESENT_END_NV:
-                context->markers.outOfBandPresent.ongoing = false;
+                context.markers.outOfBandPresent.ongoing = false;
                 break;
             default:
                 break;
@@ -853,17 +838,17 @@ struct VkDeviceOverrides {
         if (!pLatencyMarkerInfo)
             return;
 
-        auto context = ::GetContext(device);
-
-        if (!context) {
+        if (!dispatch.UserData) {
             dispatch.GetLatencyTimingsNV(device, swapchain, pLatencyMarkerInfo);
             return;
         }
 
-        TRACE("(%p, %p = %p, %p { %" PRIu32 ", %p })",
-            device, swapchain, context->swapchain, pLatencyMarkerInfo, pLatencyMarkerInfo->timingCount, pLatencyMarkerInfo->pTimings);
+        auto& context = dispatch.UserData.cast<ReflexDeviceContextData>();
 
-        swapchain = context->swapchain;
+        TRACE("(%p, %p = %p, %p { %" PRIu32 ", %p })",
+            device, swapchain, context.swapchain, pLatencyMarkerInfo, pLatencyMarkerInfo->timingCount, pLatencyMarkerInfo->pTimings);
+
+        swapchain = context.swapchain;
 
         if (swapchain)
             dispatch.GetLatencyTimingsNV(device, swapchain, pLatencyMarkerInfo);
@@ -886,17 +871,20 @@ struct VkDeviceOverrides {
         if (!injectFrameIDs)
             return;
 
-        if (auto [queueContext, deviceContext] = ::GetContexts(queue); queueContext) {
-            switch (pQueueTypeInfo->queueType) {
-                case VK_OUT_OF_BAND_QUEUE_TYPE_RENDER_NV:
-                    queueContext->outOfBandRenderSubmit = true;
-                    break;
-                case VK_OUT_OF_BAND_QUEUE_TYPE_PRESENT_NV:
-                    queueContext->outOfBandPresent = true;
-                    break;
-                default:
-                    break;
-            }
+        if (!dispatch.UserData)
+            return;
+
+        auto& context = dispatch.UserData.cast<ReflexQueueContextData>();
+
+        switch (pQueueTypeInfo->queueType) {
+            case VK_OUT_OF_BAND_QUEUE_TYPE_RENDER_NV:
+                context.outOfBandRenderSubmit = true;
+                break;
+            case VK_OUT_OF_BAND_QUEUE_TYPE_PRESENT_NV:
+                context.outOfBandPresent = true;
+                break;
+            default:
+                break;
         }
     }
 };
