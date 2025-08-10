@@ -173,7 +173,11 @@ static inline auto GetContexts(VkQueue queue) {
     }
 }
 
-static bool PhysicalDeviceSupportsExtension(PFN_vkEnumerateDeviceExtensionProperties pvkEnumerateDeviceExtensionProperties, VkPhysicalDevice physicalDevice, const char* extensionName, uint32_t specVersion) {
+static bool PhysicalDeviceSupportsExtension(
+    const std::function<VkResult(VkPhysicalDevice, const char*, uint32_t*, VkExtensionProperties*)>& pvkEnumerateDeviceExtensionProperties,
+    VkPhysicalDevice physicalDevice,
+    const char* extensionName,
+    uint32_t specVersion) {
     uint32_t count;
     auto vr = pvkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, nullptr);
 
@@ -196,6 +200,11 @@ static bool PhysicalDeviceSupportsExtension(PFN_vkEnumerateDeviceExtensionProper
     return false;
 }
 
+// Similar to vkr_dispatch_bind but includes return
+#define dispatch_bind(dispatch, FuncName) \
+    ([&](auto... args) { return dispatch.FuncName(args...); })
+
+// Similar to vkroots::AddToChain but with const_cast
 template <typename Type, typename AnyStruct>
 static inline void AddToChain(AnyStruct* pParent, Type* pType) {
     pType->pNext = const_cast<void*>(std::exchange(pParent->pNext, pType));
@@ -214,7 +223,7 @@ static inline void ProcessDeviceQueue(VkDevice device, VkQueue* pQueue) {
 }
 
 static VkResult WaitSemaphores(
-    PFN_vkWaitSemaphores pvkWaitSemaphores,
+    const std::function<VkResult(VkDevice, const VkSemaphoreWaitInfo*, uint64_t)>& pvkWaitSemaphores,
     VkDevice device,
     const VkSemaphoreWaitInfo* pWaitInfo,
     uint64_t timeout) {
@@ -254,7 +263,7 @@ static VkResult WaitSemaphores(
 }
 
 static VkResult QueueSubmit2(
-    PFN_vkQueueSubmit2 pvkQueueSubmit2,
+    const std::function<VkResult(VkQueue, uint32_t, const VkSubmitInfo2*, VkFence)>& pvkQueueSubmit2,
     VkQueue queue,
     uint32_t submitCount,
     const VkSubmitInfo2* pSubmits,
@@ -366,7 +375,7 @@ struct VkInstanceOverrides {
 
         if (pLayerName) {
             if (pLayerName == layerName) {
-                if (PhysicalDeviceSupportsExtension(dispatch.EnumerateDeviceExtensionProperties, physicalDevice, ll2.data(), 2))
+                if (PhysicalDeviceSupportsExtension(dispatch_bind(dispatch, EnumerateDeviceExtensionProperties), physicalDevice, ll2.data(), 2))
                     return vkroots::array(exts, pPropertyCount, pProperties);
                 else
                     return *pPropertyCount = 0, VK_SUCCESS;
@@ -375,7 +384,7 @@ struct VkInstanceOverrides {
             }
         }
 
-        if (PhysicalDeviceSupportsExtension(dispatch.EnumerateDeviceExtensionProperties, physicalDevice, ll2.data(), 2))
+        if (PhysicalDeviceSupportsExtension(dispatch_bind(dispatch, EnumerateDeviceExtensionProperties), physicalDevice, ll2.data(), 2))
             return vkroots::append(vkr_dispatch_bind(dispatch, EnumerateDeviceExtensionProperties), exts, pPropertyCount, pProperties, physicalDevice, pLayerName);
         else
             return dispatch.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
@@ -390,7 +399,7 @@ struct VkInstanceOverrides {
         if (!pCreateInfo)
             return dispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
 
-        if (!PhysicalDeviceSupportsExtension(dispatch.EnumerateDeviceExtensionProperties, physicalDevice, ll2.data(), 2)) {
+        if (!PhysicalDeviceSupportsExtension(dispatch_bind(dispatch, EnumerateDeviceExtensionProperties), physicalDevice, ll2.data(), 2)) {
             INFO("%s not supported by physical device, skipping setup of compatibility layer", ll2.data());
             return dispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
         }
@@ -573,7 +582,7 @@ struct VkDeviceOverrides {
         VkDevice device,
         const VkSemaphoreWaitInfo* pWaitInfo,
         uint64_t timeout) {
-        return ::WaitSemaphores(dispatch.WaitSemaphores, device, pWaitInfo, timeout);
+        return ::WaitSemaphores(dispatch_bind(dispatch, WaitSemaphores), device, pWaitInfo, timeout);
     }
 
     static VkResult WaitSemaphoresKHR(
@@ -581,7 +590,7 @@ struct VkDeviceOverrides {
         VkDevice device,
         const VkSemaphoreWaitInfoKHR* pWaitInfo,
         uint64_t timeout) {
-        return ::WaitSemaphores(dispatch.WaitSemaphoresKHR, device, pWaitInfo, timeout);
+        return ::WaitSemaphores(dispatch_bind(dispatch, WaitSemaphoresKHR), device, pWaitInfo, timeout);
     }
 
     static VkResult QueueSubmit(
@@ -630,7 +639,7 @@ struct VkDeviceOverrides {
         uint32_t submitCount,
         const VkSubmitInfo2* pSubmits,
         VkFence fence) {
-        return ::QueueSubmit2(dispatch.QueueSubmit2, queue, submitCount, pSubmits, fence);
+        return ::QueueSubmit2(dispatch_bind(dispatch, QueueSubmit2), queue, submitCount, pSubmits, fence);
     }
 
     static VkResult QueueSubmit2KHR(
@@ -639,7 +648,7 @@ struct VkDeviceOverrides {
         uint32_t submitCount,
         const VkSubmitInfo2KHR* pSubmits,
         VkFence fence) {
-        return ::QueueSubmit2(dispatch.QueueSubmit2KHR, queue, submitCount, pSubmits, fence);
+        return ::QueueSubmit2(dispatch_bind(dispatch, QueueSubmit2KHR), queue, submitCount, pSubmits, fence);
     }
 
     static VkResult QueuePresentKHR(
