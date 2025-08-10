@@ -104,7 +104,7 @@ static void Init() {
     READ_FLAG(allowFallbackToSimulationFrameID, "ALLOW_FALLBACK_TO_SIMULATION_FRAME_ID");
 #undef READ_FLAG
 
-#define LOG_FLAG(var) DBG("%s = %s", #var, var ? "1" : "0")
+#define LOG_FLAG(var) INFO("%s = %s", #var, var ? "1" : "0")
     LOG_FLAG(exposeExtension);
     LOG_FLAG(injectSubmitFrameIDs);
     LOG_FLAG(injectPresentFrameIDs);
