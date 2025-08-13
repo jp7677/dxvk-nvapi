@@ -74,7 +74,6 @@ static std::optional<bool> GetFlag(const char* name) {
     }
 }
 
-static bool exposeExtension = false;
 static bool injectSubmitFrameIDs = false;
 static bool injectPresentFrameIDs = false;
 static bool injectFrameIDs = injectSubmitFrameIDs || injectPresentFrameIDs;
@@ -93,7 +92,6 @@ static void Init() {
         DXVK_NVAPI_BUILD_TYPE);
 
 #define READ_FLAG(var, env) var = ::GetFlag("DXVK_NVAPI_VKREFLEX_" env).value_or(var)
-    READ_FLAG(exposeExtension, "EXPOSE_EXTENSION");
     READ_FLAG(injectSubmitFrameIDs, "INJECT_SUBMIT_FRAME_IDS");
     READ_FLAG(injectPresentFrameIDs, "INJECT_PRESENT_FRAME_IDS");
     injectFrameIDs = injectSubmitFrameIDs || injectPresentFrameIDs;
@@ -103,7 +101,6 @@ static void Init() {
 #undef READ_FLAG
 
 #define LOG_FLAG(var) INFO("%s = %s", #var, var ? "1" : "0")
-    LOG_FLAG(exposeExtension);
     LOG_FLAG(injectSubmitFrameIDs);
     LOG_FLAG(injectPresentFrameIDs);
     LOG_FLAG(injectFrameIDs);
@@ -149,33 +146,6 @@ struct ReflexQueueContextData {
 struct ReflexInstanceContextData {
     uint32_t apiVersion;
 };
-
-static bool PhysicalDeviceSupportsExtension(
-    const std::function<VkResult(VkPhysicalDevice, const char*, uint32_t*, VkExtensionProperties*)>& pvkEnumerateDeviceExtensionProperties,
-    VkPhysicalDevice physicalDevice,
-    const char* extensionName,
-    uint32_t specVersion) {
-    uint32_t count;
-    auto vr = pvkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, nullptr);
-
-    if (vr != VK_SUCCESS)
-        return false;
-
-    std::vector<VkExtensionProperties> properties{count};
-    vr = pvkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, properties.data());
-
-    if (vr != VK_SUCCESS)
-        return false;
-
-    auto extName = std::string_view{extensionName};
-
-    for (auto property = properties.data(); property < properties.data() + count; ++property) {
-        if (property->extensionName == extName && property->specVersion >= specVersion)
-            return true;
-    }
-
-    return false;
-}
 
 // Similar to vkr_dispatch_bind but includes return
 #define dispatch_bind(dispatch, FuncName) \
@@ -273,40 +243,6 @@ struct VkInstanceOverrides {
         return vr;
     }
 
-    static VkResult EnumerateDeviceExtensionProperties(
-        const vkroots::VkPhysicalDeviceDispatch& dispatch,
-        VkPhysicalDevice physicalDevice,
-        const char* pLayerName,
-        uint32_t* pPropertyCount,
-        VkExtensionProperties* pProperties) {
-        if (!exposeExtension)
-            return dispatch.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
-
-        static constexpr auto layerName = "VK_LAYER_DXVK_NVAPI_reflex"sv;
-        static constexpr auto exts = std::array<VkExtensionProperties, 1>{
-            VkExtensionProperties{
-                VK_NV_LOW_LATENCY_EXTENSION_NAME,
-                VK_NV_LOW_LATENCY_SPEC_VERSION,
-            },
-        };
-
-        if (pLayerName) {
-            if (pLayerName == layerName) {
-                if (PhysicalDeviceSupportsExtension(dispatch_bind(dispatch, EnumerateDeviceExtensionProperties), physicalDevice, ll2.data(), 2))
-                    return vkroots::array(exts, pPropertyCount, pProperties);
-                else
-                    return *pPropertyCount = 0, VK_SUCCESS;
-            } else {
-                return dispatch.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
-            }
-        }
-
-        if (PhysicalDeviceSupportsExtension(dispatch_bind(dispatch, EnumerateDeviceExtensionProperties), physicalDevice, ll2.data(), 2))
-            return vkroots::append(vkr_dispatch_bind(dispatch, EnumerateDeviceExtensionProperties), exts, pPropertyCount, pProperties, physicalDevice, pLayerName);
-        else
-            return dispatch.EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
-    }
-
     static VkResult CreateDevice(
         const vkroots::VkPhysicalDeviceDispatch& dispatch,
         VkPhysicalDevice physicalDevice,
@@ -316,7 +252,19 @@ struct VkInstanceOverrides {
         if (!pCreateInfo)
             return dispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
 
-        if (!PhysicalDeviceSupportsExtension(dispatch_bind(dispatch, EnumerateDeviceExtensionProperties), physicalDevice, ll2.data(), 2)) {
+        uint32_t count;
+        auto vr = dispatch.EnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, nullptr);
+
+        if (vr != VK_SUCCESS)
+            return dispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
+
+        std::vector<VkExtensionProperties> properties{count};
+        vr = dispatch.EnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, properties.data());
+
+        if (vr != VK_SUCCESS)
+            return dispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
+
+        if (std::ranges::none_of(properties, [&](auto& prop) { return prop.extensionName == ll2 && prop.specVersion >= 2; })) {
             INFO("%s not supported by physical device, skipping setup of compatibility layer", ll2.data());
             return dispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
         }
@@ -394,7 +342,7 @@ struct VkInstanceOverrides {
         info.ppEnabledExtensionNames = extensions.data();
         info.enabledExtensionCount = extensions.size();
 
-        auto vr = dispatch.CreateDevice(physicalDevice, &info, pAllocator, pDevice);
+        vr = dispatch.CreateDevice(physicalDevice, &info, pAllocator, pDevice);
 
         if (vr == VK_SUCCESS)
             vkroots::LookupDispatch(*pDevice)->UserData.emplace<ReflexDeviceContextData>();
