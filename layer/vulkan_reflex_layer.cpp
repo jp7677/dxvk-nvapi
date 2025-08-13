@@ -40,24 +40,6 @@
 
 using namespace std::literals;
 
-struct ReflexMarker {
-    uint64_t id;
-    bool ongoing;
-};
-
-struct ReflexDeviceContextData {
-    VkSwapchainKHR swapchain;
-    VkLatencySleepModeInfoNV latencySleepModeInfo;
-    struct
-    {
-        ReflexMarker simulation;
-        ReflexMarker renderSubmit;
-        ReflexMarker present;
-        ReflexMarker outOfBandRenderSubmit;
-        ReflexMarker outOfBandPresent;
-    } markers;
-};
-
 static std::optional<bool> GetFlag(const char* name) {
     auto value = std::getenv(name);
 
@@ -110,6 +92,33 @@ static void Init() {
 #undef LOG_FLAG
 }
 
+struct ReflexInstanceContextData {
+    uint32_t apiVersion;
+};
+
+struct ReflexMarker {
+    uint64_t id;
+    bool ongoing;
+};
+
+struct ReflexDeviceContextData {
+    VkSwapchainKHR swapchain;
+    VkLatencySleepModeInfoNV latencySleepModeInfo;
+    struct
+    {
+        ReflexMarker simulation;
+        ReflexMarker renderSubmit;
+        ReflexMarker present;
+        ReflexMarker outOfBandRenderSubmit;
+        ReflexMarker outOfBandPresent;
+    } markers;
+};
+
+struct ReflexQueueContextData {
+    bool outOfBandRenderSubmit;
+    bool outOfBandPresent;
+};
+
 static uint64_t GetFrameId(const ReflexDeviceContextData& deviceContext, bool present, bool outOfBand) {
 #define TRY_MARKER(marker)       \
     do {                         \
@@ -138,70 +147,17 @@ static uint64_t GetFrameId(const ReflexDeviceContextData& deviceContext, bool pr
     return 0;
 }
 
-struct ReflexQueueContextData {
-    bool outOfBandRenderSubmit;
-    bool outOfBandPresent;
-};
-
-struct ReflexInstanceContextData {
-    uint32_t apiVersion;
-};
-
-// Similar to vkr_dispatch_bind but includes return
-#define dispatch_bind(dispatch, FuncName) \
-    ([&](auto... args) { return dispatch.FuncName(args...); })
+static constexpr auto gpdp2 = std::string_view{VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME};
+static constexpr auto ll = std::string_view{VK_NV_LOW_LATENCY_EXTENSION_NAME};
+static constexpr auto ll2 = std::string_view{VK_NV_LOW_LATENCY_2_EXTENSION_NAME};
+static constexpr auto ts = std::string_view{VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME};
+static constexpr auto pid = std::string_view{VK_KHR_PRESENT_ID_EXTENSION_NAME};
 
 // Similar to vkroots::AddToChain but with const_cast
 template <typename Type, typename AnyStruct>
 static inline void AddToChain(AnyStruct* pParent, Type* pType) {
     pType->pNext = const_cast<void*>(std::exchange(pParent->pNext, pType));
 }
-
-static VkResult WaitSemaphores(
-    const std::function<VkResult(VkDevice, const VkSemaphoreWaitInfo*, uint64_t)>& pvkWaitSemaphores,
-    VkDevice device,
-    const VkSemaphoreWaitInfo* pWaitInfo,
-    uint64_t timeout) {
-    if (logLevel < LogLevel_Debug)
-        return pvkWaitSemaphores(device, pWaitInfo, timeout);
-
-    if (pWaitInfo) {
-        switch (pWaitInfo->semaphoreCount) {
-            case 0:
-                DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [], [] }, %" PRIu64 ")",
-                    device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, timeout);
-                break;
-            case 1:
-                DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p], [%" PRIu64 "] }, %" PRIu64 ")",
-                    device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
-                break;
-            default:
-                DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p, ...], [%" PRIu64 ", ...] }, %" PRIu64 ")",
-                    device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
-                break;
-        }
-    } else {
-        DBG("(%p, %p, %" PRIu64 ")", device, pWaitInfo, timeout);
-    }
-
-    auto begin = ::GetTimestamp();
-
-    auto result = pvkWaitSemaphores(device, pWaitInfo, timeout);
-
-    auto end = ::GetTimestamp();
-
-    auto diff = (end.seconds - begin.seconds) * 1000 + (end.milliseconds - begin.milliseconds);
-
-    DBG("waited for %" PRIi32 " ms", diff);
-
-    return result;
-}
-
-static constexpr auto gpdp2 = std::string_view{VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME};
-static constexpr auto ll = std::string_view{VK_NV_LOW_LATENCY_EXTENSION_NAME};
-static constexpr auto ll2 = std::string_view{VK_NV_LOW_LATENCY_2_EXTENSION_NAME};
-static constexpr auto ts = std::string_view{VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME};
-static constexpr auto pid = std::string_view{VK_KHR_PRESENT_ID_EXTENSION_NAME};
 
 struct VkInstanceOverrides {
     static VkResult CreateInstance(
@@ -436,7 +392,39 @@ struct VkDeviceOverrides {
         VkDevice device,
         const VkSemaphoreWaitInfo* pWaitInfo,
         uint64_t timeout) {
-        return ::WaitSemaphores(dispatch_bind(dispatch, WaitSemaphores), device, pWaitInfo, timeout);
+        if (logLevel < LogLevel_Debug)
+            return dispatch.WaitSemaphores(device, pWaitInfo, timeout);
+
+        if (pWaitInfo) {
+            switch (pWaitInfo->semaphoreCount) {
+                case 0:
+                    DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [], [] }, %" PRIu64 ")",
+                        device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, timeout);
+                    break;
+                case 1:
+                    DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p], [%" PRIu64 "] }, %" PRIu64 ")",
+                        device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
+                    break;
+                default:
+                    DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p, ...], [%" PRIu64 ", ...] }, %" PRIu64 ")",
+                        device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
+                    break;
+            }
+        } else {
+            DBG("(%p, %p, %" PRIu64 ")", device, pWaitInfo, timeout);
+        }
+
+        auto begin = ::GetTimestamp();
+
+        auto result = dispatch.WaitSemaphores(device, pWaitInfo, timeout);
+
+        auto end = ::GetTimestamp();
+
+        auto diff = (end.seconds - begin.seconds) * 1000 + (end.milliseconds - begin.milliseconds);
+
+        DBG("waited for %" PRIi32 " ms", diff);
+
+        return result;
     }
 
     static VkResult WaitSemaphoresKHR(
@@ -444,7 +432,39 @@ struct VkDeviceOverrides {
         VkDevice device,
         const VkSemaphoreWaitInfoKHR* pWaitInfo,
         uint64_t timeout) {
-        return ::WaitSemaphores(dispatch_bind(dispatch, WaitSemaphoresKHR), device, pWaitInfo, timeout);
+        if (logLevel < LogLevel_Debug)
+            return dispatch.WaitSemaphoresKHR(device, pWaitInfo, timeout);
+
+        if (pWaitInfo) {
+            switch (pWaitInfo->semaphoreCount) {
+                case 0:
+                    DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [], [] }, %" PRIu64 ")",
+                        device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, timeout);
+                    break;
+                case 1:
+                    DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p], [%" PRIu64 "] }, %" PRIu64 ")",
+                        device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
+                    break;
+                default:
+                    DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p, ...], [%" PRIu64 ", ...] }, %" PRIu64 ")",
+                        device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
+                    break;
+            }
+        } else {
+            DBG("(%p, %p, %" PRIu64 ")", device, pWaitInfo, timeout);
+        }
+
+        auto begin = ::GetTimestamp();
+
+        auto result = dispatch.WaitSemaphoresKHR(device, pWaitInfo, timeout);
+
+        auto end = ::GetTimestamp();
+
+        auto diff = (end.seconds - begin.seconds) * 1000 + (end.milliseconds - begin.milliseconds);
+
+        DBG("waited for %" PRIi32 " ms", diff);
+
+        return result;
     }
 
     static VkResult QueueSubmit(
