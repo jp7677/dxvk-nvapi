@@ -2,6 +2,7 @@
 #include <cinttypes>
 #include <cstdint>
 #include <cstdlib>
+#include <functional>
 #include <mutex>
 #include <optional>
 #include <string_view>
@@ -145,6 +146,96 @@ static uint64_t GetFrameId(const ReflexDeviceContextData& deviceContext, bool pr
 #undef TRY_MARKER
 
     return 0;
+}
+
+using PFN_VkDeviceDispatchWaitSemaphores = decltype(&vkroots::VkDeviceDispatch::WaitSemaphores);
+
+static VkResult WaitSemaphores(
+    PFN_VkDeviceDispatchWaitSemaphores waitSemaphores,
+    const vkroots::VkDeviceDispatch& dispatch,
+    VkDevice device,
+    const VkSemaphoreWaitInfo* pWaitInfo,
+    uint64_t timeout) {
+    if (logLevel < LogLevel_Debug)
+        return std::invoke(waitSemaphores, dispatch, device, pWaitInfo, timeout);
+
+    if (pWaitInfo) {
+        switch (pWaitInfo->semaphoreCount) {
+            case 0:
+                DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [], [] }, %" PRIu64 ")",
+                    device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, timeout);
+                break;
+            case 1:
+                DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p], [%" PRIu64 "] }, %" PRIu64 ")",
+                    device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
+                break;
+            default:
+                DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p, ...], [%" PRIu64 ", ...] }, %" PRIu64 ")",
+                    device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
+                break;
+        }
+    } else {
+        DBG("(%p, %p, %" PRIu64 ")", device, pWaitInfo, timeout);
+    }
+
+    auto begin = ::GetTimestamp();
+
+    auto result = std::invoke(waitSemaphores, dispatch, device, pWaitInfo, timeout);
+
+    auto end = ::GetTimestamp();
+
+    auto diff = (end.seconds - begin.seconds) * 1000 + (end.milliseconds - begin.milliseconds);
+
+    DBG("waited for %" PRIi32 " ms", diff);
+
+    return result;
+}
+
+using PFN_VkQueueDispatchQueueSubmit2 = decltype(&vkroots::VkQueueDispatch::QueueSubmit2);
+
+static VkResult QueueSubmit2(
+    PFN_VkQueueDispatchQueueSubmit2 queueSubmit2,
+    const vkroots::VkQueueDispatch& dispatch,
+    VkQueue queue,
+    uint32_t submitCount,
+    const VkSubmitInfo2* pSubmits,
+    VkFence fence) {
+    if (!injectSubmitFrameIDs)
+        return std::invoke(queueSubmit2, dispatch, queue, submitCount, pSubmits, fence);
+
+    if (!dispatch.pDeviceDispatch->UserData)
+        return std::invoke(queueSubmit2, dispatch, queue, submitCount, pSubmits, fence);
+
+    auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
+    auto outOfBandRenderSubmit = dispatch.UserData ? dispatch.UserData.cast<ReflexQueueContextData>().outOfBandRenderSubmit : false;
+
+    if (deviceContext.latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
+        uint64_t id = ::GetFrameId(deviceContext, false, outOfBandRenderSubmit);
+
+        DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
+            queue, submitCount, pSubmits, fence, id, outOfBandRenderSubmit);
+
+        if (id) {
+            auto submitInfos = std::vector<VkSubmitInfo2>{
+                pSubmits,
+                pSubmits + submitCount,
+            };
+
+            auto latencySubmissionPresentIds = std::vector<VkLatencySubmissionPresentIdNV>{submitCount};
+
+            for (auto i = 0u; i < submitCount; ++i) {
+                auto info = &latencySubmissionPresentIds[i];
+
+                info->sType = VK_STRUCTURE_TYPE_LATENCY_SUBMISSION_PRESENT_ID_NV;
+                info->pNext = std::exchange(submitInfos[i].pNext, info);
+                info->presentID = id;
+            }
+
+            return std::invoke(queueSubmit2, dispatch, queue, submitCount, submitInfos.data(), fence);
+        }
+    }
+
+    return std::invoke(queueSubmit2, dispatch, queue, submitCount, pSubmits, fence);
 }
 
 static constexpr auto gpdp2 = std::string_view{VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME};
@@ -365,39 +456,7 @@ struct VkDeviceOverrides {
         VkDevice device,
         const VkSemaphoreWaitInfo* pWaitInfo,
         uint64_t timeout) {
-        if (logLevel < LogLevel_Debug)
-            return dispatch.WaitSemaphores(device, pWaitInfo, timeout);
-
-        if (pWaitInfo) {
-            switch (pWaitInfo->semaphoreCount) {
-                case 0:
-                    DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [], [] }, %" PRIu64 ")",
-                        device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, timeout);
-                    break;
-                case 1:
-                    DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p], [%" PRIu64 "] }, %" PRIu64 ")",
-                        device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
-                    break;
-                default:
-                    DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p, ...], [%" PRIu64 ", ...] }, %" PRIu64 ")",
-                        device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
-                    break;
-            }
-        } else {
-            DBG("(%p, %p, %" PRIu64 ")", device, pWaitInfo, timeout);
-        }
-
-        auto begin = ::GetTimestamp();
-
-        auto result = dispatch.WaitSemaphores(device, pWaitInfo, timeout);
-
-        auto end = ::GetTimestamp();
-
-        auto diff = (end.seconds - begin.seconds) * 1000 + (end.milliseconds - begin.milliseconds);
-
-        DBG("waited for %" PRIi32 " ms", diff);
-
-        return result;
+        return ::WaitSemaphores(&vkroots::VkDeviceDispatch::WaitSemaphores, dispatch, device, pWaitInfo, timeout);
     }
 
     static VkResult WaitSemaphoresKHR(
@@ -405,39 +464,7 @@ struct VkDeviceOverrides {
         VkDevice device,
         const VkSemaphoreWaitInfoKHR* pWaitInfo,
         uint64_t timeout) {
-        if (logLevel < LogLevel_Debug)
-            return dispatch.WaitSemaphoresKHR(device, pWaitInfo, timeout);
-
-        if (pWaitInfo) {
-            switch (pWaitInfo->semaphoreCount) {
-                case 0:
-                    DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [], [] }, %" PRIu64 ")",
-                        device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, timeout);
-                    break;
-                case 1:
-                    DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p], [%" PRIu64 "] }, %" PRIu64 ")",
-                        device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
-                    break;
-                default:
-                    DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p, ...], [%" PRIu64 ", ...] }, %" PRIu64 ")",
-                        device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
-                    break;
-            }
-        } else {
-            DBG("(%p, %p, %" PRIu64 ")", device, pWaitInfo, timeout);
-        }
-
-        auto begin = ::GetTimestamp();
-
-        auto result = dispatch.WaitSemaphoresKHR(device, pWaitInfo, timeout);
-
-        auto end = ::GetTimestamp();
-
-        auto diff = (end.seconds - begin.seconds) * 1000 + (end.milliseconds - begin.milliseconds);
-
-        DBG("waited for %" PRIi32 " ms", diff);
-
-        return result;
+        return ::WaitSemaphores(&vkroots::VkDeviceDispatch::WaitSemaphoresKHR, dispatch, device, pWaitInfo, timeout);
     }
 
     static VkResult QueueSubmit(
@@ -490,42 +517,7 @@ struct VkDeviceOverrides {
         uint32_t submitCount,
         const VkSubmitInfo2* pSubmits,
         VkFence fence) {
-        if (!injectSubmitFrameIDs)
-            return dispatch.QueueSubmit2(queue, submitCount, pSubmits, fence);
-
-        if (!dispatch.pDeviceDispatch->UserData)
-            return dispatch.QueueSubmit2(queue, submitCount, pSubmits, fence);
-
-        auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
-        auto outOfBandRenderSubmit = dispatch.UserData ? dispatch.UserData.cast<ReflexQueueContextData>().outOfBandRenderSubmit : false;
-
-        if (deviceContext.latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
-            uint64_t id = ::GetFrameId(deviceContext, false, outOfBandRenderSubmit);
-
-            DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
-                queue, submitCount, pSubmits, fence, id, outOfBandRenderSubmit);
-
-            if (id) {
-                auto submitInfos = std::vector<VkSubmitInfo2>{
-                    pSubmits,
-                    pSubmits + submitCount,
-                };
-
-                auto latencySubmissionPresentIds = std::vector<VkLatencySubmissionPresentIdNV>{submitCount};
-
-                for (auto i = 0u; i < submitCount; ++i) {
-                    auto info = &latencySubmissionPresentIds[i];
-
-                    info->sType = VK_STRUCTURE_TYPE_LATENCY_SUBMISSION_PRESENT_ID_NV;
-                    info->pNext = std::exchange(submitInfos[i].pNext, info);
-                    info->presentID = id;
-                }
-
-                return dispatch.QueueSubmit2(queue, submitCount, submitInfos.data(), fence);
-            }
-        }
-
-        return dispatch.QueueSubmit2(queue, submitCount, pSubmits, fence);
+        return ::QueueSubmit2(&vkroots::VkQueueDispatch::QueueSubmit2, dispatch, queue, submitCount, pSubmits, fence);
     }
 
     static VkResult QueueSubmit2KHR(
@@ -534,42 +526,7 @@ struct VkDeviceOverrides {
         uint32_t submitCount,
         const VkSubmitInfo2KHR* pSubmits,
         VkFence fence) {
-        if (!injectSubmitFrameIDs)
-            return dispatch.QueueSubmit2KHR(queue, submitCount, pSubmits, fence);
-
-        if (!dispatch.pDeviceDispatch->UserData)
-            return dispatch.QueueSubmit2KHR(queue, submitCount, pSubmits, fence);
-
-        auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
-        auto outOfBandRenderSubmit = dispatch.UserData ? dispatch.UserData.cast<ReflexQueueContextData>().outOfBandRenderSubmit : false;
-
-        if (deviceContext.latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
-            uint64_t id = ::GetFrameId(deviceContext, false, outOfBandRenderSubmit);
-
-            DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
-                queue, submitCount, pSubmits, fence, id, outOfBandRenderSubmit);
-
-            if (id) {
-                auto submitInfos = std::vector<VkSubmitInfo2>{
-                    pSubmits,
-                    pSubmits + submitCount,
-                };
-
-                auto latencySubmissionPresentIds = std::vector<VkLatencySubmissionPresentIdNV>{submitCount};
-
-                for (auto i = 0u; i < submitCount; ++i) {
-                    auto info = &latencySubmissionPresentIds[i];
-
-                    info->sType = VK_STRUCTURE_TYPE_LATENCY_SUBMISSION_PRESENT_ID_NV;
-                    info->pNext = std::exchange(submitInfos[i].pNext, info);
-                    info->presentID = id;
-                }
-
-                return dispatch.QueueSubmit2KHR(queue, submitCount, submitInfos.data(), fence);
-            }
-        }
-
-        return dispatch.QueueSubmit2KHR(queue, submitCount, pSubmits, fence);
+        return ::QueueSubmit2(&vkroots::VkQueueDispatch::QueueSubmit2KHR, dispatch, queue, submitCount, pSubmits, fence);
     }
 
     static VkResult QueuePresentKHR(
