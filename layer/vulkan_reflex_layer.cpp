@@ -11,7 +11,7 @@
 
 #define VK_NO_PROTOTYPES
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 // hijack VKAPI_ATTR before vk_layer.h is included to make sure that vkNegotiateLoaderLayerInterfaceVersion
 // has appropriate visibility attribute in its initial declaration / prototype, otherwise MSVC will complain
