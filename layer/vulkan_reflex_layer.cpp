@@ -360,33 +360,6 @@ struct VkDeviceOverrides {
         }
     }
 
-    static void GetDeviceQueue(
-        const vkroots::VkDeviceDispatch& dispatch,
-        VkDevice device,
-        uint32_t queueFamilyIndex,
-        uint32_t queueIndex,
-        VkQueue* pQueue) {
-        dispatch.GetDeviceQueue(device, queueFamilyIndex, queueIndex, pQueue);
-
-        if (!injectFrameIDs)
-            return;
-
-        vkroots::LookupDispatch(*pQueue)->UserData.emplace<ReflexQueueContextData>();
-    }
-
-    static void GetDeviceQueue2(
-        const vkroots::VkDeviceDispatch& dispatch,
-        VkDevice device,
-        const VkDeviceQueueInfo2* pQueueInfo,
-        VkQueue* pQueue) {
-        dispatch.GetDeviceQueue2(device, pQueueInfo, pQueue);
-
-        if (injectFrameIDs)
-            return;
-
-        vkroots::LookupDispatch(*pQueue)->UserData.emplace<ReflexQueueContextData>();
-    }
-
     static VkResult WaitSemaphores(
         const vkroots::VkDeviceDispatch& dispatch,
         VkDevice device,
@@ -476,17 +449,17 @@ struct VkDeviceOverrides {
         if (!injectSubmitFrameIDs)
             return dispatch.QueueSubmit(queue, submitCount, pSubmits, fence);
 
-        if (!dispatch.UserData || !dispatch.pDeviceDispatch->UserData)
+        if (!dispatch.pDeviceDispatch->UserData)
             return dispatch.QueueSubmit(queue, submitCount, pSubmits, fence);
 
         auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
-        auto& queueContext = dispatch.UserData.cast<ReflexQueueContextData>();
+        auto outOfBandRenderSubmit = dispatch.UserData ? dispatch.UserData.cast<ReflexQueueContextData>().outOfBandRenderSubmit : false;
 
         if (deviceContext.latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
-            uint64_t id = ::GetFrameId(deviceContext, false, queueContext.outOfBandRenderSubmit);
+            uint64_t id = ::GetFrameId(deviceContext, false, outOfBandRenderSubmit);
 
             DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
-                queue, submitCount, pSubmits, fence, id, queueContext.outOfBandRenderSubmit);
+                queue, submitCount, pSubmits, fence, id, outOfBandRenderSubmit);
 
             if (id) {
                 auto submitInfos = std::vector<VkSubmitInfo>{
@@ -520,17 +493,17 @@ struct VkDeviceOverrides {
         if (!injectSubmitFrameIDs)
             return dispatch.QueueSubmit2(queue, submitCount, pSubmits, fence);
 
-        if (!dispatch.UserData || !dispatch.pDeviceDispatch->UserData)
+        if (!dispatch.pDeviceDispatch->UserData)
             return dispatch.QueueSubmit2(queue, submitCount, pSubmits, fence);
 
         auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
-        auto& queueContext = dispatch.UserData.cast<ReflexQueueContextData>();
+        auto outOfBandRenderSubmit = dispatch.UserData ? dispatch.UserData.cast<ReflexQueueContextData>().outOfBandRenderSubmit : false;
 
         if (deviceContext.latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
-            uint64_t id = ::GetFrameId(deviceContext, false, queueContext.outOfBandRenderSubmit);
+            uint64_t id = ::GetFrameId(deviceContext, false, outOfBandRenderSubmit);
 
             DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
-                queue, submitCount, pSubmits, fence, id, queueContext.outOfBandRenderSubmit);
+                queue, submitCount, pSubmits, fence, id, outOfBandRenderSubmit);
 
             if (id) {
                 auto submitInfos = std::vector<VkSubmitInfo2>{
@@ -564,17 +537,17 @@ struct VkDeviceOverrides {
         if (!injectSubmitFrameIDs)
             return dispatch.QueueSubmit2KHR(queue, submitCount, pSubmits, fence);
 
-        if (!dispatch.UserData || !dispatch.pDeviceDispatch->UserData)
+        if (!dispatch.pDeviceDispatch->UserData)
             return dispatch.QueueSubmit2KHR(queue, submitCount, pSubmits, fence);
 
         auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
-        auto& queueContext = dispatch.UserData.cast<ReflexQueueContextData>();
+        auto outOfBandRenderSubmit = dispatch.UserData ? dispatch.UserData.cast<ReflexQueueContextData>().outOfBandRenderSubmit : false;
 
         if (deviceContext.latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
-            uint64_t id = ::GetFrameId(deviceContext, false, queueContext.outOfBandRenderSubmit);
+            uint64_t id = ::GetFrameId(deviceContext, false, outOfBandRenderSubmit);
 
             DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
-                queue, submitCount, pSubmits, fence, id, queueContext.outOfBandRenderSubmit);
+                queue, submitCount, pSubmits, fence, id, outOfBandRenderSubmit);
 
             if (id) {
                 auto submitInfos = std::vector<VkSubmitInfo2>{
@@ -606,18 +579,18 @@ struct VkDeviceOverrides {
         if (!injectPresentFrameIDs)
             return dispatch.QueuePresentKHR(queue, pPresentInfo);
 
-        if (!dispatch.UserData || !dispatch.pDeviceDispatch->UserData)
+        if (!dispatch.pDeviceDispatch->UserData)
             return dispatch.QueuePresentKHR(queue, pPresentInfo);
 
         auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
-        auto& queueContext = dispatch.UserData.cast<ReflexQueueContextData>();
+        auto outOfBandPresent = dispatch.UserData ? dispatch.UserData.cast<ReflexQueueContextData>().outOfBandPresent : false;
 
         if (deviceContext.latencySleepModeInfo.lowLatencyMode && pPresentInfo && pPresentInfo->pSwapchains && pPresentInfo->swapchainCount) {
             uint32_t i;
-            uint64_t id = ::GetFrameId(deviceContext, true, queueContext.outOfBandPresent);
+            uint64_t id = ::GetFrameId(deviceContext, true, outOfBandPresent);
 
             DBG("(%p, %p) frameID = %" PRIu64 ", oob = %d",
-                queue, pPresentInfo, id, queueContext.outOfBandPresent);
+                queue, pPresentInfo, id, outOfBandPresent);
 
             if (!id)
                 goto end;
@@ -839,7 +812,7 @@ struct VkDeviceOverrides {
             return;
 
         if (!dispatch.UserData)
-            return;
+            dispatch.UserData.emplace<ReflexQueueContextData>();
 
         auto& context = dispatch.UserData.cast<ReflexQueueContextData>();
 
