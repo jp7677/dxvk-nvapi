@@ -199,10 +199,7 @@ static VkResult QueueSubmit2(
     uint32_t submitCount,
     const VkSubmitInfo2* pSubmits,
     VkFence fence) {
-    if (!injectSubmitFrameIDs)
-        return std::invoke(queueSubmit2, dispatch, queue, submitCount, pSubmits, fence);
-
-    if (!dispatch.pDeviceDispatch->UserData)
+    if (!injectSubmitFrameIDs || !dispatch.pDeviceDispatch->UserData)
         return std::invoke(queueSubmit2, dispatch, queue, submitCount, pSubmits, fence);
 
     auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
@@ -404,7 +401,6 @@ struct VkDeviceOverrides {
         const VkSwapchainCreateInfoKHR* pCreateInfo,
         const VkAllocationCallbacks* pAllocator,
         VkSwapchainKHR* pSwapchain) {
-
         if (!dispatch.UserData)
             return dispatch.CreateSwapchainKHR(device, pCreateInfo, pAllocator, pSwapchain);
 
@@ -473,10 +469,7 @@ struct VkDeviceOverrides {
         uint32_t submitCount,
         const VkSubmitInfo* pSubmits,
         VkFence fence) {
-        if (!injectSubmitFrameIDs)
-            return dispatch.QueueSubmit(queue, submitCount, pSubmits, fence);
-
-        if (!dispatch.pDeviceDispatch->UserData)
+        if (!injectSubmitFrameIDs || !dispatch.pDeviceDispatch->UserData)
             return dispatch.QueueSubmit(queue, submitCount, pSubmits, fence);
 
         auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
@@ -533,10 +526,7 @@ struct VkDeviceOverrides {
         const vkroots::VkQueueDispatch& dispatch,
         VkQueue queue,
         const VkPresentInfoKHR* pPresentInfo) {
-        if (!injectPresentFrameIDs)
-            return dispatch.QueuePresentKHR(queue, pPresentInfo);
-
-        if (!dispatch.pDeviceDispatch->UserData)
+        if (!injectPresentFrameIDs || !dispatch.pDeviceDispatch->UserData)
             return dispatch.QueuePresentKHR(queue, pPresentInfo);
 
         auto& deviceContext = dispatch.pDeviceDispatch->UserData.cast<ReflexDeviceContextData>();
@@ -631,10 +621,7 @@ struct VkDeviceOverrides {
         VkDevice device,
         VkSwapchainKHR swapchain,
         const VkLatencySleepInfoNV* pSleepInfo) {
-        if (!pSleepInfo)
-            return VK_ERROR_UNKNOWN;
-
-        if (!dispatch.UserData)
+        if (!pSleepInfo || !dispatch.UserData)
             return dispatch.LatencySleepNV(device, swapchain, pSleepInfo);
 
         auto& context = dispatch.UserData.cast<ReflexDeviceContextData>();
@@ -661,10 +648,7 @@ struct VkDeviceOverrides {
         VkDevice device,
         VkSwapchainKHR swapchain,
         const VkSetLatencyMarkerInfoNV* pLatencyMarkerInfo) {
-        if (!pLatencyMarkerInfo)
-            return;
-
-        if (!dispatch.UserData) {
+        if (!pLatencyMarkerInfo || !dispatch.UserData) {
             dispatch.SetLatencyMarkerNV(device, swapchain, pLatencyMarkerInfo);
             return;
         }
@@ -732,10 +716,7 @@ struct VkDeviceOverrides {
         VkDevice device,
         VkSwapchainKHR swapchain,
         VkGetLatencyMarkerInfoNV* pLatencyMarkerInfo) {
-        if (!pLatencyMarkerInfo)
-            return;
-
-        if (!dispatch.UserData) {
+        if (!pLatencyMarkerInfo || !dispatch.UserData) {
             dispatch.GetLatencyTimingsNV(device, swapchain, pLatencyMarkerInfo);
             return;
         }
