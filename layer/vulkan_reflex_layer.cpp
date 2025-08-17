@@ -86,7 +86,6 @@ static void Init() {
 #define LOG_FLAG(var) INFO("%s = %s", #var, var ? "1" : "0")
     LOG_FLAG(injectSubmitFrameIDs);
     LOG_FLAG(injectPresentFrameIDs);
-    LOG_FLAG(injectFrameIDs);
     LOG_FLAG(allowFallbackToOutOfBandFrameID);
     LOG_FLAG(allowFallbackToPresentFrameID);
     LOG_FLAG(allowFallbackToSimulationFrameID);
