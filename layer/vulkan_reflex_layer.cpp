@@ -93,6 +93,8 @@ static void Init() {
 }
 
 struct ReflexInstanceContextData {
+    const std::string applicationName;
+    const std::string engineName;
     uint32_t apiVersion;
 };
 
@@ -262,6 +264,8 @@ struct VkInstanceOverrides {
             return pfnCreateInstanceProc(pCreateInfo, pAllocator, pInstance);
 
         auto info = *pCreateInfo;
+        auto applicationName = info.pApplicationInfo && info.pApplicationInfo->pApplicationName ? std::string(info.pApplicationInfo->pApplicationName) : std::string("Unknown");
+        auto engineName = info.pApplicationInfo && info.pApplicationInfo->pEngineName ? std::string(info.pApplicationInfo->pEngineName) : std::string("Unknown");
         auto apiVersion = info.pApplicationInfo ? info.pApplicationInfo->apiVersion : VK_API_VERSION_1_0;
         std::vector<const char*> extensions;
 
@@ -284,7 +288,7 @@ struct VkInstanceOverrides {
         auto vr = pfnCreateInstanceProc(&info, pAllocator, pInstance);
 
         if (vr == VK_SUCCESS)
-            vkroots::LookupDispatch(*pInstance)->UserData.emplace<ReflexInstanceContextData>(apiVersion);
+            vkroots::LookupDispatch(*pInstance)->UserData.emplace<ReflexInstanceContextData>(applicationName, engineName, apiVersion);
 
         return vr;
     }
@@ -297,6 +301,11 @@ struct VkInstanceOverrides {
         VkDevice* pDevice) {
         if (!pCreateInfo)
             return dispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
+
+        if (!dispatch.pInstanceDispatch->UserData.has())
+            return dispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
+
+        auto& context = dispatch.pInstanceDispatch->UserData.cast<ReflexInstanceContextData>();
 
         uint32_t count;
         auto vr = dispatch.EnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, nullptr);
@@ -311,7 +320,7 @@ struct VkInstanceOverrides {
             return dispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
 
         if (std::ranges::none_of(properties, [&](auto& prop) { return prop.extensionName == ll2 && prop.specVersion >= 2; })) {
-            INFO("%s not supported by physical device, skipping setup of compatibility layer", ll2.data());
+            INFO("%s not supported by physical device, skipping setup of compatibility layer (%s/%s)", ll2.data(), context.applicationName.c_str(), context.engineName.c_str());
             return dispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
         }
 
@@ -319,7 +328,7 @@ struct VkInstanceOverrides {
 
         for (auto ext = info.ppEnabledExtensionNames; ext && ext < info.ppEnabledExtensionNames + info.enabledExtensionCount; ++ext) {
             if (*ext == ll2) {
-                INFO("%s already requested by the application, skipping setup of compatibility layer", ll2.data());
+                INFO("%s already requested by the application, skipping setup of compatibility layer (%s/%s)", ll2.data(), context.applicationName.c_str(), context.engineName.c_str());
                 return dispatch.CreateDevice(physicalDevice, pCreateInfo, pAllocator, pDevice);
             }
         }
@@ -361,7 +370,7 @@ struct VkInstanceOverrides {
         if (!hasLL2)
             extensions.push_back(ll2.data());
 
-        if (dispatch.pInstanceDispatch->UserData && dispatch.pInstanceDispatch->UserData.cast<ReflexInstanceContextData>().apiVersion < VK_API_VERSION_1_2) {
+        if (context.apiVersion < VK_API_VERSION_1_2) {
             if (std::ranges::find(extensions, ts) == extensions.end())
                 extensions.push_back(ts.data());
         }
@@ -390,10 +399,13 @@ struct VkInstanceOverrides {
 
         vr = dispatch.CreateDevice(physicalDevice, &info, pAllocator, pDevice);
 
-        if (vr == VK_SUCCESS)
-            vkroots::LookupDispatch(*pDevice)->UserData.emplace<ReflexDeviceContextData>();
+        if (vr != VK_SUCCESS)
+            return vr;
 
-        return vr;
+        vkroots::LookupDispatch(*pDevice)->UserData.emplace<ReflexDeviceContextData>();
+
+        INFO("Setup of compatibility layer succeeded (%s/%s)", context.applicationName.c_str(), context.engineName.c_str());
+        return VK_SUCCESS;
     }
 };
 
