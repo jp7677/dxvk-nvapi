@@ -2,6 +2,9 @@
 #include "nvapi_interface.h"
 #include "util/util_string.h"
 #include "util/util_log.h"
+#if defined(DEBUG) && DEBUG
+#include "util/util_env.h"
+#endif
 
 extern "C" {
     using namespace dxvk;
@@ -39,8 +42,35 @@ extern "C" {
             log::info(str::format("NvAPI_QueryInterface: Ignoring unrecognized entrypoints from ", disabledEnvName, ": ", str::implode(", ", unrecognized)));
     }
 
+#if defined(DEBUG) && DEBUG
+    using hmodule_ptr = std::unique_ptr<std::remove_pointer_t<HMODULE>, void (*)(HMODULE)>;
+    using nvapi_QueryInterface_t = void* __cdecl (*)(NvU32 id);
+
+    static const auto chainLoadPathEnvName = "DXVK_NVAPI_CHAIN_LOAD_PATH";
+    static const auto chainLoadPath = std::getenv(chainLoadPathEnvName);
+
+    static const auto chainLoadedNvapiModule = chainLoadPath
+        ? hmodule_ptr{LoadLibraryA(chainLoadPath), [](HMODULE module) { if (module) FreeLibrary(module); }}
+        : hmodule_ptr{nullptr, [](HMODULE) {}};
+
+    static const auto chainLoadedNvapiQueryInterface = chainLoadedNvapiModule.get()
+        ? reinterpret_cast<nvapi_QueryInterface_t>(reinterpret_cast<void*>(GetProcAddress(chainLoadedNvapiModule.get(), "nvapi_QueryInterface")))
+        : nullptr;
+#endif
+
     void* __cdecl nvapi_QueryInterface(NvU32 id) {
         constexpr auto n = __func__;
+
+#if defined(DEBUG) && DEBUG
+        if (chainLoadedNvapiQueryInterface) {
+            static const auto chainLoadFilterEnvName = "DXVK_NVAPI_CHAIN_LOAD_FILTER";
+            static const auto chainLoadFilterString = str::fromnullable(std::getenv(chainLoadFilterEnvName));
+            static const auto executableName = dxvk::env::getExecutableName();
+
+            if (!chainLoadFilterString.size() || chainLoadFilterString != executableName)
+                return chainLoadedNvapiQueryInterface(id);
+        }
+#endif
 
         static std::unordered_map<NvU32, void*> registry;
         static std::mutex registryMutex;
