@@ -40,8 +40,8 @@ enum LogLevel {
     LogLevel_Error = 1,
     LogLevel_Warn = 2,
     LogLevel_Info = 3,
-    LogLevel_Trace = 4,
-    LogLevel_Debug = 5,
+    LogLevel_Debug = 4,
+    LogLevel_Trace = 5,
 };
 
 static LogLevel logLevel = LogLevel_None;
@@ -51,10 +51,10 @@ static thread_local char wineDbgLogMessageBuffer[1024];
 
 static inline const char* LogLevelString(LogLevel level) {
     switch (level) {
-        case LogLevel_Debug:
-            return "debug";
         case LogLevel_Trace:
             return "trace";
+        case LogLevel_Debug:
+            return "debug";
         case LogLevel_Info:
             return "info";
         case LogLevel_Warn:
@@ -119,8 +119,8 @@ static inline struct LogTimestamp GetTimestamp(void) {
 #define ERR(fmt, ...) LOG(LogLevel_Error, fmt, __VA_ARGS__)
 #define WARN(fmt, ...) LOG(LogLevel_Warn, fmt, __VA_ARGS__)
 #define INFO(fmt, ...) LOG(LogLevel_Info, fmt, __VA_ARGS__)
-#define TRACE(fmt, ...) LOG(LogLevel_Trace, fmt, __VA_ARGS__)
 #define DBG(fmt, ...) LOG(LogLevel_Debug, fmt, __VA_ARGS__)
+#define TRACE(fmt, ...) LOG(LogLevel_Trace, fmt, __VA_ARGS__)
 
 static void InitLogger(const char* logLevelEnvName) {
     const char* logLevelEnv = getenv(logLevelEnvName);
@@ -139,11 +139,11 @@ static void InitLogger(const char* logLevelEnvName) {
             case 'i':
                 logLevel = LogLevel_Info;
                 break;
-            case 't':
-                logLevel = LogLevel_Trace;
-                break;
             case 'd':
                 logLevel = LogLevel_Debug;
+                break;
+            case 't':
+                logLevel = LogLevel_Trace;
                 break;
             default:
                 logLevel = (LogLevel)(atoi(logLevelEnv));

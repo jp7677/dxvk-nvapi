@@ -161,20 +161,20 @@ static VkResult WaitSemaphores(
     if (pWaitInfo) {
         switch (pWaitInfo->semaphoreCount) {
             case 0:
-                DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [], [] }, %" PRIu64 ")",
+                TRACE("(%p, %p { %" PRIu32 ", %" PRIu32 ", [], [] }, %" PRIu64 ")",
                     device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, timeout);
                 break;
             case 1:
-                DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p], [%" PRIu64 "] }, %" PRIu64 ")",
+                TRACE("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p], [%" PRIu64 "] }, %" PRIu64 ")",
                     device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
                 break;
             default:
-                DBG("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p, ...], [%" PRIu64 ", ...] }, %" PRIu64 ")",
+                TRACE("(%p, %p { %" PRIu32 ", %" PRIu32 ", [%p, ...], [%" PRIu64 ", ...] }, %" PRIu64 ")",
                     device, pWaitInfo, pWaitInfo->flags, pWaitInfo->semaphoreCount, pWaitInfo->pSemaphores[0], pWaitInfo->pValues[0], timeout);
                 break;
         }
     } else {
-        DBG("(%p, %p, %" PRIu64 ")", device, pWaitInfo, timeout);
+        TRACE("(%p, %p, %" PRIu64 ")", device, pWaitInfo, timeout);
     }
 
     auto begin = ::GetTimestamp();
@@ -211,7 +211,7 @@ static VkResult QueueSubmit2(
     if (deviceContext.latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
         uint64_t id = ::GetFrameId(deviceContext, false, outOfBandRenderSubmit);
 
-        DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
+        TRACE("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
             queue, submitCount, pSubmits, fence, id, outOfBandRenderSubmit);
 
         if (id) {
@@ -484,7 +484,7 @@ struct VkDeviceOverrides {
         if (deviceContext.latencySleepModeInfo.lowLatencyMode && pSubmits && submitCount) {
             uint64_t id = ::GetFrameId(deviceContext, false, outOfBandRenderSubmit);
 
-            DBG("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
+            TRACE("(%p, %" PRIu32 ", %p, %p) frameID = %" PRIu64 ", oob = %d",
                 queue, submitCount, pSubmits, fence, id, outOfBandRenderSubmit);
 
             if (id) {
@@ -545,7 +545,7 @@ struct VkDeviceOverrides {
             uint32_t i;
             uint64_t id = ::GetFrameId(deviceContext, true, outOfBandPresent);
 
-            DBG("(%p, %p) frameID = %" PRIu64 ", oob = %d",
+            TRACE("(%p, %p) frameID = %" PRIu64 ", oob = %d",
                 queue, pPresentInfo, id, outOfBandPresent);
 
             if (!id)

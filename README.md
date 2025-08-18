@@ -143,7 +143,7 @@ The following environment variables tweak DXVK-NVAPI's Vulkan Reflex layer's run
 
 - `DXVK_NVAPI_VKREFLEX=1` enables the layer; the layer is disabled by default when this isn't set
 - `DISABLE_DXVK_NVAPI_VKREFLEX` disables the layer (overriding `DXVK_NVAPI_VKREFLEX=1`) when set to any nonempty value
-- `DXVK_NVAPI_VKREFLEX_LAYER_LOG_LEVEL` configures logging verbosity, supported values are `none` (default), `error`, `warn`, `info`, `trace`, `debug` and integer values from `0` to `5` inclusive that correspond to named log levels
+- `DXVK_NVAPI_VKREFLEX_LAYER_LOG_LEVEL` configures logging verbosity, supported values are `none` (default), `error`, `warn`, `info`, `debug`, `trace` and integer values from `0` to `5` inclusive that correspond to named log levels
 - `DXVK_NVAPI_VKREFLEX_INJECT_SUBMIT_FRAME_IDS=1` and `DXVK_NVAPI_VKREFLEX_INJECT_PRESENT_FRAME_IDS=1` cause the layer to inject frame IDs into `vkQueueSubmit*` and `vkQueuePresentKHR` Vulkan commands respectively based on the latency markers set by the application with `NvAPI_Vulkan_SetLatencyMarker`, possibly helping the driver correlate the calls but could interfere with application's own present IDs; enabling either enables `VK_KHR_present_id` device extension and related `presentID` feature
   - `DXVK_NVAPI_VKREFLEX_ALLOW_FALLBACK_TO_OOB_FRAME_ID=0` disables fallback to out-of-band frame IDs in submit and present calls
   - `DXVK_NVAPI_VKREFLEX_ALLOW_FALLBACK_TO_PRESENT_FRAME_ID=0` disables fallback to present frame IDs in submit calls
