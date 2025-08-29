@@ -163,6 +163,19 @@ namespace dxvk::env {
         return false;
     }
 
+    bool needsUnsupportedLowLatencyDevice() {
+        static bool alreadyLogged = false;
+
+        if (getExecutableName() == std::string("Stormgate-Win64-Shipping.exe")) {
+            if (!std::exchange(alreadyLogged, true))
+                log::info("Reporting LowLatencyDevice (Reflex) not supported due to detecting Stormgate-Win64-Shipping.exe (Stormgate)");
+
+            return true;
+        }
+
+        return false;
+    }
+
     std::optional<NV_GPU_ARCHITECTURE_ID> getGpuArchitectureOverride() {
         constexpr auto gpuArchEnvName = "DXVK_NVAPI_GPU_ARCH";
         NV_GPU_ARCHITECTURE_ID override{};
