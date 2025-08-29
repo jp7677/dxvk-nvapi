@@ -130,21 +130,13 @@ namespace dxvk::env {
         return false;
     }
 
-    bool isMonsterHunterWorld() {
-        return getExecutableName() == std::string("MonsterHunterWorld.exe");
-    }
-
-    bool isWarThunder() {
-        return getExecutableName() == std::string("aces.exe");
-    }
-
     bool needsPascalSpoofing(NV_GPU_ARCHITECTURE_ID architectureId) {
-        if (architectureId >= NV_GPU_ARCHITECTURE_TU100 && isMonsterHunterWorld()) {
-            log::info("Spoofing Pascal for Turing and later due to detecting MonsterHunterWorld.exe");
+        if (architectureId >= NV_GPU_ARCHITECTURE_TU100 && getExecutableName() == std::string("MonsterHunterWorld.exe")) {
+            log::info("Spoofing Pascal for Turing and later due to detecting MonsterHunterWorld.exe (Monster Hunter World)");
             return true;
         }
 
-        if (architectureId >= NV_GPU_ARCHITECTURE_TU100 && isWarThunder()) {
+        if (architectureId >= NV_GPU_ARCHITECTURE_TU100 && getExecutableName() == std::string("aces.exe")) {
             log::info("Spoofing Pascal for Turing and later due to detecting aces.exe (War Thunder)");
             return true;
         }
@@ -152,34 +144,32 @@ namespace dxvk::env {
         return false;
     }
 
-    bool isTheLastOfUsPartOne() {
-        return getExecutableName() == std::string("tlou-i.exe")
-            || getExecutableName() == std::string("tlou-i-l.exe");
-    }
-
-    bool isTheLastOfUsPartTwo() {
-        return getExecutableName() == std::string("tlou-ii.exe")
-            || getExecutableName() == std::string("tlou-ii-l.exe");
-    }
-
-    bool isXDefiant() {
-        return getExecutableName() == std::string("XDefiant.exe")
-            || getExecutableName() == std::string("XDefiant_BE.exe");
-    }
-
     bool needsSucceededGpuQuery() {
-        if (isTheLastOfUsPartOne()) {
-            log::info("Faking GPU query success due to detecting tlou-i.exe/tlou-i-l.exe");
+        if (getExecutableName() == std::string("tlou-i.exe") || getExecutableName() == std::string("tlou-i-l.exe")) {
+            log::info("Faking GPU query success due to detecting tlou-i.exe/tlou-i-l.exe (The Last of Us Part I)");
             return true;
         }
 
-        if (isTheLastOfUsPartTwo()) {
-            log::info("Faking GPU query success due to detecting tlou-ii.exe/tlou-ii-l.exe");
+        if (getExecutableName() == std::string("tlou-ii.exe") || getExecutableName() == std::string("tlou-ii-l.exe")) {
+            log::info("Faking GPU query success due to detecting tlou-ii.exe/tlou-ii-l.exe (The Last of Us Part II)");
             return true;
         }
 
-        if (isXDefiant()) {
+        if (getExecutableName() == std::string("XDefiant.exe") || getExecutableName() == std::string("XDefiant_BE.exe")) {
             log::info("Faking GPU query success due to detecting XDefiant.exe/XDefiant_BE.exe (XDefiant)");
+            return true;
+        }
+
+        return false;
+    }
+
+    bool needsUnsupportedLowLatencyDevice() {
+        static bool alreadyLogged = false;
+
+        if (getExecutableName() == std::string("Stormgate-Win64-Shipping.exe")) {
+            if (!std::exchange(alreadyLogged, true))
+                log::info("Reporting LowLatencyDevice (Reflex) not supported due to detecting Stormgate-Win64-Shipping.exe (Stormgate)");
+
             return true;
         }
 
