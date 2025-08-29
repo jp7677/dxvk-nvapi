@@ -9,6 +9,7 @@
 #include "util/util_op_code.h"
 #include "util/util_pso_extension.h"
 #include "util/util_string.h"
+#include "util/util_env.h"
 
 extern "C" {
     using namespace dxvk;
@@ -594,11 +595,11 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
         constexpr auto n = __func__;
+        thread_local bool alreadyLoggedOk = false;
         thread_local bool alreadyLoggedNoImplementation = false;
         thread_local bool alreadyLoggedTypeIgnore = false;
         thread_local bool alreadyLoggedTypeRenderPresent = false;
         thread_local bool alreadyLoggedError = false;
-        thread_local bool alreadyLoggedOk = false;
 
         if (log::tracing())
             log::trace(n, cqType);
@@ -608,6 +609,9 @@ extern "C" {
 
         if (!pCommandQueue)
             return InvalidPointer(n);
+
+        if (env::needsUnsupportedLowLatencyDevice())
+            return NoImplementation(n);
 
         auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pCommandQueue);
         if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
@@ -635,9 +639,9 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_SetAsyncFrameMarker(ID3D12CommandQueue* pCommandQueue, NV_ASYNC_FRAME_MARKER_PARAMS* pSetAsyncFrameMarkerParams) {
         constexpr auto n = __func__;
+        thread_local bool alreadyLoggedOk = false;
         thread_local bool alreadyLoggedNoImplementation = false;
         thread_local bool alreadyLoggedError = false;
-        thread_local bool alreadyLoggedOk = false;
         thread_local bool alreadyLoggedMarkerTypeNotSupported = false;
 
         if (log::tracing())
@@ -651,6 +655,9 @@ extern "C" {
 
         if (pSetAsyncFrameMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
             return IncompatibleStructVersion(n, pSetAsyncFrameMarkerParams->version);
+
+        if (env::needsUnsupportedLowLatencyDevice())
+            return NoImplementation(n, alreadyLoggedNoImplementation);
 
         auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pCommandQueue);
         if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())

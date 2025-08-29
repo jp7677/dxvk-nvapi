@@ -2,6 +2,7 @@
 #include "nvapi_globals.h"
 #include "nvapi/nvapi_d3d_low_latency_device.h"
 #include "util/util_statuscode.h"
+#include "util/util_env.h"
 
 extern "C" {
     using namespace dxvk;
@@ -197,9 +198,9 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D_Sleep(IUnknown* pDevice) {
         constexpr auto n = __func__;
-        thread_local bool alreadyLoggedNoReflex = false;
-        thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedError = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice));
@@ -210,15 +211,18 @@ extern "C" {
         if (!pDevice)
             return InvalidArgument(n);
 
+        if (env::needsUnsupportedLowLatencyDevice())
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
         auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pDevice);
         if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
-            return NoImplementation(n, alreadyLoggedNoReflex);
+            return NoImplementation(n, alreadyLoggedNoImplementation);
 
         switch (lowLatencyDevice->LatencySleep()) {
             case S_OK:
                 return Ok(n, alreadyLoggedOk);
             case E_NOTIMPL:
-                return NoImplementation(n, alreadyLoggedNoReflex);
+                return NoImplementation(n, alreadyLoggedNoImplementation);
             default:
                 return Error(n, alreadyLoggedError);
         }
@@ -227,7 +231,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_D3D_SetSleepMode(IUnknown* pDevice, NV_SET_SLEEP_MODE_PARAMS* pSetSleepModeParams) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedOk = false;
-        thread_local bool alreadyLoggedNoReflex = false;
+        thread_local bool alreadyLoggedNoImplementation = false;
         thread_local bool alreadyLoggedError = false;
 
         if (log::tracing())
@@ -245,9 +249,12 @@ extern "C" {
         if (pSetSleepModeParams->version != NV_SET_SLEEP_MODE_PARAMS_VER1)
             return IncompatibleStructVersion(n, pSetSleepModeParams->version);
 
+        if (env::needsUnsupportedLowLatencyDevice())
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
         auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pDevice);
         if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
-            return NoImplementation(n, alreadyLoggedNoReflex);
+            return NoImplementation(n, alreadyLoggedNoImplementation);
 
         switch (lowLatencyDevice->SetLatencySleepMode(pSetSleepModeParams->bLowLatencyMode, pSetSleepModeParams->bLowLatencyBoost, pSetSleepModeParams->minimumIntervalUs)) {
             case S_OK:
@@ -258,7 +265,7 @@ extern "C" {
                 }
                 return Ok(n, alreadyLoggedOk);
             case E_NOTIMPL:
-                return NoImplementation(n, alreadyLoggedNoReflex);
+                return NoImplementation(n, alreadyLoggedNoImplementation);
             default:
                 return Error(n, alreadyLoggedError);
         }
@@ -266,8 +273,8 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D_GetSleepStatus(IUnknown* pDevice, NV_GET_SLEEP_STATUS_PARAMS* pGetSleepStatusParams) {
         constexpr auto n = __func__;
-        thread_local bool alreadyLoggedNoReflex = false;
         thread_local bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedNoImplementation = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pGetSleepStatusParams));
@@ -281,9 +288,12 @@ extern "C" {
         if (pGetSleepStatusParams->version != NV_GET_SLEEP_STATUS_PARAMS_VER1)
             return IncompatibleStructVersion(n, pGetSleepStatusParams->version);
 
+        if (env::needsUnsupportedLowLatencyDevice())
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
         auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pDevice);
         if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
-            return NoImplementation(n, alreadyLoggedNoReflex);
+            return NoImplementation(n, alreadyLoggedNoImplementation);
 
         pGetSleepStatusParams->bLowLatencyMode = lowLatencyDevice->GetLowLatencyMode();
 
@@ -292,9 +302,9 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D_GetLatency(IUnknown* pDev, NV_LATENCY_RESULT_PARAMS* pGetLatencyParams) {
         constexpr auto n = __func__;
-        thread_local bool alreadyLoggedNoImpl = false;
-        thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedError = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDev), log::fmt::ptr(pGetLatencyParams));
@@ -308,15 +318,18 @@ extern "C" {
         if (pGetLatencyParams->version != NV_LATENCY_RESULT_PARAMS_VER1)
             return IncompatibleStructVersion(n, pGetLatencyParams->version);
 
+        if (env::needsUnsupportedLowLatencyDevice())
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
         auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pDev);
         if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
-            return NoImplementation(n, alreadyLoggedNoImpl);
+            return NoImplementation(n, alreadyLoggedNoImplementation);
 
         switch (lowLatencyDevice->GetLatencyInfo(reinterpret_cast<D3D_LATENCY_RESULTS*>(pGetLatencyParams))) {
             case S_OK:
                 return Ok(n, alreadyLoggedOk);
             case E_NOTIMPL:
-                return NoImplementation(n, alreadyLoggedNoImpl);
+                return NoImplementation(n, alreadyLoggedNoImplementation);
             default:
                 return Error(n, alreadyLoggedError);
         }
@@ -324,9 +337,9 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D_SetLatencyMarker(IUnknown* pDev, NV_LATENCY_MARKER_PARAMS* pSetLatencyMarkerParams) {
         constexpr auto n = __func__;
-        thread_local bool alreadyLoggedNoImpl = false;
-        thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedError = false;
         thread_local bool alreadyLoggedMarkerTypeNotSupported = false;
 
         if (log::tracing())
@@ -341,9 +354,12 @@ extern "C" {
         if (pSetLatencyMarkerParams->version != NV_LATENCY_MARKER_PARAMS_VER1)
             return IncompatibleStructVersion(n, pSetLatencyMarkerParams->version);
 
+        if (env::needsUnsupportedLowLatencyDevice())
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
         auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pDev);
         if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
-            return NoImplementation(n, alreadyLoggedNoImpl);
+            return NoImplementation(n, alreadyLoggedNoImplementation);
 
         auto markerType = NvapiD3dLowLatencyDevice::ToMarkerType(pSetLatencyMarkerParams->markerType);
         if (!markerType.has_value()) {
@@ -358,7 +374,7 @@ extern "C" {
             case S_OK:
                 return Ok(n, alreadyLoggedOk);
             case E_NOTIMPL:
-                return NoImplementation(n, alreadyLoggedNoImpl);
+                return NoImplementation(n, alreadyLoggedNoImplementation);
             default:
                 return Error(n, alreadyLoggedError);
         }
