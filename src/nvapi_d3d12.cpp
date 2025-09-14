@@ -275,8 +275,15 @@ extern "C" {
         NvapiAdapter* adapter = nullptr;
 
         Com<ID3D12Device> device;
-        if (SUCCEEDED(pDevice->QueryInterface(IID_PPV_ARGS(&device))))
-            adapter = nvapiAdapterRegistry->FindAdapter(device->GetAdapterLuid());
+        if (SUCCEEDED(pDevice->QueryInterface(IID_PPV_ARGS(&device)))) {
+            LUID luid{};
+#if defined(_MSC_VER)
+            luid = device->GetAdapterLuid();
+#else
+            device->GetAdapterLuid(&luid);
+#endif
+            adapter = nvapiAdapterRegistry->FindAdapter(luid);
+        }
 
         if (!adapter)
             return Ok(str::format(n, " (sm_0)"));

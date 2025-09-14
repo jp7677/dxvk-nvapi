@@ -46,6 +46,7 @@ endif
 
 nvapi_headers = include_directories('./external/nvapi')
 vk_headers = include_directories('./external/Vulkan-Headers/include')
+dx_headers = include_directories('./external/DirectX-Headers/include')
 
 lib_dxgi = cpp.find_library('dxgi')
 lib_d3d11 = cpp.find_library('d3d11')

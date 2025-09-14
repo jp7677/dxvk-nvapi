@@ -35,7 +35,8 @@
 #include <d3d9.h>
 #include <dxgi1_6.h>
 #include <d3d11_1.h>
-#include <d3d12.h>
+#include <directx/d3d12.h>
+#include <dxguids/dxguids.h>
 #include <vulkan/vulkan_core.h>
 #include "../inc/nvml.h"
 

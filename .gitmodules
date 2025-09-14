@@ -7,3 +7,6 @@
 [submodule "external/vkroots"]
 	path = external/vkroots
 	url = https://github.com/misyltoad/vkroots
+[submodule "external/DirectX-Headers"]
+	path = external/DirectX-Headers
+	url = https://github.com/microsoft/DirectX-Headers
