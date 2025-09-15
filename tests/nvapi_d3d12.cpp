@@ -214,13 +214,13 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             .LR_SIDE_EFFECT(deviceRefCount--)
             .RETURN(deviceRefCount);
 
-#if defined(WIDL_EXPLICIT_AGGREGATE_RETURNS)
+#if defined(_MSC_VER)
+        ALLOW_CALL(device, GetAdapterLuid())
+            .LR_RETURN(luid);
+#else
         ALLOW_CALL(device, GetAdapterLuid(_))
             .LR_SIDE_EFFECT(*_1 = luid)
             .LR_RETURN(_1);
-#else
-        ALLOW_CALL(device, GetAdapterLuid())
-            .LR_RETURN(luid);
 #endif
 
         SECTION("GetGraphicsCapabilities without matching adapter returns OK with sm_0") {
