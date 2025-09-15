@@ -24,7 +24,7 @@ namespace dxvk::log {
     }
 
     void initialize(std::ofstream& filestream, bool& skipAllLogging) {
-#ifdef _WIN32
+#if defined(_WIN32)
         if (auto ntdllModule = ::GetModuleHandleA("ntdll.dll"))
             wineDbgOutput = reinterpret_cast<PFN_wineDbgOutput>(reinterpret_cast<void*>(GetProcAddress(ntdllModule, "__wine_dbg_output")));
 #endif

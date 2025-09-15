@@ -43,7 +43,7 @@
 #include <vulkan/vulkan_core.h>
 #include "../inc/nvml.h"
 
-#ifdef __GNUC__
+#if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #pragma GCC diagnostic ignored "-Wattributes"
@@ -56,7 +56,7 @@
 #undef __NVAPI_EMPTY_SAL
 #include "nvapi_lite_salend.h"
 
-#ifdef __GNUC__
+#if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif // __GNUC__
 

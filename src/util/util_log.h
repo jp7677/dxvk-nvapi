@@ -6,7 +6,7 @@
 
 namespace dxvk::log {
     namespace fmt {
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
         constexpr auto hex_prefix = "0x";
 #else
         constexpr auto hex_prefix = "";

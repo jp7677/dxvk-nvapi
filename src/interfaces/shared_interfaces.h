@@ -2,7 +2,7 @@
 
 #include "../nvapi_private.h"
 
-#ifdef __GNUC__
+#if defined(__GNUC__)
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #endif // __GNUC__
 
