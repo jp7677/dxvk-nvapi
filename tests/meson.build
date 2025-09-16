@@ -1,5 +1,3 @@
-catch2_src = files(['../inc/catch_amalgamated.cpp'])
-
 nvapi_src = files([
   '../src/util/util_string.cpp',
   '../src/util/util_env.cpp',
@@ -54,7 +52,7 @@ target_name = 'nvapi'+target_suffix+'-tests'
 nvapi_exe = executable(target_name, [ nvapi_src, catch2_src, nvapi_tests_src, dxvk_nvapi_version ],
   cpp_args            : '-DDXVK_NVAPI_TARGET_NAME="'+target_name+'"',
   dependencies        : [ lib_dxgi, lib_d3d11, lib_version ],
-  include_directories : [ nvapi_headers, vk_headers, dx_headers ],
+  include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, catch2_headers, trompeloeil_headers ],
   install             : true)
 
 nvofapi_src = files([
@@ -87,5 +85,5 @@ target_name = 'nvofapi'+target_suffix+'-tests'
 nvofapi_exe = executable(target_name, [ nvofapi_src, catch2_src, nvofapi_tests_src, dxvk_nvapi_version ],
   cpp_args            : '-DDXVK_NVAPI_TARGET_NAME="'+target_name+'"',
   dependencies        : [ lib_version ],
-  include_directories : [ nvapi_headers, vk_headers, dx_headers ],
+  include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, nvofapi_headers, catch2_headers, trompeloeil_headers ],
   install             : true)

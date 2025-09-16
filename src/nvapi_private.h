@@ -35,10 +35,11 @@
 #include <d3d9.h>
 #include <dxgi1_6.h>
 #include <d3d11_1.h>
+
 #include <directx/d3d12.h>
 #include <dxguids/dxguids.h>
 #include <vulkan/vulkan_core.h>
-#include "../inc/nvml.h"
+#include <nvml.h>
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
@@ -49,9 +50,9 @@
 // Suppress deprecation warnings.
 #define NVAPI_INTERNAL 1
 #define __NVAPI_EMPTY_SAL
-#include "nvapi.h"
+#include <nvapi.h>
 #undef __NVAPI_EMPTY_SAL
-#include "nvapi_lite_salend.h"
+#include <nvapi_lite_salend.h>
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop

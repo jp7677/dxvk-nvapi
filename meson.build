@@ -47,6 +47,11 @@ endif
 nvapi_headers = include_directories('./external/nvapi')
 vk_headers = include_directories('./external/Vulkan-Headers/include')
 dx_headers = include_directories('./external/DirectX-Headers/include')
+nvml_headers = include_directories('./inc/nvml')
+nvofapi_headers = include_directories('./inc/nvofapi')
+catch2_headers = include_directories('./inc/catch2')
+catch2_src = files(['./inc/catch2/catch_amalgamated.cpp'])
+trompeloeil_headers = include_directories('./inc/trompeloeil')
 
 lib_dxgi = cpp.find_library('dxgi')
 lib_d3d11 = cpp.find_library('d3d11')

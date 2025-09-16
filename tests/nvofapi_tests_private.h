@@ -12,5 +12,5 @@
 #undef DEPRECATED
 #endif // defined(DEPRECATED)
 
-#include "../inc/catch_amalgamated.hpp"
-#include "../inc/catch2/trompeloeil.hpp"
+#include <catch_amalgamated.hpp>
+#include <catch2/trompeloeil.hpp>
