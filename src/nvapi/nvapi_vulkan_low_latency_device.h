@@ -11,7 +11,7 @@ namespace dxvk {
 
         [[nodiscard]] static std::pair<NvapiVulkanLowLatencyDevice*, VkResult> GetOrCreate(VkDevice device);
         [[nodiscard]] static NvapiVulkanLowLatencyDevice* Get(VkDevice device);
-        [[nodiscard]] static bool Destroy(VkDevice device);
+        static bool Destroy(VkDevice device);
 
         [[nodiscard]] static VkLatencyMarkerNV ToVkLatencyMarkerNV(NV_VULKAN_LATENCY_MARKER_TYPE marker);
 

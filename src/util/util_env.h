@@ -13,5 +13,7 @@ namespace dxvk::env {
 
     bool needsUnsupportedLowLatencyDevice();
 
+    bool needsLowLatencyDevice();
+
     std::optional<NV_GPU_ARCHITECTURE_ID> needsGpuArchitectureSpoofing(NV_GPU_ARCHITECTURE_ID architectureId, void* returnAddress);
 }

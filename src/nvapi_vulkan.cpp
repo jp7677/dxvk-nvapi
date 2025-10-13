@@ -2,6 +2,7 @@
 #include "nvapi_globals.h"
 #include "nvapi/nvapi_vulkan_low_latency_device.h"
 #include "util/util_statuscode.h"
+#include "util/util_env.h"
 
 using namespace dxvk;
 
@@ -41,11 +42,23 @@ extern "C" {
             }
         }
 
-        if (lowLatencyDevice->IsLayerPresent())
-            log::info("Successfully initialized Vulkan Low-Latency, DXVK-NVAPI's Vulkan layer is present");
-        else
-            log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 commands in VkDevice's dispatch table, faking success as a workaround but latency will not be reduced, please ensure that DXVK-NVAPI's Vulkan layer is present for real Reflex support");
+        if (!lowLatencyDevice->IsLayerPresent()) {
+            auto fakeVkReflex = env::getEnvVariable("DXVK_NVAPI_FAKE_VKREFLEX");
 
+            if ((env::needsLowLatencyDevice() && fakeVkReflex != "0") || fakeVkReflex == "1") {
+                log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 commands in VkDevice's dispatch table, faking success as a workaround but latency will not be reduced, please ensure that DXVK-NVAPI's Vulkan layer is present for real Reflex support");
+                *semaphore = lowLatencyDevice->GetSemaphore();
+
+                return Ok(n);
+            }
+
+            log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 commands in VkDevice's dispatch table, please ensure that DXVK-NVAPI's Vulkan layer is present for Reflex support");
+            NvapiVulkanLowLatencyDevice::Destroy(device);
+
+            return NoImplementation(n);
+        }
+
+        log::info("Successfully initialized Vulkan Low-Latency, DXVK-NVAPI's Vulkan layer is present");
         *semaphore = lowLatencyDevice->GetSemaphore();
 
         return Ok(n);

@@ -137,6 +137,7 @@ The following environment variables tweak DXVK-NVAPI's runtime behavior:
   - `GB200` (Blackwell)
 - `DXVK_NVAPI_LOG_LEVEL` set to `info` prints log statements. The default behavior omits any logging. Please fill an issue if using log servery `info` creates log spam. Setting severity to `trace` logs all entry points enter and exits, this has a severe effect on performance. All other log levels will be interpreted as `none`.
 - `DXVK_NVAPI_LOG_PATH` enables file logging additionally to console output and sets the path where the log file `nvapi.log`/`nvapi64.log`/`nvofapi64.log` should be written to. Log statements are appended to an existing file. Please remove this file once in a while to prevent excessive grow. This requires `DXVK_NVAPI_LOG_LEVEL` set to `info` or `trace`.
+- `DXVK_NVAPI_FAKE_VKREFLEX`, when set to `1`, allows successful Vulkan Reflex initialization when the DXVK-NVAPI's Vulkan Reflex layer is not installed. Latency will not be reduced, please ensure that the layer is present for real Reflex support for Vulkan titles. This setting is enabled by default for DOOM: The Dark Ages to prevent a pink tint issue.
 - `DXVK_NVAPI_SET_NGX_DEBUG_OPTIONS` allows to set various NGX debug registry keys with the format `setting1=value1,setting2=value2,…`, whereas values are of type DWORD (u32). Setting the registry keys for enabling DLSS indicators corresponds to `DXVK_NVAPI_SET_NGX_DEBUG_OPTIONS=DLSSIndicator=1024,DLSSGIndicator=2`, hiding the indicators to `DXVK_NVAPI_SET_NGX_DEBUG_OPTIONS=DLSSIndicator=0,DLSSGIndicator=0`. Be aware, this tweak permanently modifies the registry.
 
 The following environment variables tweak DXVK-NVAPI's Vulkan Reflex layer's runtime behavior:
@@ -147,7 +148,7 @@ The following environment variables tweak DXVK-NVAPI's Vulkan Reflex layer's run
 - `DXVK_NVAPI_VKREFLEX_INJECT_SUBMIT_FRAME_IDS=1` and `DXVK_NVAPI_VKREFLEX_INJECT_PRESENT_FRAME_IDS=1` cause the layer to inject frame IDs into `vkQueueSubmit*` and `vkQueuePresentKHR` Vulkan commands respectively based on the latency markers set by the application with `NvAPI_Vulkan_SetLatencyMarker`, possibly helping the driver correlate the calls but could interfere with application's own present IDs; enabling either enables `VK_KHR_present_id` device extension and related `presentID` feature
   - `DXVK_NVAPI_VKREFLEX_ALLOW_FALLBACK_TO_OOB_FRAME_ID=0` disables fallback to out-of-band frame IDs in submit and present calls
   - `DXVK_NVAPI_VKREFLEX_ALLOW_FALLBACK_TO_PRESENT_FRAME_ID=0` disables fallback to present frame IDs in submit calls
-  - `DXVK_NVAPI_VKREFLEX_ALLOW_FALLBACK_TO_SIMULATION_FRAME_ID=0` disables fallback to simulation frame IDs in submit calls
+  - `DXVK_NVAPI_VKREFLEX_ALLOW_FALLBACK_TO_SIMULATION_FRAME_ID=0` disables fallback to simulation frame IDs in submit calls 
 
 Additionally, GitHub Actions provide build artifacts from different toolchains. In very rare situations a non-gcc build might provide better results.
 

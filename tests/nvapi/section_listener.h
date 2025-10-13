@@ -12,6 +12,7 @@ class SectionListener : public Catch::EventListenerBase {
         ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "");
         ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "");
         ::SetEnvironmentVariableA("DXVK_NVAPI_DRIVER_VERSION", "");
+        ::SetEnvironmentVariableA("DXVK_NVAPI_FAKE_VKREFLEX", "");
     }
 
     void sectionEnded(Catch::SectionStats const&) override {

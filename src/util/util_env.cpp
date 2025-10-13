@@ -177,6 +177,15 @@ namespace dxvk::env {
         return false;
     }
 
+    bool needsLowLatencyDevice() {
+        if (getExecutableName() == std::string("DOOMTheDarkAges.exe")) {
+            log::info("Faking LowLatencyDevice (Reflex) due to detecting DOOMTheDarkAges.exe (Doom: The Dark Ages)");
+            return true;
+        }
+
+        return false;
+    }
+
     std::optional<NV_GPU_ARCHITECTURE_ID> getGpuArchitectureOverride() {
         constexpr auto gpuArchEnvName = "DXVK_NVAPI_GPU_ARCH";
         NV_GPU_ARCHITECTURE_ID override{};
