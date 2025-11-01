@@ -82,7 +82,7 @@ jobs:
         rm -R install/bin/layer/lib
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: dxvk-nvapi-llvm
         path: install/bin/*

@@ -73,7 +73,7 @@ jobs:
         msbuild -m build-msvc-layer\dxvk-nvapi-vkreflex-layer.sln
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: dxvk-nvapi-msvc
         path: |
