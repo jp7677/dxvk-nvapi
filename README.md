@@ -60,6 +60,7 @@ Wine does not includes DXVK-NVAPI.
 
 - Copy `nvapi.dll`/`nvapi64.dll`/`nvofapi64.dll` into the `syswow64`/`system32` folder of your x86/x64 Wine prefix.
 - Ensure that Wine uses the native version of `nvapi`/`nvapi64`, e.g. with `WINEDLLOVERRIDES=nvapi,nvapi64=n`. This applies only to Wine versions that ship their own NVAPI implementation, e.g. Wine-Staging older than 7.22. Generally this is no longer needed nowadays.
+- Ensure that driver libraries such as `nvngx.dll` and `_nvngx.dll` are present in the `system32` directory of the Wine prefix for DLSS SR. See [wiki](https://github.com/jp7677/dxvk-nvapi/wiki/Tips-and-tricks-for-usage-with-DXVK-NVAPI#dlss-sr-2x).
 - Ensure that DXVK is installed in your x86/x64 Wine prefix.
 - Ensure that Wine uses DXVK's `dxgi.dll`, e.g. with `WINEDLLOVERRIDES=dxgi=n`.
 - Set `DXVK_ENABLE_NVAPI=1` to disable DXVK's `nvapiHack` in DXVK.
