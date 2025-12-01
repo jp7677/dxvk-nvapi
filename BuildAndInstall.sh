@@ -18,6 +18,10 @@ cd ./builds/dxvk-nvapi-master/
 cp ./x32/* $WINEPREFIX/drive_c/windows/syswow64/
 cp ./x64/* $WINEPREFIX/drive_c/windows/system32/
 
+echo 'Installing Nvidia Wine Driver Libraries'
+
+cp /lib64/nvidia/wine/* $WINEPREFIX/drive_c/windows/system32
+
 echo "Install layer to '~/.local/share/vulkan/implicit_layer.d/' [Y/n]"
 read -r YESNO
 if [ $YESNO = 'n' ] || [ $YESNO = 'N' ]; then
