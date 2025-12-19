@@ -46,7 +46,7 @@ namespace dxvk {
                 auto value = setNgxIndicatorMap.at(pair.first);
                 log::info(str::format("Set ", pair.second, " in registry to 0x", std::hex, value));
 
-                std::wstring name = std::wstring(pair.second.begin(), pair.second.end());
+                auto name = std::wstring(pair.second.begin(), pair.second.end());
                 if (RegSetValueExW(key, name.c_str(), 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(DWORD)) != NO_ERROR)
                     log::info(str::format("Failed to set ", pair.second, " registry key"));
             });
