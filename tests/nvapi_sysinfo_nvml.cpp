@@ -258,8 +258,8 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
                     }
                 })
                 .RETURN(NVML_SUCCESS);
-            ALLOW_CALL(*nvml, DeviceGetTemperature(_, _, _))
-                .LR_SIDE_EFFECT(*_3 = temp + 1)
+            ALLOW_CALL(*nvml, DeviceGetTemperatureV(_, _))
+                .LR_SIDE_EFFECT(_2->temperature = temp + 1)
                 .RETURN(NVML_SUCCESS);
 
             SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
@@ -310,8 +310,8 @@ TEST_CASE("NVML related sysinfo methods succeed", "[.sysinfo-nvml]") {
             auto temp = 65U;
             ALLOW_CALL(*nvml, DeviceGetThermalSettings(_, _, _))
                 .RETURN(NVML_ERROR_FUNCTION_NOT_FOUND);
-            ALLOW_CALL(*nvml, DeviceGetTemperature(_, _, _))
-                .LR_SIDE_EFFECT(*_3 = temp)
+            ALLOW_CALL(*nvml, DeviceGetTemperatureV(_, _))
+                .LR_SIDE_EFFECT(_2->temperature = temp)
                 .RETURN(NVML_SUCCESS);
 
             SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));

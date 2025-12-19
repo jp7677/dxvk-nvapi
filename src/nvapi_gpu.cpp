@@ -970,8 +970,10 @@ extern "C" {
             return Ok(n, alreadyLoggedOk);
         }
 
-        unsigned int temp{};
-        result = nvml->DeviceGetTemperature(nvmlDevice, NVML_TEMPERATURE_GPU, &temp);
+        nvmlTemperature_v1_t temp{};
+        temp.sensorType = NVML_TEMPERATURE_GPU;
+        temp.version = nvmlTemperature_v1;
+        result = nvml->DeviceGetTemperatureV(nvmlDevice, &temp);
         switch (result) {
             case NVML_SUCCESS:
                 switch (pThermalSettings->version) {
@@ -980,7 +982,7 @@ extern "C" {
                         pThermalSettingsV1->count = 1;
                         pThermalSettingsV1->sensor[0].controller = NVAPI_THERMAL_CONTROLLER_UNKNOWN;
                         pThermalSettingsV1->sensor[0].target = NVAPI_THERMAL_TARGET_GPU;
-                        pThermalSettingsV1->sensor[0].currentTemp = temp;
+                        pThermalSettingsV1->sensor[0].currentTemp = temp.temperature;
                         pThermalSettingsV1->sensor[0].defaultMaxTemp = 127;
                         pThermalSettingsV1->sensor[0].defaultMinTemp = 0;
                         break;
@@ -989,7 +991,7 @@ extern "C" {
                         pThermalSettings->count = 1;
                         pThermalSettings->sensor[0].controller = NVAPI_THERMAL_CONTROLLER_UNKNOWN;
                         pThermalSettings->sensor[0].target = NVAPI_THERMAL_TARGET_GPU;
-                        pThermalSettings->sensor[0].currentTemp = static_cast<NvS32>(temp);
+                        pThermalSettings->sensor[0].currentTemp = temp.temperature;
                         pThermalSettings->sensor[0].defaultMaxTemp = 127;
                         pThermalSettings->sensor[0].defaultMinTemp = -256;
                         break;

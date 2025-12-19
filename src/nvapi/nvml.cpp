@@ -26,7 +26,7 @@ namespace dxvk {
         GETPROCADDR(nvmlDeviceGetMemoryInfo_v2);
         GETPROCADDR(nvmlDeviceGetPciInfo_v3);
         GETPROCADDR(nvmlDeviceGetClockInfo);
-        GETPROCADDR(nvmlDeviceGetTemperature);
+        GETPROCADDR(nvmlDeviceGetTemperatureV);
         GETPROCADDR(nvmlDeviceGetThermalSettings);
         GETPROCADDR(nvmlDeviceGetFanSpeedRPM);
         GETPROCADDR(nvmlDeviceGetPerformanceState);
@@ -96,9 +96,9 @@ namespace dxvk {
             : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
-    nvmlReturn_t Nvml::DeviceGetTemperature(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, unsigned int* temp) const {
-        return m_nvmlDeviceGetTemperature
-            ? m_nvmlDeviceGetTemperature(device, sensorType, temp)
+    nvmlReturn_t Nvml::DeviceGetTemperatureV(nvmlDevice_t device, nvmlTemperature_t* temperature) const {
+        return m_nvmlDeviceGetTemperatureV
+            ? m_nvmlDeviceGetTemperatureV(device, temperature)
             : NVML_ERROR_FUNCTION_NOT_FOUND;
     }
 
