@@ -268,6 +268,8 @@ extern "C" {
 
         pGraphicsCaps->majorSMVersion = 0;
         pGraphicsCaps->minorSMVersion = 0;
+        pGraphicsCaps->majorCudaSMVersion = 0;
+        pGraphicsCaps->minorCudaSMVersion = 0;
         // All Vulkan drivers are expected to support ZBC clear without padding
         pGraphicsCaps->bFastUAVClearSupported = true;
         pGraphicsCaps->bExclusiveScissorRectsSupported = false;
