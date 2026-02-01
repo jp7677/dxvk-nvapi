@@ -428,8 +428,9 @@ extern "C" {
                 pMemoryInfoV2->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
                 pMemoryInfoV2->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
                 pMemoryInfoV2->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
-                pMemoryInfoV2->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024; // See comment above
-                pMemoryInfoV2->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget / 1024;
+                pMemoryInfoV2->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
+                // Ensure that currently available memory is lower than dedicated memory, relevant on 32Bit platforms because DXVK limits dedicated video on those
+                pMemoryInfoV2->curAvailableDedicatedVideoMemory = std::min(memoryBudgetInfo.Budget, memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
                 break;
             }
             case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3: {
@@ -437,8 +438,8 @@ extern "C" {
                 pMemoryInfoV3->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
                 pMemoryInfoV3->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
                 pMemoryInfoV3->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
-                pMemoryInfoV3->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024; // See comment above
-                pMemoryInfoV3->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget / 1024;
+                pMemoryInfoV3->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
+                pMemoryInfoV3->curAvailableDedicatedVideoMemory = std::min(memoryBudgetInfo.Budget, memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
                 pMemoryInfoV3->dedicatedVideoMemoryEvictionsSize = 0;
                 pMemoryInfoV3->dedicatedVideoMemoryEvictionCount = 0;
                 break;
@@ -477,7 +478,8 @@ extern "C" {
                 pMemoryInfoV1->systemVideoMemory = memoryInfo.DedicatedSystemMemory;
                 pMemoryInfoV1->sharedSystemMemory = memoryInfo.SharedSystemMemory;
                 pMemoryInfoV1->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory;
-                pMemoryInfoV1->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget;
+                // See comment in NvAPI_GPU_GetMemoryInfo
+                pMemoryInfoV1->curAvailableDedicatedVideoMemory = std::min(memoryBudgetInfo.Budget, memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory);
                 pMemoryInfoV1->dedicatedVideoMemoryEvictionsSize = 0;
                 pMemoryInfoV1->dedicatedVideoMemoryEvictionCount = 0;
                 pMemoryInfoV1->dedicatedVideoMemoryPromotionsSize = 0;

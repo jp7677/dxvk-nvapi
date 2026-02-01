@@ -593,6 +593,20 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(info.dedicatedVideoMemoryEvictionCount == 0);
         }
 
+        SECTION("GetMemoryInfo reports current available video memory lower than 100% of available video memory") {
+            ALLOW_CALL(*adapter, QueryVideoMemoryInfo(_, _, _))
+                .SIDE_EFFECT({
+                    _3->Budget = 16384 * 1024;
+                    _3->CurrentUsage = 1024 * 1024;
+                })
+                .RETURN(S_OK);
+
+            NV_DISPLAY_DRIVER_MEMORY_INFO info;
+            info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER;
+            REQUIRE(NvAPI_GPU_GetMemoryInfo(handle, &info) == NVAPI_OK);
+            REQUIRE(info.curAvailableDedicatedVideoMemory == 8190);
+        }
+
         SECTION("GetMemoryInfo with unknown struct version returns incompatible-struct-version") {
             NV_DISPLAY_DRIVER_MEMORY_INFO info;
             info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3 + 1;
@@ -641,6 +655,20 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(info.dedicatedVideoMemoryEvictionCount == 0);
             REQUIRE(info.dedicatedVideoMemoryPromotionsSize == 0);
             REQUIRE(info.dedicatedVideoMemoryPromotionCount == 0);
+        }
+
+        SECTION("GetMemoryInfoEx reports current available video memory lower than 100% of available video memory") {
+            ALLOW_CALL(*adapter, QueryVideoMemoryInfo(_, _, _))
+                .SIDE_EFFECT({
+                    _3->Budget = 16384 * 1024;
+                    _3->CurrentUsage = 1024 * 1024;
+                })
+                .RETURN(S_OK);
+
+            NV_GPU_MEMORY_INFO_EX_V1 info;
+            info.version = NV_GPU_MEMORY_INFO_EX_VER_1;
+            REQUIRE(NvAPI_GPU_GetMemoryInfoEx(handle, &info) == NVAPI_OK);
+            REQUIRE(info.curAvailableDedicatedVideoMemory == 8190 * 1024);
         }
 
         SECTION("GetMemoryInfoEx with unknown struct version returns incompatible-struct-version") {
