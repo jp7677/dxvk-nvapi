@@ -566,7 +566,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(info.dedicatedVideoMemory == 8191);
             REQUIRE(info.systemVideoMemory == 1014);
             REQUIRE(info.sharedSystemMemory == 16382);
-            REQUIRE(info.availableDedicatedVideoMemory == 8191);
+            REQUIRE(info.availableDedicatedVideoMemory == 8190);
         }
 
         SECTION("GetMemoryInfo (V2) returns OK") {
@@ -576,7 +576,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(info.dedicatedVideoMemory == 8191);
             REQUIRE(info.systemVideoMemory == 1014);
             REQUIRE(info.sharedSystemMemory == 16382);
-            REQUIRE(info.availableDedicatedVideoMemory == 8191);
+            REQUIRE(info.availableDedicatedVideoMemory == 8190);
             REQUIRE(info.curAvailableDedicatedVideoMemory == 4096);
         }
 
@@ -587,7 +587,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(info.dedicatedVideoMemory == 8191);
             REQUIRE(info.systemVideoMemory == 1014);
             REQUIRE(info.sharedSystemMemory == 16382);
-            REQUIRE(info.availableDedicatedVideoMemory == 8191);
+            REQUIRE(info.availableDedicatedVideoMemory == 8190);
             REQUIRE(info.curAvailableDedicatedVideoMemory == 4096);
             REQUIRE(info.dedicatedVideoMemoryEvictionsSize == 0);
             REQUIRE(info.dedicatedVideoMemoryEvictionCount == 0);
@@ -635,7 +635,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(info.dedicatedVideoMemory == 8191 * 1024);
             REQUIRE(info.systemVideoMemory == 1014 * 1024);
             REQUIRE(info.sharedSystemMemory == 16382 * 1024);
-            REQUIRE(info.availableDedicatedVideoMemory == 8191 * 1024);
+            REQUIRE(info.availableDedicatedVideoMemory == 8190 * 1024);
             REQUIRE(info.curAvailableDedicatedVideoMemory == 4096 * 1024);
             REQUIRE(info.dedicatedVideoMemoryEvictionsSize == 0);
             REQUIRE(info.dedicatedVideoMemoryEvictionCount == 0);

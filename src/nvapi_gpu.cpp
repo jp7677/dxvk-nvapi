@@ -420,8 +420,6 @@ extern "C" {
                 pMemoryInfoV1->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
                 pMemoryInfoV1->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
                 pMemoryInfoV1->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
-
-                // ReservedVideoMemory is zero unless NVML is available
                 pMemoryInfoV1->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
                 break;
             }
@@ -478,7 +476,6 @@ extern "C" {
                 pMemoryInfoV1->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory;
                 pMemoryInfoV1->systemVideoMemory = memoryInfo.DedicatedSystemMemory;
                 pMemoryInfoV1->sharedSystemMemory = memoryInfo.SharedSystemMemory;
-                // See comment in NvAPI_GPU_GetMemoryInfo
                 pMemoryInfoV1->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory;
                 pMemoryInfoV1->curAvailableDedicatedVideoMemory = memoryBudgetInfo.Budget;
                 pMemoryInfoV1->dedicatedVideoMemoryEvictionsSize = 0;

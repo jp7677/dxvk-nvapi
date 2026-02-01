@@ -24,6 +24,8 @@ namespace dxvk {
         m_memoryInfo.DedicatedSystemMemory = dxgiDesc.DedicatedSystemMemory;
         m_memoryInfo.DedicatedVideoMemory = dxgiDesc.DedicatedVideoMemory;
         m_memoryInfo.SharedSystemMemory = dxgiDesc.SharedSystemMemory;
+        // Set a default other than 0 for reserved video memory
+        m_memoryInfo.ReservedVideoMemory = 1024;
 
         // Get the Vulkan handle from the DXGI adapter to get access to Vulkan device properties which has some information we want.
         Com<IDXGIVkInteropAdapter> dxgiVkInteropAdapter;
