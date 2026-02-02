@@ -9,10 +9,35 @@ namespace dxvk {
     std::unordered_map<NVDX_ObjectHandle, NvU32> NvapiD3d12Device::m_cubinSmemMap;
     std::mutex NvapiD3d12Device::m_cubinSmemMutex;
 
+    std::optional<bool> NvapiD3d12Device::m_cubin64bitSupportAvailable;
+
     void NvapiD3d12Device::Reset() {
         std::scoped_lock lock{m_mutex, m_cubinSmemMutex};
         m_nvapiDeviceMap.clear();
         m_cubinSmemMap.clear();
+        m_cubin64bitSupportAvailable.reset();
+    }
+
+    bool NvapiD3d12Device::Cubin64bitSupportAvailable(NvapiAdapterRegistry* registry) {
+        if (m_cubin64bitSupportAvailable.has_value())
+            return m_cubin64bitSupportAvailable.value();
+
+        if (!registry)
+            return false;
+
+        uint32_t adapterCount = registry->GetAdapterCount();
+        for (uint32_t i = 0; i < adapterCount; ++i) {
+            auto dxgiAdapter = registry->GetAdapter(i)->GetDxgiAdapter();
+
+            Com<ID3D12DeviceExt2> d3d12DeviceExt2;
+            if (FAILED(D3D12CreateDevice(dxgiAdapter, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&d3d12DeviceExt2))))
+                continue;
+
+            if (d3d12DeviceExt2->SupportsCubin64bit())
+                return m_cubin64bitSupportAvailable.emplace(true);
+        }
+
+        return m_cubin64bitSupportAvailable.emplace(false);
     }
 
     NvapiD3d12Device* NvapiD3d12Device::GetOrCreate(ID3D12Device* device) {
