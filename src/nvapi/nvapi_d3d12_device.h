@@ -1,5 +1,6 @@
 #pragma once
 
+#include "nvapi_adapter_registry.h"
 #include "../nvapi_private.h"
 #include "../interfaces/vkd3d-proton_interfaces.h"
 
@@ -8,6 +9,7 @@ namespace dxvk {
 
       public:
         static void Reset();
+        [[nodiscard]] static bool Cubin64bitSupportAvailable(NvapiAdapterRegistry*);
         [[nodiscard]] static NvapiD3d12Device* GetOrCreate(ID3D12Device* device);
         [[nodiscard]] static uint32_t FindCubinSmem(NVDX_ObjectHandle);
 
@@ -32,6 +34,8 @@ namespace dxvk {
 
         static std::unordered_map<NVDX_ObjectHandle, NvU32> m_cubinSmemMap;
         static std::mutex m_cubinSmemMutex;
+
+        static std::optional<bool> m_cubin64bitSupportAvailable;
 
         ID3D12DeviceExt2* m_vkd3dDevice{};
         bool m_supportsCubin64bit = false;

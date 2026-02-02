@@ -55,6 +55,7 @@ trompeloeil_headers = include_directories('./inc/trompeloeil')
 
 lib_dxgi = cpp.find_library('dxgi')
 lib_d3d11 = cpp.find_library('d3d11')
+lib_d3d12 = cpp.find_library('d3d12')
 lib_version = cpp.find_library('version')
 
 dxvk_nvapi_version = vcs_tag(
