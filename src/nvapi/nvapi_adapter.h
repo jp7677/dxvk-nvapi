@@ -43,6 +43,7 @@ namespace dxvk {
         [[nodiscard]] MemoryBudgetInfo GetCurrentMemoryBudgetInfo() const;
         [[nodiscard]] Nvml* GetNvml() const;
         [[nodiscard]] nvmlDevice_t GetNvmlDevice() const;
+        [[nodiscard]] IDXGIAdapter3* GetDxgiAdapter() const;
 
       private:
         Vk& m_vk;
