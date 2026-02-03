@@ -306,4 +306,8 @@ namespace dxvk {
 
         return m_nvmlDevice;
     }
+
+    IDXGIAdapter3* NvapiAdapter::GetDxgiAdapter() const {
+        return m_dxgiAdapter.ptr();
+    }
 }
