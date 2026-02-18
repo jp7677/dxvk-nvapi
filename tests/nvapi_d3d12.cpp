@@ -38,7 +38,9 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
     ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt2), _))
-        .RETURN(E_NOINTERFACE);
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt2*>(&device))
+        .LR_SIDE_EFFECT(deviceRefCount++)
+        .RETURN(S_OK);
     ALLOW_CALL(device, AddRef())
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(deviceRefCount);
@@ -50,6 +52,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .RETURN(E_NOINTERFACE);
 
     ALLOW_CALL(device, GetExtensionSupport(_))
+        .RETURN(true);
+    ALLOW_CALL(device, SupportsCubin64bit())
         .RETURN(true);
 
     ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandList1), _))
@@ -361,6 +365,16 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(handle == reinterpret_cast<NVDX_ObjectHandle>(0x912122));
     }
 
+    SECTION("CreateCubinComputeShader with null device returns invalid-argument") {
+        const void* cubinData = nullptr;
+        auto cubinSize = 2U;
+        auto blockX = 3U;
+        auto blockY = 4U;
+        auto blockZ = 5U;
+        NVDX_ObjectHandle handle{};
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShader(nullptr, cubinData, cubinSize, blockX, blockY, blockZ, &handle) == NVAPI_INVALID_ARGUMENT);
+    }
+
     SECTION("CreateCubinComputeShaderWithName returns OK") {
         const void* cubinData = nullptr;
         auto cubinSize = 2U;
@@ -377,6 +391,17 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
         REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderWithName(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, shaderName, &handle) == NVAPI_OK);
         REQUIRE(handle == reinterpret_cast<NVDX_ObjectHandle>(0x912122));
+    }
+
+    SECTION("CreateCubinComputeShaderWithName with null device returns invalid-argument") {
+        const void* cubinData = nullptr;
+        auto cubinSize = 2U;
+        auto blockX = 3U;
+        auto blockY = 4U;
+        auto blockZ = 5U;
+        auto shaderName = "shader";
+        NVDX_ObjectHandle handle{};
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderWithName(nullptr, cubinData, cubinSize, blockX, blockY, blockZ, shaderName, &handle) == NVAPI_INVALID_ARGUMENT);
     }
 
     SECTION("DestroyCubinComputeShader returns OK") {
@@ -482,6 +507,128 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         FORBID_CALL(commandList, LaunchCubinShaderEx(_, _, _, _, _, _, _, _, _));
 
         REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), reinterpret_cast<NVDX_ObjectHandle>(handle), blockX, blockY, blockZ, params, paramSize) == NVAPI_OK);
+    }
+
+    SECTION("CuBIN64 functions succeed") {
+        auto t = std::make_unique<DefaultTestEnvironment>();
+        auto otherDevice = t->D3D12Device();
+        auto otherDeviceRefCount = 0;
+        auto e = t->ConfigureExpectations();
+
+        ALLOW_CALL(*otherDevice, AddRef())
+            .LR_SIDE_EFFECT(otherDeviceRefCount++)
+            .RETURN(otherDeviceRefCount);
+        ALLOW_CALL(*otherDevice, Release())
+            .LR_SIDE_EFFECT(otherDeviceRefCount--)
+            .RETURN(otherDeviceRefCount);
+        ALLOW_CALL(*otherDevice, QueryInterface(__uuidof(ID3D12DeviceExt2), _))
+            .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt2*>(otherDevice))
+            .LR_SIDE_EFFECT(otherDeviceRefCount++)
+            .RETURN(S_OK);
+        ALLOW_CALL(*otherDevice, SupportsCubin64bit())
+            .RETURN(true);
+
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        SECTION("CreateCubinComputeShaderExV2 without any ID3D12DeviceExt2 support returns no-implementation") {
+            ALLOW_CALL(*otherDevice, QueryInterface(__uuidof(ID3D12DeviceExt2), _))
+                .RETURN(E_NOINTERFACE);
+
+            REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderExV2(nullptr) == NVAPI_NO_IMPLEMENTATION);
+        }
+
+        SECTION("CreateCubinComputeShaderExV2 without any CuBIN64 support returns no-implementation") {
+            ALLOW_CALL(*otherDevice, SupportsCubin64bit())
+                .RETURN(false);
+
+            REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderExV2(nullptr) == NVAPI_NO_IMPLEMENTATION);
+        }
+
+        SECTION("CreateCubinComputeShaderExV2 with null argument returns invalid-pointer") {
+            REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderExV2(nullptr) == NVAPI_INVALID_POINTER);
+        }
+
+        SECTION("CreateCubinComputeShaderExV2 returns OK") {
+            REQUIRE_CALL(device, CreateCubinComputeShaderExV2(_))
+                .WITH(_1->pShaderName == std::string("shader"))
+                .SIDE_EFFECT(_1->hShader = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122))
+                .RETURN(S_OK)
+                .TIMES(1);
+
+            NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS params{};
+            params.structSizeIn = sizeof(params);
+            params.pDevice = &device;
+            params.pShaderName = "shader";
+            REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderExV2(&params) == NVAPI_OK);
+            REQUIRE(params.hShader == reinterpret_cast<NVDX_ObjectHandle>(0x912122));
+        }
+
+        SECTION("GetCudaMergedTextureSamplerObject without any ID3D12DeviceExt2 support returns no-implementation") {
+            ALLOW_CALL(*otherDevice, QueryInterface(__uuidof(ID3D12DeviceExt2), _))
+                .RETURN(E_NOINTERFACE);
+
+            REQUIRE(NvAPI_D3D12_GetCudaMergedTextureSamplerObject(nullptr) == NVAPI_NO_IMPLEMENTATION);
+        }
+
+        SECTION("GetCudaMergedTextureSamplerObject without any CuBIN64 support returns no-implementation") {
+            ALLOW_CALL(*otherDevice, SupportsCubin64bit())
+                .RETURN(false);
+
+            REQUIRE(NvAPI_D3D12_GetCudaMergedTextureSamplerObject(nullptr) == NVAPI_NO_IMPLEMENTATION);
+        }
+
+        SECTION("GetCudaMergedTextureSamplerObject with null argument returns invalid-pointer") {
+            REQUIRE(NvAPI_D3D12_GetCudaMergedTextureSamplerObject(nullptr) == NVAPI_INVALID_POINTER);
+        }
+
+        SECTION("GetCudaMergedTextureSamplerObject returns Ok") {
+            REQUIRE_CALL(device, GetCudaMergedTextureSamplerObject(_))
+                .SIDE_EFFECT(_1->textureHandle = 0x1234)
+                .RETURN(S_OK)
+                .TIMES(1);
+
+            NVAPI_D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS params{};
+            params.structSizeIn = sizeof(params);
+            params.pDevice = &device;
+            params.texDesc = {.ptr = 0x9876};
+            REQUIRE(NvAPI_D3D12_GetCudaMergedTextureSamplerObject(&params) == NVAPI_OK);
+            REQUIRE(params.textureHandle == 0x1234);
+        }
+
+        SECTION("GetCudaIndependentDescriptorObject without any ID3D12DeviceExt2 support returns no-implementation") {
+            ALLOW_CALL(*otherDevice, QueryInterface(__uuidof(ID3D12DeviceExt2), _))
+                .RETURN(E_NOINTERFACE);
+
+            REQUIRE(NvAPI_D3D12_GetCudaIndependentDescriptorObject(nullptr) == NVAPI_NO_IMPLEMENTATION);
+        }
+
+        SECTION("GetCudaIndependentDescriptorObject without any CuBIN64 support returns no-implementation") {
+            ALLOW_CALL(*otherDevice, SupportsCubin64bit())
+                .RETURN(false);
+
+            REQUIRE(NvAPI_D3D12_GetCudaIndependentDescriptorObject(nullptr) == NVAPI_NO_IMPLEMENTATION);
+        }
+
+        SECTION("GetCudaIndependentDescriptorObject with null argument returns invalid-pointer") {
+            REQUIRE(NvAPI_D3D12_GetCudaIndependentDescriptorObject(nullptr) == NVAPI_INVALID_POINTER);
+        }
+
+        SECTION("GetCudaIndependentDescriptorObject returns Ok") {
+            REQUIRE_CALL(device, GetCudaIndependentDescriptorObject(_))
+                .SIDE_EFFECT(_1->handle = 0x1234)
+                .RETURN(S_OK)
+                .TIMES(1);
+
+            NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS params{};
+            params.structSizeIn = sizeof(params);
+            params.pDevice = &device;
+            params.type = NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_SURFACE;
+            params.desc = {.ptr = 0x9876};
+            REQUIRE(NvAPI_D3D12_GetCudaIndependentDescriptorObject(&params) == NVAPI_OK);
+            REQUIRE(params.handle == 0x1234);
+        }
+
+        CHECK(otherDeviceRefCount == 0);
     }
 
     SECTION("GetRaytracingCaps returns OK and claims that thread reordering is not supported") {
