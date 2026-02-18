@@ -6,8 +6,8 @@
 
 // SPDX-License-Identifier: BSL-1.0
 
-//  Catch v3.12.0
-//  Generated: 2025-12-28 22:27:25.828797
+//  Catch v3.13.0
+//  Generated: 2026-02-15 22:55:00.269529
 //  ----------------------------------------------------------
 //  This file is an amalgamation of multiple different files.
 //  You probably shouldn't edit it directly.
@@ -798,6 +798,10 @@ namespace Catch {
                lhs.customOptions == rhs.customOptions;
     }
 
+    bool operator==( PathFilter const& lhs, PathFilter const& rhs ) {
+        return lhs.type == rhs.type && lhs.filter == rhs.filter;
+    }
+
     Config::Config( ConfigData const& data ):
         m_data( data ) {
         // We need to trim filter specs to avoid trouble with superfluous
@@ -805,9 +809,6 @@ namespace Catch {
         // aligned with whitespace).
 
         for (auto& elem : m_data.testsOrTags) {
-            elem = trim(elem);
-        }
-        for (auto& elem : m_data.sectionsToRun) {
             elem = trim(elem);
         }
 
@@ -875,7 +876,8 @@ namespace Catch {
     bool Config::listListeners() const      { return m_data.listListeners; }
 
     std::vector<std::string> const& Config::getTestsOrTags() const { return m_data.testsOrTags; }
-    std::vector<std::string> const& Config::getSectionsToRun() const { return m_data.sectionsToRun; }
+    std::vector<PathFilter> const& Config::getPathFilters() const { return m_data.pathFilters; }
+    bool Config::useNewFilterBehaviour() const { return m_data.useNewPathFilteringBehaviour; }
 
     std::vector<ReporterSpec> const& Config::getReporterSpecs() const {
         return m_data.reporterSpecifications;
@@ -902,6 +904,9 @@ namespace Catch {
     }
     bool Config::warnAboutUnmatchedTestSpecs() const {
         return !!( m_data.warnings & WarnAbout::UnmatchedTestSpec );
+    }
+    bool Config::warnAboutInfiniteGenerators() const {
+        return !!( m_data.warnings & WarnAbout::InfiniteGenerator );
     }
     bool Config::zeroTestsCountAsSuccess() const       { return m_data.allowZeroTests; }
     ShowDurations Config::showDurations() const        { return m_data.showDurations; }
@@ -1018,7 +1023,9 @@ namespace Catch {
     Capturer::Capturer( StringRef macroName,
                         SourceLineInfo const& lineInfo,
                         ResultWas::OfType resultType,
-                        StringRef names ) {
+                        StringRef names,
+                        bool isScoped):
+        m_isScoped(isScoped) {
         auto trimmed = [&] (size_t start, size_t end) {
             while (names[start] == ',' || isspace(static_cast<unsigned char>(names[start]))) {
                 ++start;
@@ -1079,15 +1086,21 @@ namespace Catch {
     }
     Capturer::~Capturer() {
         assert( m_captured == m_messages.size() );
-        for (auto const& message : m_messages) {
-            IResultCapture::popScopedMessage( message.sequence );
+        if ( m_isScoped ) {
+            for ( auto const& message : m_messages ) {
+                IResultCapture::popScopedMessage( message.sequence );
+            }
         }
     }
 
     void Capturer::captureValue( size_t index, std::string const& value ) {
         assert( index < m_messages.size() );
         m_messages[index].message += value;
-        IResultCapture::pushScopedMessage( CATCH_MOVE( m_messages[index] ) );
+        if ( m_isScoped ) {
+            IResultCapture::pushScopedMessage( CATCH_MOVE( m_messages[index] ) );
+        } else {
+            IResultCapture::addUnscopedMessage( CATCH_MOVE( m_messages[index] ) );
+        }
         m_captured++;
     }
 
@@ -2384,7 +2397,7 @@ namespace Catch {
     }
 
     Version const& libraryVersion() {
-        static Version version( 3, 12, 0, "", 0 );
+        static Version version( 3, 13, 0, "", 0 );
         return version;
     }
 
@@ -2409,14 +2422,6 @@ namespace Catch {
     IGeneratorTracker::~IGeneratorTracker() = default;
 
 namespace Generators {
-
-namespace Detail {
-
-    [[noreturn]]
-    void throw_generator_exception(char const* msg) {
-        Catch::throw_exception(GeneratorException{ msg });
-    }
-} // end namespace Detail
 
     GeneratorUntypedBase::~GeneratorUntypedBase() = default;
 
@@ -2465,6 +2470,27 @@ namespace Catch {
             m_current_number = m_pimpl->dist( m_pimpl->rng );
             return true;
         }
+
+        bool RandomFloatingGenerator<long double>::isFinite() const {
+            return false;
+        }
+
+    } // namespace Generators
+} // namespace Catch
+
+
+
+
+namespace Catch {
+    namespace Generators {
+        namespace Detail {
+
+            [[noreturn]]
+            void throw_generator_exception( char const* msg ) {
+                Catch::throw_exception( GeneratorException{ msg } );
+            }
+
+        } // namespace Detail
     } // namespace Generators
 } // namespace Catch
 
@@ -2498,6 +2524,7 @@ namespace Catch {
 
 
 
+
 #include <string>
 
 namespace Catch {
@@ -2512,12 +2539,39 @@ namespace Catch {
             return ret;
         }
 
+        void GeneratorUntypedBase::skipToNthElementImpl( std::size_t n ) {
+            for ( size_t i = m_currentElementIndex; i < n; ++i ) {
+                bool isValid = next();
+                if ( !isValid ) {
+                    Detail::throw_generator_exception(
+                        "Coud not jump to Nth element: not enough elements" );
+                }
+            }
+        }
+
+        void GeneratorUntypedBase::skipToNthElement( std::size_t n ) {
+            if ( n < m_currentElementIndex ) {
+                Detail::throw_generator_exception(
+                    "Tried to jump generator backwards" );
+            }
+            if ( n == m_currentElementIndex ) { return; }
+
+            skipToNthElementImpl(n);
+            // Fixup tracking after moving the generator forward
+            //  * Ensure that the correct element index is set after skipping
+            //  * Invalidate cache
+            m_currentElementIndex = n;
+            m_stringReprCache.clear();
+        }
+
         StringRef GeneratorUntypedBase::currentElementAsString() const {
             if ( m_stringReprCache.empty() ) {
                 m_stringReprCache = stringifyImpl();
             }
             return m_stringReprCache;
         }
+
+        bool GeneratorUntypedBase::isFinite() const { return true; }
 
     } // namespace Generators
 } // namespace Catch
@@ -3199,6 +3253,9 @@ namespace Catch {
             } else if ( warning == "UnmatchedTestSpec" ) {
                 config.warnings = static_cast<WarnAbout::What>(config.warnings | WarnAbout::UnmatchedTestSpec);
                 return ParserResult::ok( ParseResultType::Matched );
+            } else if ( warning == "InfiniteGenerators" ) {
+                config.warnings = static_cast<WarnAbout::What>(config.warnings | WarnAbout::InfiniteGenerator);
+                return ParserResult::ok( ParseResultType::Matched );
             }
 
             return ParserResult ::runtimeError(
@@ -3356,6 +3413,19 @@ namespace Catch {
             config.shardCount = *parsedCount;
             return ParserResult::ok( ParseResultType::Matched );
         };
+        auto const setBenchmarkSamples = [&]( std::string const& samples ) {
+            auto parsedSamples = parseUInt( samples );
+            if ( !parsedSamples ) {
+                return ParserResult::runtimeError(
+                    "Could not parse '" + samples + "' as benchmark samples" );
+            }
+            if ( *parsedSamples == 0 ) {
+                return ParserResult::runtimeError(
+                    "Benchmark samples must be greater than 0" );
+            }
+            config.benchmarkSamples = *parsedSamples;
+            return ParserResult::ok( ParseResultType::Matched );
+        };
 
         auto const setShardIndex = [&](std::string const& shardIndex) {
             auto parsedIndex = parseUInt( shardIndex );
@@ -3366,6 +3436,43 @@ namespace Catch {
             config.shardIndex = *parsedIndex;
             return ParserResult::ok( ParseResultType::Matched );
         };
+
+        auto const setSectionFilter = [&]( std::string const& sectionFilter ) {
+            config.pathFilters.emplace_back( PathFilter::For::Section, trim(sectionFilter) );
+            return ParserResult::ok( ParseResultType::Matched );
+        };
+        auto const setGeneratorFilter = [&]( std::string const& generatorFilter ) {
+            if (generatorFilter != "*") {
+                // TODO: avoid re-parsing the index?
+                auto parsedIndex = parseUInt( generatorFilter );
+                if ( !parsedIndex ) {
+                    return ParserResult::runtimeError( "Could not parse '" +
+                                                       generatorFilter +
+                                                       "' as generator index" );
+                }
+            }
+            config.useNewPathFilteringBehaviour = true;
+            config.pathFilters.emplace_back( PathFilter::For::Generator, trim(generatorFilter) );
+            return ParserResult::ok( ParseResultType::Matched );
+        };
+        // Copy-capturing other `setFoo` functions enables calling them later,
+        // as the config ref remains valid, but the local lambda vars won't.
+        auto const setPathFilter = [=, &config]( std::string const& pathFilter ) {
+            config.useNewPathFilteringBehaviour = true;
+            if ( pathFilter.size() < 3 ) {
+                return ParserResult::runtimeError(
+                    "Path filter '" + pathFilter + "' is too short" );
+            }
+            if ( startsWith( pathFilter, "g:" ) ) {
+                return setGeneratorFilter( pathFilter.substr( 2 ) );
+            }
+            if ( startsWith( pathFilter, "c:" ) ) {
+                return setSectionFilter( pathFilter.substr( 2 ) );
+            }
+            return ParserResult::runtimeError( "Path filter '" + pathFilter +
+                                               "' has unknown type prefix" );
+        };
+
 
         auto cli
             = ExeName( config.processName )
@@ -3412,9 +3519,15 @@ namespace Catch {
             | Opt( config.filenamesAsTags )
                 ["-#"]["--filenames-as-tags"]
                 ( "adds a tag for the filename" )
-            | Opt( config.sectionsToRun, "section name" )
+            | Opt( accept_many, setSectionFilter, "section name" )
                 ["-c"]["--section"]
                 ( "specify section to run" )
+            | Opt( accept_many, setGeneratorFilter, "index spec" )
+                ["-g"]["--generator-index"]
+                ( "specify generator elements to try" )
+            | Opt( accept_many, setPathFilter, "path filter spec" )
+                ["-p"]["--path-filter"]
+                ( "qualified path filter" )
             | Opt( setVerbosity, "quiet|normal|high" )
                 ["-v"]["--verbosity"]
                 ( "set output verbosity" )
@@ -3448,7 +3561,7 @@ namespace Catch {
             | Opt( config.skipBenchmarks)
                 ["--skip-benchmarks"]
                 ( "disable running benchmarks")
-            | Opt( config.benchmarkSamples, "samples" )
+            | Opt( setBenchmarkSamples, "samples"  )
                 ["--benchmark-samples"]
                 ( "number of samples to collect (default: 100)" )
             | Opt( config.benchmarkResamples, "resamples" )
@@ -5752,12 +5865,46 @@ namespace Catch {
             struct GeneratorTracker final : TestCaseTracking::TrackerBase,
                                       IGeneratorTracker {
                 GeneratorBasePtr m_generator;
+                // Filtered generator has moved to specific index due to
+                // a filter, it needs special handling of `countedNext()`
+                bool m_isFiltered = false;
 
                 GeneratorTracker(
                     TestCaseTracking::NameAndLocation&& nameAndLocation,
                     TrackerContext& ctx,
-                    ITracker* parent ):
-                    TrackerBase( CATCH_MOVE( nameAndLocation ), ctx, parent ) {}
+                    ITracker* parent,
+                    GeneratorBasePtr&& generator ):
+                    TrackerBase( CATCH_MOVE( nameAndLocation ), ctx, parent ),
+                    m_generator( CATCH_MOVE( generator ) ) {
+                    assert( m_generator &&
+                            "Cannot create tracker without generator" );
+
+                    // Handle potential filter and move forward here...
+                    // Old style filters do not affect generators at all
+                    if (m_newStyleFilters && m_allTrackerDepth < m_filterRef->size()) {
+                        auto const& filter =
+                            ( *m_filterRef )[m_allTrackerDepth];
+                        // Generator cannot be un-entered the way a section
+                        // can be, so the tracker has to throw for a wrong
+                        // filter to stop the execution flow.
+                        if (filter.type == PathFilter::For::Section) {
+                            // TBD: Explicit SKIP, or new exception that says
+                            //      "don't continue", but doesn't show in totals?
+                            SKIP();
+                        }
+                        // '*' is the wildcard for "all elements in generator"
+                        // used for filtering sections below the generator, but
+                        // not the generator itself.
+                        if ( filter.filter != "*" ) {
+                            m_isFiltered = true;
+                            // TBD: We assume that the filter was validated as
+                            //      number during parsing. We should pass it
+                            //      as number from the CLI parser.
+                            size_t targetIndex = std::stoul( filter.filter );
+                            m_generator->skipToNthElement( targetIndex );
+                        }
+                    }
+                }
 
                 static GeneratorTracker*
                 acquire( TrackerContext& ctx,
@@ -5801,9 +5948,6 @@ namespace Catch {
 
                 // TrackerBase interface
                 bool isGeneratorTracker() const override { return true; }
-                auto hasGenerator() const -> bool override {
-                    return !!m_generator;
-                }
                 void close() override {
                     TrackerBase::close();
                     // If a generator has a child (it is followed by a section)
@@ -5832,25 +5976,24 @@ namespace Catch {
                         // _can_ start, and thus we should wait for them, or
                         // they cannot start (due to filters), and we shouldn't
                         // wait for them
-                        ITracker* parent = m_parent;
-                        // This is safe: there is always at least one section
-                        // tracker in a test case tracking tree
-                        while ( !parent->isSectionTracker() ) {
-                            parent = parent->parent();
+
+                        // No filters left -> no restrictions on running sections
+                        size_t childDepth = 1 + (m_newStyleFilters ? m_allTrackerDepth : m_sectionOnlyDepth);
+                        if ( childDepth >= m_filterRef->size() ) {
+                            return true;
                         }
-                        assert( parent &&
-                                "Missing root (test case) level section" );
 
-                        auto const& parentSection =
-                            static_cast<SectionTracker const&>( *parent );
-                        auto const& filters = parentSection.getFilters();
-                        // No filters -> no restrictions on running sections
-                        if ( filters.empty() ) { return true; }
-
+                        // If we are using the new style filters, we need to check
+                        // whether the successive filter is for section or a generator.
+                        if ( m_newStyleFilters
+                            && (*m_filterRef)[childDepth].type != PathFilter::For::Section ) {
+                            return false;
+                        }
+                        // Look for any child section that could match the remaining filters
                         for ( auto const& child : m_children ) {
                             if ( child->isSectionTracker() &&
                                  static_cast<SectionTracker const&>( *child )
-                                         .trimmedName() == filters[0] ) {
+                                         .trimmedName() == StringRef((*m_filterRef)[childDepth].filter) ) {
                                 return true;
                             }
                         }
@@ -5862,9 +6005,10 @@ namespace Catch {
                     // value, but we do not want to invoke the side-effect if
                     // this generator is still waiting for any child to start.
                     assert( m_generator && "Tracker without generator" );
-                    if ( should_wait_for_child ||
-                         ( m_runState == CompletedSuccessfully &&
-                           m_generator->countedNext() ) ) {
+                    if ( should_wait_for_child
+                        ||  ( m_runState == CompletedSuccessfully
+                            && !m_isFiltered // filtered generators cannot meaningfully move forward, as they would get past the filter
+                            && m_generator->countedNext() ) ) {
                         m_children.clear();
                         m_runState = Executing;
                     }
@@ -5873,9 +6017,6 @@ namespace Catch {
                 // IGeneratorTracker interface
                 auto getGenerator() const -> GeneratorBasePtr const& override {
                     return m_generator;
-                }
-                void setGenerator( GeneratorBasePtr&& generator ) override {
-                    m_generator = CATCH_MOVE( generator );
                 }
             };
         } // namespace
@@ -5930,13 +6071,16 @@ namespace Catch {
             // we only keep around the raw msg ids.
             ~MessageHolder() = default;
 
-
-            void addUnscopedMessage(MessageBuilder&& builder) {
+            void addUnscopedMessage( MessageInfo&& info ) {
                 repairUnscopedMessageInvariant();
-                MessageInfo info( CATCH_MOVE( builder.m_info ) );
-                info.message = builder.m_stream.str();
                 unscoped_ids.push_back( info.sequence );
                 messages.push_back( CATCH_MOVE( info ) );
+            }
+
+            void addUnscopedMessage(MessageBuilder&& builder) {
+                MessageInfo info( CATCH_MOVE( builder.m_info ) );
+                info.message = builder.m_stream.str();
+                addUnscopedMessage( CATCH_MOVE( info ) );
             }
 
             void addScopedMessage(MessageInfo&& info) {
@@ -6027,7 +6171,8 @@ namespace Catch {
 
         ITracker& rootTracker = m_trackerContext.startRun();
         assert(rootTracker.isSectionTracker());
-        static_cast<SectionTracker&>(rootTracker).addInitialFilters(m_config->getSectionsToRun());
+        rootTracker.setFilters( &m_config->getPathFilters(),
+                                m_config->useNewFilterBehaviour() );
 
         // We intentionally only seed the internal RNG once per test case,
         // before it is first invoked. The reason for that is a complex
@@ -6199,18 +6344,28 @@ namespace Catch {
         SourceLineInfo lineInfo,
         Generators::GeneratorBasePtr&& generator ) {
 
+        // TBD: Do we want to avoid the warning if the generator is filtered?
+        if ( m_config->warnAboutInfiniteGenerators() &&
+             !generator->isFinite() ) {
+            // TBD: Would it be better to expand this macro inline?
+            FAIL( "GENERATE() would run infinitely" );
+        }
+
         auto nameAndLoc = TestCaseTracking::NameAndLocation( static_cast<std::string>( generatorName ), lineInfo );
         auto& currentTracker = m_trackerContext.currentTracker();
         assert(
             currentTracker.nameAndLocation() != nameAndLoc &&
             "Trying to create tracker for a generator that already has one" );
 
-        auto newTracker = Catch::Detail::make_unique<Generators::GeneratorTracker>(
-            CATCH_MOVE(nameAndLoc), m_trackerContext, &currentTracker );
+        auto newTracker =
+            Catch::Detail::make_unique<Generators::GeneratorTracker>(
+                CATCH_MOVE( nameAndLoc ),
+                m_trackerContext,
+                &currentTracker,
+                CATCH_MOVE( generator ) );
         auto ret = newTracker.get();
         currentTracker.addChild( CATCH_MOVE( newTracker ) );
 
-        ret->setGenerator( CATCH_MOVE( generator ) );
         ret->open();
         return ret;
     }
@@ -6611,6 +6766,10 @@ namespace Catch {
 
     void IResultCapture::emplaceUnscopedMessage( MessageBuilder&& builder ) {
         Detail::g_messageHolder().addUnscopedMessage( CATCH_MOVE( builder ) );
+    }
+
+    void IResultCapture::addUnscopedMessage( MessageInfo&& message ) {
+        Detail::g_messageHolder().addUnscopedMessage( CATCH_MOVE( message ) );
     }
 
     void seedRng(IConfig const& config) {
@@ -7171,6 +7330,17 @@ namespace TestCaseTracking {
         location( _location )
     {}
 
+    ITracker::ITracker( NameAndLocation&& nameAndLoc, ITracker* parent ):
+        m_nameAndLocation( CATCH_MOVE( nameAndLoc ) ), m_parent( parent ) {
+        if ( m_parent ) {
+            m_allTrackerDepth = m_parent->m_allTrackerDepth + 1;
+            // We leave section trackers to bump themselves up, as
+            // we cannot use `isSectionTracker` in constructor
+            m_sectionOnlyDepth = m_parent->m_sectionOnlyDepth;
+            m_filterRef = m_parent->m_filterRef;
+            m_newStyleFilters = m_parent->m_newStyleFilters;
+        }
+    }
 
     ITracker::~ITracker() = default;
 
@@ -7303,25 +7473,32 @@ namespace TestCaseTracking {
     :   TrackerBase( CATCH_MOVE(nameAndLocation), ctx, parent ),
         m_trimmed_name(trim(StringRef(ITracker::nameAndLocation().name)))
     {
-        if( parent ) {
-            while ( !parent->isSectionTracker() ) {
-                parent = parent->parent();
-            }
-
-            SectionTracker& parentSection = static_cast<SectionTracker&>( *parent );
-            addNextFilters( parentSection.m_filters );
+        if( m_parent ) {
+            ++m_sectionOnlyDepth;
         }
     }
 
     bool SectionTracker::isComplete() const {
-        bool complete = true;
-
-        if ( m_filters.empty()
-            || m_filters[0].empty()
-            || m_filters[0] == m_trimmed_name ) {
-            complete = TrackerBase::isComplete();
+        // If there are active filters AND we do not pass them,
+        // the section is always "completed"
+        const size_t filterIndex =
+            m_newStyleFilters ? m_allTrackerDepth : m_sectionOnlyDepth;
+        if ( filterIndex < m_filterRef->size() ) {
+            // There is active filter, check it
+            // 1) New style filter must explicitly target section
+            if ( m_newStyleFilters && ( *m_filterRef )[filterIndex].type !=
+                                          PathFilter::For::Section ) {
+                return true;
+            }
+            // 2) Both style filters must match the trimmed name exactly
+            if ( m_trimmed_name !=
+                 StringRef( ( *m_filterRef )[filterIndex].filter ) ) {
+                return true;
+            }
         }
-        return complete;
+
+        // Otherwise we delegate to the generic processing
+        return TrackerBase::isComplete();
     }
 
     bool SectionTracker::isSectionTracker() const { return true; }
@@ -7355,19 +7532,6 @@ namespace TestCaseTracking {
     void SectionTracker::tryOpen() {
         if( !isComplete() )
             open();
-    }
-
-    void SectionTracker::addInitialFilters( std::vector<std::string> const& filters ) {
-        if( !filters.empty() ) {
-            m_filters.reserve( m_filters.size() + filters.size() + 2 );
-            m_filters.emplace_back(StringRef{}); // Root - should never be consulted
-            m_filters.emplace_back(StringRef{}); // Test Case - not a section filter
-            m_filters.insert( m_filters.end(), filters.begin(), filters.end() );
-        }
-    }
-    void SectionTracker::addNextFilters( std::vector<StringRef> const& filters ) {
-        if( filters.size() > 1 )
-            m_filters.insert( m_filters.end(), filters.begin()+1, filters.end() );
     }
 
     StringRef SectionTracker::trimmedName() const {

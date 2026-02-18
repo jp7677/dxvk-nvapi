@@ -13,9 +13,5 @@
 #include "../src/nvapi/nvapi_d3d12_graphics_command_list.h"
 #include "../src/nvapi/nvapi_d3d12_command_queue.h"
 
-#if defined(DEPRECATED)
-#undef DEPRECATED
-#endif // defined(DEPRECATED)
-
 #include <catch_amalgamated.hpp>
 #include <catch2/trompeloeil.hpp>

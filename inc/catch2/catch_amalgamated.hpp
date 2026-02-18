@@ -6,8 +6,8 @@
 
 // SPDX-License-Identifier: BSL-1.0
 
-//  Catch v3.12.0
-//  Generated: 2025-12-28 22:27:25.408132
+//  Catch v3.13.0
+//  Generated: 2026-02-15 22:54:59.817776
 //  ----------------------------------------------------------
 //  This file is an amalgamation of multiple different files.
 //  You probably shouldn't edit it directly.
@@ -299,7 +299,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // Visual C++
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(__clang__)
 
 // We want to defer to nvcc-specific warning suppression if we are compiled
 // with nvcc masquerading for MSVC.
@@ -309,6 +309,11 @@
 #        define CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION \
             __pragma( warning( pop ) )
 #    endif
+
+// Suppress MSVC C++ Core Guidelines checker warning 26426:
+// "Global initializer calls a non-constexpr function (i.22)"
+#    define CATCH_INTERNAL_SUPPRESS_GLOBALS_WARNINGS \
+         __pragma( warning( disable : 26426 ) )
 
 // Universal Windows platform does not support SEH
 #  if !defined(CATCH_PLATFORM_WINDOWS_UWP)
@@ -1033,7 +1038,7 @@ namespace Catch {
 
     // We cannot forward declare the type with default template argument
     // multiple times, so it is split out into a separate header so that
-    // we can prevent multiple declarations in dependees
+    // we can prevent multiple declarations in dependencies
     template <typename Duration = Benchmark::FDuration>
     struct BenchmarkStats;
 
@@ -1090,6 +1095,7 @@ namespace Catch {
 
         static void pushScopedMessage( MessageInfo&& message );
         static void popScopedMessage( unsigned int messageId );
+        static void addUnscopedMessage( MessageInfo&& message );
         static void emplaceUnscopedMessage( MessageBuilder&& builder );
 
         virtual void handleFatalErrorCondition( StringRef message ) = 0;
@@ -1189,6 +1195,8 @@ namespace Catch {
         NoAssertions = 0x01,
         //! A command line test spec matched no test cases
         UnmatchedTestSpec = 0x02,
+        //! The resulting generator in GENERATE is infinite
+        InfiniteGenerator = 0x04,
     }; };
 
     enum class ShowDurations {
@@ -1220,6 +1228,7 @@ namespace Catch {
 
     class TestSpec;
     class IStream;
+    struct PathFilter;
 
     class IConfig : public Detail::NonCopyable {
     public:
@@ -1231,6 +1240,7 @@ namespace Catch {
         virtual bool shouldDebugBreak() const = 0;
         virtual bool warnAboutMissingAssertions() const = 0;
         virtual bool warnAboutUnmatchedTestSpecs() const = 0;
+        virtual bool warnAboutInfiniteGenerators() const = 0;
         virtual bool zeroTestsCountAsSuccess() const = 0;
         virtual int abortAfter() const = 0;
         virtual bool showInvisibles() const = 0;
@@ -1244,7 +1254,9 @@ namespace Catch {
         virtual unsigned int shardCount() const = 0;
         virtual unsigned int shardIndex() const = 0;
         virtual ColourMode defaultColourMode() const = 0;
-        virtual std::vector<std::string> const& getSectionsToRun() const = 0;
+        virtual std::vector<PathFilter> const& getPathFilters() const = 0;
+        virtual bool useNewFilterBehaviour() const = 0;
+
         virtual Verbosity verbosity() const = 0;
 
         virtual bool skipBenchmarks() const = 0;
@@ -3630,6 +3642,33 @@ namespace Catch {
 #endif // CATCH_OPTIONAL_HPP_INCLUDED
 
 
+#ifndef CATCH_PATH_FILTER_HPP_INCLUDED
+#define CATCH_PATH_FILTER_HPP_INCLUDED
+
+
+#include <string>
+
+namespace Catch {
+
+    struct PathFilter {
+        enum class For {
+            Section,
+            Generator,
+        };
+        PathFilter( For type_, std::string filter_ ):
+            type( type_ ), filter( CATCH_MOVE( filter_ ) ) {}
+
+        For type;
+        std::string filter;
+
+        friend bool operator==( PathFilter const& lhs, PathFilter const& rhs );
+    };
+
+} // end namespace Catch
+
+#endif // CATCH_PATH_FILTER_HPP_INCLUDED
+
+
 #ifndef CATCH_RANDOM_SEED_GENERATION_HPP_INCLUDED
 #define CATCH_RANDOM_SEED_GENERATION_HPP_INCLUDED
 
@@ -3797,7 +3836,8 @@ namespace Catch {
         std::vector<ReporterSpec> reporterSpecifications;
 
         std::vector<std::string> testsOrTags;
-        std::vector<std::string> sectionsToRun;
+        std::vector<PathFilter> pathFilters;
+        bool useNewPathFilteringBehaviour = false;
 
         std::string prematureExitGuardFilePath;
     };
@@ -3820,7 +3860,8 @@ namespace Catch {
         getProcessedReporterSpecs() const;
 
         std::vector<std::string> const& getTestsOrTags() const override;
-        std::vector<std::string> const& getSectionsToRun() const override;
+        std::vector<PathFilter> const& getPathFilters() const override;
+        bool useNewFilterBehaviour() const override;
 
         TestSpec const& testSpec() const override;
         bool hasTestFilters() const override;
@@ -3835,6 +3876,7 @@ namespace Catch {
         bool includeSuccessfulResults() const override;
         bool warnAboutMissingAssertions() const override;
         bool warnAboutUnmatchedTestSpecs() const override;
+        bool warnAboutInfiniteGenerators() const override;
         bool zeroTestsCountAsSuccess() const override;
         ShowDurations showDurations() const override;
         double minDuration() const override;
@@ -3943,9 +3985,9 @@ namespace Catch {
 
 
 #if !defined( CATCH_CONFIG_NO_DEPRECATION_ANNOTATIONS )
-#    define DEPRECATED( msg ) [[deprecated( msg )]]
+#    define CATCH_DEPRECATED( msg ) [[deprecated( msg )]]
 #else
-#    define DEPRECATED( msg )
+#    define CATCH_DEPRECATED( msg )
 #endif
 
 #endif // CATCH_DEPRECATION_MACRO_HPP_INCLUDED
@@ -3966,11 +4008,11 @@ namespace Catch {
         // The "ID" of the message, used to know when to remove it from reporter context.
         unsigned int sequence;
 
-        DEPRECATED( "Explicitly use the 'sequence' member instead" )
+        CATCH_DEPRECATED( "Explicitly use the 'sequence' member instead" )
         bool operator == (MessageInfo const& other) const {
             return sequence == other.sequence;
         }
-        DEPRECATED( "Explicitly use the 'sequence' member instead" )
+        CATCH_DEPRECATED( "Explicitly use the 'sequence' member instead" )
         bool operator < (MessageInfo const& other) const {
             return sequence < other.sequence;
         }
@@ -4028,8 +4070,9 @@ namespace Catch {
     class Capturer {
         std::vector<MessageInfo> m_messages;
         size_t m_captured = 0;
+        bool m_isScoped = false;
     public:
-        Capturer( StringRef macroName, SourceLineInfo const& lineInfo, ResultWas::OfType resultType, StringRef names );
+        Capturer( StringRef macroName, SourceLineInfo const& lineInfo, ResultWas::OfType resultType, StringRef names, bool isScoped );
 
         Capturer(Capturer const&) = delete;
         Capturer& operator=(Capturer const&) = delete;
@@ -4061,11 +4104,12 @@ namespace Catch {
     } while( false )
 
 ///////////////////////////////////////////////////////////////////////////////
-#define INTERNAL_CATCH_CAPTURE( varName, macroName, ... ) \
-    Catch::Capturer varName( macroName##_catch_sr,        \
-                             CATCH_INTERNAL_LINEINFO,     \
-                             Catch::ResultWas::Info,      \
-                             #__VA_ARGS__##_catch_sr );   \
+#define INTERNAL_CATCH_CAPTURE( varName, macroName, scopedCapture, ... ) \
+    Catch::Capturer varName( macroName##_catch_sr,                       \
+                             CATCH_INTERNAL_LINEINFO,                    \
+                             Catch::ResultWas::Info,                     \
+                             #__VA_ARGS__##_catch_sr,                    \
+                             scopedCapture );                            \
     varName.captureValues( 0, __VA_ARGS__ )
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4082,28 +4126,32 @@ namespace Catch {
   #define CATCH_INFO( msg ) INTERNAL_CATCH_INFO( "CATCH_INFO", msg )
   #define CATCH_UNSCOPED_INFO( msg ) INTERNAL_CATCH_UNSCOPED_INFO( "CATCH_UNSCOPED_INFO", msg )
   #define CATCH_WARN( msg ) INTERNAL_CATCH_MSG( "CATCH_WARN", Catch::ResultWas::Warning, Catch::ResultDisposition::ContinueOnFailure, msg )
-  #define CATCH_CAPTURE( ... ) INTERNAL_CATCH_CAPTURE( INTERNAL_CATCH_UNIQUE_NAME(capturer), "CATCH_CAPTURE", __VA_ARGS__ )
+  #define CATCH_CAPTURE( ... ) INTERNAL_CATCH_CAPTURE( INTERNAL_CATCH_UNIQUE_NAME(capturer), "CATCH_CAPTURE", true, __VA_ARGS__ )
+  #define CATCH_UNSCOPED_CAPTURE( ... ) INTERNAL_CATCH_CAPTURE( INTERNAL_CATCH_UNIQUE_NAME(capturer), "CATCH_UNSCOPED_CAPTURE", false, __VA_ARGS__ )
 
 #elif defined(CATCH_CONFIG_PREFIX_MESSAGES) && defined(CATCH_CONFIG_DISABLE)
 
-  #define CATCH_INFO( msg )          (void)(0)
-  #define CATCH_UNSCOPED_INFO( msg ) (void)(0)
-  #define CATCH_WARN( msg )          (void)(0)
-  #define CATCH_CAPTURE( ... )       (void)(0)
+  #define CATCH_INFO( msg )             (void)(0)
+  #define CATCH_UNSCOPED_INFO( msg )    (void)(0)
+  #define CATCH_WARN( msg )             (void)(0)
+  #define CATCH_CAPTURE( ... )          (void)(0)
+  #define CATCH_UNSCOPED_CAPTURE( ... ) (void)(0)
 
 #elif !defined(CATCH_CONFIG_PREFIX_MESSAGES) && !defined(CATCH_CONFIG_DISABLE)
 
   #define INFO( msg ) INTERNAL_CATCH_INFO( "INFO", msg )
   #define UNSCOPED_INFO( msg ) INTERNAL_CATCH_UNSCOPED_INFO( "UNSCOPED_INFO", msg )
   #define WARN( msg ) INTERNAL_CATCH_MSG( "WARN", Catch::ResultWas::Warning, Catch::ResultDisposition::ContinueOnFailure, msg )
-  #define CAPTURE( ... ) INTERNAL_CATCH_CAPTURE( INTERNAL_CATCH_UNIQUE_NAME(capturer), "CAPTURE", __VA_ARGS__ )
+  #define CAPTURE( ... ) INTERNAL_CATCH_CAPTURE( INTERNAL_CATCH_UNIQUE_NAME(capturer), "CAPTURE", true, __VA_ARGS__ )
+  #define UNSCOPED_CAPTURE( ... ) INTERNAL_CATCH_CAPTURE( INTERNAL_CATCH_UNIQUE_NAME(capturer), "UNSCOPED_CAPTURE", false, __VA_ARGS__ )
 
 #elif !defined(CATCH_CONFIG_PREFIX_MESSAGES) && defined(CATCH_CONFIG_DISABLE)
 
-  #define INFO( msg )          (void)(0)
-  #define UNSCOPED_INFO( msg ) (void)(0)
-  #define WARN( msg )          (void)(0)
-  #define CAPTURE( ... )       (void)(0)
+  #define INFO( msg )             (void)(0)
+  #define UNSCOPED_INFO( msg )    (void)(0)
+  #define WARN( msg )             (void)(0)
+  #define CAPTURE( ... )          (void)(0)
+  #define UNSCOPED_CAPTURE( ... ) (void)(0)
 
 #endif // end of user facing macro declarations
 
@@ -7466,7 +7514,7 @@ namespace Catch {
 #define CATCH_VERSION_MACROS_HPP_INCLUDED
 
 #define CATCH_VERSION_MAJOR 3
-#define CATCH_VERSION_MINOR 12
+#define CATCH_VERSION_MINOR 13
 #define CATCH_VERSION_PATCH 0
 
 #endif // CATCH_VERSION_MACROS_HPP_INCLUDED
@@ -7521,6 +7569,24 @@ namespace Catch {
 
 
 
+#ifndef CATCH_GENERATORS_THROW_HPP_INCLUDED
+#define CATCH_GENERATORS_THROW_HPP_INCLUDED
+
+namespace Catch {
+    namespace Generators {
+        namespace Detail {
+
+            //! Throws GeneratorException with the provided message
+            [[noreturn]]
+            void throw_generator_exception( char const* msg );
+
+        } // namespace Detail
+    } // namespace Generators
+} // namespace Catch
+
+#endif // CATCH_GENERATORS_THROW_HPP_INCLUDED
+
+
 #ifndef CATCH_INTERFACES_GENERATORTRACKER_HPP_INCLUDED
 #define CATCH_INTERFACES_GENERATORTRACKER_HPP_INCLUDED
 
@@ -7549,6 +7615,15 @@ namespace Catch {
             //! Customization point for `currentElementAsString`
             virtual std::string stringifyImpl() const = 0;
 
+            /**
+             * Customization point for skipping to the n-th element
+             *
+             * Defaults to successively calling `countedNext`. If there
+             * are not enough elements to reach the nth one, will throw
+             * an error.
+             */
+            virtual void skipToNthElementImpl( std::size_t n );
+
         public:
             GeneratorUntypedBase() = default;
             // Generation of copy ops is deprecated (and Clang will complain)
@@ -7573,6 +7648,13 @@ namespace Catch {
             std::size_t currentElementIndex() const { return m_currentElementIndex; }
 
             /**
+             * Moves the generator forward **to** the n-th element
+             *
+             * Cannot move backwards. Can stay in place.
+             */
+            void skipToNthElement( std::size_t n );
+
+            /**
              * Returns generator's current element as user-friendly string.
              *
              * By default returns string equivalent to calling
@@ -7586,6 +7668,15 @@ namespace Catch {
              * comes first.
              */
             StringRef currentElementAsString() const;
+
+            /**
+             * Returns true if calls to `next` will eventually return false
+             *
+             * Note that for backwards compatibility this is currently defaulted
+             * to return `true`, but in the future all generators will have to
+             * provide their own implementation.
+             */
+            virtual bool isFinite() const;
         };
         using GeneratorBasePtr = Catch::Detail::unique_ptr<GeneratorUntypedBase>;
 
@@ -7594,9 +7685,7 @@ namespace Catch {
     class IGeneratorTracker {
     public:
         virtual ~IGeneratorTracker(); // = default;
-        virtual auto hasGenerator() const -> bool = 0;
         virtual auto getGenerator() const -> Generators::GeneratorBasePtr const& = 0;
-        virtual void setGenerator( Generators::GeneratorBasePtr&& generator ) = 0;
     };
 
 } // namespace Catch
@@ -7609,14 +7698,6 @@ namespace Catch {
 namespace Catch {
 
 namespace Generators {
-
-namespace Detail {
-
-    //! Throws GeneratorException with the provided message
-    [[noreturn]]
-    void throw_generator_exception(char const * msg);
-
-} // end namespace detail
 
     template<typename T>
     class IGenerator : public GeneratorUntypedBase {
@@ -7652,6 +7733,9 @@ namespace Detail {
         bool next() {
             return m_generator->countedNext();
         }
+
+        bool isFinite() const { return m_generator->isFinite(); }
+        void skipToNthElement( size_t n ) { m_generator->skipToNthElement(n); }
     };
 
 
@@ -7672,6 +7756,8 @@ namespace Detail {
         bool next() override {
             return false;
         }
+
+        bool isFinite() const override { return true; }
     };
 
     template<typename T>
@@ -7681,6 +7767,15 @@ namespace Detail {
             "specialization, use SingleValue Generator instead.");
         std::vector<T> m_values;
         size_t m_idx = 0;
+
+        void skipToNthElementImpl( std::size_t n ) override {
+            if ( n >= m_values.size() ) {
+                Detail::throw_generator_exception(
+                    "Coud not jump to Nth element: not enough elements" );
+            }
+            m_idx = n;
+        }
+
     public:
         FixedValuesGenerator( std::initializer_list<T> values ) : m_values( values ) {}
 
@@ -7691,6 +7786,8 @@ namespace Detail {
             ++m_idx;
             return m_idx < m_values.size();
         }
+
+        bool isFinite() const override { return true; }
     };
 
     template <typename T, typename DecayedT = std::decay_t<T>>
@@ -7754,6 +7851,14 @@ namespace Detail {
                 ++m_current;
             }
             return m_current < m_generators.size();
+        }
+
+        bool isFinite() const override {
+            for (auto const& gen : m_generators) {
+                if (!gen.isFinite()) { return false;
+                }
+            }
+            return true;
         }
     };
 
@@ -7846,6 +7951,17 @@ namespace Generators {
         GeneratorWrapper<T> m_generator;
         size_t m_returned = 0;
         size_t m_target;
+
+        void skipToNthElementImpl( std::size_t n ) override {
+            if ( n >= m_target ) {
+                Detail::throw_generator_exception(
+                    "Coud not jump to Nth element: not enough elements" );
+            }
+
+            m_generator.skipToNthElement( n );
+            m_returned = n;
+        }
+
     public:
         TakeGenerator(size_t target, GeneratorWrapper<T>&& generator):
             m_generator(CATCH_MOVE(generator)),
@@ -7870,6 +7986,8 @@ namespace Generators {
             }
             return success;
         }
+
+        bool isFinite() const override { return true; }
     };
 
     template <typename T>
@@ -7911,6 +8029,8 @@ namespace Generators {
             while (!m_predicate(m_generator.get()) && (success = m_generator.next()) == true);
             return success;
         }
+
+        bool isFinite() const override { return m_generator.isFinite(); }
     };
 
 
@@ -7935,6 +8055,9 @@ namespace Generators {
             m_target_repeats(repeats)
         {
             assert(m_target_repeats > 0 && "Repeat generator must repeat at least once");
+            if (!m_generator.isFinite()) {
+                Detail::throw_generator_exception( "Cannot repeat infinite generator" );
+            }
         }
 
         T const& get() const override {
@@ -7968,6 +8091,8 @@ namespace Generators {
             }
             return m_current_repeat < m_target_repeats;
         }
+
+        bool isFinite() const override { return m_generator.isFinite(); }
     };
 
     template <typename T>
@@ -7981,25 +8106,30 @@ namespace Generators {
         GeneratorWrapper<U> m_generator;
         Func m_function;
         // To avoid returning dangling reference, we have to save the values
-        T m_cache;
+        mutable Optional<T> m_cache;
+
+        void skipToNthElementImpl( std::size_t n ) override {
+            m_generator.skipToNthElement( n );
+            m_cache.reset();
+        }
+
     public:
         template <typename F2 = Func>
         MapGenerator(F2&& function, GeneratorWrapper<U>&& generator) :
             m_generator(CATCH_MOVE(generator)),
-            m_function(CATCH_FORWARD(function)),
-            m_cache(m_function(m_generator.get()))
+            m_function(CATCH_FORWARD(function))
         {}
 
         T const& get() const override {
-            return m_cache;
+            if ( !m_cache ) { m_cache = m_function( m_generator.get() ); }
+            return *m_cache;
         }
         bool next() override {
-            const auto success = m_generator.next();
-            if (success) {
-                m_cache = m_function(m_generator.get());
-            }
-            return success;
+            m_cache.reset();
+            return m_generator.next();
         }
+
+        bool isFinite() const override { return m_generator.isFinite(); }
     };
 
     template <typename Func, typename U, typename T = FunctionReturnType<Func, U>>
@@ -8021,7 +8151,6 @@ namespace Generators {
         std::vector<T> m_chunk;
         size_t m_chunk_size;
         GeneratorWrapper<T> m_generator;
-        bool m_used_up = false;
     public:
         ChunkGenerator(size_t size, GeneratorWrapper<T> generator) :
             m_chunk_size(size), m_generator(CATCH_MOVE(generator))
@@ -8050,6 +8179,8 @@ namespace Generators {
             }
             return true;
         }
+
+        bool isFinite() const override { return m_generator.isFinite(); }
     };
 
     template <typename T>
@@ -8058,6 +8189,56 @@ namespace Generators {
             Catch::Detail::make_unique<ChunkGenerator<T>>(size, CATCH_MOVE(generator))
         );
     }
+
+    template <typename T>
+    class ConcatGenerator final : public IGenerator<T> {
+        std::vector<GeneratorWrapper<T>> m_generators;
+        size_t m_current_generator = 0;
+
+        void InsertGenerators( GeneratorWrapper<T>&& gen ) {
+            m_generators.push_back( CATCH_MOVE( gen ) );
+        }
+
+        template <typename... Generators>
+        void InsertGenerators( GeneratorWrapper<T>&& gen, Generators&&... gens ) {
+            m_generators.push_back( CATCH_MOVE( gen ) );
+            InsertGenerators( CATCH_MOVE( gens )... );
+        }
+
+    public:
+        template <typename... Generators>
+        ConcatGenerator( Generators&&... generators ) {
+            InsertGenerators( CATCH_MOVE( generators )... );
+        }
+
+        T const& get() const override {
+            return m_generators[m_current_generator].get();
+        }
+        bool next() override {
+            const bool success = m_generators[m_current_generator].next();
+            if ( success ) { return true; }
+
+            // If current generator is used up, we have to move to the next one
+            ++m_current_generator;
+            return m_current_generator < m_generators.size();
+        }
+
+        bool isFinite() const override {
+            for ( auto const& gen : m_generators ) {
+                if ( !gen.isFinite() ) { return false; }
+            }
+            return true;
+        }
+    };
+
+    template <typename T, typename... Generators>
+    GeneratorWrapper<T> cat( GeneratorWrapper<T>&& generator,
+                             Generators&&... generators ) {
+        return GeneratorWrapper<T>(
+            Catch::Detail::make_unique<ConcatGenerator<T>>(
+            CATCH_MOVE( generator ), CATCH_MOVE( generators )... ) );
+    }
+
 
 } // namespace Generators
 } // namespace Catch
@@ -8701,6 +8882,7 @@ public:
         m_current_number = m_dist(m_rng);
         return true;
     }
+    bool isFinite() const override { return false; }
 };
 
 template <>
@@ -8718,6 +8900,7 @@ public:
     bool next() override;
 
     ~RandomFloatingGenerator() override; // = default
+    bool isFinite() const override;
 };
 
 template <typename Integer>
@@ -8739,6 +8922,7 @@ public:
         m_current_number = m_dist(m_rng);
         return true;
     }
+    bool isFinite() const override { return false; }
 };
 
 template <typename T>
@@ -8808,6 +8992,8 @@ public:
         m_current += m_step;
         return (m_positive) ? (m_current < m_end) : (m_current > m_end);
     }
+
+    bool isFinite() const override { return true; }
 };
 
 template <typename T>
@@ -8847,6 +9033,8 @@ public:
         ++m_current;
         return m_current != m_elems.size();
     }
+
+    bool isFinite() const override { return true; }
 };
 
 template <typename InputIterator,
@@ -10378,6 +10566,9 @@ namespace Catch {
 #include <vector>
 
 namespace Catch {
+
+struct PathFilter;
+
 namespace TestCaseTracking {
 
     struct NameAndLocation {
@@ -10453,12 +10644,23 @@ namespace TestCaseTracking {
         Children m_children;
         CycleState m_runState = NotStarted;
 
-    public:
-        ITracker( NameAndLocation&& nameAndLoc, ITracker* parent ):
-            m_nameAndLocation( CATCH_MOVE(nameAndLoc) ),
-            m_parent( parent )
-        {}
+        // Members for path filtering
+        std::vector<PathFilter> const* m_filterRef = nullptr;
 
+        // Note: There are 2 dummy section trackers (root, test-case) before
+        //       the first "real" section tracker can be encountered. We start
+        //       the default tracker at -2, so that the first "real" section
+        //       tracker overflows to index 0.
+        // Nesting depth of this tracker, used to decide which new-style filter applies.
+        size_t m_allTrackerDepth = static_cast<size_t>( -2 );
+        // Nesting depth of sections (inc. this tracker), used for old-style filters.
+        // Must be updated by the section tracker on its own.
+        size_t m_sectionOnlyDepth = static_cast<size_t>( -2 );
+        // Transitory: Remove once we remove backwards compatibility with old-style (v3.x) filters
+        bool m_newStyleFilters = false;
+
+    public:
+        ITracker( NameAndLocation&& nameAndLoc, ITracker* parent );
 
         // static queries
         NameAndLocation const& nameAndLocation() const {
@@ -10483,6 +10685,11 @@ namespace TestCaseTracking {
         bool isOpen() const;
         //! Returns true iff tracker has started
         bool hasStarted() const;
+
+        void setFilters( std::vector<PathFilter> const* filters, bool newStyleFilters ) {
+            m_filterRef = filters;
+            m_newStyleFilters = newStyleFilters;
+        }
 
         // actions
         virtual void close() = 0; // Successfully complete
@@ -10569,8 +10776,7 @@ namespace TestCaseTracking {
         void moveToThis();
     };
 
-    class SectionTracker : public TrackerBase {
-        std::vector<StringRef> m_filters;
+    class SectionTracker final : public TrackerBase {
         // Note that lifetime-wise we piggy back off the name stored in the `ITracker` parent`.
         // Currently it allocates owns the name, so this is safe. If it is later refactored
         // to not own the name, the name still has to outlive the `ITracker` parent, so
@@ -10587,10 +10793,6 @@ namespace TestCaseTracking {
 
         void tryOpen();
 
-        void addInitialFilters( std::vector<std::string> const& filters );
-        void addNextFilters( std::vector<StringRef> const& filters );
-        //! Returns filters active in this tracker
-        std::vector<StringRef> const& getFilters() const { return m_filters; }
         //! Returns whitespace-trimmed name of the tracked section
         StringRef trimmedName() const;
     };
