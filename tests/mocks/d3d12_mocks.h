@@ -3,7 +3,7 @@
 #include "../../src/nvapi_private.h"
 #include "../../src/interfaces/vkd3d-proton_interfaces.h"
 
-class ID3D12Vkd3dDevice : public ID3D12Device5, public ID3D12DeviceExt, public ID3D12DXVKInteropDevice1 {};
+class ID3D12Vkd3dDevice : public ID3D12Device5, public ID3D12DeviceExt2, public ID3D12DXVKInteropDevice1 {};
 
 class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3dDevice> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -105,6 +105,12 @@ class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3
     IMPLEMENT_MOCK3(CreateInteropCommandAllocator);
     IMPLEMENT_MOCK2(BeginVkCommandBufferInterop);
     IMPLEMENT_MOCK1(EndVkCommandBufferInterop);
+    IMPLEMENT_MOCK3(CreateResourceFromBorrowedHandle);
+    IMPLEMENT_MOCK5(GetVulkanQueueInfoEx);
+    IMPLEMENT_MOCK0(SupportsCubin64bit);
+    IMPLEMENT_MOCK1(CreateCubinComputeShaderExV2);
+    IMPLEMENT_MOCK1(GetCudaMergedTextureSamplerObject);
+    IMPLEMENT_MOCK1(GetCudaIndependentDescriptorObject);
 };
 
 class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList4, public ID3D12GraphicsCommandListExt1 {};
