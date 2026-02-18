@@ -1,18 +1,15 @@
 #include "nvapi_tests_private.h"
-#include "nvapi/resource_factory_util.h"
+#include "nvapi/default_test_environment.h"
 
 using namespace trompeloeil;
 
 TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
-    auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-    auto vk = std::make_unique<VkMock>();
-    auto nvml = std::make_unique<NvmlMock>();
+    auto t = std::make_unique<DefaultTestEnvironment>();
+    auto e = t->ConfigureExpectations();
 
     SECTION("InitLowLatencyDevice fails to initialize when Vulkan is not available") {
-        ALLOW_CALL(*vk, IsAvailable()).RETURN(false);
-        FORBID_CALL(*vk, GetDeviceProcAddr(_, _));
-
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
+        ALLOW_CALL(*t->Vk(), IsAvailable()).RETURN(false);
+        FORBID_CALL(*t->Vk(), GetDeviceProcAddr(_, _));
 
         auto vkDevice = std::make_unique<VkDeviceMock>();
         VkSemaphore result;
@@ -20,19 +17,19 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
     }
 
     SECTION("InitLowLatencyDevice fails to initialize when Vulkan Reflex layer is not available") {
-        ALLOW_CALL(*vk, IsAvailable()).RETURN(true);
-        auto e1 = VkMock::ConfigureDefaultPFN(*vk);
-        auto e2 = VkMock::ConfigureSignalSemaphorePFN(*vk, GENERATE(false, true));
+        ALLOW_CALL(*t->Vk(), IsAvailable()).RETURN(true);
+        auto e1 = VkMock::ConfigureDefaultPFN(*t->Vk());
+        auto e2 = VkMock::ConfigureSignalSemaphorePFN(*t->Vk(), GENERATE(false, true));
 
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencySleepModeNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencySleepModeNV"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkLatencySleepNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkLatencySleepNV"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkGetLatencyTimingsNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkGetLatencyTimingsNV"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencyMarkerNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencyMarkerNV"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkQueueNotifyOutOfBandNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkQueueNotifyOutOfBandNV"))))
             .RETURN(nullptr);
 
         auto vkSemaphore = reinterpret_cast<VkSemaphore>(0x12345678);
@@ -42,8 +39,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
             .LR_SIDE_EFFECT(*_4 = vkSemaphore)
             .RETURN(VK_SUCCESS);
         REQUIRE_CALL(*vkDevice, vkDestroySemaphore(_, _, _));
-
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
 
         HANDLE signalSemaphoreHandle = VK_NULL_HANDLE;
         REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_NO_IMPLEMENTATION);
@@ -55,26 +50,24 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
     SECTION("Sleep immediately signals low latency semaphore when Vulkan Reflex layer is not available but Reflex is needed") {
         ::SetEnvironmentVariableA("DXVK_NVAPI_FAKE_VKREFLEX", "1");
 
-        ALLOW_CALL(*vk, IsAvailable()).RETURN(true);
-        auto e1 = VkMock::ConfigureDefaultPFN(*vk);
-        auto e2 = VkMock::ConfigureSignalSemaphorePFN(*vk, GENERATE(false, true));
+        ALLOW_CALL(*t->Vk(), IsAvailable()).RETURN(true);
+        auto e1 = VkMock::ConfigureDefaultPFN(*t->Vk());
+        auto e2 = VkMock::ConfigureSignalSemaphorePFN(*t->Vk(), GENERATE(false, true));
 
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencySleepModeNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencySleepModeNV"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkLatencySleepNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkLatencySleepNV"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkGetLatencyTimingsNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkGetLatencyTimingsNV"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencyMarkerNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencyMarkerNV"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkQueueNotifyOutOfBandNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkQueueNotifyOutOfBandNV"))))
             .RETURN(nullptr);
 
         auto vkSemaphore = reinterpret_cast<VkSemaphore>(0x12345678);
         auto vkDevice = std::make_unique<VkDeviceMock>();
         HANDLE signalSemaphoreHandle = VK_NULL_HANDLE;
-
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
 
         REQUIRE_CALL(*vkDevice, vkCreateSemaphore(_, _, _, _))
             .LR_SIDE_EFFECT(*_4 = vkSemaphore)
@@ -96,25 +89,23 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
 
     SECTION("InitLowLatencyDevice fails to initialize when Vulkan Reflex layer is not available and Reflex is needed but vkSignalSemaphore cannot be found") {
         ::SetEnvironmentVariableA("DXVK_NVAPI_FAKE_VKREFLEX", "1");
-        ALLOW_CALL(*vk, IsAvailable()).RETURN(true);
-        auto e = VkMock::ConfigureDefaultPFN(*vk);
+        ALLOW_CALL(*t->Vk(), IsAvailable()).RETURN(true);
+        auto e1 = VkMock::ConfigureDefaultPFN(*t->Vk());
 
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencySleepModeNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencySleepModeNV"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkLatencySleepNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkLatencySleepNV"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkGetLatencyTimingsNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkGetLatencyTimingsNV"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencyMarkerNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencyMarkerNV"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkQueueNotifyOutOfBandNV"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkQueueNotifyOutOfBandNV"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkSignalSemaphoreKHR"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkSignalSemaphoreKHR"))))
             .RETURN(nullptr);
-        REQUIRE_CALL(*vk, GetDeviceProcAddr(_, eq(std::string_view("vkSignalSemaphore"))))
+        REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkSignalSemaphore"))))
             .RETURN(nullptr);
-
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
 
         auto vkDevice = std::make_unique<VkDeviceMock>();
         VkSemaphore result;
@@ -122,9 +113,9 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
     }
 
     SECTION("InitLowLatencyDevice and DestroyLowLatencyDevice returns OK") {
-        ALLOW_CALL(*vk, IsAvailable()).RETURN(true);
-        auto e1 = VkMock::ConfigureDefaultPFN(*vk);
-        auto e2 = VkMock::ConfigureLL2PFN(*vk);
+        ALLOW_CALL(*t->Vk(), IsAvailable()).RETURN(true);
+        auto e1 = VkMock::ConfigureDefaultPFN(*t->Vk());
+        auto e2 = VkMock::ConfigureLL2PFN(*t->Vk());
 
         auto vkSemaphore = reinterpret_cast<VkSemaphore>(0x12345678);
         auto vkDevice = std::make_unique<VkDeviceMock>();
@@ -134,8 +125,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
             .RETURN(VK_SUCCESS);
         REQUIRE_CALL(*vkDevice, vkDestroySemaphore(_, _, _));
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
-
         HANDLE signalSemaphoreHandle = VK_NULL_HANDLE;
         REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
         REQUIRE(signalSemaphoreHandle == vkSemaphore);
@@ -144,9 +133,9 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
     }
 
     SECTION("Other entrypoints succeed") {
-        ALLOW_CALL(*vk, IsAvailable()).RETURN(true);
-        auto e1 = VkMock::ConfigureDefaultPFN(*vk);
-        auto e2 = VkMock::ConfigureLL2PFN(*vk);
+        ALLOW_CALL(*t->Vk(), IsAvailable()).RETURN(true);
+        auto e1 = VkMock::ConfigureDefaultPFN(*t->Vk());
+        auto e2 = VkMock::ConfigureLL2PFN(*t->Vk());
 
         auto vkDevice = std::make_unique<VkDeviceMock>();
         auto vkQueue = std::make_unique<VkQueueMock>();
@@ -167,8 +156,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
                 .IN_SEQUENCE(seq2)
                 .WITH(_3->lowLatencyMode == false && _3->lowLatencyBoost == false)
                 .RETURN(VK_SUCCESS);
-
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
 
             REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
 
@@ -205,8 +192,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
                 .IN_SEQUENCE(seq2)
                 .WITH(_3->lowLatencyMode == false && _3->lowLatencyBoost == false)
                 .RETURN(VK_ERROR_UNKNOWN);
-
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
 
             REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
 
@@ -265,8 +250,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
                 .WITH(_3->value == signal)
                 .RETURN(VK_SUCCESS);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
-
             REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
             REQUIRE(NvAPI_Vulkan_Sleep(vkDevice.get(), signal) == NVAPI_OK);
             REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
@@ -281,8 +264,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
                     _3->pTimings[1].presentID = 6;
                     _3->pTimings[1].inputSampleTimeUs = 7;
                 });
-
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
 
             REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
 
@@ -303,8 +284,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
                     _3->timingCount = 1;
                     _3->pTimings[0].presentID = 5;
                 });
-
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
 
             REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
 
@@ -336,8 +315,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
             REQUIRE_CALL(*vkDevice, vkSetLatencyMarkerNV(_, _, _))
                 .WITH(_3->marker == VK_LATENCY_MARKER_PRESENT_START_NV);
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
-
             REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
 
             NV_VULKAN_LATENCY_MARKER_PARAMS params;
@@ -350,8 +327,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
 
         SECTION("SetLatencyMarker drops unknown marker types and returns OK") {
             FORBID_CALL(*vkDevice, vkSetLatencyMarkerNV(_, _, _));
-
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
 
             REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
 
@@ -379,8 +354,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
         SECTION("NotifyOutOfBandVkQueue returns OK") {
             REQUIRE_CALL(*vkQueue, vkQueueNotifyOutOfBandNV(_, _))
                 .WITH(_2->queueType == VK_OUT_OF_BAND_QUEUE_TYPE_PRESENT_NV);
-
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
 
             REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
             REQUIRE(NvAPI_Vulkan_NotifyOutOfBandVkQueue(vkDevice.get(), vkQueue.get(), VULKAN_OUT_OF_BAND_QUEUE_TYPE_PRESENT) == NVAPI_OK);

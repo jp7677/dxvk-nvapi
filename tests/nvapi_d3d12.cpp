@@ -1,7 +1,7 @@
 #include "nvapi_tests_private.h"
 #include "mocks/d3d_mocks.h"
 #include "mocks/d3d12_mocks.h"
-#include "nvapi/resource_factory_util.h"
+#include "nvapi/default_test_environment.h"
 
 using namespace trompeloeil;
 
@@ -196,14 +196,9 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     }
 
     SECTION("GetGraphicsCapabilities succeeds") {
-        auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-        auto vk = std::make_unique<VkMock>();
-        auto nvml = std::make_unique<NvmlMock>();
-        DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
-        DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
         LUID luid{};
-
-        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *adapter, *output);
+        auto t = std::make_unique<DefaultTestEnvironment>();
+        auto e = t->ConfigureExpectations();
 
         ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12Device), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12Device*>(&device))
@@ -226,7 +221,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 #endif
 
         SECTION("GetGraphicsCapabilities without matching adapter returns OK with sm_0") {
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_D3D12_GRAPHICS_CAPS graphicsCaps{};
@@ -261,11 +255,11 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             luid.HighPart = 0x00000002;
             luid.LowPart = 0x00000001;
 
-            ALLOW_CALL(*vk, GetDeviceExtensions(_, _))
+            ALLOW_CALL(*t->Vk(), GetDeviceExtensions(_, _))
                 .RETURN(extensionNames);
-            ALLOW_CALL(*vk, GetPhysicalDeviceProperties2(_, _, _))
+            ALLOW_CALL(*t->Vk(), GetPhysicalDeviceProperties2(_, _, _))
                 .SIDE_EFFECT(
-                    ConfigureGetPhysicalDeviceProperties2(_3,
+                    VkMock::ConfigureGetPhysicalDeviceProperties2(_3,
                         [&args, &luid](auto vkProps) {
                             memcpy(&vkProps.idProps->deviceLUID, &luid, sizeof(luid));
                             vkProps.idProps->deviceLUIDValid = VK_TRUE;
@@ -275,7 +269,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                                 vkProps.fragmentShadingRateProps->primitiveFragmentShadingRateWithMultipleViewports = VK_TRUE;
                         }));
 
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_D3D12_GRAPHICS_CAPS graphicsCaps;
@@ -288,7 +281,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         }
 
         SECTION("GetGraphicsCapabilities with unknown struct version returns incompatible-struct-version") {
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_D3D12_GRAPHICS_CAPS graphicsCaps{};
@@ -297,7 +289,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
         SECTION("GetGraphicsCapabilities with current struct version returns not incompatible-struct-version") {
             // This test should fail when a header update provides a newer not yet implemented struct version
-            SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NV_D3D12_GRAPHICS_CAPS graphicsCaps{};
@@ -786,13 +777,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     }
 
     SECTION("D3DLowLatencyDevice methods succeed") {
-        auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-        auto vk = std::make_unique<VkMock>();
-        auto nvml = std::make_unique<NvmlMock>();
-        DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
-        DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
-
-        auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *adapter, *output);
+        auto t = std::make_unique<DefaultTestEnvironment>();
+        auto e = t->ConfigureExpectations();
 
         ALLOW_CALL(commandQueue, GetDevice(__uuidof(ID3DLowLatencyDevice), _))
             .LR_SIDE_EFFECT(*_2 = static_cast<ID3DLowLatencyDevice*>(&lowLatencyDevice))
@@ -816,8 +802,6 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             .RETURN(lowLatencyDeviceRefCount);
         ALLOW_CALL(lowLatencyDevice, SupportsLowLatency())
             .RETURN(true);
-
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
 
         SECTION("NotifyOutOfBandCommandQueue succeeds") {
             SECTION("NotifyOutOfBandCommandQueue returns OK") {

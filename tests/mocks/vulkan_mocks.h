@@ -5,6 +5,15 @@
 
 using namespace trompeloeil;
 
+struct ConfigureProps {
+    VkPhysicalDeviceProperties* props;
+    VkPhysicalDeviceIDProperties* idProps;
+    VkPhysicalDevicePCIBusInfoPropertiesEXT* pciBusInfoProps;
+    VkPhysicalDeviceDriverPropertiesKHR* driverProps;
+    VkPhysicalDeviceFragmentShadingRatePropertiesKHR* fragmentShadingRateProps;
+    VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR* computeShaderDerivativesProps;
+};
+
 class VkDeviceMock {
     MAKE_MOCK4(vkCreateSemaphore, VkResult(VkDevice, const VkSemaphoreCreateInfo*, const VkAllocationCallbacks*, VkSemaphore*));
     MAKE_MOCK3(vkDestroySemaphore, void(VkDevice, VkSemaphore, const VkAllocationCallbacks*));
@@ -90,5 +99,49 @@ class VkMock final : public mock_interface<dxvk::Vk> {
                 .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::SetLatencyMarkerNV)),
             NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkQueueNotifyOutOfBandNV"))))
                 .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkQueueMock::QueueNotifyOutOfBandNV))};
+    }
+
+    static void ConfigureGetPhysicalDeviceProperties2(
+        VkPhysicalDeviceProperties2* props,
+        std::function<void(ConfigureProps)> configure) { // NOLINT(performance-unnecessary-value-param)
+        auto vkProps = ConfigureProps{
+            .props = &props->properties,
+            .idProps = nullptr,
+            .pciBusInfoProps = nullptr,
+            .driverProps = nullptr,
+            .fragmentShadingRateProps = nullptr,
+            .computeShaderDerivativesProps = nullptr};
+
+        auto next = reinterpret_cast<VkBaseOutStructure*>(props);
+        while (next != nullptr) {
+            switch (next->sType) {
+                case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES: {
+                    vkProps.idProps = reinterpret_cast<VkPhysicalDeviceIDProperties*>(next);
+                    break;
+                }
+                case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PCI_BUS_INFO_PROPERTIES_EXT: {
+                    vkProps.pciBusInfoProps = reinterpret_cast<VkPhysicalDevicePCIBusInfoPropertiesEXT*>(next);
+                    break;
+                }
+                case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR: {
+                    vkProps.driverProps = reinterpret_cast<VkPhysicalDeviceDriverPropertiesKHR*>(next);
+                    break;
+                }
+                case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR: {
+                    vkProps.fragmentShadingRateProps = reinterpret_cast<VkPhysicalDeviceFragmentShadingRatePropertiesKHR*>(next);
+                    break;
+                }
+                case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_PROPERTIES_KHR: {
+                    vkProps.computeShaderDerivativesProps = reinterpret_cast<VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR*>(next);
+                    break;
+                }
+                default:
+                    break;
+            }
+
+            next = next->pNext;
+        }
+
+        configure(vkProps);
     }
 };

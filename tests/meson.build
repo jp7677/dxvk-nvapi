@@ -33,7 +33,9 @@ nvapi_src = files([
 
 nvapi_tests_src = files([
   'nvapi_main.cpp',
-  'nvapi/resource_factory_util.cpp',
+  'nvapi/mock_factory.cpp',
+  'nvapi/default_test_environment.cpp',
+  'nvapi/extended_test_environment.cpp',
   'nvapi_d3d.cpp',
   'nvapi_d3d11.cpp',
   'nvapi_d3d12.cpp',

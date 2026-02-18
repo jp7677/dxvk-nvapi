@@ -1,22 +1,13 @@
 #include "nvapi_tests_private.h"
-#include "nvapi/resource_factory_util.h"
+#include "nvapi/extended_test_environment.h"
 
 using namespace trompeloeil;
 using namespace Catch::Matchers;
 
 TEST_CASE("Topology methods succeed", "[.sysinfo-topo]") {
-    auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-    auto vk = std::make_unique<VkMock>();
-    auto nvml = std::make_unique<NvmlMock>();
-    DXGIDxvkAdapterMock* adapter1 = CreateDXGIDxvkAdapterMock();
-    DXGIDxvkAdapterMock* adapter2 = CreateDXGIDxvkAdapterMock();
-    DXGIOutput6Mock* output1 = CreateDXGIOutput6Mock();
-    DXGIOutput6Mock* output2 = CreateDXGIOutput6Mock();
-    DXGIOutput6Mock* output3 = CreateDXGIOutput6Mock();
+    auto t = std::make_unique<ExtendedTestEnvironment>();
+    auto e = t->ConfigureExpectations();
 
-    auto e = ConfigureExtendedTestEnvironment(*dxgiFactory, *vk, *nvml, *adapter1, *adapter2, *output1, *output2, *output3);
-
-    SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
     REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
     SECTION("EnumLogicalGPUs succeeds") {

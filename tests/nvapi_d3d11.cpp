@@ -1,7 +1,7 @@
 #include "nvapi_tests_private.h"
 #include "mocks/d3d_mocks.h"
 #include "mocks/d3d11_mocks.h"
-#include "nvapi/resource_factory_util.h"
+#include "nvapi/default_test_environment.h"
 
 using namespace trompeloeil;
 
@@ -398,15 +398,9 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
 }
 
 TEST_CASE("D3D11 MultiGPU methods succeed", "[.d3d11]") {
-    auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-    auto vk = std::make_unique<VkMock>();
-    auto nvml = std::make_unique<NvmlMock>();
-    DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
-    DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
+    auto t = std::make_unique<DefaultTestEnvironment>();
+    auto e = t->ConfigureExpectations();
 
-    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *adapter, *output);
-
-    SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
     REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
     SECTION("MultiGPU_GetCaps (V1) returns OK") {

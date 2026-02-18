@@ -1,7 +1,7 @@
 #include "nvapi_tests_private.h"
 #include "mocks/d3d_mocks.h"
 #include "mocks/d3d11_mocks.h"
-#include "nvapi/resource_factory_util.h"
+#include "nvapi/default_test_environment.h"
 
 using namespace trompeloeil;
 
@@ -166,11 +166,6 @@ TEST_CASE("D3D methods succeed", "[.d3d]") {
 }
 
 TEST_CASE("D3D Reflex depending methods succeed", "[.d3d]") {
-    auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-    auto vk = std::make_unique<VkMock>();
-    auto nvml = std::make_unique<NvmlMock>();
-    DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
-    DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
     D3D11DxvkDeviceMock d3d11Device;
     D3D11DxvkDeviceContextMock d3d11DeviceContext;
     D3DLowLatencyDeviceMock lowLatencyDevice;
@@ -178,9 +173,8 @@ TEST_CASE("D3D Reflex depending methods succeed", "[.d3d]") {
     auto d3d11DeviceContextRefCount = 0;
     auto lowLatencyDeviceRefCount = 0;
 
-    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *adapter, *output);
-
-    SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
+    auto t = std::make_unique<DefaultTestEnvironment>();
+    auto e = t->ConfigureExpectations();
 
     SECTION("Reflex methods fail when given null device") {
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);

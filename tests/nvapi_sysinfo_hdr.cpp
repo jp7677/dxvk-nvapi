@@ -1,17 +1,12 @@
 #include "nvapi_tests_private.h"
-#include "nvapi/resource_factory_util.h"
+#include "nvapi/default_test_environment.h"
 
 using namespace trompeloeil;
 using namespace Catch::Matchers;
 
 TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
-    auto dxgiFactory = std::make_unique<DXGIDxvkFactoryMock>();
-    auto vk = std::make_unique<VkMock>();
-    auto nvml = std::make_unique<NvmlMock>();
-    DXGIDxvkAdapterMock* adapter = CreateDXGIDxvkAdapterMock();
-    DXGIOutput6Mock* output = CreateDXGIOutput6Mock();
-
-    auto e = ConfigureDefaultTestEnvironment(*dxgiFactory, *vk, *nvml, *adapter, *output);
+    auto t = std::make_unique<DefaultTestEnvironment>();
+    auto e = t->ConfigureExpectations();
     auto primaryDisplayId = 0x00010001;
 
     auto desc1 = DXGI_OUTPUT_DESC1{
@@ -30,15 +25,17 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
         1499.0f,
         799.0f};
 
-    ALLOW_CALL(*output, QueryInterface(__uuidof(IDXGIOutput6), _))
-        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput6*>(output))
+    ALLOW_CALL(*t->DXGIFactory(), QueryInterface(__uuidof(IDXGIVkInteropFactory1), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIVkInteropFactory1*>(t->DXGIFactory()))
         .RETURN(S_OK);
-    ALLOW_CALL(*output, GetDesc1(_))
+    ALLOW_CALL(*t->DXGIOutput(), QueryInterface(__uuidof(IDXGIOutput6), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IDXGIOutput6*>(t->DXGIOutput()))
+        .RETURN(S_OK);
+    ALLOW_CALL(*t->DXGIOutput(), GetDesc1(_))
         .SIDE_EFFECT(*_1 = desc1)
         .RETURN(S_OK);
 
     SECTION("GetHdrCapabilities succeeds") {
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         SECTION("GetHdrCapabilities (V1) returns OK") {
@@ -133,7 +130,7 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
             .MinMasteringLuminance = 100,
             .MaxContentLightLevel = 1199,
             .MaxFrameAverageLightLevel = 799};
-        ALLOW_CALL(*dxgiFactory, GetGlobalHDRState(_, _))
+        ALLOW_CALL(*t->DXGIFactory(), GetGlobalHDRState(_, _))
             .LR_SIDE_EFFECT({
                 *_1 = outColorSpace;
                 *_2 = outMetadata;
@@ -142,14 +139,13 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
 
         DXGI_COLOR_SPACE_TYPE inColorSpace = DXGI_COLOR_SPACE_RESERVED;
         DXGI_HDR_METADATA_HDR10 inMetadata{};
-        ALLOW_CALL(*dxgiFactory, SetGlobalHDRState(_, _))
+        ALLOW_CALL(*t->DXGIFactory(), SetGlobalHDRState(_, _))
             .LR_SIDE_EFFECT({
                 inColorSpace = _1;
                 inMetadata = *_2;
             })
             .RETURN(S_OK);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         SECTION("HdrColorControl (V1) with get command returns OK") {
@@ -280,10 +276,9 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
     }
 
     SECTION("HdrColorControl with failed get-global-hdr-state succeeds") {
-        ALLOW_CALL(*dxgiFactory, GetGlobalHDRState(_, _))
+        ALLOW_CALL(*t->DXGIFactory(), GetGlobalHDRState(_, _))
             .RETURN(E_FAIL);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         SECTION("HdrColorControl (V1) with get command returns OK") {
@@ -333,10 +328,9 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
     }
 
     SECTION("HdrColorControl without DXGI interop returns no-implementation") {
-        ALLOW_CALL(*dxgiFactory, QueryInterface(__uuidof(IDXGIVkInteropFactory1), _))
+        ALLOW_CALL(*t->DXGIFactory(), QueryInterface(__uuidof(IDXGIVkInteropFactory1), _))
             .RETURN(E_NOINTERFACE);
 
-        SetupResourceFactory(std::move(dxgiFactory), std::move(vk), std::move(nvml));
         REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
         SECTION("HdrColorControl (V1) returns no-implementation") {

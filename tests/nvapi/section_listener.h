@@ -1,7 +1,10 @@
 #pragma once
 
 #include "nvapi_tests_private.h"
-#include "resource_factory_util.h"
+#include "mock_factory.h"
+
+using namespace trompeloeil;
+using namespace dxvk;
 
 class SectionListener : public Catch::EventListenerBase {
 
@@ -15,7 +18,24 @@ class SectionListener : public Catch::EventListenerBase {
         ::SetEnvironmentVariableA("DXVK_NVAPI_FAKE_VKREFLEX", "");
     }
 
-    void sectionEnded(Catch::SectionStats const&) override {
-        ResetGlobals();
+    void sectionEnded(Catch::SectionStats const& sectionStats) override {
+        NvapiD3d11Device::Reset();
+        NvapiD3d12Device::Reset();
+        NvapiD3d12GraphicsCommandList::Reset();
+        NvapiD3d12CommandQueue::Reset();
+        NvapiD3dLowLatencyDevice::Reset();
+        NvapiVulkanLowLatencyDevice::Reset();
+
+        if (!resourceFactory)
+            return;
+
+        auto mockFactory = reinterpret_cast<MockFactory*>(resourceFactory.get());
+
+        // Ensure that Com<*> mocks can be deleted by destructors
+        auto e = mockFactory->ConfigureRelease();
+
+        nvapiAdapterRegistry.reset();
+        initializationCount = 0ULL;
+        resourceFactory.reset();
     }
 };
