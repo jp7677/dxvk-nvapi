@@ -350,14 +350,15 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto blockX = 3U;
         auto blockY = 4U;
         auto blockZ = 5U;
-        auto shaderHandle = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122);
-        auto handle = &shaderHandle;
-        REQUIRE_CALL(device, CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, _, handle))
+        NVDX_ObjectHandle handle{};
+        REQUIRE_CALL(device, CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, _, _))
             .WITH(_6 == std::string(""))
+            .SIDE_EFFECT(*_7 = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122))
             .RETURN(S_OK)
             .TIMES(1);
 
-        REQUIRE(NvAPI_D3D12_CreateCubinComputeShader(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, reinterpret_cast<NVDX_ObjectHandle*>(handle)) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShader(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, &handle) == NVAPI_OK);
+        REQUIRE(handle == reinterpret_cast<NVDX_ObjectHandle>(0x912122));
     }
 
     SECTION("CreateCubinComputeShaderWithName returns OK") {
@@ -367,23 +368,25 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto blockY = 4U;
         auto blockZ = 5U;
         auto shaderName = "shader";
-        auto shaderHandle = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122);
-        auto handle = &shaderHandle;
-        REQUIRE_CALL(device, CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, handle))
+        NVDX_ObjectHandle handle{};
+        REQUIRE_CALL(device, CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, _))
             .WITH(_6 == std::string("shader"))
+            .SIDE_EFFECT(*_7 = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122))
             .RETURN(S_OK)
             .TIMES(1);
 
-        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderWithName(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, shaderName, reinterpret_cast<NVDX_ObjectHandle*>(handle)) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderWithName(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, shaderName, &handle) == NVAPI_OK);
+        REQUIRE(handle == reinterpret_cast<NVDX_ObjectHandle>(0x912122));
     }
 
     SECTION("DestroyCubinComputeShader returns OK") {
-        auto shaderHandle = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122);
-        REQUIRE_CALL(device, DestroyCubinComputeShader(shaderHandle))
+        auto handle = reinterpret_cast<NVDX_ObjectHandle>(0x912122);
+        REQUIRE_CALL(device, DestroyCubinComputeShader(_))
+            .WITH(_1 == reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122))
             .RETURN(S_OK)
             .TIMES(1);
 
-        REQUIRE(NvAPI_D3D12_DestroyCubinComputeShader(static_cast<ID3D12Device*>(&device), reinterpret_cast<NVDX_ObjectHandle>(shaderHandle)) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D12_DestroyCubinComputeShader(static_cast<ID3D12Device*>(&device), handle) == NVAPI_OK);
     }
 
     SECTION("GetCudaTextureObject/GetCudaSurfaceObject returns OK") {
@@ -419,7 +422,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     }
 
     SECTION("LaunchCubinShader returns OK") {
-        NVDX_ObjectHandle pShader = nullptr;
+        auto handle = reinterpret_cast<NVDX_ObjectHandle>(0x912122);
         auto blockX = 1U;
         auto blockY = 2U;
         auto blockZ = 3U;
@@ -428,11 +431,12 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto paramSize = 4U;
         const void* rawParam = nullptr;
         auto rawParamCount = 0U;
-        REQUIRE_CALL(commandList, LaunchCubinShaderEx(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, smemSize, params, paramSize, rawParam, rawParamCount))
+        REQUIRE_CALL(commandList, LaunchCubinShaderEx(_, blockX, blockY, blockZ, smemSize, params, paramSize, rawParam, rawParamCount))
+            .SIDE_EFFECT(_1 = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122))
             .RETURN(S_OK)
             .TIMES(1);
 
-        REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), pShader, blockX, blockY, blockZ, params, paramSize) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), handle, blockX, blockY, blockZ, params, paramSize) == NVAPI_OK);
     }
 
     SECTION("Create and Launch CuBIN with SMEM returns OK") {
@@ -443,39 +447,41 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto blockZ = 5U;
         auto smemSize = 6U;
         auto shaderName = "shader";
-        auto shaderHandle = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122);
-        auto handle = &shaderHandle;
+        NVDX_ObjectHandle handle{};
         const void* params = nullptr;
         auto paramSize = 7U;
         const void* rawParam = nullptr;
         auto rawParamCount = 0U;
-        REQUIRE_CALL(device, CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, handle))
+        REQUIRE_CALL(device, CreateCubinComputeShaderWithName(cubinData, cubinSize, blockX, blockY, blockZ, shaderName, _))
+            .SIDE_EFFECT(*_7 = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122))
             .RETURN(S_OK)
             .TIMES(1);
-        REQUIRE_CALL(commandList, LaunchCubinShaderEx(shaderHandle, blockX, blockY, blockZ, smemSize, params, paramSize, rawParam, rawParamCount))
+        REQUIRE_CALL(commandList, LaunchCubinShaderEx(_, blockX, blockY, blockZ, smemSize, params, paramSize, rawParam, rawParamCount))
+            .WITH(_1 == reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122))
             .RETURN(S_OK)
             .TIMES(1);
 
-        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderEx(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, smemSize, shaderName, reinterpret_cast<NVDX_ObjectHandle*>(handle)) == NVAPI_OK);
-        REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), reinterpret_cast<NVDX_ObjectHandle>(shaderHandle), blockX, blockY, blockZ, params, paramSize) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D12_CreateCubinComputeShaderEx(static_cast<ID3D12Device*>(&device), cubinData, cubinSize, blockX, blockY, blockZ, smemSize, shaderName, &handle) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), handle, blockX, blockY, blockZ, params, paramSize) == NVAPI_OK);
     }
 
     SECTION("Launch CuBIN without ID3D12GraphicsCommandListExt1 returns OK") {
         ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt1), _))
             .RETURN(E_NOINTERFACE);
 
-        auto shaderHandle = reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0xbadcf00d);
+        NVDX_ObjectHandle handle = reinterpret_cast<NVDX_ObjectHandle>(0x912122);
         auto blockX = 1U;
         auto blockY = 2U;
         auto blockZ = 3U;
         const void* params = nullptr;
         auto paramSize = 4U;
-        REQUIRE_CALL(commandList, LaunchCubinShader(shaderHandle, blockX, blockY, blockZ, params, paramSize))
+        REQUIRE_CALL(commandList, LaunchCubinShader(_, blockX, blockY, blockZ, params, paramSize))
+            .WITH(_1 == reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(0x912122))
             .RETURN(S_OK)
             .TIMES(1);
         FORBID_CALL(commandList, LaunchCubinShaderEx(_, _, _, _, _, _, _, _, _));
 
-        REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), reinterpret_cast<NVDX_ObjectHandle>(shaderHandle), blockX, blockY, blockZ, params, paramSize) == NVAPI_OK);
+        REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), reinterpret_cast<NVDX_ObjectHandle>(handle), blockX, blockY, blockZ, params, paramSize) == NVAPI_OK);
     }
 
     SECTION("GetRaytracingCaps returns OK and claims that thread reordering is not supported") {
