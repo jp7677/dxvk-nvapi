@@ -18,19 +18,23 @@ namespace dxvk {
         m_cubin64bitSupportAvailable.reset();
     }
 
-    bool NvapiD3d12Device::Cubin64bitSupportAvailable(NvapiAdapterRegistry* registry) {
+    bool NvapiD3d12Device::Cubin64bitSupportAvailable(NvapiResourceFactory* factory, NvapiAdapterRegistry* registry) {
         if (m_cubin64bitSupportAvailable.has_value())
             return m_cubin64bitSupportAvailable.value();
 
-        if (!registry)
+        if (!factory || !registry)
             return false;
 
         uint32_t adapterCount = registry->GetAdapterCount();
         for (uint32_t i = 0; i < adapterCount; ++i) {
             auto dxgiAdapter = registry->GetAdapter(i)->GetDxgiAdapter();
 
+            auto d3d12Device = factory->CreateD3D12Device(dxgiAdapter, D3D_FEATURE_LEVEL_12_0);
+            if (d3d12Device == nullptr)
+                continue;
+
             Com<ID3D12DeviceExt2> d3d12DeviceExt2;
-            if (FAILED(D3D12CreateDevice(dxgiAdapter, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&d3d12DeviceExt2))))
+            if (FAILED(d3d12Device->QueryInterface(IID_PPV_ARGS(&d3d12DeviceExt2))))
                 continue;
 
             if (d3d12DeviceExt2->SupportsCubin64bit())

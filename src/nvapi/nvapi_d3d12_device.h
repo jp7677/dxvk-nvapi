@@ -9,7 +9,7 @@ namespace dxvk {
 
       public:
         static void Reset();
-        [[nodiscard]] static bool Cubin64bitSupportAvailable(NvapiAdapterRegistry*);
+        [[nodiscard]] static bool Cubin64bitSupportAvailable(NvapiResourceFactory* factory, NvapiAdapterRegistry* registry);
         [[nodiscard]] static NvapiD3d12Device* GetOrCreate(ID3D12Device* device);
         [[nodiscard]] static uint32_t FindCubinSmem(NVDX_ObjectHandle);
 

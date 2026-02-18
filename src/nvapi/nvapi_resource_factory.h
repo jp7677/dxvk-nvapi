@@ -13,6 +13,7 @@ namespace dxvk {
         std::unique_ptr<Vk> CreateVulkan(const char* moduleName) override { return ResourceFactory::CreateVulkan(moduleName); }
         virtual std::unique_ptr<Vk> CreateVulkan(Com<IDXGIFactory1>& dxgiFactory);
         virtual Com<IDXGIFactory1> CreateDXGIFactory1();
+        virtual Com<ID3D12Device> CreateD3D12Device(Com<IDXGIAdapter3>& dxgiAdapter, D3D_FEATURE_LEVEL featureLevel);
         virtual std::unique_ptr<Nvml> CreateNvml();
     };
 }

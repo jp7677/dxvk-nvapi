@@ -29,7 +29,7 @@ namespace dxvk {
         [[nodiscard]] NvapiOutput* FindPrimaryOutput() const;
         [[nodiscard]] bool IsOutput(NvapiOutput* handle) const;
 
-        [[nodiscard]] IDXGIVkInteropFactory1* GetInteropFactory() const { return m_dxgiVkInterop.ptr(); }
+        [[nodiscard]] const Com<IDXGIVkInteropFactory1>& GetInteropFactory() const { return m_dxgiVkInterop; }
 
       private:
         NvapiResourceFactory& m_resourceFactory;

@@ -132,7 +132,7 @@ extern "C" {
             return InvalidArgument(n);
 
         auto interop = nvapiAdapterRegistry->GetInteropFactory();
-        if (!interop)
+        if (interop == nullptr)
             return NoImplementation(str::format(n, " (0x", std::hex, displayId, ")"));
 
         auto& data = output->GetColorData();

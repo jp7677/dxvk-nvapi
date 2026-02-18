@@ -210,7 +210,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::nvapi_d3d12_create_cubin_shader_params(pParams));
 
-        if (!NvapiD3d12Device::Cubin64bitSupportAvailable(nvapiAdapterRegistry.get()))
+        if (!NvapiD3d12Device::Cubin64bitSupportAvailable(resourceFactory.get(), nvapiAdapterRegistry.get()))
             return NoImplementation(n, alreadyLoggedNoImplementation);
 
         if (!pParams)
@@ -263,7 +263,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::nvapi_d3d12_get_cuda_merged_texture_sampler_object_params(pParams));
 
-        if (!NvapiD3d12Device::Cubin64bitSupportAvailable(nvapiAdapterRegistry.get()))
+        if (!NvapiD3d12Device::Cubin64bitSupportAvailable(resourceFactory.get(), nvapiAdapterRegistry.get()))
             return NoImplementation(n, alreadyLoggedNoImplementation);
 
         if (!pParams)
@@ -310,7 +310,7 @@ extern "C" {
         if (log::tracing())
             log::trace(n, log::fmt::nvapi_d3d12_get_cuda_independent_descriptor_object_params(pParams));
 
-        if (!NvapiD3d12Device::Cubin64bitSupportAvailable(nvapiAdapterRegistry.get()))
+        if (!NvapiD3d12Device::Cubin64bitSupportAvailable(resourceFactory.get(), nvapiAdapterRegistry.get()))
             return NoImplementation(n, alreadyLoggedNoImplementation);
 
         if (!pParams)

@@ -24,6 +24,14 @@ namespace dxvk {
         return dxgiFactory;
     }
 
+    Com<ID3D12Device> NvapiResourceFactory::CreateD3D12Device(Com<IDXGIAdapter3>& dxgiAdapter, D3D_FEATURE_LEVEL featureLevel) {
+        Com<ID3D12Device> d3d12Device;
+        if (FAILED(::D3D12CreateDevice(dxgiAdapter.ptr(), featureLevel, IID_PPV_ARGS(&d3d12Device))))
+            return nullptr;
+
+        return d3d12Device;
+    }
+
     std::unique_ptr<Nvml> NvapiResourceFactory::CreateNvml() {
         return std::make_unique<Nvml>();
     }
