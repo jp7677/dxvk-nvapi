@@ -57,6 +57,19 @@ extern "C" {
         return Ok(str::format(n, " (", code, "/", fromCode(code), ")"));
     }
 
+    NvAPI_Status __cdecl NvAPI_D3D11_SetNvShaderExtnSlot(IUnknown* pDev, NvU32 uavSlot) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDev), uavSlot);
+
+        if (!pDev)
+            return InvalidArgument(n);
+
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+    }
+
     NvAPI_Status __cdecl NvAPI_D3D11_MultiGPU_GetCaps(PNV_MULTIGPU_CAPS pMultiGPUCaps) {
         constexpr auto n = __func__;
 

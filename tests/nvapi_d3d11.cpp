@@ -201,6 +201,11 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         REQUIRE(supportedForContext == false);
     }
 
+    SECTION("SetNvShaderExtnSlotSpace returns no-implementation") {
+        REQUIRE(NvAPI_D3D11_SetNvShaderExtnSlot(static_cast<ID3D11Device*>(&device), 1U) == NVAPI_NO_IMPLEMENTATION);
+        REQUIRE(NvAPI_D3D11_SetNvShaderExtnSlot(static_cast<ID3D11DeviceContext*>(&context), 1U) == NVAPI_NO_IMPLEMENTATION);
+    }
+
     SECTION("SetDepthBoundsTests returns OK") {
         auto enable = true;
         auto min = 0.4f;
