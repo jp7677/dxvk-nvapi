@@ -4,6 +4,7 @@
 #include "util/util_statuscode.h"
 #include "util/util_op_code.h"
 #include "util/util_string.h"
+#include "util/util_env.h"
 
 extern "C" {
     using namespace dxvk;
@@ -51,8 +52,13 @@ extern "C" {
         if (!pDeviceOrContext || !supported)
             return InvalidArgument(n);
 
-        // DXVK does not know any NVIDIA intrinsics backdoors
-        *supported = false;
+        if (env::isUnrealEngine() && code == NV_EXTN_OP_SHFL) {
+            // UE disables timestamp queries when NV_EXTN_OP_SHFL is not support (in other words, hardware older than Kepler)
+            log::info("Reporting NV_EXTN_OP_SHFL HLSL support for Unreal Engine");
+            *supported = true;
+        } else
+            // DXVK does not know any NVIDIA intrinsics backdoors
+            *supported = false;
 
         return Ok(str::format(n, " (", code, "/", fromCode(code), ")"));
     }

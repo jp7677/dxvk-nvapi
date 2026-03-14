@@ -15,5 +15,7 @@ namespace dxvk::env {
 
     bool needsLowLatencyDevice();
 
+    bool isUnrealEngine();
+
     std::optional<NV_GPU_ARCHITECTURE_ID> needsGpuArchitectureSpoofing(NV_GPU_ARCHITECTURE_ID architectureId, void* returnAddress);
 }

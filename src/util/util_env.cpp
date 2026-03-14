@@ -186,6 +186,18 @@ namespace dxvk::env {
         return false;
     }
 
+    bool isUnrealEngine() {
+        static bool alreadyLogged = false;
+        if (getExecutableName().ends_with("-Win64-Shipping.exe")) {
+            if (!std::exchange(alreadyLogged, true))
+                log::info(str::format("Unreal Engine (", getExecutableName(), ") detected"));
+
+            return true;
+        }
+
+        return false;
+    }
+
     std::optional<NV_GPU_ARCHITECTURE_ID> getGpuArchitectureOverride() {
         constexpr auto gpuArchEnvName = "DXVK_NVAPI_GPU_ARCH";
         NV_GPU_ARCHITECTURE_ID override{};
