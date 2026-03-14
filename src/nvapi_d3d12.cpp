@@ -8,6 +8,7 @@
 #include "util/util_statuscode.h"
 #include "util/util_op_code.h"
 #include "util/util_pso_extension.h"
+#include "util/util_raytracing_caps.h"
 #include "util/util_string.h"
 #include "util/util_env.h"
 
@@ -622,11 +623,39 @@ extern "C" {
                 *static_cast<NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_NONE;
                 break;
 
+            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_CLUSTER_OPERATIONS:
+                if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAPS))
+                    return InvalidArgument(n);
+
+                *static_cast<NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAP_NONE;
+                break;
+
+            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_PARTITIONED_TLAS:
+                if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAPS))
+                    return InvalidArgument(n);
+
+                *static_cast<NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAP_NONE;
+                break;
+
+            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_SPHERES:
+                if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_SPHERES_CAPS))
+                    return InvalidArgument(n);
+
+                *static_cast<NVAPI_D3D12_RAYTRACING_SPHERES_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_SPHERES_CAP_NONE;
+                break;
+
+            case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_LINEAR_SWEPT_SPHERES:
+                if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS))
+                    return InvalidArgument(n);
+
+                *static_cast<NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_NONE;
+                break;
+
             default:
-                return InvalidArgument(n);
+                return InvalidArgument(str::format(n, " (", type, ")"));
         }
 
-        return Ok(str::format(n, " (", type, ")"));
+        return Ok(str::format(n, " (", type, "/", fromRaytracingCaps(type), ")"));
     }
 
     static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {

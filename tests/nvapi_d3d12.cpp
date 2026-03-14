@@ -649,6 +649,30 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(caps == NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_NONE);
     }
 
+    SECTION("GetRaytracingCaps returns OK and claims that Cluster Operations is not supported") {
+        NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAPS caps;
+        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_CLUSTER_OPERATIONS, &caps, sizeof(caps)) == NVAPI_OK);
+        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAP_NONE);
+    }
+
+    SECTION("GetRaytracingCaps returns OK and claims that Partitioned TLAS is not supported") {
+        NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAPS caps;
+        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_PARTITIONED_TLAS, &caps, sizeof(caps)) == NVAPI_OK);
+        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAP_NONE);
+    }
+
+    SECTION("GetRaytracingCaps returns OK and claims that Spheres is not supported") {
+        NVAPI_D3D12_RAYTRACING_SPHERES_CAPS caps;
+        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_SPHERES, &caps, sizeof(caps)) == NVAPI_OK);
+        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_SPHERES_CAP_NONE);
+    }
+
+    SECTION("GetRaytracingCaps returns OK and claims that Linear Swept Spheres is not supported") {
+        NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS caps;
+        REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_LINEAR_SWEPT_SPHERES, &caps, sizeof(caps)) == NVAPI_OK);
+        REQUIRE(caps == NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_NONE);
+    }
+
     SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx succeeds") {
         SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx returns OK") {
             NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX desc{};
