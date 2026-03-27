@@ -554,6 +554,35 @@ extern "C" {
         return Ok(n);
     }
 
+    NvAPI_Status __cdecl NvAPI_GPU_GetUUID(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_UUID* pGpuUuid) {
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hPhysicalGpu), log::fmt::ptr(pGpuUuid));
+
+        if (!nvapiAdapterRegistry)
+            return ApiNotInitialized(n);
+
+        if (!pGpuUuid)
+            return InvalidArgument(n);
+
+        auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
+        if (!nvapiAdapterRegistry->IsAdapter(adapter))
+            return ExpectedPhysicalGpuHandle(n);
+
+        auto uuid = adapter->GetUuid();
+
+        switch (pGpuUuid->version) {
+            case NV_GPU_UUID_VER1:
+                std::copy(uuid.begin(), uuid.end(), pGpuUuid->uuid);
+                break;
+            default:
+                return IncompatibleStructVersion(n, pGpuUuid->version);
+        }
+
+        return Ok(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_GPU_GetArchInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_ARCH_INFO* pGpuArchInfo) {
         constexpr auto n = __func__;
 

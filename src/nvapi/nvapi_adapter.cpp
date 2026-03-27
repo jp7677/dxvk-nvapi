@@ -233,6 +233,15 @@ namespace dxvk {
         return std::make_optional(luid);
     }
 
+    std::array<uint8_t, NVAPI_UUID_LEN> NvapiAdapter::GetUuid() const {
+        static_assert(NVAPI_UUID_LEN == VK_UUID_SIZE);
+        static_assert(sizeof(NV_GPU_UUID_V1::uuid) == sizeof(VkPhysicalDeviceIDProperties::deviceUUID));
+
+        std::array<uint8_t, NVAPI_UUID_LEN> uuid;
+        std::copy(m_vkIdProperties.deviceUUID, m_vkIdProperties.deviceUUID + NVAPI_UUID_LEN, uuid.data());
+        return uuid;
+    }
+
     NV_GPU_ARCHITECTURE_ID NvapiAdapter::GetArchitectureId() const {
         if (!this->HasNvProprietaryDriver() && !this->HasNvkDriver()) {
             // DXVK_NVAPI_ALLOW_OTHER_DRIVERS must be set, otherwise this would be unreachable
