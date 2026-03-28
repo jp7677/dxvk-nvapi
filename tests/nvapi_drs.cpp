@@ -124,6 +124,46 @@ TEST_CASE("DRS methods succeed", "[.drs]") {
         REQUIRE(NvAPI_DRS_DeleteProfile(handle, profile) == NVAPI_NOT_SUPPORTED);
     }
 
+    SECTION("GetProfileInfo with null profile-info returns invalid-argument") {
+        NvDRSSessionHandle handle{};
+        NvDRSProfileHandle profile{};
+        REQUIRE(NvAPI_DRS_GetProfileInfo(handle, profile, nullptr) == NVAPI_INVALID_ARGUMENT);
+    }
+
+    SECTION("GetProfileInfo with unknown struct version returns incompatible-struct-version") {
+        NvDRSSessionHandle handle{};
+        NvDRSProfileHandle profile{};
+        NVDRS_PROFILE profileInfo;
+        profileInfo.version = NVDRS_PROFILE_VER + 1;
+        REQUIRE(NvAPI_DRS_GetProfileInfo(handle, profile, &profileInfo) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
+
+    SECTION("GetProfileInfo with current struct version returns not incompatible-struct-version") {
+        NvDRSSessionHandle handle{};
+        NvDRSProfileHandle profile{};
+        NVDRS_PROFILE profileInfo;
+        profileInfo.version = NVDRS_PROFILE_VER;
+        REQUIRE(NvAPI_DRS_GetProfileInfo(handle, profile, &profileInfo) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+    }
+
+    SECTION("GetProfileInfo returns OK with empty profile") {
+        NvDRSSessionHandle handle{};
+        NvDRSProfileHandle profile{};
+        NVDRS_PROFILE profileInfo;
+        profileInfo.version = NVDRS_PROFILE_VER1;
+        REQUIRE(NvAPI_DRS_GetProfileInfo(handle, profile, &profileInfo) == NVAPI_OK);
+        REQUIRE(profileInfo.numOfApps == 0);
+        REQUIRE(profileInfo.numOfSettings == 0);
+        REQUIRE(profileInfo.isPredefined == 0);
+    }
+
+    SECTION("CreateApplication returns not-supported") {
+        NvDRSSessionHandle handle{};
+        NvDRSProfileHandle profile{};
+        NVDRS_APPLICATION application{};
+        REQUIRE(NvAPI_DRS_CreateApplication(handle, profile, &application) == NVAPI_NOT_SUPPORTED);
+    }
+
     SECTION("GetSetting") {
         // these variables are read and cached the first time NvAPI_DRS_GetSetting is called
         ::SetEnvironmentVariableA("DXVK_NVAPI_DRS_SETTINGS", "0x10E41E01=1,0x10E41DF3=0xffffff,NGX_DLAA_OVERRIDE=DLAA_ON");
