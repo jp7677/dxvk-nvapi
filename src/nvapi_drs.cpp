@@ -227,6 +227,36 @@ extern "C" {
         return SettingNotFound(str::format(n, " (", id, "/", GetSettingName(settingId), ")"));
     }
 
+    NvAPI_Status __cdecl NvAPI_DRS_GetProfileInfo(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_PROFILE* pProfileInfo) {
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), log::fmt::ptr(pProfileInfo));
+
+        if (!pProfileInfo)
+            return InvalidArgument(n);
+
+        if (pProfileInfo->version != NVDRS_PROFILE_VER1)
+            return IncompatibleStructVersion(n, pProfileInfo->version);
+
+        std::memset(pProfileInfo->profileName, 0, sizeof(pProfileInfo->profileName));
+        pProfileInfo->gpuSupport = {};
+        pProfileInfo->isPredefined = 0;
+        pProfileInfo->numOfApps = 0;
+        pProfileInfo->numOfSettings = 0;
+
+        return Ok(n);
+    }
+
+    NvAPI_Status __cdecl NvAPI_DRS_CreateApplication(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_APPLICATION* pApplication) {
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), log::fmt::ptr(pApplication));
+
+        return NotSupported(n);
+    }
+
     NvAPI_Status __cdecl NvAPI_DRS_DestroySession(NvDRSSessionHandle hSession) {
         constexpr auto n = __func__;
 
