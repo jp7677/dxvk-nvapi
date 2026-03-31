@@ -9,10 +9,14 @@ namespace dxvk::drs {
 #define SETTING_ID(x) x##_ID
 #define ENTRY(x) {#x, SETTING_ID(x)}
         ENTRY(NGX_DLAA_OVERRIDE),
+        ENTRY(NGX_DLSSG_DYNAMIC_MULTI_FRAME_COUNT_MAX),
+        ENTRY(NGX_DLSSG_DYNAMIC_TARGET_FRAME_RATE),
+        ENTRY(NGX_DLSSG_MODE),
         ENTRY(NGX_DLSSG_MULTI_FRAME_COUNT),
         ENTRY(NGX_DLSS_FG_OVERRIDE),
-        ENTRY(NGX_DLSS_RR_MODE),
+        ENTRY(NGX_DLSS_FG_OVERRIDE_RENDER_PRESET_SELECTION),
         ENTRY(NGX_DLSS_OVERRIDE_OPTIMAL_SETTINGS),
+        ENTRY(NGX_DLSS_RR_MODE),
         ENTRY(NGX_DLSS_RR_OVERRIDE),
         ENTRY(NGX_DLSS_RR_OVERRIDE_RENDER_PRESET_SELECTION),
         ENTRY(NGX_DLSS_RR_OVERRIDE_SCALING_RATIO),
@@ -44,8 +48,36 @@ namespace dxvk::drs {
                    ENTRY1(DEFAULT),
                }},
 #undef SETTING
+#define SETTING NGX_DLSSG_DYNAMIC_MULTI_FRAME_COUNT_MAX
+        {ID(), {
+                   ENTRY1(OFF),
+                   ENTRY1(MIN),
+                   ENTRY1(MAX),
+                   ENTRY1(DEFAULT),
+               }},
+#undef SETTING
+#define SETTING NGX_DLSSG_DYNAMIC_TARGET_FRAME_RATE
+        {ID(), {
+                   ENTRY1(DISABLED),
+                   ENTRY1(MIN),
+                   ENTRY1(MAX),
+                   ENTRY1(AUTO),
+                   ENTRY1(DEFAULT),
+               }},
+#undef SETTING
+#define SETTING NGX_DLSSG_MODE
+        {ID(), {
+                   ENTRY1(DISABLED),
+                   ENTRY1(OFF),
+                   ENTRY1(ON),
+                   ENTRY1(AUTO),
+                   ENTRY1(DYNAMIC),
+                   ENTRY1(DEFAULT),
+               }},
+#undef SETTING
 #define SETTING NGX_DLSSG_MULTI_FRAME_COUNT
         {ID(), {
+                   ENTRY1(OFF),
                    ENTRY1(MIN),
                    ENTRY1(MAX),
                    ENTRY1(DEFAULT),
@@ -55,6 +87,40 @@ namespace dxvk::drs {
         {ID(), {
                    ENTRY1(OFF),
                    ENTRY1(ON),
+                   ENTRY1(DEFAULT),
+               }},
+#undef SETTING
+#define SETTING NGX_DLSS_FG_OVERRIDE_RENDER_PRESET_SELECTION
+        {ID(), {
+                   ENTRY1(OFF),
+                   ENTRY1(RENDER_PRESET_A),
+                   ENTRY1(RENDER_PRESET_B),
+                   ENTRY1(RENDER_PRESET_C),
+                   ENTRY1(RENDER_PRESET_D),
+                   ENTRY1(RENDER_PRESET_E),
+                   ENTRY1(RENDER_PRESET_F),
+                   ENTRY1(RENDER_PRESET_G),
+                   ENTRY1(RENDER_PRESET_H),
+                   ENTRY1(RENDER_PRESET_I),
+                   ENTRY1(RENDER_PRESET_J),
+                   ENTRY1(RENDER_PRESET_K),
+                   ENTRY1(RENDER_PRESET_L),
+                   ENTRY1(RENDER_PRESET_M),
+                   ENTRY1(RENDER_PRESET_N),
+                   ENTRY1(RENDER_PRESET_O),
+                   ENTRY1(RENDER_PRESET_P),
+                   ENTRY1(RENDER_PRESET_Q),
+                   ENTRY1(RENDER_PRESET_R),
+                   ENTRY1(RENDER_PRESET_S),
+                   ENTRY1(RENDER_PRESET_T),
+                   ENTRY1(RENDER_PRESET_U),
+                   ENTRY1(RENDER_PRESET_V),
+                   ENTRY1(RENDER_PRESET_W),
+                   ENTRY1(RENDER_PRESET_X),
+                   ENTRY1(RENDER_PRESET_Y),
+                   ENTRY1(RENDER_PRESET_Z),
+                   ENTRY1(RENDER_PRESET_Default),
+                   ENTRY1(RENDER_PRESET_Latest),
                    ENTRY1(DEFAULT),
                }},
 #undef SETTING
