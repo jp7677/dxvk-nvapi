@@ -31,4 +31,35 @@ extern "C" {
 
         return Ok(n);
     }
+
+    NvAPI_Status __cdecl NvAPI_NGX_GetDriverFeatureSupport(NV_NGX_GET_DRIVER_FEATURE_SUPPORT_PARAMS* pParams) {
+        constexpr auto n = __func__;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pParams));
+
+        if (!pParams)
+            return InvalidPointer(n);
+
+        if (pParams->version != NV_NGX_GET_DRIVER_FEATURE_SUPPORT_PARAMS_VER1)
+            return IncompatibleStructVersion(n, pParams->version);
+
+        if (pParams->featureCount > NVAPI_MAX_NGX_FEATURES_PER_QUERY)
+            return InvalidArgument(n);
+
+        for (NvU32 i = 0; i < pParams->featureCount; ++i) {
+            auto& info = pParams->featureSupportInfo[i];
+
+            switch (info.featureId) {
+                case NV_NGX_DRIVER_FEATURE_ID_SET_FLIP_CONFIG_V2:
+                    info.bSupported = NV_TRUE;
+                    break;
+                default:
+                    info.bSupported = NV_FALSE;
+                    break;
+            }
+        }
+
+        return Ok(n);
+    }
 }

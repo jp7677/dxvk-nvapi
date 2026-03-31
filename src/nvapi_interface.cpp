@@ -196,6 +196,7 @@ extern "C" {
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_Mosaic_GetDisplayViewportsByResolution)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_NGX_GetNGXOverrideState)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_NGX_SetNGXOverrideState)
+        INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_NGX_GetDriverFeatureSupport)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_SYS_GetPhysicalGpuFromDisplayId)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_SYS_GetDriverAndBranchVersion)
         INSERT_AND_RETURN_WHEN_EQUALS(NvAPI_SYS_GetDisplayDriverInfo)
