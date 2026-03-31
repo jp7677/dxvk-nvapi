@@ -75,6 +75,17 @@ static std::string ToFormattedLuid(LUID& luid) {
     return ss.str();
 }
 
+static std::string ToFormattedUuid(NvU8 (&uuid)[NVAPI_UUID_LEN]) {
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+    for (auto i = 0U; i < sizeof(uuid); i++) {
+        if (i == 4 || i == 6 || i == 8 || i == 10)
+            ss << '-';
+        ss << std::setw(2) << static_cast<unsigned>(uuid[i]);
+    }
+    return ss.str();
+}
+
 TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     ::SetEnvironmentVariableA("DXVK_ENABLE_NVAPI", "1");
     ::SetEnvironmentVariableA("DXVK_NVAPI_ALLOW_OTHER_DRIVERS", "1");
@@ -104,6 +115,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     GETNVAPIPROCADDR(GPU_GetBusSlotId);
     GETNVAPIPROCADDR(GPU_GetMemoryInfoEx);
     GETNVAPIPROCADDR(GPU_GetAdapterIdFromPhysicalGpu);
+    GETNVAPIPROCADDR(GPU_GetUUID);
     GETNVAPIPROCADDR(GPU_GetArchInfo);
     GETNVAPIPROCADDR(GPU_GetCurrentPCIEDownstreamWidth);
     GETNVAPIPROCADDR(GPU_GetIRQ);
@@ -138,6 +150,7 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
     CHECK(nvAPI_GPU_GetBusSlotId);
     CHECK(nvAPI_GPU_GetMemoryInfoEx);
     CHECK(nvAPI_GPU_GetAdapterIdFromPhysicalGpu);
+    CHECK(nvAPI_GPU_GetUUID);
     CHECK(nvAPI_GPU_GetArchInfo);
     CHECK(nvAPI_GPU_GetCurrentPCIEDownstreamWidth);
     CHECK(nvAPI_GPU_GetIRQ);
@@ -256,6 +269,17 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
                 std::cout << ToFormattedLuid(luid) << " ("
                           << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.HighPart << "/"
                           << "0x" << std::setfill('0') << std::setw(8) << std::hex << luid.LowPart << ")" << std::endl;
+            else
+                std::cout << "N/A" << std::endl;
+        }
+
+        if (nvAPI_GPU_GetUUID) {
+            NV_GPU_UUID uuid;
+            uuid.version = NV_GPU_UUID_VER;
+            result = nvAPI_GPU_GetUUID(handle, &uuid);
+            std::cout << "    Adapter UUID:               ";
+            if (result == NVAPI_OK)
+                std::cout << ToFormattedUuid(uuid.uuid) << std::endl;
             else
                 std::cout << "N/A" << std::endl;
         }

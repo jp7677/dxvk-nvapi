@@ -727,6 +727,43 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
         }
     }
 
+    SECTION("GetUUID succeeds") {
+        auto id = std::array<NvU8, 16>{0x46, 0x36, 0xcc, 0x74, 0x2d, 0x36, 0x11, 0xf1, 0xb1, 0x36, 0xa0, 0x29, 0x42, 0x87, 0x15, 0x4f};
+
+        ALLOW_CALL(*t->Vk(), GetPhysicalDeviceProperties2(_, _, _))
+            .SIDE_EFFECT(
+                VkMock::ConfigureGetPhysicalDeviceProperties2(_3,
+                    [&id](auto vkProps) {
+                        std::copy(id.begin(), id.end(), vkProps.idProps->deviceUUID);
+                        vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                    }));
+
+        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+        NvPhysicalGpuHandle handle;
+        REQUIRE(NvAPI_SYS_GetPhysicalGpuFromDisplayId(primaryDisplayId, &handle) == NVAPI_OK);
+
+        SECTION("GetUUID returns OK") {
+            NV_GPU_UUID uuid;
+            uuid.version = NV_GPU_UUID_VER1;
+            REQUIRE(NvAPI_GPU_GetUUID(handle, &uuid) == NVAPI_OK);
+            REQUIRE(std::memcmp(uuid.uuid, id.data(), id.size()) == 0);
+        }
+
+        SECTION("GetUUID with unknown struct version returns incompatible-struct-version") {
+            NV_GPU_UUID uuid;
+            uuid.version = NV_GPU_UUID_VER1 + 1;
+            REQUIRE(NvAPI_GPU_GetUUID(handle, &uuid) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetUUID with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            NV_GPU_UUID uuid;
+            uuid.version = NV_GPU_UUID_VER;
+            REQUIRE(NvAPI_GPU_GetUUID(handle, &uuid) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
+
     SECTION("GetArchInfo returns OK") {
         struct Data {
             VkDriverId driverId;
