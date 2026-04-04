@@ -81,6 +81,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Vulkan_GetSleepStatus(HANDLE vkDevice, NV_VULKAN_GET_SLEEP_STATUS_PARAMS* pGetSleepStatusParams) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedHandleInvalidated = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::ptr(vkDevice), log::fmt::nv_vk_get_sleep_status_params(pGetSleepStatusParams));
@@ -100,7 +101,7 @@ extern "C" {
 
         // TODO: check native behavior for this case
         if (!lowLatencyDevice)
-            return HandleInvalidated(n);
+            return HandleInvalidated(n, alreadyLoggedHandleInvalidated);
 
         pGetSleepStatusParams->bLowLatencyMode = lowLatencyDevice->GetLowLatencyMode();
 
@@ -110,6 +111,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Vulkan_SetSleepMode(HANDLE vkDevice, NV_VULKAN_SET_SLEEP_MODE_PARAMS* pSetSleepModeParams) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedHandleInvalidated = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::ptr(vkDevice), log::fmt::nv_vk_set_sleep_status_params(pSetSleepModeParams));
@@ -125,7 +127,7 @@ extern "C" {
         auto lowLatencyDevice = NvapiVulkanLowLatencyDevice::Get(device);
 
         if (!lowLatencyDevice)
-            return HandleInvalidated(n);
+            return HandleInvalidated(n, alreadyLoggedHandleInvalidated);
 
         auto vr = pSetSleepModeParams
             ? lowLatencyDevice->SetLatencySleepMode(pSetSleepModeParams->bLowLatencyMode, pSetSleepModeParams->bLowLatencyBoost, pSetSleepModeParams->minimumIntervalUs)
@@ -137,6 +139,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Vulkan_Sleep(HANDLE vkDevice, NvU64 signalValue) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedHandleInvalidated = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::ptr(vkDevice), signalValue);
@@ -149,7 +152,7 @@ extern "C" {
         auto lowLatencyDevice = NvapiVulkanLowLatencyDevice::Get(device);
 
         if (!lowLatencyDevice)
-            return HandleInvalidated(n);
+            return HandleInvalidated(n, alreadyLoggedHandleInvalidated);
 
         auto vr = lowLatencyDevice->LatencySleep(signalValue);
 
@@ -159,6 +162,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Vulkan_GetLatency(HANDLE vkDevice, NV_VULKAN_LATENCY_RESULT_PARAMS* pGetLatencyParams) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedHandleInvalidated = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::ptr(vkDevice), log::fmt::nv_vk_latency_result_params(pGetLatencyParams));
@@ -177,7 +181,7 @@ extern "C" {
         auto lowLatencyDevice = NvapiVulkanLowLatencyDevice::Get(device);
 
         if (!lowLatencyDevice)
-            return HandleInvalidated(n);
+            return HandleInvalidated(n, alreadyLoggedHandleInvalidated);
 
         static constexpr auto count = sizeof(pGetLatencyParams->frameReport) / sizeof(*pGetLatencyParams->frameReport);
         static_assert(count == 64);
@@ -201,6 +205,7 @@ extern "C" {
     NvAPI_Status __cdecl NvAPI_Vulkan_SetLatencyMarker(HANDLE vkDevice, NV_VULKAN_LATENCY_MARKER_PARAMS* pSetLatencyMarkerParams) {
         constexpr auto n = __func__;
         thread_local bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedHandleInvalidated = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::ptr(vkDevice), log::fmt::nv_vk_latency_marker_params(pSetLatencyMarkerParams));
@@ -219,7 +224,7 @@ extern "C" {
         auto lowLatencyDevice = NvapiVulkanLowLatencyDevice::Get(device);
 
         if (!lowLatencyDevice)
-            return HandleInvalidated(n);
+            return HandleInvalidated(n, alreadyLoggedHandleInvalidated);
 
         auto markerType = pSetLatencyMarkerParams->markerType;
         auto marker = NvapiVulkanLowLatencyDevice::ToVkLatencyMarkerNV(markerType);
