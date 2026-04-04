@@ -187,6 +187,13 @@ extern "C" {
                     .MaxContentLightLevel = pHDRColorDataV1->mastering_display_data.max_content_light_level,
                     .MaxFrameAverageLightLevel = pHDRColorDataV1->mastering_display_data.max_frame_average_light_level,
                 };
+
+                // Filter invalid input data
+                if (metadata.MinMasteringLuminance != 0 && metadata.MinMasteringLuminance >= metadata.MaxMasteringLuminance * 10000) {
+                    metadata.MaxMasteringLuminance = 0;
+                    metadata.MinMasteringLuminance = 0;
+                }
+
                 if (FAILED(interop->SetGlobalHDRState(colorspace, &metadata)))
                     return InvalidArgument(n);
             }
