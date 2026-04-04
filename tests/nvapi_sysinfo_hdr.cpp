@@ -261,6 +261,23 @@ TEST_CASE("HDR related sysinfo methods succeed", "[.sysinfo-hdr]") {
             REQUIRE(inMetadata.MaxFrameAverageLightLevel == 799);
         }
 
+        SECTION("HdrColorControl (V2) with set command sanitizes invalid input and returns OK") {
+            NV_HDR_COLOR_DATA colorData{};
+            colorData.version = NV_HDR_COLOR_DATA_VER2;
+            colorData.cmd = NV_HDR_CMD_SET;
+            colorData.hdrMode = NV_HDR_MODE_UHDA_PASSTHROUGH;
+            colorData.mastering_display_data.min_display_mastering_luminance = 0;
+            colorData.mastering_display_data.max_display_mastering_luminance = 0;
+            colorData.mastering_display_data.max_content_light_level = 0;
+            colorData.mastering_display_data.max_frame_average_light_level = 0;
+
+            REQUIRE(NvAPI_Disp_HdrColorControl(primaryDisplayId, &colorData) == NVAPI_OK);
+            REQUIRE(inMetadata.MinMasteringLuminance == 100);
+            REQUIRE(inMetadata.MaxMasteringLuminance == 1499);
+            REQUIRE(inMetadata.MaxContentLightLevel == 1499);
+            REQUIRE(inMetadata.MaxFrameAverageLightLevel == 799);
+        }
+
         SECTION("HdrColorControl with unknown struct version returns incompatible-struct-version") {
             NV_HDR_COLOR_DATA colorData;
             colorData.version = NV_HDR_COLOR_DATA_VER2 + 1;

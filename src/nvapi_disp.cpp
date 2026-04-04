@@ -187,6 +187,20 @@ extern "C" {
                     .MaxContentLightLevel = pHDRColorDataV1->mastering_display_data.max_content_light_level,
                     .MaxFrameAverageLightLevel = pHDRColorDataV1->mastering_display_data.max_frame_average_light_level,
                 };
+
+                // Fallback to the monitor's actual EDID capabilities if the application
+                // fails to provide valid luminance boundaries. This mimics Windows NVIDIA driver behavior.
+                if (metadata.MaxMasteringLuminance == 0 || metadata.MinMasteringLuminance >= metadata.MaxMasteringLuminance * 10000) {
+                    metadata.MaxMasteringLuminance = data.MaxLuminance;
+                    metadata.MinMasteringLuminance = data.MinLuminance;
+                }
+
+                if (metadata.MaxContentLightLevel == 0)
+                    metadata.MaxContentLightLevel = data.MaxLuminance;
+
+                if (metadata.MaxFrameAverageLightLevel == 0)
+                    metadata.MaxFrameAverageLightLevel = data.MaxFullFrameLuminance;
+
                 if (FAILED(interop->SetGlobalHDRState(colorspace, &metadata)))
                     return InvalidArgument(n);
             }
