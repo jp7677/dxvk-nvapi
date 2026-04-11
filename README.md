@@ -114,10 +114,14 @@ The following environment variables tweak DXVK-NVAPI's runtime behavior:
 - `DXVK_NVAPI_DRS_SETTINGS` allows providing custom values for arbitrary driver settings. Currently, only values of DWORD (u32) type are supported. Format is `setting1=value1,setting2=value2,…` where both `settingN` and `valueN` are unsigned 32-bit integers and can be prefixed with `0x` or `0X` to parse them as hexadecimal numbers. For example, `DXVK_NVAPI_DRS_SETTINGS=0x10E41DF3=0xffffff,0x10E41DF7=0xffffff` overrides presets for both DLSS Super Resolution and DLSS Ray Reconstruction to latest.
   - Additionally, the following settings are supported in their named/text form:
     - `NGX_DLAA_OVERRIDE`
+    - `NGX_DLSSG_DYNAMIC_MULTI_FRAME_COUNT_MAX`
+    - `NGX_DLSSG_DYNAMIC_TARGET_FRAME_RATE`
+    - `NGX_DLSSG_MODE`
     - `NGX_DLSSG_MULTI_FRAME_COUNT`
     - `NGX_DLSS_FG_OVERRIDE`
-    - `NGX_DLSS_RR_MODE`
+    - `NGX_DLSS_FG_OVERRIDE_RENDER_PRESET_SELECTION`
     - `NGX_DLSS_OVERRIDE_OPTIMAL_SETTINGS`
+    - `NGX_DLSS_RR_MODE`
     - `NGX_DLSS_RR_OVERRIDE`
     - `NGX_DLSS_RR_OVERRIDE_RENDER_PRESET_SELECTION`
     - `NGX_DLSS_RR_OVERRIDE_SCALING_RATIO`
