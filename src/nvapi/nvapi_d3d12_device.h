@@ -28,6 +28,9 @@ namespace dxvk {
         [[nodiscard]] HRESULT GetCudaMergedTextureSamplerObject(D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS* params) const;
         [[nodiscard]] HRESULT GetCudaIndependentDescriptorObject(D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS* params) const;
 
+        [[nodiscard]] bool IsNvShaderExtnOpCodeSupported(UINT32 opCode) const;
+        [[nodiscard]] HRESULT SetNvShaderExtnSlotSpace(UINT32 uavSlot, UINT32 uavSpace, bool localThread) const;
+
       private:
         static std::unordered_map<ID3D12Device*, NvapiD3d12Device> m_nvapiDeviceMap;
         static std::mutex m_mutex;
@@ -37,8 +40,9 @@ namespace dxvk {
 
         static std::optional<bool> m_cubin64bitSupportAvailable;
 
-        ID3D12DeviceExt2* m_vkd3dDevice{};
+        ID3D12DeviceExt4* m_vkd3dDevice{};
         bool m_supportsCubin64bit = false;
+        bool m_supportsNvShaderExtn = false;
         bool m_supportsNvxBinaryImport = false;
         bool m_supportsNvxImageViewHandle = false;
     };
