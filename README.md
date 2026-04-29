@@ -146,6 +146,7 @@ The following environment variables tweak DXVK-NVAPI's runtime behavior:
 - `DXVK_NVAPI_LOG_PATH` enables file logging additionally to console output and sets the path where the log file `nvapi.log`/`nvapi64.log`/`nvofapi64.log` should be written to. Log statements are appended to an existing file. Please remove this file once in a while to prevent excessive grow. This requires `DXVK_NVAPI_LOG_LEVEL` set to `info` or `trace`.
 - `DXVK_NVAPI_FAKE_VKREFLEX`, when set to `1`, allows successful Vulkan Reflex initialization when the DXVK-NVAPI's Vulkan Reflex layer is not installed. Latency will not be reduced, please ensure that the layer is present for real Reflex support for Vulkan titles. This setting is enabled by default for DOOM: The Dark Ages to prevent a pink tint issue.
 - `DXVK_NVAPI_SET_NGX_DEBUG_OPTIONS` allows to set various NGX debug registry keys with the format `setting1=value1,setting2=value2,…`, whereas values are of type DWORD (u32). Setting the registry keys for enabling DLSS indicators corresponds to `DXVK_NVAPI_SET_NGX_DEBUG_OPTIONS=DLSSIndicator=1024,DLSSGIndicator=2`, hiding the indicators to `DXVK_NVAPI_SET_NGX_DEBUG_OPTIONS=DLSSIndicator=0,DLSSGIndicator=0`. Be aware, this tweak permanently modifies the registry.
+- `DXVK_NVAPI_D3D12_NV_SHADER_EXTN`, when set to `1`, enables experimental support for NVIDIA shader extensions in D3D12 titles.
 
 The following environment variables tweak DXVK-NVAPI's Vulkan Reflex layer's runtime behavior:
 
