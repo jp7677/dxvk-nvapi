@@ -77,7 +77,7 @@ namespace dxvk {
     }
 
     NvapiD3d12Device::NvapiD3d12Device(ID3D12DeviceExt* vkd3dDevice)
-        : m_vkd3dDevice(static_cast<ID3D12DeviceExt2*>(vkd3dDevice)) {
+        : m_vkd3dDevice(static_cast<ID3D12DeviceExt4*>(vkd3dDevice)) {
         m_supportsNvxBinaryImport = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_BINARY_IMPORT);
         m_supportsNvxImageViewHandle = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_IMAGE_VIEW_HANDLE);
 
@@ -85,6 +85,10 @@ namespace dxvk {
             if (Com<ID3D12DeviceExt2> deviceExt2; SUCCEEDED(m_vkd3dDevice->QueryInterface(IID_PPV_ARGS(&deviceExt2)))) {
                 m_supportsCubin64bit = deviceExt2->SupportsCubin64bit();
             }
+        }
+
+        if (Com<ID3D12DeviceExt4> deviceExt4; SUCCEEDED(m_vkd3dDevice->QueryInterface(IID_PPV_ARGS(&deviceExt4)))) {
+            m_supportsNvShaderExtn = true;
         }
     }
 
@@ -171,5 +175,16 @@ namespace dxvk {
             return E_NOTIMPL;
 
         return m_vkd3dDevice->GetCudaIndependentDescriptorObject(params);
+    }
+
+    bool NvapiD3d12Device::IsNvShaderExtnOpCodeSupported(UINT32 opCode) const {
+        return m_supportsNvShaderExtn && m_vkd3dDevice->IsNvShaderExtnOpCodeSupported(opCode);
+    }
+
+    HRESULT NvapiD3d12Device::SetNvShaderExtnSlotSpace(UINT32 uavSlot, UINT32 uavSpace, bool localThread) const {
+        if (!m_supportsNvShaderExtn)
+            return E_NOTIMPL;
+
+        return m_vkd3dDevice->SetNvShaderExtnSlotSpace(uavSlot, uavSpace, localThread);
     }
 }
