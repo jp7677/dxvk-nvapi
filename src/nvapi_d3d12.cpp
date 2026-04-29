@@ -17,6 +17,7 @@ extern "C" {
 
     NvAPI_Status __cdecl NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device* pDevice, NvU32 opCode, bool* pSupported) {
         constexpr auto n = __func__;
+        thread_local bool alreadyLoggedNoImplementation = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDevice), opCode, log::fmt::ptr(pSupported));
@@ -24,10 +25,13 @@ extern "C" {
         if (!pDevice || !pSupported)
             return InvalidArgument(n);
 
-        // VKD3D-Proton does not know any NVIDIA intrinsics
-        *pSupported = false;
+        auto device = NvapiD3d12Device::GetOrCreate(pDevice);
+        if (!device)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
 
-        return Ok(str::format(n, " (", opCode, "/", fromCode(opCode), ")"));
+        *pSupported = env::isD3d12NvShaderExtnEnabled() && device->IsNvShaderExtnOpCodeSupported(opCode);
+
+        return Ok(str::format(n, " (", opCode, "/", fromCode(opCode), ": ", *pSupported ? "Supported)" : "Unsupported)"));
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_EnumerateMetaCommands(ID3D12Device* pDevice, NvU32* pNumMetaCommands, NVAPI_META_COMMAND_DESC* pDescs) {
@@ -539,22 +543,11 @@ extern "C" {
         return Ok(str::format(n, " (", numExtensions, "/", extensionNames, ")"), alreadyLoggedOk);
     }
 
-    NvAPI_Status __cdecl NvAPI_D3D12_SetNvShaderExtnSlotSpace(IUnknown* pDevice, NvU32 uavSlot, NvU32 uavSpace) {
+    NvAPI_Status __cdecl NvAPI_D3D12_SetNvShaderExtnSlotSpace(IUnknown* pDev, NvU32 uavSlot, NvU32 uavSpace) {
         constexpr auto n = __func__;
+        thread_local bool alreadyLoggedOk = false;
         thread_local bool alreadyLoggedNoImplementation = false;
-
-        if (log::tracing())
-            log::trace(n, log::fmt::ptr(pDevice), uavSlot, uavSpace);
-
-        if (!pDevice)
-            return InvalidArgument(n);
-
-        return NoImplementation(n, alreadyLoggedNoImplementation);
-    }
-
-    NvAPI_Status __cdecl NvAPI_D3D12_SetNvShaderExtnSlotSpaceLocalThread(IUnknown* pDev, NvU32 uavSlot, NvU32 uavSpace) {
-        constexpr auto n = __func__;
-        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedError = false;
 
         if (log::tracing())
             log::trace(n, log::fmt::ptr(pDev), uavSlot, uavSpace);
@@ -562,7 +555,58 @@ extern "C" {
         if (!pDev)
             return InvalidArgument(n);
 
-        return NoImplementation(n, alreadyLoggedNoImplementation);
+        if (!env::isD3d12NvShaderExtnEnabled())
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        Com<ID3D12Device> d3d12Device;
+        if (!SUCCEEDED(pDev->QueryInterface(&d3d12Device)))
+            return InvalidArgument(n);
+
+        auto device = NvapiD3d12Device::GetOrCreate(d3d12Device.ptr());
+        if (!device)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        switch (device->SetNvShaderExtnSlotSpace(uavSlot, uavSpace, false)) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
+    }
+
+    NvAPI_Status __cdecl NvAPI_D3D12_SetNvShaderExtnSlotSpaceLocalThread(IUnknown* pDev, NvU32 uavSlot, NvU32 uavSpace) {
+        constexpr auto n = __func__;
+        thread_local bool alreadyLoggedOk = false;
+        thread_local bool alreadyLoggedNoImplementation = false;
+        thread_local bool alreadyLoggedError = false;
+
+        if (log::tracing())
+            log::trace(n, log::fmt::ptr(pDev), uavSlot, uavSpace);
+
+        if (!pDev)
+            return InvalidArgument(n);
+
+        if (!env::isD3d12NvShaderExtnEnabled())
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        Com<ID3D12Device> d3d12Device;
+        if (!SUCCEEDED(pDev->QueryInterface(&d3d12Device)))
+            return InvalidArgument(n);
+
+        auto device = NvapiD3d12Device::GetOrCreate(d3d12Device.ptr());
+        if (!device)
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+
+        switch (device->SetNvShaderExtnSlotSpace(uavSlot, uavSpace, true)) {
+            case S_OK:
+                return Ok(n, alreadyLoggedOk);
+            case E_NOTIMPL:
+                return NoImplementation(n, alreadyLoggedNoImplementation);
+            default:
+                return Error(n, alreadyLoggedError);
+        }
     }
 
     bool SetDepthBoundsTestValues(ID3D12GraphicsCommandList* commandList, const float minDepth, const float maxDepth) {

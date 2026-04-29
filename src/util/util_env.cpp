@@ -186,6 +186,20 @@ namespace dxvk::env {
         return false;
     }
 
+    bool isD3d12NvShaderExtnEnabled() {
+        static bool alreadyLogged = false;
+
+        static bool enabled = getEnvVariable("DXVK_NVAPI_D3D12_NV_SHADER_EXTN") == "1";
+        if (enabled) {
+            if (!std::exchange(alreadyLogged, true))
+                log::info("Enabling experimental support for D3D12 NvShader extensions");
+
+            return true;
+        }
+
+        return false;
+    }
+
     std::optional<NV_GPU_ARCHITECTURE_ID> getGpuArchitectureOverride() {
         constexpr auto gpuArchEnvName = "DXVK_NVAPI_GPU_ARCH";
         NV_GPU_ARCHITECTURE_ID override{};
