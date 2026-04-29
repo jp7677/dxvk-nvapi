@@ -83,6 +83,25 @@ typedef struct D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS {
     UINT64 handle;
 } D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS;
 
+typedef enum D3D12_AGS_EXTENSION {
+    D3D12_AGS_EXTENSION_INTRINSICS_16 = 0,
+    D3D12_AGS_EXTENSION_INTRINSICS_17,
+    D3D12_AGS_EXTENSION_USER_MARKERS,
+    D3D12_AGS_EXTENSION_APP_REGISTRATION,
+    D3D12_AGS_EXTENSION_UAV_BIND_SLOT,
+    D3D12_AGS_EXTENSION_INTRINSICS_19,
+    D3D12_AGS_EXTENSION_BASE_VERTEX,
+    D3D12_AGS_EXTENSION_BASE_INSTANCE,
+    D3D12_AGS_EXTENSION_GET_WAVE_SIZE,
+    D3D12_AGS_EXTENSION_FLOAT_CONVERSION,
+    D3D12_AGS_EXTENSION_READ_LANE_AT,
+    D3D12_AGS_EXTENSION_RAY_HIT_TOKEN,
+    D3D12_AGS_EXTENSION_SHADER_TOKEN,
+
+    D3D12_AGS_EXTENSION_WMMA_FP8 = 100,
+    D3D12_AGS_EXTENSION_WMMA_FP8_NATIVE
+} D3D12_AGS_EXTENSION;
+
 MIDL_INTERFACE("11ea7a1a-0f6a-49bf-b612-3e30f8e201dd")
 ID3D12DeviceExt : public IUnknown {
     virtual HRESULT STDMETHODCALLTYPE GetVulkanHandles(
@@ -130,6 +149,18 @@ ID3D12DeviceExt2 : public ID3D12DeviceExt1 {
     virtual HRESULT CreateCubinComputeShaderExV2(D3D12_CREATE_CUBIN_SHADER_PARAMS * params) = 0;
     virtual HRESULT GetCudaMergedTextureSamplerObject(D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS * params) = 0;
     virtual HRESULT GetCudaIndependentDescriptorObject(D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS * params) = 0;
+};
+
+MIDL_INTERFACE("3aefa75c-c9f3-4b7f-a180-5df695d083bf")
+ID3D12DeviceExt3 : public ID3D12DeviceExt2 {
+    virtual BOOL SupportsAGSExtension(D3D12_AGS_EXTENSION agsExtension) = 0;
+    virtual HRESULT SetAGSUAVSlot(UINT uavSlot) = 0;
+};
+
+MIDL_INTERFACE("a91b5617-a06a-4d6f-b437-03ebbef91415")
+ID3D12DeviceExt4 : public ID3D12DeviceExt3 {
+    virtual BOOL IsNvShaderExtnOpCodeSupported(UINT32 op_code) = 0;
+    virtual HRESULT SetNvShaderExtnSlotSpace(UINT32 uav_slot, UINT32 uav_space, BOOL local_thread) = 0;
 };
 
 MIDL_INTERFACE("39da4e09-bd1c-4198-9fae-86bbe3be41fd")
@@ -240,6 +271,8 @@ ID3D12CommandQueueExt : public IUnknown {
 __CRT_UUID_DECL(ID3D12DeviceExt, 0x11ea7a1a, 0x0f6a, 0x49bf, 0xb6, 0x12, 0x3e, 0x30, 0xf8, 0xe2, 0x01, 0xdd);
 __CRT_UUID_DECL(ID3D12DeviceExt1, 0x099a73fd, 0x2199, 0x4f45, 0xbf, 0x48, 0x0e, 0xb8, 0x6f, 0x6f, 0xdb, 0x65);
 __CRT_UUID_DECL(ID3D12DeviceExt2, 0xe859c4ac, 0xba8f, 0x41c4, 0x8e, 0xac, 0x11, 0x37, 0xfd, 0xe6, 0x15, 0x8d);
+__CRT_UUID_DECL(ID3D12DeviceExt3, 0x3aefa75c, 0xc9f3, 0x4b7f, 0xa1, 0x80, 0x5d, 0xf6, 0x95, 0xd0, 0x83, 0xbf);
+__CRT_UUID_DECL(ID3D12DeviceExt4, 0xa91b5617, 0xa06a, 0x4d6f, 0xb4, 0x37, 0x03, 0xeb, 0xbe, 0xf9, 0x14, 0x15);
 __CRT_UUID_DECL(ID3D12DXVKInteropDevice, 0x39da4e09, 0xbd1c, 0x4198, 0x9f, 0xae, 0x86, 0xbb, 0xe3, 0xbe, 0x41, 0xfd);
 __CRT_UUID_DECL(ID3D12DXVKInteropDevice1, 0x902d8115, 0x59eb, 0x4406, 0x95, 0x18, 0xfe, 0x00, 0xf9, 0x91, 0xee, 0x65);
 __CRT_UUID_DECL(ID3D12GraphicsCommandListExt, 0x77a86b09, 0x2bea, 0x4801, 0xb8, 0x9a, 0x37, 0x64, 0x8e, 0x10, 0x4a, 0xf1);
