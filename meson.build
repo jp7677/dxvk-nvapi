@@ -29,7 +29,7 @@ if not dxvk_is_msvc
     '-Wl,--file-alignment=4096'
   ]
 else
-  compiler_args += ['-D_CRT_SECURE_NO_WARNINGS']
+  compiler_args += ['-D_CRT_SECURE_NO_WARNINGS', '/Zc:preprocessor']
   link_args += ['/FILEALIGN:4096']
 endif
 
