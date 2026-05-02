@@ -664,7 +664,7 @@ extern "C" {
                 auto adapterSupport = adapter && adapter->GetReorderingHint() == VK_RAY_TRACING_INVOCATION_REORDER_MODE_REORDER_NV;
                 auto deviceSupport = device && device->IsNvShaderExtnOpCodeSupported(NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD);
 
-                *static_cast<NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS*>(pData) = adapterSupport && deviceSupport
+                *static_cast<NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS*>(pData) = adapterSupport && deviceSupport && env::isD3d12NvShaderExtnEnabled()
                     ? NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD
                     : NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
                 break;
