@@ -12,6 +12,34 @@
 #include "util/util_string.h"
 #include "util/util_env.h"
 
+static inline std::optional<NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS> GetThreadReorderingCaps(ID3D12Device* pDevice, dxvk::NvapiD3d12Device* device) {
+    if (!dxvk::env::isD3d12NvShaderExtnEnabled())
+        return {};
+
+    if (!device || !device->IsNvShaderExtnOpCodeSupported(NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD))
+        return {};
+
+#if defined(_MSC_VER)
+    LUID luid = pDevice->GetAdapterLuid();
+#else
+    LUID luid;
+    pDevice->GetAdapterLuid(&luid);
+#endif
+
+    auto adapter = nvapiAdapterRegistry->FindAdapter(luid);
+    if (!adapter)
+        return {};
+
+    switch (adapter->GetReorderingHint()) {
+        case VK_RAY_TRACING_INVOCATION_REORDER_MODE_NONE_NV:
+            return NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
+        case VK_RAY_TRACING_INVOCATION_REORDER_MODE_REORDER_NV:
+            return NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD;
+        default:
+            return {};
+    }
+}
+
 extern "C" {
     using namespace dxvk;
 
@@ -654,19 +682,7 @@ extern "C" {
                 if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS))
                     return InvalidArgument(n);
 
-#if defined(_MSC_VER)
-                LUID luid = pDevice->GetAdapterLuid();
-#else
-                LUID luid;
-                pDevice->GetAdapterLuid(&luid);
-#endif
-                auto adapter = nvapiAdapterRegistry->FindAdapter(luid);
-                auto adapterSupport = adapter && adapter->GetReorderingHint() == VK_RAY_TRACING_INVOCATION_REORDER_MODE_REORDER_NV;
-                auto deviceSupport = device && device->IsNvShaderExtnOpCodeSupported(NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD);
-
-                *static_cast<NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS*>(pData) = adapterSupport && deviceSupport && env::isD3d12NvShaderExtnEnabled()
-                    ? NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD
-                    : NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
+                *static_cast<NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS*>(pData) = GetThreadReorderingCaps(pDevice, device).value_or(NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE);
                 break;
             }
 
