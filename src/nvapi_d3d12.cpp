@@ -507,7 +507,7 @@ NVAPI_FUNCTION NvAPI_D3D12_IsFatbinPTXSupported(ID3D12Device* pDevice, bool* isS
     return Ok(str::format(n, "(", *isSupported ? "Supported" : "Unsupported", ")"), alreadyLoggedOk);
 }
 
-inline bool CreateGraphicsPipelineState(ID3D12Device* device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pipelineStateDescription, NvU32 numberOfExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** extensions, ID3D12PipelineState** pipelineState) {
+inline static bool CreateGraphicsPipelineState(ID3D12Device* device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pipelineStateDescription, NvU32 numberOfExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** extensions, ID3D12PipelineState** pipelineState) {
     if (numberOfExtensions != 1 || extensions[0]->psoExtension != NV_PSO_ENABLE_DEPTH_BOUND_TEST_EXTENSION)
         return false;
 
@@ -608,7 +608,7 @@ NVAPI_FUNCTION NvAPI_D3D12_SetNvShaderExtnSlotSpaceLocalThread(IUnknown* pDev, N
     }
 }
 
-inline bool SetDepthBoundsTestValues(ID3D12GraphicsCommandList* commandList, const float minDepth, const float maxDepth) {
+inline static bool SetDepthBoundsTestValues(ID3D12GraphicsCommandList* commandList, const float minDepth, const float maxDepth) {
     Com<ID3D12GraphicsCommandList1> commandList1;
     if (FAILED(commandList->QueryInterface(IID_PPV_ARGS(&commandList1)))) // There is no VKD3D-Proton version out there that does not implement ID3D12GraphicsCommandList1, this should always succeed
         return false;
@@ -634,7 +634,7 @@ NVAPI_FUNCTION NvAPI_D3D12_SetDepthBoundsTestValues(ID3D12GraphicsCommandList* p
     return Ok(n, alreadyLoggedOk);
 }
 
-inline std::optional<NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS> GetThreadReorderingCaps(ID3D12Device* pDevice, dxvk::NvapiD3d12Device* device) {
+inline static std::optional<NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS> GetThreadReorderingCaps(ID3D12Device* pDevice, dxvk::NvapiD3d12Device* device) {
     if (!env::isD3d12NvShaderExtnEnabled())
         return {};
 
@@ -734,7 +734,7 @@ NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingCaps(ID3D12Device* pDevice, NVAPI_D3D12_
     return Ok(str::format(n, " (", type, "/", fromRaytracingCaps(type), ")"));
 }
 
-inline bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
+inline static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
     d3dDesc->Type = nvDesc->type;
     // assume that OMM via VK_EXT_opacity_micromap and DMM via VK_NV_displacement_micromap are not supported, allow only standard flags to be passed
     d3dDesc->Flags = static_cast<D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS>(nvDesc->flags & 0x3f);

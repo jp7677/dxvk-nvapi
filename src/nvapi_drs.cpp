@@ -149,7 +149,7 @@ NVAPI_FUNCTION NvAPI_DRS_DeleteProfile(NvDRSSessionHandle hSession, NvDRSProfile
     return NotSupported(n);
 }
 
-inline _SettingDWORDNameString* GetDwordSetting(NvU32 settingId) {
+inline static _SettingDWORDNameString* GetDwordSetting(NvU32 settingId) {
     auto it = std::find_if(
         std::begin(mapSettingDWORD),
         std::end(mapSettingDWORD),
@@ -158,7 +158,7 @@ inline _SettingDWORDNameString* GetDwordSetting(NvU32 settingId) {
     return it != std::end(mapSettingDWORD) ? it : nullptr;
 }
 
-inline std::string GetSettingName(NvU32 settingId) {
+inline static std::string GetSettingName(NvU32 settingId) {
     auto itD = GetDwordSetting(settingId);
     if (itD)
         return str::fromws(itD->settingNameString);
