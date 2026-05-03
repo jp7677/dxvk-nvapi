@@ -26,6 +26,7 @@
 #include "../nvofapi_private.h"
 #include "../shared/resource_factory.h"
 #include "nvofapi_instance.h"
+#include "../interfaces/vkd3d-proton_interfaces.h"
 #include "../util/com_pointer.h"
 
 namespace dxvk {

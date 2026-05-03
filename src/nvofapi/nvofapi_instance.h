@@ -26,7 +26,6 @@
 #include "../nvofapi_private.h"
 #include "../shared/resource_factory.h"
 #include "../shared/vk.h"
-#include "../interfaces/vkd3d-proton_interfaces.h"
 
 namespace dxvk {
     constexpr uint32_t CMDS_IN_FLIGHT = 8;
