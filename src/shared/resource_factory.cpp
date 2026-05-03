@@ -1,5 +1,4 @@
 #include "resource_factory.h"
-#include "../interfaces/dxvk_interfaces.h"
 #include "../util/util_string.h"
 #include "../util/util_log.h"
 
