@@ -150,7 +150,7 @@ extern "C" {
         return NotSupported(n);
     }
 
-    _SettingDWORDNameString* GetDwordSetting(NvU32 settingId) {
+    extern "C++" inline _SettingDWORDNameString* GetDwordSetting(NvU32 settingId) {
         auto it = std::find_if(
             std::begin(mapSettingDWORD),
             std::end(mapSettingDWORD),
@@ -159,7 +159,7 @@ extern "C" {
         return it != std::end(mapSettingDWORD) ? it : nullptr;
     }
 
-    std::string GetSettingName(NvU32 settingId) {
+    extern "C++" inline std::string GetSettingName(NvU32 settingId) {
         auto itD = GetDwordSetting(settingId);
         if (itD)
             return str::fromws(itD->settingNameString);

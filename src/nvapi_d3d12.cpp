@@ -12,34 +12,6 @@
 #include "util/util_string.h"
 #include "util/util_env.h"
 
-static inline std::optional<NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS> GetThreadReorderingCaps(ID3D12Device* pDevice, dxvk::NvapiD3d12Device* device) {
-    if (!dxvk::env::isD3d12NvShaderExtnEnabled())
-        return {};
-
-    if (!device || !device->IsNvShaderExtnOpCodeSupported(NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD))
-        return {};
-
-#if defined(_MSC_VER)
-    LUID luid = pDevice->GetAdapterLuid();
-#else
-    LUID luid;
-    pDevice->GetAdapterLuid(&luid);
-#endif
-
-    auto adapter = nvapiAdapterRegistry->FindAdapter(luid);
-    if (!adapter)
-        return {};
-
-    switch (adapter->GetReorderingHint()) {
-        case VK_RAY_TRACING_INVOCATION_REORDER_MODE_NONE_NV:
-            return NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
-        case VK_RAY_TRACING_INVOCATION_REORDER_MODE_REORDER_NV:
-            return NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD;
-        default:
-            return {};
-    }
-}
-
 extern "C" {
     using namespace dxvk;
 
@@ -536,7 +508,7 @@ extern "C" {
         return Ok(str::format(n, "(", *isSupported ? "Supported" : "Unsupported", ")"), alreadyLoggedOk);
     }
 
-    bool CreateGraphicsPipelineState(ID3D12Device* device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pipelineStateDescription, NvU32 numberOfExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** extensions, ID3D12PipelineState** pipelineState) {
+    extern "C++" inline bool CreateGraphicsPipelineState(ID3D12Device* device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pipelineStateDescription, NvU32 numberOfExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** extensions, ID3D12PipelineState** pipelineState) {
         if (numberOfExtensions != 1 || extensions[0]->psoExtension != NV_PSO_ENABLE_DEPTH_BOUND_TEST_EXTENSION)
             return false;
 
@@ -637,7 +609,7 @@ extern "C" {
         }
     }
 
-    bool SetDepthBoundsTestValues(ID3D12GraphicsCommandList* commandList, const float minDepth, const float maxDepth) {
+    extern "C++" inline bool SetDepthBoundsTestValues(ID3D12GraphicsCommandList* commandList, const float minDepth, const float maxDepth) {
         Com<ID3D12GraphicsCommandList1> commandList1;
         if (FAILED(commandList->QueryInterface(IID_PPV_ARGS(&commandList1)))) // There is no VKD3D-Proton version out there that does not implement ID3D12GraphicsCommandList1, this should always succeed
             return false;
@@ -661,6 +633,34 @@ extern "C" {
             return Error(n, alreadyLoggedError);
 
         return Ok(n, alreadyLoggedOk);
+    }
+
+    extern "C++" inline std::optional<NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS> GetThreadReorderingCaps(ID3D12Device* pDevice, dxvk::NvapiD3d12Device* device) {
+        if (!env::isD3d12NvShaderExtnEnabled())
+            return {};
+
+        if (!device || !device->IsNvShaderExtnOpCodeSupported(NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD))
+            return {};
+
+#if defined(_MSC_VER)
+        LUID luid = pDevice->GetAdapterLuid();
+#else
+        LUID luid;
+        pDevice->GetAdapterLuid(&luid);
+#endif
+
+        auto adapter = nvapiAdapterRegistry->FindAdapter(luid);
+        if (!adapter)
+            return {};
+
+        switch (adapter->GetReorderingHint()) {
+            case VK_RAY_TRACING_INVOCATION_REORDER_MODE_NONE_NV:
+                return NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
+            case VK_RAY_TRACING_INVOCATION_REORDER_MODE_REORDER_NV:
+                return NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD;
+            default:
+                return {};
+        }
     }
 
     NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingCaps(ID3D12Device* pDevice, NVAPI_D3D12_RAYTRACING_CAPS_TYPE type, void* pData, size_t dataSize) {
@@ -735,7 +735,7 @@ extern "C" {
         return Ok(str::format(n, " (", type, "/", fromRaytracingCaps(type), ")"));
     }
 
-    static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
+    extern "C++" inline bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX* nvDesc, std::vector<D3D12_RAYTRACING_GEOMETRY_DESC>& geometryDescs, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS* d3dDesc) {
         d3dDesc->Type = nvDesc->type;
         // assume that OMM via VK_EXT_opacity_micromap and DMM via VK_NV_displacement_micromap are not supported, allow only standard flags to be passed
         d3dDesc->Flags = static_cast<D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS>(nvDesc->flags & 0x3f);

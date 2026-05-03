@@ -6,7 +6,7 @@
 extern "C" {
     using namespace dxvk;
 
-    static DXGI_COLOR_SPACE_TYPE HDRModeToColorSpace(NV_HDR_MODE mode) {
+    extern "C++" inline DXGI_COLOR_SPACE_TYPE HDRModeToColorSpace(NV_HDR_MODE mode) {
         switch (mode) {
             default:
                 log::info(str::format("Unhandled HDR type: ", mode, " Falling back to sRGB."));
@@ -22,7 +22,7 @@ extern "C" {
         }
     }
 
-    static NV_HDR_MODE ColorSpaceToHDRMode(DXGI_COLOR_SPACE_TYPE colorspace) {
+    extern "C++" inline NV_HDR_MODE ColorSpaceToHDRMode(DXGI_COLOR_SPACE_TYPE colorspace) {
         switch (colorspace) {
             default:
                 log::info(str::format("Unhandled colorspace type: ", colorspace, " Falling back to OFF."));
