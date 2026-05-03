@@ -179,6 +179,8 @@ meson setup --reconfigure --cross-file "./build-win64.txt" --buildtype "debugopt
 meson compile -C buildDir
 
 DXVK_LOG_LEVEL=none DXVK_NVAPI_LOG_LEVEL=none WINEDEBUG=-all WINEDLLOVERRIDES=nvapi64=n WINEPATH=buildDir/src winedbg --gdb buildDir/tests/nvapi64-tests.exe [@all]
+# or alternatively for attaching with GDB
+DXVK_LOG_LEVEL=none DXVK_NVAPI_LOG_LEVEL=none WINEDEBUG=-all WINEDLLOVERRIDES=nvapi64=n WINEPATH=buildDir/src wine buildDir/tests/nvapi64-tests.exe --wait-for-keypress start [@all]
 ```
 
 Once the debug session has started, use `c` to start/continue execution and a.o. `bt` to show a proper stacktrace after a segmentation fault. Ensure to have no other native `nvapi64.dll` in the Wine prefix, otherwise this one gets precedence over the one found in `WINEPATH`.
