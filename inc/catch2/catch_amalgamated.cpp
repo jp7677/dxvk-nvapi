@@ -6,8 +6,8 @@
 
 // SPDX-License-Identifier: BSL-1.0
 
-//  Catch v3.13.0
-//  Generated: 2026-02-15 22:55:00.269529
+//  Catch v3.14.0
+//  Generated: 2026-04-05 15:03:01.631668
 //  ----------------------------------------------------------
 //  This file is an amalgamation of multiple different files.
 //  You probably shouldn't edit it directly.
@@ -2397,7 +2397,7 @@ namespace Catch {
     }
 
     Version const& libraryVersion() {
-        static Version version( 3, 13, 0, "", 0 );
+        static Version version( 3, 14, 0, "", 0 );
         return version;
     }
 
@@ -5888,9 +5888,14 @@ namespace Catch {
                         // can be, so the tracker has to throw for a wrong
                         // filter to stop the execution flow.
                         if (filter.type == PathFilter::For::Section) {
-                            // TBD: Explicit SKIP, or new exception that says
-                            //      "don't continue", but doesn't show in totals?
-                            SKIP();
+                            // We want the semantics of `SKIP()`, but we inline it
+                            // to avoid issues with conditionally prefixed macros
+                            INTERNAL_CATCH_MSG(
+                                "SKIP",
+                                Catch::ResultWas::ExplicitSkip,
+                                Catch::ResultDisposition::Normal,
+                                "" );
+                            Catch::Detail::Unreachable();
                         }
                         // '*' is the wildcard for "all elements in generator"
                         // used for filtering sections below the generator, but
@@ -6347,8 +6352,12 @@ namespace Catch {
         // TBD: Do we want to avoid the warning if the generator is filtered?
         if ( m_config->warnAboutInfiniteGenerators() &&
              !generator->isFinite() ) {
-            // TBD: Would it be better to expand this macro inline?
-            FAIL( "GENERATE() would run infinitely" );
+            // We want the semantics of `FAIL()`, but we inline it
+            // to avoid issues with conditionally prefixed macros
+            INTERNAL_CATCH_MSG( "FAIL",
+                                Catch::ResultWas::ExplicitFailure,
+                                Catch::ResultDisposition::Normal,
+                                "GENERATE() would run infinitely" );
         }
 
         auto nameAndLoc = TestCaseTracking::NameAndLocation( static_cast<std::string>( generatorName ), lineInfo );
@@ -7893,6 +7902,10 @@ namespace {
         return std::memchr( chars, c, sizeof( chars ) - 1 ) != nullptr;
     }
 
+    bool isUtf8ContinuationByte( char c ) {
+        return ( static_cast<unsigned char>( c ) & 0xC0 ) == 0x80;
+    }
+
 } // namespace
 
 namespace Catch {
@@ -7919,6 +7932,11 @@ namespace Catch {
                 if ( it != m_string.end() ) {
                     ++m_size;
                     ++it;
+                    // Skip UTF-8 continuation bytes
+                    while ( it != m_string.end() &&
+                            isUtf8ContinuationByte( *it ) ) {
+                        ++it;
+                    }
                 }
             }
         }
@@ -7981,6 +7999,11 @@ namespace Catch {
         void AnsiSkippingString::const_iterator::advance() {
             assert( m_it != m_string->end() );
             m_it++;
+            // Skip UTF-8 continuation bytes
+            while ( m_it != m_string->end() &&
+                    isUtf8ContinuationByte( *m_it ) ) {
+                m_it++;
+            }
             tryParseAnsiEscapes();
         }
 
@@ -7998,6 +8021,11 @@ namespace Catch {
                 // skipped over ansi sequences at the start of a string
                 assert( m_it != m_string->begin() );
                 assert( *m_it == '\033' );
+                m_it--;
+            }
+            // Skip back over UTF-8 continuation bytes to the leading byte
+            while ( isUtf8ContinuationByte( *m_it ) ) {
+                assert( m_it != m_string->begin() );
                 m_it--;
             }
         }
@@ -9152,12 +9180,12 @@ namespace Catch {
 
     void ReporterBase::listReporters(
         std::vector<ReporterDescription> const& descriptions ) {
-        defaultListReporters(m_stream, descriptions, m_config->verbosity());
+        defaultListReporters( m_stream, descriptions, m_config->verbosity() );
     }
 
     void ReporterBase::listListeners(
         std::vector<ListenerDescription> const& descriptions ) {
-        defaultListListeners( m_stream, descriptions );
+        defaultListListeners( m_stream, descriptions, m_config->verbosity() );
     }
 
     void ReporterBase::listTests(std::vector<TestCaseHandle> const& tests) {
@@ -9169,7 +9197,7 @@ namespace Catch {
     }
 
     void ReporterBase::listTags(std::vector<TagInfo> const& tags) {
-        defaultListTags( m_stream, tags, m_config->hasTestFilters() );
+        defaultListTags( m_stream, tags, m_config->hasTestFilters(), m_config->verbosity() );
     }
 
 } // namespace Catch
@@ -10380,7 +10408,15 @@ namespace Catch {
     }
 
     void defaultListListeners( std::ostream& out,
-                               std::vector<ListenerDescription> const& descriptions ) {
+                               std::vector<ListenerDescription> const& descriptions,
+                               Verbosity verbosity ) {
+        if ( verbosity == Verbosity::Quiet ) {
+            for ( auto const& desc : descriptions ) {
+                out << desc.name << '\n';
+            }
+            return;
+        }
+
         out << "Registered listeners:\n";
 
         if(descriptions.empty()) {
@@ -10413,7 +10449,14 @@ namespace Catch {
 
     void defaultListTags( std::ostream& out,
                           std::vector<TagInfo> const& tags,
-                          bool isFiltered ) {
+                          bool isFiltered,
+                          Verbosity verbosity ) {
+        if (verbosity == Verbosity::Quiet) {
+            for (auto const& tagCount : tags) {
+                out << tagCount.all() << '\n';
+            }
+            return;
+        }
         if ( isFiltered ) {
             out << "Tags for matching test cases:\n";
         } else {
@@ -10432,7 +10475,7 @@ namespace Catch {
                                       return lhs.count < rhs.count;
                                   } )
                     ->count;
-            
+
             // more padding necessary for 3+ digits
             if (maxTagCount >= 100) {
                 auto numDigits = 1 + std::floor( std::log10( maxTagCount ) );
@@ -11189,70 +11232,77 @@ namespace Catch {
     void JunitReporter::writeAssertions( SectionNode const& sectionNode ) {
         for (auto const& assertionOrBenchmark : sectionNode.assertionsAndBenchmarks) {
             if (assertionOrBenchmark.isAssertion()) {
-                writeAssertion(assertionOrBenchmark.asAssertion());
+                // JUnit XML format supports only 1 error/failure/skip
+                // assertion elements per test case
+                if (writeAssertion(assertionOrBenchmark.asAssertion())) {
+                    break;
+                }
             }
         }
     }
 
-    void JunitReporter::writeAssertion( AssertionStats const& stats ) {
+    bool JunitReporter::writeAssertion( AssertionStats const& stats ) {
         AssertionResult const& result = stats.assertionResult;
-        if ( !result.isOk() ||
-             result.getResultType() == ResultWas::ExplicitSkip ) {
-            std::string elementName;
-            switch( result.getResultType() ) {
-                case ResultWas::ThrewException:
-                case ResultWas::FatalErrorCondition:
-                    elementName = "error";
-                    break;
-                case ResultWas::ExplicitFailure:
-                case ResultWas::ExpressionFailed:
-                case ResultWas::DidntThrowException:
-                    elementName = "failure";
-                    break;
-                case ResultWas::ExplicitSkip:
-                    elementName = "skipped";
-                    break;
-                // We should never see these here:
-                case ResultWas::Info:
-                case ResultWas::Warning:
-                case ResultWas::Ok:
-                case ResultWas::Unknown:
-                case ResultWas::FailureBit:
-                case ResultWas::Exception:
-                    elementName = "internalError";
-                    break;
-            }
-
-            XmlWriter::ScopedElement e = xml.scopedElement( elementName );
-
-            xml.writeAttribute( "message"_sr, result.getExpression() );
-            xml.writeAttribute( "type"_sr, result.getTestMacroName() );
-
-            ReusableStringStream rss;
-            if ( result.getResultType() == ResultWas::ExplicitSkip ) {
-                rss << "SKIPPED\n";
-            } else {
-                rss << "FAILED" << ":\n";
-                if (result.hasExpression()) {
-                    rss << "  ";
-                    rss << result.getExpressionInMacro();
-                    rss << '\n';
-                }
-                if (result.hasExpandedExpression()) {
-                    rss << "with expansion:\n";
-                    rss << TextFlow::Column(result.getExpandedExpression()).indent(2) << '\n';
-                }
-            }
-
-            if( result.hasMessage() )
-                rss << result.getMessage() << '\n';
-            for( auto const& msg : stats.infoMessages )
-                if( msg.type == ResultWas::Info )
-                    rss << msg.message << '\n';
-
-            rss << "at " << result.getSourceInfo();
-            xml.writeText( rss.str(), XmlFormatting::Newline );
+        if ( result.isOk() &&
+             result.getResultType() != ResultWas::ExplicitSkip ) {
+            return false;
         }
+        std::string elementName;
+        switch ( result.getResultType() ) {
+        case ResultWas::ThrewException:
+        case ResultWas::FatalErrorCondition:
+            elementName = "error";
+            break;
+        case ResultWas::ExplicitFailure:
+        case ResultWas::ExpressionFailed:
+        case ResultWas::DidntThrowException:
+            elementName = "failure";
+            break;
+        case ResultWas::ExplicitSkip:
+            elementName = "skipped";
+            break;
+        // We should never see these here:
+        case ResultWas::Info:
+        case ResultWas::Warning:
+        case ResultWas::Ok:
+        case ResultWas::Unknown:
+        case ResultWas::FailureBit:
+        case ResultWas::Exception:
+            elementName = "internalError";
+            break;
+        }
+
+        XmlWriter::ScopedElement e = xml.scopedElement( elementName );
+
+        xml.writeAttribute( "message"_sr, result.getExpression() );
+        xml.writeAttribute( "type"_sr, result.getTestMacroName() );
+
+        ReusableStringStream rss;
+        if ( result.getResultType() == ResultWas::ExplicitSkip ) {
+            rss << "SKIPPED\n";
+        } else {
+            rss << "FAILED:\n";
+            if ( result.hasExpression() ) {
+                rss << "  ";
+                rss << result.getExpressionInMacro();
+                rss << '\n';
+            }
+            if ( result.hasExpandedExpression() ) {
+                rss << "with expansion:\n";
+                rss << TextFlow::Column( result.getExpandedExpression() )
+                           .indent( 2 )
+                    << '\n';
+            }
+        }
+
+        if ( result.hasMessage() ) { rss << result.getMessage() << '\n'; }
+        for ( auto const& msg : stats.infoMessages ) {
+            if ( msg.type == ResultWas::Info ) { rss << msg.message << '\n'; }
+        }
+
+        rss << "at " << result.getSourceInfo();
+        xml.writeText( rss.str(), XmlFormatting::Newline );
+        return true;
     }
 
 } // end namespace Catch
