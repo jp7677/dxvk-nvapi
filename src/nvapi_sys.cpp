@@ -66,7 +66,7 @@ extern "C" {
                 pDriverInfoV1->driverVersion = nvapiAdapterRegistry->GetFirstAdapter()->GetDriverVersion();
                 str::tonvss(pDriverInfoV1->szBuildBranch, str::format("r", NVAPI_SDK_VERSION, "_", DXVK_NVAPI_VERSION));
                 pDriverInfoV1->bIsDCHDriver = 1;              // Assume DCH driver for Windows
-                pDriverInfoV1->bIsNVIDIAStudioPackage = 0;    // Lets not support "Studio Package"
+                pDriverInfoV1->bIsNVIDIAStudioPackage = 0;    // Let's not support "Studio Package"
                 pDriverInfoV1->bIsNVIDIAGameReadyPackage = 1; // GameReady Package should be "safe" even if other packages is used
                 pDriverInfoV1->bIsNVIDIARTXProductionBranchPackage = 0;
                 pDriverInfoV1->bIsNVIDIARTXNewFeatureBranchPackage = 0;
@@ -76,7 +76,7 @@ extern "C" {
                 pDriverInfo->driverVersion = nvapiAdapterRegistry->GetFirstAdapter()->GetDriverVersion();
                 str::tonvss(pDriverInfo->szBuildBranch, str::format("r", NVAPI_SDK_VERSION, "_", DXVK_NVAPI_VERSION));
                 pDriverInfo->bIsDCHDriver = 1;              // Assume DCH driver for Windows
-                pDriverInfo->bIsNVIDIAStudioPackage = 0;    // Lets not support "Studio Package"
+                pDriverInfo->bIsNVIDIAStudioPackage = 0;    // Let's not support "Studio Package"
                 pDriverInfo->bIsNVIDIAGameReadyPackage = 1; // GameReady Package should be "safe" even if other packages is used
                 pDriverInfo->bIsNVIDIARTXProductionBranchPackage = 0;
                 pDriverInfo->bIsNVIDIARTXNewFeatureBranchPackage = 0;
