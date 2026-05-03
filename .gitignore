@@ -10,3 +10,4 @@ config.h
 layer/version.h
 layer/config.h
 compile_commands.json
+.gdbinit
