@@ -9,260 +9,258 @@ static auto drs = 1U;
 static auto nvapiDrsSession = reinterpret_cast<NvDRSSessionHandle>(&drs);
 static auto nvapiDrsProfile = reinterpret_cast<NvDRSProfileHandle>(&drs);
 
-extern "C" {
-    using namespace dxvk;
+using namespace dxvk;
 
-    NvAPI_Status __cdecl NvAPI_DRS_CreateSession(NvDRSSessionHandle* phSession) {
-        constexpr auto n = __func__;
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_CreateSession(NvDRSSessionHandle* phSession) {
+    constexpr auto n = __func__;
 
-        if (log::tracing())
-            log::trace(n, log::fmt::ptr(phSession));
+    if (log::tracing())
+        log::trace(n, log::fmt::ptr(phSession));
 
-        if (!phSession)
-            return InvalidArgument(n);
+    if (!phSession)
+        return InvalidArgument(n);
 
-        *phSession = nvapiDrsSession;
+    *phSession = nvapiDrsSession;
 
-        return Ok(n);
+    return Ok(n);
+}
+
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_LoadSettings(NvDRSSessionHandle hSession) {
+    constexpr auto n = __func__;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::hnd(hSession));
+
+    return Ok(n);
+}
+
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_SaveSettings(NvDRSSessionHandle hSession) {
+    constexpr auto n = __func__;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::hnd(hSession));
+
+    return NotSupported(n);
+}
+
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_SetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_SETTING* pSetting) {
+    constexpr auto n = __func__;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), log::fmt::ptr(pSetting));
+
+    return NotSupported(n);
+}
+
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_FindProfileByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString profileName, NvDRSProfileHandle* phProfile) {
+    constexpr auto n = __func__;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(profileName), log::fmt::ptr(phProfile));
+
+    if (!phProfile)
+        return InvalidArgument(n);
+
+    *phProfile = nvapiDrsProfile;
+
+    return Ok(n);
+}
+
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_FindApplicationByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString appName, NvDRSProfileHandle* phProfile, NVDRS_APPLICATION* pApplication) {
+    constexpr auto n = __func__;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(appName), log::fmt::ptr(phProfile), log::fmt::ptr(pApplication));
+
+    if (!phProfile || !pApplication)
+        return InvalidArgument(n);
+
+    switch (pApplication->version) {
+        case NVDRS_APPLICATION_VER_V4:
+            std::memset(pApplication->commandLine, 0, sizeof(pApplication->commandLine));
+            [[fallthrough]];
+        case NVDRS_APPLICATION_VER_V3:
+            pApplication->isCommandLine = 0;
+            pApplication->isMetro = 0;
+            [[fallthrough]];
+        case NVDRS_APPLICATION_VER_V2:
+            std::memset(pApplication->fileInFolder, 0, sizeof(pApplication->fileInFolder));
+            [[fallthrough]];
+        case NVDRS_APPLICATION_VER_V1:
+            std::memset(pApplication->launcher, 0, sizeof(pApplication->launcher));
+            std::memset(pApplication->userFriendlyName, 0, sizeof(pApplication->userFriendlyName));
+            std::memset(pApplication->appName, 0, sizeof(pApplication->appName));
+            str::copynvus(pApplication->userFriendlyName, appName);
+            str::copynvus(pApplication->appName, appName);
+            pApplication->isPredefined = 0;
+            break;
+        default:
+            return IncompatibleStructVersion(n, pApplication->version);
     }
 
-    NvAPI_Status __cdecl NvAPI_DRS_LoadSettings(NvDRSSessionHandle hSession) {
-        constexpr auto n = __func__;
+    *phProfile = nvapiDrsProfile;
 
-        if (log::tracing())
-            log::trace(n, log::fmt::hnd(hSession));
+    return Ok(n);
+}
 
-        return Ok(n);
-    }
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
+    constexpr auto n = __func__;
 
-    NvAPI_Status __cdecl NvAPI_DRS_SaveSettings(NvDRSSessionHandle hSession) {
-        constexpr auto n = __func__;
+    if (log::tracing())
+        log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(phProfile));
 
-        if (log::tracing())
-            log::trace(n, log::fmt::hnd(hSession));
+    if (!phProfile)
+        return InvalidArgument(n);
 
-        return NotSupported(n);
-    }
+    *phProfile = nvapiDrsProfile;
 
-    NvAPI_Status __cdecl NvAPI_DRS_SetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_SETTING* pSetting) {
-        constexpr auto n = __func__;
+    return Ok(n);
+}
 
-        if (log::tracing())
-            log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), log::fmt::ptr(pSetting));
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_GetCurrentGlobalProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
+    constexpr auto n = __func__;
 
-        return NotSupported(n);
-    }
+    if (log::tracing())
+        log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(phProfile));
 
-    NvAPI_Status __cdecl NvAPI_DRS_FindProfileByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString profileName, NvDRSProfileHandle* phProfile) {
-        constexpr auto n = __func__;
+    if (!phProfile)
+        return InvalidArgument(n);
 
-        if (log::tracing())
-            log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(profileName), log::fmt::ptr(phProfile));
+    *phProfile = nvapiDrsProfile;
 
-        if (!phProfile)
-            return InvalidArgument(n);
+    return Ok(n);
+}
 
-        *phProfile = nvapiDrsProfile;
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_CreateProfile(NvDRSSessionHandle hSession, NVDRS_PROFILE* pProfileInfo, NvDRSProfileHandle* phProfile) {
+    constexpr auto n = __func__;
 
-        return Ok(n);
-    }
+    if (log::tracing())
+        log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(pProfileInfo), log::fmt::ptr(phProfile));
 
-    NvAPI_Status __cdecl NvAPI_DRS_FindApplicationByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString appName, NvDRSProfileHandle* phProfile, NVDRS_APPLICATION* pApplication) {
-        constexpr auto n = __func__;
+    return NotSupported(n);
+}
 
-        if (log::tracing())
-            log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(appName), log::fmt::ptr(phProfile), log::fmt::ptr(pApplication));
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_DeleteProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile) {
+    constexpr auto n = __func__;
 
-        if (!phProfile || !pApplication)
-            return InvalidArgument(n);
+    if (log::tracing())
+        log::trace(n, log::fmt::hnd(hSession));
 
-        switch (pApplication->version) {
-            case NVDRS_APPLICATION_VER_V4:
-                std::memset(pApplication->commandLine, 0, sizeof(pApplication->commandLine));
-                [[fallthrough]];
-            case NVDRS_APPLICATION_VER_V3:
-                pApplication->isCommandLine = 0;
-                pApplication->isMetro = 0;
-                [[fallthrough]];
-            case NVDRS_APPLICATION_VER_V2:
-                std::memset(pApplication->fileInFolder, 0, sizeof(pApplication->fileInFolder));
-                [[fallthrough]];
-            case NVDRS_APPLICATION_VER_V1:
-                std::memset(pApplication->launcher, 0, sizeof(pApplication->launcher));
-                std::memset(pApplication->userFriendlyName, 0, sizeof(pApplication->userFriendlyName));
-                std::memset(pApplication->appName, 0, sizeof(pApplication->appName));
-                str::copynvus(pApplication->userFriendlyName, appName);
-                str::copynvus(pApplication->appName, appName);
-                pApplication->isPredefined = 0;
-                break;
-            default:
-                return IncompatibleStructVersion(n, pApplication->version);
-        }
+    return NotSupported(n);
+}
 
-        *phProfile = nvapiDrsProfile;
+inline _SettingDWORDNameString* GetDwordSetting(NvU32 settingId) {
+    auto it = std::find_if(
+        std::begin(mapSettingDWORD),
+        std::end(mapSettingDWORD),
+        [&settingId](const auto& item) { return item.settingId == settingId; });
 
-        return Ok(n);
-    }
+    return it != std::end(mapSettingDWORD) ? it : nullptr;
+}
 
-    NvAPI_Status __cdecl NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
-        constexpr auto n = __func__;
+inline std::string GetSettingName(NvU32 settingId) {
+    auto itD = GetDwordSetting(settingId);
+    if (itD)
+        return str::fromws(itD->settingNameString);
 
-        if (log::tracing())
-            log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(phProfile));
+    auto itW = std::find_if(
+        std::begin(mapSettingWSTRING),
+        std::end(mapSettingWSTRING),
+        [&settingId](const auto& item) { return item.settingId == settingId; });
+    if (itW != std::end(mapSettingWSTRING))
+        return str::fromws(itW->settingNameString);
 
-        if (!phProfile)
-            return InvalidArgument(n);
+    return {"Unknown"};
+}
 
-        *phProfile = nvapiDrsProfile;
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
+    constexpr auto n = __func__;
+    static const auto nvapiDrsSettingsEnvName = "DXVK_NVAPI_DRS_SETTINGS";
+    static const auto nvapiDrsSettingsEnvPrefix = "DXVK_NVAPI_DRS_";
+    static const auto nvapiDrsSettingsString = dxvk::env::getEnvVariable(nvapiDrsSettingsEnvName);
+    static const auto nvapiDrsDwords = dxvk::drs::enrichwithenv(dxvk::drs::parsedrsdwordsettings(nvapiDrsSettingsString), nvapiDrsSettingsEnvPrefix);
 
-        return Ok(n);
-    }
+    if (log::tracing())
+        log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), settingId, log::fmt::ptr(pSetting));
 
-    NvAPI_Status __cdecl NvAPI_DRS_GetCurrentGlobalProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
-        constexpr auto n = __func__;
+    static std::once_flag once;
+    std::call_once(once, []() {
+        if (nvapiDrsDwords.empty())
+            return;
 
-        if (log::tracing())
-            log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(phProfile));
+        log::info(str::format("Applying the following DRS settings when requested by the application (", nvapiDrsDwords.size(), " total):"));
+        for (auto& [key, value] : nvapiDrsDwords)
+            log::info(str::format("    0x", std::hex, key, "/", GetSettingName(key), " = 0x", std::hex, value));
+    });
 
-        if (!phProfile)
-            return InvalidArgument(n);
+    if (!pSetting)
+        return InvalidArgument(n);
 
-        *phProfile = nvapiDrsProfile;
+    if (pSetting->version != NVDRS_SETTING_VER1)
+        return IncompatibleStructVersion(n, pSetting->version);
 
-        return Ok(n);
-    }
+    auto id = str::format("0x", std::hex, settingId);
 
-    NvAPI_Status __cdecl NvAPI_DRS_CreateProfile(NvDRSSessionHandle hSession, NVDRS_PROFILE* pProfileInfo, NvDRSProfileHandle* phProfile) {
-        constexpr auto n = __func__;
+    if (auto it = nvapiDrsDwords.find(settingId); it != nvapiDrsDwords.end()) {
+        auto value = it->second;
+        pSetting->settingId = settingId;
+        pSetting->settingType = NVDRS_DWORD_TYPE;
+        pSetting->settingLocation = NVDRS_CURRENT_PROFILE_LOCATION;
+        pSetting->isCurrentPredefined = 0;
+        pSetting->isPredefinedValid = 1;
+        pSetting->u32CurrentValue = value;
 
-        if (log::tracing())
-            log::trace(n, log::fmt::hnd(hSession), log::fmt::ptr(pProfileInfo), log::fmt::ptr(phProfile));
-
-        return NotSupported(n);
-    }
-
-    NvAPI_Status __cdecl NvAPI_DRS_DeleteProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile) {
-        constexpr auto n = __func__;
-
-        if (log::tracing())
-            log::trace(n, log::fmt::hnd(hSession));
-
-        return NotSupported(n);
-    }
-
-    extern "C++" inline _SettingDWORDNameString* GetDwordSetting(NvU32 settingId) {
-        auto it = std::find_if(
-            std::begin(mapSettingDWORD),
-            std::end(mapSettingDWORD),
-            [&settingId](const auto& item) { return item.settingId == settingId; });
-
-        return it != std::end(mapSettingDWORD) ? it : nullptr;
-    }
-
-    extern "C++" inline std::string GetSettingName(NvU32 settingId) {
         auto itD = GetDwordSetting(settingId);
-        if (itD)
-            return str::fromws(itD->settingNameString);
-
-        auto itW = std::find_if(
-            std::begin(mapSettingWSTRING),
-            std::end(mapSettingWSTRING),
-            [&settingId](const auto& item) { return item.settingId == settingId; });
-        if (itW != std::end(mapSettingWSTRING))
-            return str::fromws(itW->settingNameString);
-
-        return {"Unknown"};
-    }
-
-    NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
-        constexpr auto n = __func__;
-        static const auto nvapiDrsSettingsEnvName = "DXVK_NVAPI_DRS_SETTINGS";
-        static const auto nvapiDrsSettingsEnvPrefix = "DXVK_NVAPI_DRS_";
-        static const auto nvapiDrsSettingsString = dxvk::env::getEnvVariable(nvapiDrsSettingsEnvName);
-        static const auto nvapiDrsDwords = dxvk::drs::enrichwithenv(dxvk::drs::parsedrsdwordsettings(nvapiDrsSettingsString), nvapiDrsSettingsEnvPrefix);
-
-        if (log::tracing())
-            log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), settingId, log::fmt::ptr(pSetting));
-
-        static std::once_flag once;
-        std::call_once(once, []() {
-            if (nvapiDrsDwords.empty())
-                return;
-
-            log::info(str::format("Applying the following DRS settings when requested by the application (", nvapiDrsDwords.size(), " total):"));
-            for (auto& [key, value] : nvapiDrsDwords)
-                log::info(str::format("    0x", std::hex, key, "/", GetSettingName(key), " = 0x", std::hex, value));
-        });
-
-        if (!pSetting)
-            return InvalidArgument(n);
-
-        if (pSetting->version != NVDRS_SETTING_VER1)
-            return IncompatibleStructVersion(n, pSetting->version);
-
-        auto id = str::format("0x", std::hex, settingId);
-
-        if (auto it = nvapiDrsDwords.find(settingId); it != nvapiDrsDwords.end()) {
-            auto value = it->second;
-            pSetting->settingId = settingId;
-            pSetting->settingType = NVDRS_DWORD_TYPE;
-            pSetting->settingLocation = NVDRS_CURRENT_PROFILE_LOCATION;
-            pSetting->isCurrentPredefined = 0;
-            pSetting->isPredefinedValid = 1;
-            pSetting->u32CurrentValue = value;
-
-            auto itD = GetDwordSetting(settingId);
-            if (itD) {
-                std::memcpy(pSetting->settingName, itD->settingNameString, sizeof(pSetting->settingName));
-                pSetting->u32PredefinedValue = itD->defaultValue;
-            } else {
-                std::memset(pSetting->settingName, 0, sizeof(pSetting->settingName));
-                pSetting->u32PredefinedValue = 0;
-            }
-
-            auto name = itD ? str::fromws(itD->settingNameString) : "Unknown";
-            return Ok(str::format(n, " (", id, "/", name, " = 0x", std::hex, value, ")"));
+        if (itD) {
+            std::memcpy(pSetting->settingName, itD->settingNameString, sizeof(pSetting->settingName));
+            pSetting->u32PredefinedValue = itD->defaultValue;
+        } else {
+            std::memset(pSetting->settingName, 0, sizeof(pSetting->settingName));
+            pSetting->u32PredefinedValue = 0;
         }
 
-        return SettingNotFound(str::format(n, " (", id, "/", GetSettingName(settingId), ")"));
+        auto name = itD ? str::fromws(itD->settingNameString) : "Unknown";
+        return Ok(str::format(n, " (", id, "/", name, " = 0x", std::hex, value, ")"));
     }
 
-    NvAPI_Status __cdecl NvAPI_DRS_GetProfileInfo(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_PROFILE* pProfileInfo) {
-        constexpr auto n = __func__;
+    return SettingNotFound(str::format(n, " (", id, "/", GetSettingName(settingId), ")"));
+}
 
-        if (log::tracing())
-            log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), log::fmt::ptr(pProfileInfo));
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_GetProfileInfo(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_PROFILE* pProfileInfo) {
+    constexpr auto n = __func__;
 
-        if (!pProfileInfo)
-            return InvalidArgument(n);
+    if (log::tracing())
+        log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), log::fmt::ptr(pProfileInfo));
 
-        if (pProfileInfo->version != NVDRS_PROFILE_VER1)
-            return IncompatibleStructVersion(n, pProfileInfo->version);
+    if (!pProfileInfo)
+        return InvalidArgument(n);
 
-        std::memset(pProfileInfo->profileName, 0, sizeof(pProfileInfo->profileName));
-        pProfileInfo->gpuSupport = {};
-        pProfileInfo->isPredefined = 0;
-        pProfileInfo->numOfApps = 0;
-        pProfileInfo->numOfSettings = 0;
+    if (pProfileInfo->version != NVDRS_PROFILE_VER1)
+        return IncompatibleStructVersion(n, pProfileInfo->version);
 
-        return Ok(n);
-    }
+    std::memset(pProfileInfo->profileName, 0, sizeof(pProfileInfo->profileName));
+    pProfileInfo->gpuSupport = {};
+    pProfileInfo->isPredefined = 0;
+    pProfileInfo->numOfApps = 0;
+    pProfileInfo->numOfSettings = 0;
 
-    NvAPI_Status __cdecl NvAPI_DRS_CreateApplication(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_APPLICATION* pApplication) {
-        constexpr auto n = __func__;
+    return Ok(n);
+}
 
-        if (log::tracing())
-            log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), log::fmt::ptr(pApplication));
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_CreateApplication(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_APPLICATION* pApplication) {
+    constexpr auto n = __func__;
 
-        return NotSupported(n);
-    }
+    if (log::tracing())
+        log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), log::fmt::ptr(pApplication));
 
-    NvAPI_Status __cdecl NvAPI_DRS_DestroySession(NvDRSSessionHandle hSession) {
-        constexpr auto n = __func__;
+    return NotSupported(n);
+}
 
-        if (log::tracing())
-            log::trace(n, log::fmt::hnd(hSession));
+extern "C" NvAPI_Status __cdecl NvAPI_DRS_DestroySession(NvDRSSessionHandle hSession) {
+    constexpr auto n = __func__;
 
-        return Ok(n);
-    }
+    if (log::tracing())
+        log::trace(n, log::fmt::hnd(hSession));
+
+    return Ok(n);
 }
