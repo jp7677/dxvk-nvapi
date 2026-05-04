@@ -189,7 +189,7 @@ namespace dxvk::env {
     bool isD3d12NvShaderExtnEnabled() {
         static bool alreadyLogged = false;
 
-        static bool enabled = getEnvVariable("DXVK_NVAPI_D3D12_NV_SHADER_EXTN") == "1";
+        static bool enabled = getEnvVariable("DXVK_NVAPI_D3D12_NV_SHADER_EXTN") != "0";
         if (enabled) {
             if (!std::exchange(alreadyLogged, true))
                 log::info("Enabling experimental support for D3D12 NvShader extensions");
