@@ -294,7 +294,7 @@ TEST_CASE("D3D Reflex depending methods succeed", "[.d3d]") {
                 NV_GET_SLEEP_STATUS_PARAMS_V1 params{};
                 params.version = NV_GET_SLEEP_STATUS_PARAMS_VER1;
                 REQUIRE(NvAPI_D3D_GetSleepStatus(reinterpret_cast<IUnknown*>(&d3d11Device), &params) == NVAPI_OK);
-                REQUIRE(params.bLowLatencyMode == false);
+                REQUIRE_FALSE(params.bLowLatencyMode);
             }
 
             SECTION("SetSleepMode calls ID3DLowLatencyDevice::SetLatencySleepMode returns OK") {
@@ -324,7 +324,7 @@ TEST_CASE("D3D Reflex depending methods succeed", "[.d3d]") {
                 REQUIRE(NvAPI_D3D_SetSleepMode(reinterpret_cast<IUnknown*>(&d3d11Device), &params) == NVAPI_OK);
 
                 REQUIRE(NvAPI_D3D_GetSleepStatus(reinterpret_cast<IUnknown*>(&d3d11Device), &status) == NVAPI_OK);
-                REQUIRE(status.bLowLatencyMode == false);
+                REQUIRE_FALSE(status.bLowLatencyMode);
             }
 
             SECTION("Sleep calls ID3DLowLatencyDevice::LatencySleep and returns OK") {

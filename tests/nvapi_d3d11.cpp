@@ -133,7 +133,7 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
 
         bool supported = true;
         REQUIRE(NvAPI_D3D11_IsFatbinPTXSupported(static_cast<ID3D11Device*>(&device), &supported) == NVAPI_OK);
-        REQUIRE(supported == false);
+        REQUIRE_FALSE(supported);
     }
 
     SECTION("CreateCubinComputeShader/CreateCubinComputeShaderWithName/LaunchCubinShader without extended DXVK interface returns error") {
@@ -158,7 +158,7 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
 
         bool supported = true;
         REQUIRE(NvAPI_D3D11_IsFatbinPTXSupported(static_cast<ID3D11Device*>(&device), &supported) == NVAPI_OK);
-        REQUIRE(supported == false);
+        REQUIRE_FALSE(supported);
     }
 
     SECTION("CreateUnorderedAccessView/CreateShaderResourceView/GetResourceGPUVirtualAddress/GetResourceGPUVirtualAddressEx/GetCudaTextureObject/CreateSamplerState without extended DXVK interface returns error") {
@@ -197,8 +197,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         bool supportedForContext = true;
         REQUIRE(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(static_cast<ID3D11Device*>(&device), 1U, &supportedForDevice) == NVAPI_OK);
         REQUIRE(NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(static_cast<ID3D11DeviceContext*>(&context), 1U, &supportedForContext) == NVAPI_OK);
-        REQUIRE(supportedForDevice == false);
-        REQUIRE(supportedForContext == false);
+        REQUIRE_FALSE(supportedForDevice);
+        REQUIRE_FALSE(supportedForContext);
     }
 
     SECTION("SetNvShaderExtnSlotSpace returns no-implementation") {

@@ -192,7 +192,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
             auto supported = true;
             REQUIRE(NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(&device, NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD, &supported) == NVAPI_OK);
-            REQUIRE(supported == false);
+            REQUIRE_FALSE(supported);
         }
 
         SECTION("IsNvShaderExtnOpCodeSupported without VKD3D-Proton shader support") {
@@ -201,7 +201,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
             auto supported = true;
             REQUIRE(NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(&device, NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD, &supported) == NVAPI_OK);
-            REQUIRE(supported == false);
+            REQUIRE_FALSE(supported);
         }
 
         SECTION("IsNvShaderExtnOpCodeSupported with VKD3D-Proton shader support") {

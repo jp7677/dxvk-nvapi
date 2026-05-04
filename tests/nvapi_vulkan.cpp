@@ -176,7 +176,7 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
             REQUIRE(NvAPI_Vulkan_SetSleepMode(vkDevice.get(), &setSleepModeParams) == NVAPI_OK);
 
             REQUIRE(NvAPI_Vulkan_GetSleepStatus(vkDevice.get(), &getSleepStatusParams) == NVAPI_OK);
-            REQUIRE(getSleepStatusParams.bLowLatencyMode == false);
+            REQUIRE_FALSE(getSleepStatusParams.bLowLatencyMode);
 
             REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
         }
