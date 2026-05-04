@@ -26,13 +26,13 @@
 #include "nvofapi_private.h"
 
 // Common entrypoints
-extern "C" NV_OF_STATUS NVOFAPI OFSessionInit(NvOFHandle hOf, const NV_OF_INIT_PARAMS* initParams);
+NVOFAPI_FUNCTION OFSessionInit(NvOFHandle hOf, const NV_OF_INIT_PARAMS* initParams);
 
-extern "C" NV_OF_STATUS NVOFAPI OFSessionDestroy(NvOFHandle hOf);
+NVOFAPI_FUNCTION OFSessionDestroy(NvOFHandle hOf);
 
-extern "C" NV_OF_STATUS NVOFAPI OFSessionGetLastError(NvOFHandle hOf, char lastError[], uint32_t* size);
+NVOFAPI_FUNCTION OFSessionGetLastError(NvOFHandle hOf, char lastError[], uint32_t* size);
 
-extern "C" NV_OF_STATUS NVOFAPI OFSessionGetCaps(NvOFHandle hOf, NV_OF_CAPS capsParam, uint32_t* capsVal, uint32_t* size);
+NVOFAPI_FUNCTION OFSessionGetCaps(NvOFHandle hOf, NV_OF_CAPS capsParam, uint32_t* capsVal, uint32_t* size);
 
 // Overwrite CUDA entrypoint to avoid dependency to cuda.h
-extern "C" NV_OF_STATUS NVOFAPI NvOFAPICreateInstanceCuda(uint32_t apiVer, void* functionList);
+NVOFAPI_FUNCTION NvOFAPICreateInstanceCuda(uint32_t apiVer, void* functionList);

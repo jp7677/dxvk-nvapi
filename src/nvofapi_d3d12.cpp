@@ -37,7 +37,7 @@ static auto initializationMutex = std::mutex{};
 using namespace dxvk;
 
 // D3D12 entrypoints
-extern "C" NV_OF_STATUS NVOFAPI CreateOpticalFlowD3D12(ID3D12Device* pD3D12Device, NvOFHandle* hOFInstance) {
+NVOFAPI_FUNCTION CreateOpticalFlowD3D12(ID3D12Device* pD3D12Device, NvOFHandle* hOFInstance) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -64,7 +64,7 @@ extern "C" NV_OF_STATUS NVOFAPI CreateOpticalFlowD3D12(ID3D12Device* pD3D12Devic
     return Success(n);
 }
 
-extern "C" NV_OF_STATUS NVOFAPI GetSurfaceFormatCountD3D12(NvOFHandle hOf, const NV_OF_BUFFER_USAGE bufferUsage, const NV_OF_MODE ofMode, uint32_t* const pCount) {
+NVOFAPI_FUNCTION GetSurfaceFormatCountD3D12(NvOFHandle hOf, const NV_OF_BUFFER_USAGE bufferUsage, const NV_OF_MODE ofMode, uint32_t* const pCount) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -74,7 +74,7 @@ extern "C" NV_OF_STATUS NVOFAPI GetSurfaceFormatCountD3D12(NvOFHandle hOf, const
     return Success(n);
 }
 
-extern "C" NV_OF_STATUS NVOFAPI GetSurfaceFormatD3D12(NvOFHandle hOf, const NV_OF_BUFFER_USAGE bufferUsage, const NV_OF_MODE ofMode, DXGI_FORMAT* const pFormat) {
+NVOFAPI_FUNCTION GetSurfaceFormatD3D12(NvOFHandle hOf, const NV_OF_BUFFER_USAGE bufferUsage, const NV_OF_MODE ofMode, DXGI_FORMAT* const pFormat) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -87,7 +87,7 @@ extern "C" NV_OF_STATUS NVOFAPI GetSurfaceFormatD3D12(NvOFHandle hOf, const NV_O
     return Success(n);
 }
 
-extern "C" NV_OF_STATUS NVOFAPI RegisterResourceD3D12(NvOFHandle hOf, NV_OF_REGISTER_RESOURCE_PARAMS_D3D12* registerParams) {
+NVOFAPI_FUNCTION RegisterResourceD3D12(NvOFHandle hOf, NV_OF_REGISTER_RESOURCE_PARAMS_D3D12* registerParams) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -99,7 +99,7 @@ extern "C" NV_OF_STATUS NVOFAPI RegisterResourceD3D12(NvOFHandle hOf, NV_OF_REGI
     return Success(n);
 }
 
-extern "C" NV_OF_STATUS NVOFAPI UnregisterResourceD3D12(NV_OF_UNREGISTER_RESOURCE_PARAMS_D3D12* registerParams) {
+NVOFAPI_FUNCTION UnregisterResourceD3D12(NV_OF_UNREGISTER_RESOURCE_PARAMS_D3D12* registerParams) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -110,7 +110,7 @@ extern "C" NV_OF_STATUS NVOFAPI UnregisterResourceD3D12(NV_OF_UNREGISTER_RESOURC
     return Success(n);
 }
 
-extern "C" NV_OF_STATUS NVOFAPI ExecuteD3D12(NvOFHandle hOf, const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* executeInParams, NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* executeOutParams) {
+NVOFAPI_FUNCTION ExecuteD3D12(NvOFHandle hOf, const NV_OF_EXECUTE_INPUT_PARAMS_D3D12* executeInParams, NV_OF_EXECUTE_OUTPUT_PARAMS_D3D12* executeOutParams) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
 
@@ -124,7 +124,7 @@ extern "C" NV_OF_STATUS NVOFAPI ExecuteD3D12(NvOFHandle hOf, const NV_OF_EXECUTE
 }
 
 // ETBLs
-extern "C" NV_OF_STATUS NVOFAPI NvOFAPICreateInstanceD3D12(uint32_t apiVer, NV_OF_D3D12_API_FUNCTION_LIST* functionList) {
+NVOFAPI_FUNCTION NvOFAPICreateInstanceD3D12(uint32_t apiVer, NV_OF_D3D12_API_FUNCTION_LIST* functionList) {
     uint32_t apiVerMajor = (apiVer & 0xfffffff0) >> 4;
     uint32_t apiVerMinor = (apiVer & 0xf);
     constexpr auto n = __func__;
