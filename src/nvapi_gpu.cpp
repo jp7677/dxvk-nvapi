@@ -6,7 +6,7 @@
 
 using namespace dxvk;
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetConnectedDisplayIds(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_DISPLAYIDS* pDisplayIds, NvU32* pDisplayIdCount, NvU32 flags) {
+NVAPI_FUNCTION NvAPI_GPU_GetConnectedDisplayIds(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_DISPLAYIDS* pDisplayIds, NvU32* pDisplayIdCount, NvU32 flags) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -55,7 +55,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetConnectedDisplayIds(NvPhysicalGpuHa
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetCurrentPCIEDownstreamWidth(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pWidth) {
+NVAPI_FUNCTION NvAPI_GPU_GetCurrentPCIEDownstreamWidth(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pWidth) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoNvml = false;
     thread_local bool alreadyLoggedHandleInvalidated = false;
@@ -98,7 +98,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetCurrentPCIEDownstreamWidth(NvPhysic
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetIRQ(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pIRQ) {
+NVAPI_FUNCTION NvAPI_GPU_GetIRQ(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pIRQ) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoNvml = false;
     thread_local bool alreadyLoggedHandleInvalidated = false;
@@ -141,7 +141,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetIRQ(NvPhysicalGpuHandle hPhysicalGp
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetGpuCoreCount(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pCount) {
+NVAPI_FUNCTION NvAPI_GPU_GetGpuCoreCount(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pCount) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoNvml = false;
     thread_local bool alreadyLoggedHandleInvalidated = false;
@@ -188,7 +188,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetGpuCoreCount(NvPhysicalGpuHandle hP
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetGPUType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_TYPE* pGpuType) {
+NVAPI_FUNCTION NvAPI_GPU_GetGPUType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_TYPE* pGpuType) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -209,7 +209,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetGPUType(NvPhysicalGpuHandle hPhysic
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetSystemType(NvPhysicalGpuHandle hPhysicalGpu, NV_SYSTEM_TYPE* pSystemType) {
+NVAPI_FUNCTION NvAPI_GPU_GetSystemType(NvPhysicalGpuHandle hPhysicalGpu, NV_SYSTEM_TYPE* pSystemType) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -226,7 +226,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetSystemType(NvPhysicalGpuHandle hPhy
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetPCIIdentifiers(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pDeviceId, NvU32* pSubSystemId, NvU32* pRevisionId, NvU32* pExtDeviceId) {
+NVAPI_FUNCTION NvAPI_GPU_GetPCIIdentifiers(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pDeviceId, NvU32* pSubSystemId, NvU32* pRevisionId, NvU32* pExtDeviceId) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -250,7 +250,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetPCIIdentifiers(NvPhysicalGpuHandle 
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetFullName(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szName) {
+NVAPI_FUNCTION NvAPI_GPU_GetFullName(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szName) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -271,7 +271,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetFullName(NvPhysicalGpuHandle hPhysi
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetBusId(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pBusId) {
+NVAPI_FUNCTION NvAPI_GPU_GetBusId(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pBusId) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -292,7 +292,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetBusId(NvPhysicalGpuHandle hPhysical
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetBusSlotId(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pBusSlotId) {
+NVAPI_FUNCTION NvAPI_GPU_GetBusSlotId(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pBusSlotId) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -316,7 +316,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetBusSlotId(NvPhysicalGpuHandle hPhys
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetBusType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_BUS_TYPE* pBusType) {
+NVAPI_FUNCTION NvAPI_GPU_GetBusType(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_BUS_TYPE* pBusType) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -351,7 +351,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetBusType(NvPhysicalGpuHandle hPhysic
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetPhysicalFrameBufferSize(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pSize) {
+NVAPI_FUNCTION NvAPI_GPU_GetPhysicalFrameBufferSize(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pSize) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -372,7 +372,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetPhysicalFrameBufferSize(NvPhysicalG
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetVirtualFrameBufferSize(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pSize) {
+NVAPI_FUNCTION NvAPI_GPU_GetVirtualFrameBufferSize(NvPhysicalGpuHandle hPhysicalGpu, NvU32* pSize) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -393,7 +393,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetVirtualFrameBufferSize(NvPhysicalGp
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetMemoryInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_DISPLAY_DRIVER_MEMORY_INFO* pMemoryInfo) {
+NVAPI_FUNCTION NvAPI_GPU_GetMemoryInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_DISPLAY_DRIVER_MEMORY_INFO* pMemoryInfo) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
 
@@ -450,7 +450,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetMemoryInfo(NvPhysicalGpuHandle hPhy
     return Ok(n, alreadyLoggedOk);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetMemoryInfoEx(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_MEMORY_INFO_EX* pMemoryInfo) {
+NVAPI_FUNCTION NvAPI_GPU_GetMemoryInfoEx(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_MEMORY_INFO_EX* pMemoryInfo) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
 
@@ -492,7 +492,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetMemoryInfoEx(NvPhysicalGpuHandle hP
     return Ok(n, alreadyLoggedOk);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetAdapterIdFromPhysicalGpu(NvPhysicalGpuHandle hPhysicalGpu, void* pOSAdapterId) {
+NVAPI_FUNCTION NvAPI_GPU_GetAdapterIdFromPhysicalGpu(NvPhysicalGpuHandle hPhysicalGpu, void* pOSAdapterId) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -517,7 +517,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetAdapterIdFromPhysicalGpu(NvPhysical
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetLogicalGpuInfo(NvLogicalGpuHandle hLogicalGpu, NV_LOGICAL_GPU_DATA* pLogicalGpuData) {
+NVAPI_FUNCTION NvAPI_GPU_GetLogicalGpuInfo(NvLogicalGpuHandle hLogicalGpu, NV_LOGICAL_GPU_DATA* pLogicalGpuData) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -553,7 +553,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetLogicalGpuInfo(NvLogicalGpuHandle h
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetUUID(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_UUID* pGpuUuid) {
+NVAPI_FUNCTION NvAPI_GPU_GetUUID(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_UUID* pGpuUuid) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -582,7 +582,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetUUID(NvPhysicalGpuHandle hPhysicalG
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetArchInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_ARCH_INFO* pGpuArchInfo) {
+NVAPI_FUNCTION NvAPI_GPU_GetArchInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_ARCH_INFO* pGpuArchInfo) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -663,7 +663,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetArchInfo(NvPhysicalGpuHandle hPhysi
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_CudaEnumComputeCapableGpus(NV_COMPUTE_GPU_TOPOLOGY* pComputeTopo) {
+NVAPI_FUNCTION NvAPI_GPU_CudaEnumComputeCapableGpus(NV_COMPUTE_GPU_TOPOLOGY* pComputeTopo) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -707,7 +707,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_CudaEnumComputeCapableGpus(NV_COMPUTE_
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetGPUInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_INFO* pGpuInfo) {
+NVAPI_FUNCTION NvAPI_GPU_GetGPUInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_INFO* pGpuInfo) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -746,7 +746,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetGPUInfo(NvPhysicalGpuHandle hPhysic
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetVbiosVersionString(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szBiosRevision) {
+NVAPI_FUNCTION NvAPI_GPU_GetVbiosVersionString(NvPhysicalGpuHandle hPhysicalGpu, NvAPI_ShortString szBiosRevision) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -786,7 +786,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetVbiosVersionString(NvPhysicalGpuHan
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetDynamicPstatesInfoEx(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_DYNAMIC_PSTATES_INFO_EX* pDynamicPstatesInfoEx) {
+NVAPI_FUNCTION NvAPI_GPU_GetDynamicPstatesInfoEx(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_DYNAMIC_PSTATES_INFO_EX* pDynamicPstatesInfoEx) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoNvml = false;
     thread_local bool alreadyLoggedHandleInvalidated = false;
@@ -887,7 +887,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetDynamicPstatesInfoEx(NvPhysicalGpuH
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetThermalSettings(NvPhysicalGpuHandle hPhysicalGpu, NvU32 sensorIndex, NV_GPU_THERMAL_SETTINGS* pThermalSettings) {
+NVAPI_FUNCTION NvAPI_GPU_GetThermalSettings(NvPhysicalGpuHandle hPhysicalGpu, NvU32 sensorIndex, NV_GPU_THERMAL_SETTINGS* pThermalSettings) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoNvml = false;
     thread_local bool alreadyLoggedHandleInvalidated = false;
@@ -1049,7 +1049,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetThermalSettings(NvPhysicalGpuHandle
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetTachReading(NvPhysicalGpuHandle hPhysicalGPU, NvU32* pValue) {
+NVAPI_FUNCTION NvAPI_GPU_GetTachReading(NvPhysicalGpuHandle hPhysicalGPU, NvU32* pValue) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoNvml = false;
     thread_local bool alreadyLoggedHandleInvalidated = false;
@@ -1092,7 +1092,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetTachReading(NvPhysicalGpuHandle hPh
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetCurrentPstate(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_PERF_PSTATE_ID* pCurrentPstate) {
+NVAPI_FUNCTION NvAPI_GPU_GetCurrentPstate(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_PERF_PSTATE_ID* pCurrentPstate) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoNvml = false;
     thread_local bool alreadyLoggedHandleInvalidated = false;
@@ -1139,7 +1139,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetCurrentPstate(NvPhysicalGpuHandle h
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetAllClockFrequencies(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_CLOCK_FREQUENCIES* pClkFreqs) {
+NVAPI_FUNCTION NvAPI_GPU_GetAllClockFrequencies(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_CLOCK_FREQUENCIES* pClkFreqs) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNotSupported = false;
     thread_local bool alreadyLoggedNoNvml = false;
@@ -1283,7 +1283,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetAllClockFrequencies(NvPhysicalGpuHa
     return Ok(n, alreadyLoggedOk);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_GPU_GetPstates20(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_PERF_PSTATES20_INFO* pPstatesInfo) {
+NVAPI_FUNCTION NvAPI_GPU_GetPstates20(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_PERF_PSTATES20_INFO* pPstatesInfo) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoImplementation = false;
     thread_local bool alreadyLoggedOk = false;

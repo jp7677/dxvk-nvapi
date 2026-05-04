@@ -14,7 +14,7 @@
 
 using namespace dxvk;
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device* pDevice, NvU32 opCode, bool* pSupported) {
+NVAPI_FUNCTION NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device* pDevice, NvU32 opCode, bool* pSupported) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoImplementation = false;
 
@@ -33,7 +33,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12
     return Ok(str::format(n, " (", opCode, "/", fromCode(opCode), ": ", *pSupported ? "Supported)" : "Unsupported)"));
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_EnumerateMetaCommands(ID3D12Device* pDevice, NvU32* pNumMetaCommands, NVAPI_META_COMMAND_DESC* pDescs) {
+NVAPI_FUNCTION NvAPI_D3D12_EnumerateMetaCommands(ID3D12Device* pDevice, NvU32* pNumMetaCommands, NVAPI_META_COMMAND_DESC* pDescs) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -47,7 +47,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_EnumerateMetaCommands(ID3D12Device* 
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderEx(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader) {
+NVAPI_FUNCTION NvAPI_D3D12_CreateCubinComputeShaderEx(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoImplementation = false;
     thread_local bool alreadyLoggedError = false;
@@ -73,7 +73,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderEx(ID3D12Dev
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderWithName(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
+NVAPI_FUNCTION NvAPI_D3D12_CreateCubinComputeShaderWithName(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoImplementation = false;
     thread_local bool alreadyLoggedError = false;
@@ -99,7 +99,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderWithName(ID3
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShader(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NVDX_ObjectHandle* pShader) {
+NVAPI_FUNCTION NvAPI_D3D12_CreateCubinComputeShader(ID3D12Device* pDevice, const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NVDX_ObjectHandle* pShader) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoImplementation = false;
     thread_local bool alreadyLoggedError = false;
@@ -125,7 +125,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShader(ID3D12Devic
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_DestroyCubinComputeShader(ID3D12Device* pDevice, NVDX_ObjectHandle pShader) {
+NVAPI_FUNCTION NvAPI_D3D12_DestroyCubinComputeShader(ID3D12Device* pDevice, NVDX_ObjectHandle pShader) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoImplementation = false;
     thread_local bool alreadyLoggedError = false;
@@ -151,7 +151,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_DestroyCubinComputeShader(ID3D12Devi
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_GetCudaTextureObject(ID3D12Device* pDevice, D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle) {
+NVAPI_FUNCTION NvAPI_D3D12_GetCudaTextureObject(ID3D12Device* pDevice, D3D12_CPU_DESCRIPTOR_HANDLE srvHandle, D3D12_CPU_DESCRIPTOR_HANDLE samplerHandle, NvU32* cudaTextureHandle) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoImplementation = false;
     thread_local bool alreadyLoggedError = false;
@@ -177,7 +177,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_GetCudaTextureObject(ID3D12Device* p
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_GetCudaSurfaceObject(ID3D12Device* pDevice, D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle) {
+NVAPI_FUNCTION NvAPI_D3D12_GetCudaSurfaceObject(ID3D12Device* pDevice, D3D12_CPU_DESCRIPTOR_HANDLE uavHandle, NvU32* cudaSurfaceHandle) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoImplementation = false;
     thread_local bool alreadyLoggedError = false;
@@ -203,7 +203,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_GetCudaSurfaceObject(ID3D12Device* p
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderExV2(NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS* pParams) {
+NVAPI_FUNCTION NvAPI_D3D12_CreateCubinComputeShaderExV2(NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS* pParams) {
     static constexpr auto V1StructSize = offsetof(NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS, hShader) + sizeof(NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS::hShader);
     // static_assert(V1StructSize == sizeof(NVAPI_D3D12_CREATE_CUBIN_SHADER_PARAMS));
     constexpr auto n = __func__;
@@ -256,7 +256,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_CreateCubinComputeShaderExV2(NVAPI_D
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_GetCudaMergedTextureSamplerObject(NVAPI_D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS* pParams) {
+NVAPI_FUNCTION NvAPI_D3D12_GetCudaMergedTextureSamplerObject(NVAPI_D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS* pParams) {
     static constexpr auto V1StructSize = offsetof(NVAPI_D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS, textureHandle) + sizeof(NVAPI_D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS::textureHandle);
     // static_assert(V1StructSize == sizeof(NVAPI_D3D12_GET_CUDA_MERGED_TEXTURE_SAMPLER_OBJECT_PARAMS));
     constexpr auto n = __func__;
@@ -303,7 +303,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_GetCudaMergedTextureSamplerObject(NV
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_GetCudaIndependentDescriptorObject(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS* pParams) {
+NVAPI_FUNCTION NvAPI_D3D12_GetCudaIndependentDescriptorObject(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS* pParams) {
     static constexpr auto V1StructSize = offsetof(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS, handle) + sizeof(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS::handle);
     // static_assert(V1StructSize == sizeof(NVAPI_D3D12_GET_CUDA_INDEPENDENT_DESCRIPTOR_OBJECT_PARAMS));
     constexpr auto n = __func__;
@@ -350,7 +350,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_GetCudaIndependentDescriptorObject(N
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_LaunchCubinShader(ID3D12GraphicsCommandList* pCmdList, NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) {
+NVAPI_FUNCTION NvAPI_D3D12_LaunchCubinShader(ID3D12GraphicsCommandList* pCmdList, NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoImplementation = false;
     thread_local bool alreadyLoggedError = false;
@@ -376,7 +376,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_LaunchCubinShader(ID3D12GraphicsComm
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_CaptureUAVInfo(ID3D12Device* pDevice, NVAPI_UAV_INFO* pUAVInfo) {
+NVAPI_FUNCTION NvAPI_D3D12_CaptureUAVInfo(ID3D12Device* pDevice, NVAPI_UAV_INFO* pUAVInfo) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoImplementation = false;
     thread_local bool alreadyLoggedError = false;
@@ -402,7 +402,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_CaptureUAVInfo(ID3D12Device* pDevice
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_GetGraphicsCapabilities(IUnknown* pDevice, NvU32 structVersion, NV_D3D12_GRAPHICS_CAPS* pGraphicsCaps) {
+NVAPI_FUNCTION NvAPI_D3D12_GetGraphicsCapabilities(IUnknown* pDevice, NvU32 structVersion, NV_D3D12_GRAPHICS_CAPS* pGraphicsCaps) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -484,7 +484,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_GetGraphicsCapabilities(IUnknown* pD
     return Ok(str::format(n, " (sm_", pGraphicsCaps->majorSMVersion, pGraphicsCaps->minorSMVersion, ")"));
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_IsFatbinPTXSupported(ID3D12Device* pDevice, bool* isSupported) {
+NVAPI_FUNCTION NvAPI_D3D12_IsFatbinPTXSupported(ID3D12Device* pDevice, bool* isSupported) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedNoImplementation = false;
     thread_local bool alreadyLoggedError = false;
@@ -514,7 +514,7 @@ inline bool CreateGraphicsPipelineState(ID3D12Device* device, const D3D12_GRAPHI
     return SUCCEEDED(device->CreateGraphicsPipelineState(pipelineStateDescription, __uuidof(ID3D12PipelineState), reinterpret_cast<void**>(pipelineState)));
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_CreateGraphicsPipelineState(ID3D12Device* pDevice, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pPSODesc, NvU32 numExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** ppExtensions, ID3D12PipelineState** ppPSO) {
+NVAPI_FUNCTION NvAPI_D3D12_CreateGraphicsPipelineState(ID3D12Device* pDevice, const D3D12_GRAPHICS_PIPELINE_STATE_DESC* pPSODesc, NvU32 numExtensions, const NVAPI_D3D12_PSO_EXTENSION_DESC** ppExtensions, ID3D12PipelineState** ppPSO) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
 
@@ -542,7 +542,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_CreateGraphicsPipelineState(ID3D12De
     return Ok(str::format(n, " (", numExtensions, "/", extensionNames, ")"), alreadyLoggedOk);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_SetNvShaderExtnSlotSpace(IUnknown* pDev, NvU32 uavSlot, NvU32 uavSpace) {
+NVAPI_FUNCTION NvAPI_D3D12_SetNvShaderExtnSlotSpace(IUnknown* pDev, NvU32 uavSlot, NvU32 uavSpace) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
     thread_local bool alreadyLoggedNoImplementation = false;
@@ -575,7 +575,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_SetNvShaderExtnSlotSpace(IUnknown* p
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_SetNvShaderExtnSlotSpaceLocalThread(IUnknown* pDev, NvU32 uavSlot, NvU32 uavSpace) {
+NVAPI_FUNCTION NvAPI_D3D12_SetNvShaderExtnSlotSpaceLocalThread(IUnknown* pDev, NvU32 uavSlot, NvU32 uavSpace) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
     thread_local bool alreadyLoggedNoImplementation = false;
@@ -617,7 +617,7 @@ inline bool SetDepthBoundsTestValues(ID3D12GraphicsCommandList* commandList, con
     return true;
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_SetDepthBoundsTestValues(ID3D12GraphicsCommandList* pCommandList, const float minDepth, const float maxDepth) {
+NVAPI_FUNCTION NvAPI_D3D12_SetDepthBoundsTestValues(ID3D12GraphicsCommandList* pCommandList, const float minDepth, const float maxDepth) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedError = false;
     thread_local bool alreadyLoggedOk = false;
@@ -662,7 +662,7 @@ inline std::optional<NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS> GetThreadReo
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingCaps(ID3D12Device* pDevice, NVAPI_D3D12_RAYTRACING_CAPS_TYPE type, void* pData, size_t dataSize) {
+NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingCaps(ID3D12Device* pDevice, NVAPI_D3D12_RAYTRACING_CAPS_TYPE type, void* pData, size_t dataSize) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -788,7 +788,7 @@ inline bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI_D3D12_
     return false;
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D12Device5* pDevice, NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* pParams) {
+NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D12Device5* pDevice, NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* pParams) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
 
@@ -815,7 +815,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_GetRaytracingAccelerationStructurePr
     return Ok(n, alreadyLoggedOk);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS* pParams) {
+NVAPI_FUNCTION NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS* pParams) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
 
@@ -847,7 +847,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_BuildRaytracingAccelerationStructure
     return Ok(n, alreadyLoggedOk);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
+NVAPI_FUNCTION NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
     thread_local bool alreadyLoggedNoImplementation = false;
@@ -891,7 +891,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12Co
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_D3D12_SetAsyncFrameMarker(ID3D12CommandQueue* pCommandQueue, NV_ASYNC_FRAME_MARKER_PARAMS* pSetAsyncFrameMarkerParams) {
+NVAPI_FUNCTION NvAPI_D3D12_SetAsyncFrameMarker(ID3D12CommandQueue* pCommandQueue, NV_ASYNC_FRAME_MARKER_PARAMS* pSetAsyncFrameMarkerParams) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
     thread_local bool alreadyLoggedNoImplementation = false;

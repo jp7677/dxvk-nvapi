@@ -36,7 +36,7 @@ inline NV_HDR_MODE ColorSpaceToHDRMode(DXGI_COLOR_SPACE_TYPE colorspace) {
     }
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_Disp_GetHdrCapabilities(NvU32 displayId, NV_HDR_CAPABILITIES* pHdrCapabilities) {
+NVAPI_FUNCTION NvAPI_Disp_GetHdrCapabilities(NvU32 displayId, NV_HDR_CAPABILITIES* pHdrCapabilities) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -114,7 +114,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_Disp_GetHdrCapabilities(NvU32 displayId, N
     return Ok(str::format(n, " (0x", std::hex, displayId, ")"));
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_Disp_HdrColorControl(NvU32 displayId, NV_HDR_COLOR_DATA* pHdrColorData) {
+NVAPI_FUNCTION NvAPI_Disp_HdrColorControl(NvU32 displayId, NV_HDR_COLOR_DATA* pHdrColorData) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -211,7 +211,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_Disp_HdrColorControl(NvU32 displayId, NV_H
     return Ok(str::format(n, " (0x", std::hex, displayId, "/", (pHdrColorData->cmd == NV_HDR_CMD_GET ? "Get" : "Set"), ")"));
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char* displayName, NvU32* displayId) {
+NVAPI_FUNCTION NvAPI_DISP_GetDisplayIdByDisplayName(const char* displayName, NvU32* displayId) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -232,7 +232,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_DISP_GetDisplayIdByDisplayName(const char*
     return Ok(str::format(n, " (", displayName, ")"));
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DISP_GetGDIPrimaryDisplayId(NvU32* displayId) {
+NVAPI_FUNCTION NvAPI_DISP_GetGDIPrimaryDisplayId(NvU32* displayId) {
     constexpr auto n = __func__;
 
     if (log::tracing())

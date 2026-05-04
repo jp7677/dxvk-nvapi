@@ -6,7 +6,7 @@
 
 using namespace dxvk;
 
-extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_InitLowLatencyDevice(HANDLE vkDevice, HANDLE* signalSemaphoreHandle) {
+NVAPI_FUNCTION NvAPI_Vulkan_InitLowLatencyDevice(HANDLE vkDevice, HANDLE* signalSemaphoreHandle) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -63,7 +63,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_InitLowLatencyDevice(HANDLE vkDevic
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_DestroyLowLatencyDevice(HANDLE vkDevice) {
+NVAPI_FUNCTION NvAPI_Vulkan_DestroyLowLatencyDevice(HANDLE vkDevice) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -77,7 +77,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_DestroyLowLatencyDevice(HANDLE vkDe
     return NvapiVulkanLowLatencyDevice::Destroy(device) ? Ok(n) : HandleInvalidated(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_GetSleepStatus(HANDLE vkDevice, NV_VULKAN_GET_SLEEP_STATUS_PARAMS* pGetSleepStatusParams) {
+NVAPI_FUNCTION NvAPI_Vulkan_GetSleepStatus(HANDLE vkDevice, NV_VULKAN_GET_SLEEP_STATUS_PARAMS* pGetSleepStatusParams) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
     thread_local bool alreadyLoggedHandleInvalidated = false;
@@ -107,7 +107,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_GetSleepStatus(HANDLE vkDevice, NV_
     return Ok(n, alreadyLoggedOk);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_SetSleepMode(HANDLE vkDevice, NV_VULKAN_SET_SLEEP_MODE_PARAMS* pSetSleepModeParams) {
+NVAPI_FUNCTION NvAPI_Vulkan_SetSleepMode(HANDLE vkDevice, NV_VULKAN_SET_SLEEP_MODE_PARAMS* pSetSleepModeParams) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
     thread_local bool alreadyLoggedHandleInvalidated = false;
@@ -135,7 +135,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_SetSleepMode(HANDLE vkDevice, NV_VU
     return vr == VK_SUCCESS ? Ok(n, alreadyLoggedOk) : Error(n, vr);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_Sleep(HANDLE vkDevice, NvU64 signalValue) {
+NVAPI_FUNCTION NvAPI_Vulkan_Sleep(HANDLE vkDevice, NvU64 signalValue) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
     thread_local bool alreadyLoggedHandleInvalidated = false;
@@ -158,7 +158,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_Sleep(HANDLE vkDevice, NvU64 signal
     return vr == VK_SUCCESS ? Ok(n, alreadyLoggedOk) : Error(n, vr);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_GetLatency(HANDLE vkDevice, NV_VULKAN_LATENCY_RESULT_PARAMS* pGetLatencyParams) {
+NVAPI_FUNCTION NvAPI_Vulkan_GetLatency(HANDLE vkDevice, NV_VULKAN_LATENCY_RESULT_PARAMS* pGetLatencyParams) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
     thread_local bool alreadyLoggedHandleInvalidated = false;
@@ -201,7 +201,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_GetLatency(HANDLE vkDevice, NV_VULK
     return Ok(n, alreadyLoggedOk);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_SetLatencyMarker(HANDLE vkDevice, NV_VULKAN_LATENCY_MARKER_PARAMS* pSetLatencyMarkerParams) {
+NVAPI_FUNCTION NvAPI_Vulkan_SetLatencyMarker(HANDLE vkDevice, NV_VULKAN_LATENCY_MARKER_PARAMS* pSetLatencyMarkerParams) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
     thread_local bool alreadyLoggedHandleInvalidated = false;
@@ -240,7 +240,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_SetLatencyMarker(HANDLE vkDevice, N
     return Ok(n, alreadyLoggedOk);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_Vulkan_NotifyOutOfBandVkQueue(HANDLE vkDevice, HANDLE queueHandle, NV_VULKAN_OUT_OF_BAND_QUEUE_TYPE queueType) {
+NVAPI_FUNCTION NvAPI_Vulkan_NotifyOutOfBandVkQueue(HANDLE vkDevice, HANDLE queueHandle, NV_VULKAN_OUT_OF_BAND_QUEUE_TYPE queueType) {
     constexpr auto n = __func__;
 
     if (log::tracing())

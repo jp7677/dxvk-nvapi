@@ -3,7 +3,7 @@
 
 using namespace dxvk;
 
-extern "C" NvAPI_Status __cdecl NvAPI_NGX_GetNGXOverrideState(NV_NGX_DLSS_OVERRIDE_GET_STATE_PARAMS* pGetOverrideStateParams) {
+NVAPI_FUNCTION NvAPI_NGX_GetNGXOverrideState(NV_NGX_DLSS_OVERRIDE_GET_STATE_PARAMS* pGetOverrideStateParams) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -19,7 +19,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_NGX_GetNGXOverrideState(NV_NGX_DLSS_OVERRI
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_NGX_SetNGXOverrideState(NV_NGX_DLSS_OVERRIDE_SET_STATE_PARAMS* pSetOverrideStateParams) {
+NVAPI_FUNCTION NvAPI_NGX_SetNGXOverrideState(NV_NGX_DLSS_OVERRIDE_SET_STATE_PARAMS* pSetOverrideStateParams) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -31,7 +31,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_NGX_SetNGXOverrideState(NV_NGX_DLSS_OVERRI
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_NGX_GetDriverFeatureSupport(NV_NGX_GET_DRIVER_FEATURE_SUPPORT_PARAMS* pParams) {
+NVAPI_FUNCTION NvAPI_NGX_GetDriverFeatureSupport(NV_NGX_GET_DRIVER_FEATURE_SUPPORT_PARAMS* pParams) {
     constexpr auto n = __func__;
 
     if (log::tracing())

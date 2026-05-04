@@ -12,7 +12,7 @@ if len(sys.argv) < 3:
     sys.exit(1)
 
 expectedMethods = []
-regex = re.compile("^extern \"C\" *NvAPI_Status +__cdecl +(\\w+)")
+regex = re.compile("^NVAPI_FUNCTION +(\\w+)")
 for i in range(1, len(sys.argv) - 2):
     with open(sys.argv[i]) as file:
         for line in file:

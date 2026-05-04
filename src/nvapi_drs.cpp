@@ -11,7 +11,7 @@ static auto nvapiDrsProfile = reinterpret_cast<NvDRSProfileHandle>(&drs);
 
 using namespace dxvk;
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_CreateSession(NvDRSSessionHandle* phSession) {
+NVAPI_FUNCTION NvAPI_DRS_CreateSession(NvDRSSessionHandle* phSession) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -25,7 +25,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_DRS_CreateSession(NvDRSSessionHandle* phSe
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_LoadSettings(NvDRSSessionHandle hSession) {
+NVAPI_FUNCTION NvAPI_DRS_LoadSettings(NvDRSSessionHandle hSession) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -34,7 +34,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_DRS_LoadSettings(NvDRSSessionHandle hSessi
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_SaveSettings(NvDRSSessionHandle hSession) {
+NVAPI_FUNCTION NvAPI_DRS_SaveSettings(NvDRSSessionHandle hSession) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -43,7 +43,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_DRS_SaveSettings(NvDRSSessionHandle hSessi
     return NotSupported(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_SetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_SETTING* pSetting) {
+NVAPI_FUNCTION NvAPI_DRS_SetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_SETTING* pSetting) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -52,7 +52,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_DRS_SetSetting(NvDRSSessionHandle hSession
     return NotSupported(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_FindProfileByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString profileName, NvDRSProfileHandle* phProfile) {
+NVAPI_FUNCTION NvAPI_DRS_FindProfileByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString profileName, NvDRSProfileHandle* phProfile) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -66,7 +66,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_DRS_FindProfileByName(NvDRSSessionHandle h
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_FindApplicationByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString appName, NvDRSProfileHandle* phProfile, NVDRS_APPLICATION* pApplication) {
+NVAPI_FUNCTION NvAPI_DRS_FindApplicationByName(NvDRSSessionHandle hSession, NvAPI_UnicodeString appName, NvDRSProfileHandle* phProfile, NVDRS_APPLICATION* pApplication) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -103,7 +103,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_DRS_FindApplicationByName(NvDRSSessionHand
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
+NVAPI_FUNCTION NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -117,7 +117,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_DRS_GetBaseProfile(NvDRSSessionHandle hSes
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_GetCurrentGlobalProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
+NVAPI_FUNCTION NvAPI_DRS_GetCurrentGlobalProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle* phProfile) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -131,7 +131,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_DRS_GetCurrentGlobalProfile(NvDRSSessionHa
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_CreateProfile(NvDRSSessionHandle hSession, NVDRS_PROFILE* pProfileInfo, NvDRSProfileHandle* phProfile) {
+NVAPI_FUNCTION NvAPI_DRS_CreateProfile(NvDRSSessionHandle hSession, NVDRS_PROFILE* pProfileInfo, NvDRSProfileHandle* phProfile) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -140,7 +140,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_DRS_CreateProfile(NvDRSSessionHandle hSess
     return NotSupported(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_DeleteProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile) {
+NVAPI_FUNCTION NvAPI_DRS_DeleteProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -173,7 +173,7 @@ inline std::string GetSettingName(NvU32 settingId) {
     return {"Unknown"};
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
+NVAPI_FUNCTION NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
     constexpr auto n = __func__;
     static const auto nvapiDrsSettingsEnvName = "DXVK_NVAPI_DRS_SETTINGS";
     static const auto nvapiDrsSettingsEnvPrefix = "DXVK_NVAPI_DRS_";
@@ -226,7 +226,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession
     return SettingNotFound(str::format(n, " (", id, "/", GetSettingName(settingId), ")"));
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_GetProfileInfo(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_PROFILE* pProfileInfo) {
+NVAPI_FUNCTION NvAPI_DRS_GetProfileInfo(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_PROFILE* pProfileInfo) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -247,7 +247,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_DRS_GetProfileInfo(NvDRSSessionHandle hSes
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_CreateApplication(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_APPLICATION* pApplication) {
+NVAPI_FUNCTION NvAPI_DRS_CreateApplication(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_APPLICATION* pApplication) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -256,7 +256,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_DRS_CreateApplication(NvDRSSessionHandle h
     return NotSupported(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_DRS_DestroySession(NvDRSSessionHandle hSession) {
+NVAPI_FUNCTION NvAPI_DRS_DestroySession(NvDRSSessionHandle hSession) {
     constexpr auto n = __func__;
 
     if (log::tracing())

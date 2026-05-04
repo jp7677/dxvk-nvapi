@@ -5,7 +5,7 @@
 
 using namespace dxvk;
 
-extern "C" NvAPI_Status __cdecl NvAPI_SYS_GetPhysicalGpuFromDisplayId(NvU32 displayId, NvPhysicalGpuHandle* hPhysicalGpu) {
+NVAPI_FUNCTION NvAPI_SYS_GetPhysicalGpuFromDisplayId(NvU32 displayId, NvPhysicalGpuHandle* hPhysicalGpu) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -26,7 +26,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_SYS_GetPhysicalGpuFromDisplayId(NvU32 disp
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_SYS_GetDriverAndBranchVersion(NvU32* pDriverVersion, NvAPI_ShortString szBuildBranchString) {
+NVAPI_FUNCTION NvAPI_SYS_GetDriverAndBranchVersion(NvU32* pDriverVersion, NvAPI_ShortString szBuildBranchString) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -44,7 +44,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_SYS_GetDriverAndBranchVersion(NvU32* pDriv
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_SYS_GetDisplayDriverInfo(NV_DISPLAY_DRIVER_INFO* pDriverInfo) {
+NVAPI_FUNCTION NvAPI_SYS_GetDisplayDriverInfo(NV_DISPLAY_DRIVER_INFO* pDriverInfo) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -89,7 +89,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_SYS_GetDisplayDriverInfo(NV_DISPLAY_DRIVER
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_SYS_GetPhysicalGPUs(NV_PHYSICAL_GPUS* pPhysicalGPUs) {
+NVAPI_FUNCTION NvAPI_SYS_GetPhysicalGPUs(NV_PHYSICAL_GPUS* pPhysicalGPUs) {
     constexpr auto n = __func__;
 
     if (log::tracing())
@@ -114,7 +114,7 @@ extern "C" NvAPI_Status __cdecl NvAPI_SYS_GetPhysicalGPUs(NV_PHYSICAL_GPUS* pPhy
     return Ok(n);
 }
 
-extern "C" NvAPI_Status __cdecl NvAPI_SYS_GetLogicalGPUs(NV_LOGICAL_GPUS* pLogicalGPUs) {
+NVAPI_FUNCTION NvAPI_SYS_GetLogicalGPUs(NV_LOGICAL_GPUS* pLogicalGPUs) {
     constexpr auto n = __func__;
 
     if (log::tracing())

@@ -38,7 +38,7 @@ static void logDisabled() {
         log::info(str::format("NvAPI_QueryInterface: Ignoring unrecognized entrypoints from ", disabledEnvName, ": ", str::implode(", ", unrecognized)));
 }
 
-extern "C" void* __cdecl nvapi_QueryInterface(NvU32 id) {
+NVAPI_QUERY_INTERFACE nvapi_QueryInterface(NvU32 id) {
     constexpr auto n = __func__;
 
     static std::unordered_map<NvU32, void*> registry;

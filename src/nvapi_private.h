@@ -67,3 +67,6 @@
 // clang-format off
 #define MAP_ENUM_VALUE(v) {v, #v}
 // clang-format on
+
+#define NVAPI_QUERY_INTERFACE extern "C" void* __cdecl
+#define NVAPI_FUNCTION extern "C" NvAPI_Status __cdecl
