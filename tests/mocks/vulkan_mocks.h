@@ -12,6 +12,7 @@ struct ConfigureProps {
     VkPhysicalDeviceDriverPropertiesKHR* driverProps;
     VkPhysicalDeviceFragmentShadingRatePropertiesKHR* fragmentShadingRateProps;
     VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR* computeShaderDerivativesProps;
+    VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV* rayTracingInvocationReorderProps;
 };
 
 class VkDeviceMock {
@@ -110,7 +111,8 @@ class VkMock final : public mock_interface<dxvk::Vk> {
             .pciBusInfoProps = nullptr,
             .driverProps = nullptr,
             .fragmentShadingRateProps = nullptr,
-            .computeShaderDerivativesProps = nullptr};
+            .computeShaderDerivativesProps = nullptr,
+            .rayTracingInvocationReorderProps = nullptr};
 
         auto next = reinterpret_cast<VkBaseOutStructure*>(props);
         while (next != nullptr) {
@@ -133,6 +135,10 @@ class VkMock final : public mock_interface<dxvk::Vk> {
                 }
                 case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COMPUTE_SHADER_DERIVATIVES_PROPERTIES_KHR: {
                     vkProps.computeShaderDerivativesProps = reinterpret_cast<VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR*>(next);
+                    break;
+                }
+                case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_PROPERTIES_NV: {
+                    vkProps.rayTracingInvocationReorderProps = reinterpret_cast<VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV*>(next);
                     break;
                 }
                 default:

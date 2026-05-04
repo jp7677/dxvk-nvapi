@@ -1,4 +1,5 @@
 #include "nvapi_tests_private.h"
+#include "nvShaderExtnEnums.h"
 #include "mocks/d3d_mocks.h"
 #include "mocks/d3d12_mocks.h"
 #include "nvapi/default_test_environment.h"
@@ -42,7 +43,9 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
     ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt4), _))
-        .RETURN(E_NOINTERFACE);
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt4*>(&device))
+        .LR_SIDE_EFFECT(deviceRefCount++)
+        .RETURN(S_OK);
     ALLOW_CALL(device, AddRef())
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(deviceRefCount);
@@ -181,9 +184,34 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     }
 
     SECTION("IsNvShaderExtnOpCodeSupported returns OK") {
-        auto supported = true;
-        REQUIRE(NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(&device, 1U, &supported) == NVAPI_OK);
-        REQUIRE(supported == false);
+        // DXVK_NVAPI_D3D12_NV_SHADER_EXTN = 1 is set in section starting listener
+
+        SECTION("IsNvShaderExtnOpCodeSupported without VKD3D-Proton support") {
+            ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt4), _))
+                .RETURN(E_NOTIMPL);
+
+            auto supported = true;
+            REQUIRE(NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(&device, NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD, &supported) == NVAPI_OK);
+            REQUIRE(supported == false);
+        }
+
+        SECTION("IsNvShaderExtnOpCodeSupported without VKD3D-Proton shader support") {
+            ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(_))
+                .RETURN(false);
+
+            auto supported = true;
+            REQUIRE(NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(&device, NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD, &supported) == NVAPI_OK);
+            REQUIRE(supported == false);
+        }
+
+        SECTION("IsNvShaderExtnOpCodeSupported with VKD3D-Proton shader support") {
+            ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD)))
+                .RETURN(true);
+
+            auto supported = false;
+            REQUIRE(NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(&device, NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD, &supported) == NVAPI_OK);
+            REQUIRE(supported == true);
+        }
     }
 
     SECTION("EnumerateMetaCommands returns OK") {
@@ -193,12 +221,38 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(count == 0);
     }
 
-    SECTION("SetNvShaderExtnSlotSpace returns no-implementation") {
-        REQUIRE(NvAPI_D3D12_SetNvShaderExtnSlotSpace(static_cast<ID3D12Device*>(&device), 1U, 1U) == NVAPI_NO_IMPLEMENTATION);
+    SECTION("SetNvShaderExtnSlotSpace succeds") {
+        // DXVK_NVAPI_D3D12_NV_SHADER_EXTN = 1 is set in section starting listener
+
+        SECTION("SetNvShaderExtnSlotSpace returns OK") {
+            REQUIRE_CALL(device, SetNvShaderExtnSlotSpace(1U, 2U, false))
+                .RETURN(S_OK);
+            REQUIRE(NvAPI_D3D12_SetNvShaderExtnSlotSpace(static_cast<ID3D12Device*>(&device), 1U, 2U) == NVAPI_OK);
+        }
+
+        SECTION("SetNvShaderExtnSlotSpace without VKD3D-Proton support returns no-implementation") {
+            ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt4), _))
+                .RETURN(E_NOTIMPL);
+
+            REQUIRE(NvAPI_D3D12_SetNvShaderExtnSlotSpace(static_cast<ID3D12Device*>(&device), 1U, 2U) == NVAPI_NO_IMPLEMENTATION);
+        }
     }
 
-    SECTION("SetNvShaderExtnSlotSpaceLocalThread returns no-implementation") {
-        REQUIRE(NvAPI_D3D12_SetNvShaderExtnSlotSpaceLocalThread(static_cast<ID3D12Device*>(&device), 1U, 1U) == NVAPI_NO_IMPLEMENTATION);
+    SECTION("SetNvShaderExtnSlotSpaceLocalThread succeds") {
+        // DXVK_NVAPI_D3D12_NV_SHADER_EXTN = 1 is set in section starting listener
+
+        SECTION("SetNvShaderExtnSlotSpaceLocalThread returns OK") {
+            REQUIRE_CALL(device, SetNvShaderExtnSlotSpace(1U, 2U, true))
+                .RETURN(S_OK);
+            REQUIRE(NvAPI_D3D12_SetNvShaderExtnSlotSpaceLocalThread(static_cast<ID3D12Device*>(&device), 1U, 2U) == NVAPI_OK);
+        }
+
+        SECTION("SetNvShaderExtnSlotSpaceLocalThread without VKD3D-Proton support returns no-implementation") {
+            ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt4), _))
+                .RETURN(E_NOTIMPL);
+
+            REQUIRE(NvAPI_D3D12_SetNvShaderExtnSlotSpaceLocalThread(static_cast<ID3D12Device*>(&device), 1U, 2U) == NVAPI_NO_IMPLEMENTATION);
+        }
     }
 
     SECTION("GetGraphicsCapabilities succeeds") {
@@ -637,9 +691,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         auto t = std::make_unique<DefaultTestEnvironment>();
         auto e = t->ConfigureExpectations();
 
-        REQUIRE(NvAPI_Initialize() == NVAPI_OK);
-
-        SECTION("GetRaytracingCaps returns OK and claims that thread reordering is not supported") {
+        SECTION("GetRaytracingCaps returns OK") {
             LUID luid{};
 
 #if defined(_MSC_VER)
@@ -651,42 +703,108 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
                 .LR_RETURN(_1);
 #endif
 
-            NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS caps;
-            REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING, &caps, sizeof(caps)) == NVAPI_OK);
-            REQUIRE(caps == NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE);
+            SECTION("GetRaytracingCaps with reorder support returns OK") {
+                ALLOW_CALL(*t->Vk(), GetDeviceExtensions(_, _))
+                    .RETURN(std::set<std::string>{VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, VK_NV_RAY_TRACING_INVOCATION_REORDER_EXTENSION_NAME});
+                ALLOW_CALL(*t->Vk(), GetPhysicalDeviceProperties2(_, _, _))
+                    .SIDE_EFFECT(
+                        VkMock::ConfigureGetPhysicalDeviceProperties2(_3,
+                            [&luid](auto vkProps) {
+                                memcpy(&vkProps.idProps->deviceLUID, &luid, sizeof(luid));
+                                vkProps.idProps->deviceLUIDValid = VK_TRUE;
+                                vkProps.driverProps->driverID = VK_DRIVER_ID_NVIDIA_PROPRIETARY;
+                                vkProps.rayTracingInvocationReorderProps->rayTracingInvocationReorderReorderingHint = VK_RAY_TRACING_INVOCATION_REORDER_MODE_REORDER_NV;
+                            }));
+
+                SECTION("GetRaytracingCaps with reorder support and with NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD support returns OK and claims that thread reordering is supported") {
+                    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD)))
+                        .RETURN(true);
+
+                    REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                    NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS caps = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
+                    REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING, &caps, sizeof(caps)) == NVAPI_OK);
+                    REQUIRE(caps == NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD);
+                }
+
+                SECTION("GetRaytracingCaps with reorder support but without NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD support returns OK and claims that thread reordering is not supported") {
+                    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD)))
+                        .RETURN(false);
+
+                    REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                    NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS caps = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD;
+                    REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING, &caps, sizeof(caps)) == NVAPI_OK);
+                    REQUIRE(caps == NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE);
+                }
+            }
+
+            SECTION("GetRaytracingCaps without reorder support but with NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD support returns OK and claims that thread reordering is not supported") {
+                ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_HIT_OBJECT_REORDER_THREAD)))
+                    .RETURN(true);
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS caps = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD;
+                REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING, &caps, sizeof(caps)) == NVAPI_OK);
+                REQUIRE(caps == NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE);
+            }
+
+            SECTION("GetRaytracingCaps without VKD3D-Proton support returns OK and claims that thread reordering is not supported") {
+                ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt4), _))
+                    .RETURN(E_NOTIMPL);
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS caps = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD;
+                REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING, &caps, sizeof(caps)) == NVAPI_OK);
+                REQUIRE(caps == NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE);
+            }
         }
 
         SECTION("GetRaytracingCaps returns OK and claims that Opacity Micromap is not supported") {
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
             NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS caps;
             REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE);
         }
 
         SECTION("GetRaytracingCaps returns OK and claims that Displacement Micromap is not supported") {
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
             NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS caps;
             REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_DISPLACEMENT_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_NONE);
         }
 
         SECTION("GetRaytracingCaps returns OK and claims that Cluster Operations is not supported") {
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
             NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAPS caps;
             REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_CLUSTER_OPERATIONS, &caps, sizeof(caps)) == NVAPI_OK);
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAP_NONE);
         }
 
         SECTION("GetRaytracingCaps returns OK and claims that Partitioned TLAS is not supported") {
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
             NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAPS caps;
             REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_PARTITIONED_TLAS, &caps, sizeof(caps)) == NVAPI_OK);
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAP_NONE);
         }
 
         SECTION("GetRaytracingCaps returns OK and claims that Spheres is not supported") {
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
             NVAPI_D3D12_RAYTRACING_SPHERES_CAPS caps;
             REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_SPHERES, &caps, sizeof(caps)) == NVAPI_OK);
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_SPHERES_CAP_NONE);
         }
 
         SECTION("GetRaytracingCaps returns OK and claims that Linear Swept Spheres is not supported") {
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
             NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS caps;
             REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_LINEAR_SWEPT_SPHERES, &caps, sizeof(caps)) == NVAPI_OK);
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_NONE);
