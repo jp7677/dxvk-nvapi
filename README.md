@@ -48,13 +48,11 @@ Support for DXVK-NVAPI has been added to popular game launchers. See their respe
 
 ### Steam Play / Proton
 
-Proton 9.0 includes DXVK-NVAPI and enables it by default for all titles with a few exceptions. Proton 9.0 can force-enable DXVK-NVAPI for titles that have DXVK-NVAPI disabled by default and also for non-NVIDIA GPUs when setting `PROTON_FORCE_NVAPI=1`. Contrary, `PROTON_DISABLE_NVAPI` disables DXVK-NVAPI.
+Proton 9.0 or newer includes DXVK-NVAPI and enables it by default for all titles with a few exceptions. Proton can force-enable DXVK-NVAPI for titles that have DXVK-NVAPI disabled by default and also for non-NVIDIA GPUs when setting `PROTON_FORCE_NVAPI=1`. Contrary, `PROTON_DISABLE_NVAPI` disables DXVK-NVAPI.
 
-- Copy and replace `nvapi.dll`/`nvapi64.dll`/`nvofapi64.dll` into the `dist/lib/wine/nvapi`/`dist/lib64/wine/nvapi` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 9.0/` for manually updating the included version.
+- Copy and replace `nvapi.dll`/`nvapi64.dll`/`nvofapi64.dll` into the `files/lib/wine/nvapi/i386-windows`/`files/lib/wine/nvapi/x86_64-windows` folder of your Proton installation, e.g. in `~/.steam/steam/steamapps/common/Proton 11.0/` for manually updating the included version.
 
 Proton Experimental Bleeding Edge additionally always contains the latest DXVK-NVAPI development (master) version.
-
-Proton 8.0 includes DXVK-NVAPI and enables it by default for a lot of titles. Use `PROTON_ENABLE_NVAPI=1` for that version as game launch argument in Steam to enable DXVK-NVAPI for other titles.
 
 ### Wine / Wine-Staging
 
@@ -66,8 +64,6 @@ Wine does not includes DXVK-NVAPI.
 - Ensure that DXVK is installed in your x86/x64 Wine prefix.
 - Ensure that Wine uses DXVK's `dxgi.dll`, e.g. with `WINEDLLOVERRIDES=dxgi=n`.
 - Set `DXVK_ENABLE_NVAPI=1` to disable DXVK's `nvapiHack` in DXVK.
-
-DXVK 1.10 and older does not support `DXVK_ENABLE_NVAPI`. Disable the `nvapiHack` in DXVK 1.10 and older with `dxgi.nvapiHack = False` set in a DXVK configuration file, see [dxvk.conf](https://github.com/doitsujin/dxvk/blob/master/dxvk.conf).
 
 ### Non-NVIDIA GPU
 
