@@ -550,7 +550,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt1), _))
             .RETURN(E_NOINTERFACE);
 
-        NVDX_ObjectHandle handle = reinterpret_cast<NVDX_ObjectHandle>(0x912122);
+        auto handle = reinterpret_cast<NVDX_ObjectHandle>(0x912122);
         auto blockX = 1U;
         auto blockY = 2U;
         auto blockZ = 3U;
@@ -722,7 +722,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
                     REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-                    NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS caps = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
+                    auto caps = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE;
                     REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING, &caps, sizeof(caps)) == NVAPI_OK);
                     REQUIRE(caps == NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD);
                 }
@@ -733,7 +733,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
                     REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-                    NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS caps = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD;
+                    auto caps = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD;
                     REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING, &caps, sizeof(caps)) == NVAPI_OK);
                     REQUIRE(caps == NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE);
                 }
@@ -745,7 +745,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-                NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS caps = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD;
+                auto caps = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD;
                 REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING, &caps, sizeof(caps)) == NVAPI_OK);
                 REQUIRE(caps == NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE);
             }
@@ -756,7 +756,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
 
                 REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-                NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAPS caps = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD;
+                auto caps = NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_STANDARD;
                 REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_THREAD_REORDERING, &caps, sizeof(caps)) == NVAPI_OK);
                 REQUIRE(caps == NVAPI_D3D12_RAYTRACING_THREAD_REORDERING_CAP_NONE);
             }
@@ -773,7 +773,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         SECTION("GetRaytracingCaps returns OK and claims that Displacement Micromap is not supported") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-            NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS caps;
+            NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAPS caps{};
             REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_DISPLACEMENT_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_DISPLACEMENT_MICROMAP_CAP_NONE);
         }
@@ -781,7 +781,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         SECTION("GetRaytracingCaps returns OK and claims that Cluster Operations is not supported") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-            NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAPS caps;
+            NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAPS caps{};
             REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_CLUSTER_OPERATIONS, &caps, sizeof(caps)) == NVAPI_OK);
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_CLUSTER_OPERATIONS_CAP_NONE);
         }
@@ -789,7 +789,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         SECTION("GetRaytracingCaps returns OK and claims that Partitioned TLAS is not supported") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-            NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAPS caps;
+            NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAPS caps{};
             REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_PARTITIONED_TLAS, &caps, sizeof(caps)) == NVAPI_OK);
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_PARTITIONED_TLAS_CAP_NONE);
         }
@@ -797,7 +797,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         SECTION("GetRaytracingCaps returns OK and claims that Spheres is not supported") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-            NVAPI_D3D12_RAYTRACING_SPHERES_CAPS caps;
+            NVAPI_D3D12_RAYTRACING_SPHERES_CAPS caps{};
             REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_SPHERES, &caps, sizeof(caps)) == NVAPI_OK);
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_SPHERES_CAP_NONE);
         }
@@ -805,7 +805,7 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         SECTION("GetRaytracingCaps returns OK and claims that Linear Swept Spheres is not supported") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
-            NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS caps;
+            NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS caps{};
             REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_LINEAR_SWEPT_SPHERES, &caps, sizeof(caps)) == NVAPI_OK);
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_NONE);
         }
