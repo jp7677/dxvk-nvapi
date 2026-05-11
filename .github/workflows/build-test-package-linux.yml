@@ -19,19 +19,17 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
-    - name: Prepare environment (none-tag)
+    - name: Set version (none-tag)
       if: github.ref_type != 'tag'
       run: |
         export VERSION="${GITHUB_REF##*/}-${GITHUB_SHA##*/}"
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
-        echo "ARTIFACT=build/dxvk-nvapi-${VERSION}" >> $GITHUB_ENV
 
-    - name: Prepare environment (tag)
+    - name: Set version (tag)
       if: github.ref_type == 'tag'
       run: |
         export VERSION=$(git describe --always --tags --dirty=+)
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
-        echo "ARTIFACT=dxvk-nvapi-${VERSION}.tar.gz" >> $GITHUB_ENV
 
     - name: Lint source code
       uses: Joshua-Ashton/arch-mingw-github-action@617caabb7a2f459c4e6dca76e0eb4974d7dc20b2
@@ -58,12 +56,11 @@ jobs:
         if [ -e nvofapi64-tests.log ]; then cat nvofapi64-tests.log; fi
 
     - name: Create tarball
-      if: github.ref_type == 'tag'
       run: tar cvfz "dxvk-nvapi-${{ env.VERSION }}.tar.gz" -C "./build/dxvk-nvapi-${{ env.VERSION }}" .
 
-    - name: Upload artifacts
+    - name: Upload artifact
       uses: actions/upload-artifact@v7
       with:
-        name: dxvk-nvapi-${{ env.VERSION }}
-        path: ${{ env.ARTIFACT }}
+        path: "dxvk-nvapi-${{ env.VERSION }}.tar.gz"
         if-no-files-found: error
+        archive: false
