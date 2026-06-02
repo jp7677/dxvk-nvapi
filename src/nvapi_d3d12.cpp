@@ -805,6 +805,44 @@ NVAPI_FUNCTION NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(ID3D12Graphics
     return Ok(n, alreadyLoggedOk);
 }
 
+NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo(ID3D12Device5* pDevice, NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS* pParams) {
+    constexpr auto n = __func__;
+    thread_local bool alreadyLoggedNoImplementation = false;
+    thread_local bool alreadyLoggedOk = false;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
+
+    if (!pDevice || !pParams)
+        return InvalidArgument(n);
+
+    if (pParams->version != NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS_VER1)
+        return IncompatibleStructVersion(n, pParams->version);
+    if (!pParams->pDesc || !pParams->pInfo)
+        return InvalidArgument(n);
+
+    auto device = NvapiD3d12Device::GetOrCreate(pDevice);
+    if (!device)
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+
+    if (!device->IsOpacityMicromapSupported())
+        return NotSupported(n);
+
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs;
+    D3D12_RAYTRACING_OPACITY_MICROMAP_ARRAY_DESC arrayDesc;
+    if (auto status = OmmArrayInputsToD3d12(inputs, arrayDesc, *pParams->pDesc);
+        status != NVAPI_OK)
+        return status;
+
+    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO d3d12Info;
+    pDevice->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &d3d12Info);
+
+    pParams->pInfo->resultDataMaxSizeInBytes = d3d12Info.ResultDataMaxSizeInBytes;
+    pParams->pInfo->scratchDataSizeInBytes = d3d12Info.ScratchDataSizeInBytes;
+
+    return Ok(n, alreadyLoggedOk);
+}
+
 NVAPI_FUNCTION NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;

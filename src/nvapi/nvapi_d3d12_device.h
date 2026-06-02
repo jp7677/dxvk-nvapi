@@ -15,6 +15,11 @@ namespace dxvk {
 
         explicit NvapiD3d12Device(ID3D12DeviceExt* vkd3dDevice);
 
+        // Prevent default construction and copy semantics.
+        NvapiD3d12Device() = delete;
+        NvapiD3d12Device(const NvapiD3d12Device&) = delete;
+        NvapiD3d12Device& operator=(const NvapiD3d12Device&) = delete;
+
         [[nodiscard]] HRESULT CreateCubinComputeShaderWithName(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader);
         [[nodiscard]] HRESULT CreateCubinComputeShaderEx(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader);
         [[nodiscard]] HRESULT DestroyCubinComputeShader(NVDX_ObjectHandle shader);
