@@ -879,6 +879,43 @@ NVAPI_FUNCTION NvAPI_D3D12_SetCreatePipelineStateOptions(ID3D12Device5* pDevice,
     return Ok(n, alreadyLoggedOk);
 }
 
+NVAPI_FUNCTION NvAPI_D3D12_CheckDriverMatchingIdentifierEx(ID3D12Device5* pDevice, NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS* pParams) {
+    constexpr auto n = __func__;
+    thread_local bool alreadyLoggedOk = false;
+    thread_local bool alreadyLoggedNoImplementation = false;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
+
+    if (!pDevice || !pParams)
+        return InvalidArgument(n);
+
+    if (pParams->version != NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS_VER1)
+        return IncompatibleStructVersion(n, pParams->version);
+
+    auto device = NvapiD3d12Device::GetOrCreate(pDevice);
+    if (!device)
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+
+    D3D12_SERIALIZED_DATA_TYPE d3d12Type;
+    switch (pParams->serializedDataType) {
+        case NVAPI_D3D12_SERIALIZED_DATA_RAYTRACING_ACCELERATION_STRUCTURE_EX:
+        case NVAPI_D3D12_SERIALIZED_DATA_RAYTRACING_OPACITY_MICROMAP_ARRAY_EX:
+            d3d12Type = D3D12_SERIALIZED_DATA_RAYTRACING_ACCELERATION_STRUCTURE;
+            break;
+        default:
+            pParams->checkStatus = D3D12_DRIVER_MATCHING_IDENTIFIER_UNSUPPORTED_TYPE;
+            return Ok(n, alreadyLoggedOk);
+    }
+
+    if (!pParams->pIdentifierToCheck)
+        return InvalidArgument(n);
+
+    pParams->checkStatus = pDevice->CheckDriverMatchingIdentifier(d3d12Type, pParams->pIdentifierToCheck);
+
+    return Ok(n, alreadyLoggedOk);
+}
+
 NVAPI_FUNCTION NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
