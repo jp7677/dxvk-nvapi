@@ -1006,6 +1006,47 @@ NVAPI_FUNCTION NvAPI_D3D12_RelocateRaytracingOpacityMicromapArray(ID3D12Graphics
     return Ok(n, alreadyLoggedOk);
 }
 
+NVAPI_FUNCTION NvAPI_D3D12_EmitRaytracingOpacityMicromapArrayPostbuildInfo(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS* pParams) {
+    constexpr auto n = __func__;
+    thread_local bool alreadyLoggedNoImplementation = false;
+    thread_local bool alreadyLoggedOk = false;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::ptr(pCommandList), log::fmt::ptr(pParams));
+
+    if (!pCommandList || !pParams)
+        return InvalidArgument(n);
+    if (pParams->version != NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS_VER1)
+        return IncompatibleStructVersion(n, pParams->version);
+    if (!pParams->pDesc || (pParams->numSources && !pParams->pSources))
+        return InvalidArgument(n);
+
+    auto commandList = NvapiD3d12GraphicsCommandList::GetOrCreate(pCommandList);
+    if (!commandList)
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+    if (!commandList->IsOpacityMicromapSupported())
+        return NotSupported(n);
+
+    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_DESC d3d12Desc;
+    d3d12Desc.DestBuffer = pParams->pDesc->destBuffer;
+    switch (pParams->pDesc->infoType) {
+        case NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_CURRENT_SIZE:
+            d3d12Desc.InfoType = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_CURRENT_SIZE;
+            break;
+        default:
+            log::info(str::format("Unsupported NVAPI OMM-Array postbuild info type: ",
+                static_cast<int>(pParams->pDesc->infoType)));
+            return InvalidArgument(n);
+    }
+
+    pCommandList->EmitRaytracingAccelerationStructurePostbuildInfo(
+        &d3d12Desc,
+        pParams->numSources,
+        pParams->pSources);
+
+    return Ok(n, alreadyLoggedOk);
+}
+
 NVAPI_FUNCTION NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
