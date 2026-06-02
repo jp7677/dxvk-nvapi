@@ -22,6 +22,8 @@ namespace dxvk {
             return m_asConverter;
         }
 
+        [[nodiscard]] bool VerifyOpacityMicromapArrayNVAPI(D3D12_GPU_VIRTUAL_ADDRESS opacity_micromap_array) const;
+
       private:
         static std::unordered_map<ID3D12GraphicsCommandList*, NvapiD3d12GraphicsCommandList> m_nvapiDeviceMap;
         static std::mutex m_mutex;

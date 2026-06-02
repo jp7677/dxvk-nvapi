@@ -979,6 +979,33 @@ NVAPI_FUNCTION NvAPI_D3D12_BuildRaytracingOpacityMicromapArray(ID3D12GraphicsCom
     return Ok(n, alreadyLoggedOk);
 }
 
+NVAPI_FUNCTION NvAPI_D3D12_RelocateRaytracingOpacityMicromapArray(ID3D12GraphicsCommandList4* pCommandList, const NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS* pParams) {
+    constexpr auto n = __func__;
+    thread_local bool alreadyLoggedNoImplementation = false;
+    thread_local bool alreadyLoggedError = false;
+    thread_local bool alreadyLoggedOk = false;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::ptr(pCommandList), log::fmt::ptr(pParams));
+
+    if (!pCommandList || !pParams)
+        return InvalidArgument(n);
+
+    if (pParams->version != NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS_VER1)
+        return IncompatibleStructVersion(n, pParams->version);
+
+    auto commandList = NvapiD3d12GraphicsCommandList::GetOrCreate(pCommandList);
+    if (!commandList)
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+    if (!commandList->IsOpacityMicromapSupported())
+        return NotSupported(n);
+
+    if (!commandList->VerifyOpacityMicromapArrayNVAPI(pParams->opacityMicromapArray))
+        return Error(n, alreadyLoggedError);
+
+    return Ok(n, alreadyLoggedOk);
+}
+
 NVAPI_FUNCTION NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;

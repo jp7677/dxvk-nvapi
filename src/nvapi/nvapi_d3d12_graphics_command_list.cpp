@@ -66,4 +66,8 @@ namespace dxvk {
 
         return m_vkd3dGraphicsCommandList->LaunchCubinShader(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, params, paramSize);
     }
+
+    bool NvapiD3d12GraphicsCommandList::VerifyOpacityMicromapArrayNVAPI(D3D12_GPU_VIRTUAL_ADDRESS opacity_micromap_array) const {
+        return m_vkd3dGraphicsCommandList->VerifyOpacityMicromapArrayNVAPI(opacity_micromap_array);
+    }
 }
