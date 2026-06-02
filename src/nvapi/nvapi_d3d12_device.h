@@ -38,6 +38,7 @@ namespace dxvk {
 
         [[nodiscard]] static bool IsOpacityMicromapSupported(ID3D12Device* device);
         [[nodiscard]] bool IsOpacityMicromapSupported() const;
+        [[nodiscard]] bool SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG pipeline_state_flags);
 
       private:
         static std::unordered_map<ID3D12Device*, NvapiD3d12Device> m_nvapiDeviceMap;

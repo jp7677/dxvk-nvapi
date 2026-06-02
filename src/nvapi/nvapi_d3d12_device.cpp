@@ -191,6 +191,10 @@ namespace dxvk {
         return m_vkd3dDevice->SetNvShaderExtnSlotSpace(uavSlot, uavSpace, localThread);
     }
 
+    bool NvapiD3d12Device::SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG pipeline_state_flags) {
+        return m_vkd3dDevice->SetCreatePipelineStateFlagsNVAPI(pipeline_state_flags);
+    }
+
     bool NvapiD3d12Device::IsOpacityMicromapSupported() const {
         return m_vkd3dDevice && m_supportsOpacityMicromap;
     }

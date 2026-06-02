@@ -843,6 +843,42 @@ NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo(ID3D12D
     return Ok(n, alreadyLoggedOk);
 }
 
+NVAPI_FUNCTION NvAPI_D3D12_SetCreatePipelineStateOptions(ID3D12Device5* pDevice, const NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS* pState) {
+    constexpr auto n = __func__;
+    thread_local bool alreadyLoggedNoImplementation = false;
+    thread_local bool alreadyLoggedOk = false;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pState));
+
+    if (!pDevice || !pState)
+        return InvalidArgument(n);
+
+    if (pState->version != NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS_VER1)
+        return IncompatibleStructVersion(n, pState->version);
+
+    auto device = NvapiD3d12Device::GetOrCreate(pDevice);
+    if (!device)
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+
+    if (!device->IsOpacityMicromapSupported())
+        return NotSupported(n);
+
+    D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG flags = D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_NONE;
+    static const NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS supprotedNvapiFlags =
+        NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT;
+    if (pState->flags & ~supprotedNvapiFlags)
+        return NotSupported(n);
+
+    if (pState->flags & NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT)
+        flags = (D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG)(flags | D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT);
+
+    if (!device->SetCreatePipelineStateFlagsNVAPI(flags))
+        return NotSupported(n);
+
+    return Ok(n, alreadyLoggedOk);
+}
+
 NVAPI_FUNCTION NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
