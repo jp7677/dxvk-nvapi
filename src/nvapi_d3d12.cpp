@@ -690,7 +690,9 @@ NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingCaps(ID3D12Device* pDevice, NVAPI_D3D12_
             if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS))
                 return InvalidArgument(n);
 
-            *static_cast<NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE;
+            *static_cast<NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS*>(pData) = NvapiD3d12Device::IsOpacityMicromapSupported(pDevice)
+                ? NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_STANDARD
+                : NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE;
             break;
 
         case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_DISPLACEMENT_MICROMAP:
