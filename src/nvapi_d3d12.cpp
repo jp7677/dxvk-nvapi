@@ -4,6 +4,7 @@
 #include "nvapi/nvapi_d3d12_device.h"
 #include "nvapi/nvapi_d3d12_graphics_command_list.h"
 #include "nvapi/nvapi_d3d12_command_queue.h"
+#include "nvapi/nvapi_as_convert.h"
 #include "util/com_pointer.h"
 #include "util/util_statuscode.h"
 #include "util/util_op_code.h"
@@ -810,26 +811,32 @@ inline static bool ConvertBuildRaytracingAccelerationStructureInputs(const NVAPI
 NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D12Device5* pDevice, NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS* pParams) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
+    thread_local bool alreadyLoggedNoImplementation = false;
 
     if (log::tracing())
         log::trace(n, log::fmt::ptr(pDevice), log::fmt::ptr(pParams));
 
     if (!pDevice || !pParams)
         return InvalidArgument(n);
-
     if (pParams->version != NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS_VER1)
         return IncompatibleStructVersion(n, pParams->version);
-
     if (!pParams->pDesc || !pParams->pInfo)
         return InvalidArgument(n);
 
-    std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs{};
-    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS desc{};
+    auto device = NvapiD3d12Device::GetOrCreate(pDevice);
+    if (!device)
+        return NoImplementation(n, alreadyLoggedNoImplementation);
 
-    if (!ConvertBuildRaytracingAccelerationStructureInputs(pParams->pDesc, geometryDescs, &desc))
-        return NotSupported(n);
+    const bool supportsOmm = device->IsOpacityMicromapSupported();
 
-    pDevice->GetRaytracingAccelerationStructurePrebuildInfo(&desc, pParams->pInfo);
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs;
+    /* Cannot cache the NvapiAsConverter per device, as device doesn't have to be thread safe, and NvapiAsConverter
+     * is destructive */
+    NvapiAsConverter asConverter;
+    if (auto status = asConverter.Convert(inputs, *pParams->pDesc, supportsOmm); status != NVAPI_OK)
+        return status;
+
+    pDevice->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, pParams->pInfo);
 
     return Ok(n, alreadyLoggedOk);
 }
