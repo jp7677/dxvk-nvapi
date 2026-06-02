@@ -77,19 +77,21 @@ namespace dxvk {
     }
 
     NvapiD3d12Device::NvapiD3d12Device(ID3D12DeviceExt* vkd3dDevice)
-        : m_vkd3dDevice(static_cast<ID3D12DeviceExt4*>(vkd3dDevice)) {
+        : m_vkd3dDevice(static_cast<ID3D12DeviceExt4*>(vkd3dDevice)) { // NOLINT(*-pro-type-static-cast-downcast)
+        uint32_t deviceExtTier = probeInterfaceChain(vkd3dDevice, {
+                                                                      __uuidof(ID3D12DeviceExt1),
+                                                                      __uuidof(ID3D12DeviceExt2),
+                                                                      __uuidof(ID3D12DeviceExt3),
+                                                                      __uuidof(ID3D12DeviceExt4),
+                                                                  });
+
         m_supportsNvxBinaryImport = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_BINARY_IMPORT);
         m_supportsNvxImageViewHandle = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_IMAGE_VIEW_HANDLE);
 
-        if (m_supportsNvxBinaryImport && m_supportsNvxImageViewHandle) {
-            if (Com<ID3D12DeviceExt2> deviceExt2; SUCCEEDED(m_vkd3dDevice->QueryInterface(IID_PPV_ARGS(&deviceExt2)))) {
-                m_supportsCubin64bit = deviceExt2->SupportsCubin64bit();
-            }
-        }
-
-        if (Com<ID3D12DeviceExt4> deviceExt4; SUCCEEDED(m_vkd3dDevice->QueryInterface(IID_PPV_ARGS(&deviceExt4)))) {
+        if (deviceExtTier >= 2 && m_supportsNvxBinaryImport && m_supportsNvxImageViewHandle)
+            m_supportsCubin64bit = m_vkd3dDevice->SupportsCubin64bit();
+        if (deviceExtTier >= 4)
             m_supportsNvShaderExtn = true;
-        }
     }
 
     HRESULT NvapiD3d12Device::CreateCubinComputeShaderWithName(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {

@@ -67,10 +67,8 @@ namespace dxvk {
         m_supportsNvxImageViewHandle = m_dxvkDevice->GetExtensionSupport(D3D11_VK_NVX_IMAGE_VIEW_HANDLE);
         m_supportsExtMultiDrawIndirect = m_dxvkDevice->GetExtensionSupport(D3D11_VK_EXT_MULTI_DRAW_INDIRECT);
 
-        Com<ID3D11VkExtDevice1> dxvkDevice1;
-        Com<ID3D11VkExtContext1> dxvkContext1;
-        m_supportsExtDevice1 = SUCCEEDED(dxvkDevice->QueryInterface(IID_PPV_ARGS(&dxvkDevice1)));
-        m_supportsExtContext1 = SUCCEEDED(dxvkContext->QueryInterface(IID_PPV_ARGS(&dxvkContext1)));
+        m_supportsExtDevice1 = probeInterfaceChain(dxvkDevice, {__uuidof(ID3D11VkExtDevice1)}) >= 1;
+        m_supportsExtContext1 = probeInterfaceChain(dxvkContext, {__uuidof(ID3D11VkExtContext1)}) >= 1;
     }
 
     HRESULT NvapiD3d11Device::SetDepthBoundsTest(const bool enable, const float minDepth, const float maxDepth) const {

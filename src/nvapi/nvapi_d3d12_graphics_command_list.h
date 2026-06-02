@@ -19,6 +19,6 @@ namespace dxvk {
         static std::mutex m_mutex;
 
         ID3D12GraphicsCommandListExt1* m_vkd3dGraphicsCommandList{};
-        bool m_supportsExtGraphicsCommandList1 = false;
+        bool m_supportsCubin64bit = false;
     };
 }

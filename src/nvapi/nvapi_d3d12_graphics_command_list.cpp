@@ -36,8 +36,10 @@ namespace dxvk {
 
     NvapiD3d12GraphicsCommandList::NvapiD3d12GraphicsCommandList(ID3D12GraphicsCommandListExt* vkd3dCommandList)
         : m_vkd3dGraphicsCommandList(static_cast<ID3D12GraphicsCommandListExt1*>(vkd3dCommandList)) { // NOLINT(*-pro-type-static-cast-downcast)
-        Com<ID3D12GraphicsCommandListExt1> commandListExt1;
-        m_supportsExtGraphicsCommandList1 = SUCCEEDED(vkd3dCommandList->QueryInterface(IID_PPV_ARGS(&commandListExt1)));
+        uint32_t commandListTier = probeInterfaceChain(vkd3dCommandList, {
+                                                                             __uuidof(ID3D12GraphicsCommandListExt1),
+                                                                         });
+        m_supportsCubin64bit = commandListTier >= 1;
     }
 
     HRESULT NvapiD3d12GraphicsCommandList::LaunchCubinShader(NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) const {
@@ -46,7 +48,7 @@ namespace dxvk {
 
         auto smem = NvapiD3d12Device::FindCubinSmem(pShader);
 
-        if (m_supportsExtGraphicsCommandList1)
+        if (m_supportsCubin64bit)
             return m_vkd3dGraphicsCommandList->LaunchCubinShaderEx(reinterpret_cast<D3D12_CUBIN_DATA_HANDLE*>(pShader), blockX, blockY, blockZ, smem, params, paramSize, nullptr, 0);
 
         if (smem != 0)
