@@ -7,6 +7,7 @@ nvapi_src = files([
   '../src/shared/resource_factory.cpp',
   '../src/nvapi/nvml.cpp',
   '../src/nvapi/low_latency_frame_id_generator.cpp',
+  '../src/nvapi/nvapi_as_convert.cpp',
   '../src/nvapi/nvapi_resource_factory.cpp',
   '../src/nvapi/nvapi_d3d_low_latency_device.cpp',
   '../src/nvapi/nvapi_vulkan_low_latency_device.cpp',
