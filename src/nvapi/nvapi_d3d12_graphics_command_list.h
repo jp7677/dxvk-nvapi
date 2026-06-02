@@ -2,12 +2,13 @@
 
 #include "../nvapi_private.h"
 #include "../interfaces/vkd3d-proton_interfaces.h"
+#include "nvapi_as_convert.h"
 
 namespace dxvk {
     class NvapiD3d12GraphicsCommandList final {
       public:
         static void Reset();
-        [[nodiscard]] static NvapiD3d12GraphicsCommandList* GetOrCreate(ID3D12GraphicsCommandList* device);
+        [[nodiscard]] static NvapiD3d12GraphicsCommandList* GetOrCreate(ID3D12GraphicsCommandList* commandList);
 
         explicit NvapiD3d12GraphicsCommandList(ID3D12GraphicsCommandListExt* vkd3dCommandList);
 
@@ -17,6 +18,10 @@ namespace dxvk {
             return m_supportsOpacityMicromap;
         }
 
+        NvapiAsConverter& GetAsConverter() {
+            return m_asConverter;
+        }
+
       private:
         static std::unordered_map<ID3D12GraphicsCommandList*, NvapiD3d12GraphicsCommandList> m_nvapiDeviceMap;
         static std::mutex m_mutex;
@@ -24,5 +29,9 @@ namespace dxvk {
         ID3D12GraphicsCommandListExt2* m_vkd3dGraphicsCommandList{};
         bool m_supportsCubin64bit = false;
         bool m_supportsOpacityMicromap = false;
+
+        // Reused across calls so the per-build geometry-desc scratch settles at
+        // its max-N and stops hitting the heap. Per-instance state - not thread-safe.
+        NvapiAsConverter m_asConverter;
     };
 }
