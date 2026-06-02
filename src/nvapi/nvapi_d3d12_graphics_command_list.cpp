@@ -35,9 +35,10 @@ namespace dxvk {
     }
 
     NvapiD3d12GraphicsCommandList::NvapiD3d12GraphicsCommandList(ID3D12GraphicsCommandListExt* vkd3dCommandList)
-        : m_vkd3dGraphicsCommandList(static_cast<ID3D12GraphicsCommandListExt1*>(vkd3dCommandList)) { // NOLINT(*-pro-type-static-cast-downcast)
+        : m_vkd3dGraphicsCommandList(static_cast<ID3D12GraphicsCommandListExt2*>(vkd3dCommandList)) { // NOLINT(*-pro-type-static-cast-downcast)
         uint32_t commandListTier = probeInterfaceChain(vkd3dCommandList, {
                                                                              __uuidof(ID3D12GraphicsCommandListExt1),
+                                                                             __uuidof(ID3D12GraphicsCommandListExt2),
                                                                          });
         m_supportsCubin64bit = commandListTier >= 1;
     }

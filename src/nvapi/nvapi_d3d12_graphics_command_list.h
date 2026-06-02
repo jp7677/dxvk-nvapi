@@ -18,7 +18,7 @@ namespace dxvk {
         static std::unordered_map<ID3D12GraphicsCommandList*, NvapiD3d12GraphicsCommandList> m_nvapiDeviceMap;
         static std::mutex m_mutex;
 
-        ID3D12GraphicsCommandListExt1* m_vkd3dGraphicsCommandList{};
+        ID3D12GraphicsCommandListExt2* m_vkd3dGraphicsCommandList{};
         bool m_supportsCubin64bit = false;
     };
 }

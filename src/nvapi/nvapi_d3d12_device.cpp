@@ -77,12 +77,13 @@ namespace dxvk {
     }
 
     NvapiD3d12Device::NvapiD3d12Device(ID3D12DeviceExt* vkd3dDevice)
-        : m_vkd3dDevice(static_cast<ID3D12DeviceExt4*>(vkd3dDevice)) { // NOLINT(*-pro-type-static-cast-downcast)
+        : m_vkd3dDevice(static_cast<ID3D12DeviceExt5*>(vkd3dDevice)) { // NOLINT(*-pro-type-static-cast-downcast)
         uint32_t deviceExtTier = probeInterfaceChain(vkd3dDevice, {
                                                                       __uuidof(ID3D12DeviceExt1),
                                                                       __uuidof(ID3D12DeviceExt2),
                                                                       __uuidof(ID3D12DeviceExt3),
                                                                       __uuidof(ID3D12DeviceExt4),
+                                                                      __uuidof(ID3D12DeviceExt5),
                                                                   });
 
         m_supportsNvxBinaryImport = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_BINARY_IMPORT);

@@ -5,7 +5,7 @@
 #include "../interfaces/vkd3d-proton_interfaces.h"
 
 namespace dxvk {
-    class NvapiD3d12Device {
+    class NvapiD3d12Device final {
 
       public:
         static void Reset();
@@ -40,7 +40,7 @@ namespace dxvk {
 
         static std::optional<bool> m_cubin64bitSupportAvailable;
 
-        ID3D12DeviceExt4* m_vkd3dDevice{};
+        ID3D12DeviceExt5* m_vkd3dDevice{};
         bool m_supportsCubin64bit = false;
         bool m_supportsNvShaderExtn = false;
         bool m_supportsNvxBinaryImport = false;
