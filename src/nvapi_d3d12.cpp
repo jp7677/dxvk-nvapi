@@ -916,6 +916,69 @@ NVAPI_FUNCTION NvAPI_D3D12_CheckDriverMatchingIdentifierEx(ID3D12Device5* pDevic
     return Ok(n, alreadyLoggedOk);
 }
 
+NVAPI_FUNCTION NvAPI_D3D12_BuildRaytracingOpacityMicromapArray(ID3D12GraphicsCommandList4* pCommandList, NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS* pParams) {
+    constexpr auto n = __func__;
+    thread_local bool alreadyLoggedNoImplementation = false;
+    thread_local bool alreadyLoggedOk = false;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::ptr(pCommandList), log::fmt::ptr(pParams));
+
+    if (!pCommandList || !pParams)
+        return InvalidArgument(n);
+    if (pParams->version != NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS_VER1)
+        return IncompatibleStructVersion(n, pParams->version);
+    if (!pParams->pDesc)
+        return InvalidArgument(n);
+    if (pParams->numPostbuildInfoDescs && !pParams->pPostbuildInfoDescs)
+        return InvalidArgument(n);
+
+    auto commandList = NvapiD3d12GraphicsCommandList::GetOrCreate(pCommandList);
+    if (!commandList)
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+
+    if (!commandList->IsOpacityMicromapSupported())
+        return NotSupported(n);
+
+    D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc{};
+    D3D12_RAYTRACING_OPACITY_MICROMAP_ARRAY_DESC arrayDesc;
+    buildDesc.DestAccelerationStructureData = pParams->pDesc->destOpacityMicromapArrayData;
+    buildDesc.ScratchAccelerationStructureData = pParams->pDesc->scratchOpacityMicromapArrayData;
+
+    constexpr NvU32 postbuildStackCapacity = 16;
+    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_DESC postbuildStack[postbuildStackCapacity];
+    std::unique_ptr<D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_DESC[]> postbuildHeap;
+    D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_DESC* postbuildDescs = postbuildStack;
+    if (pParams->numPostbuildInfoDescs > postbuildStackCapacity) {
+        postbuildHeap = std::make_unique<D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_DESC[]>(pParams->numPostbuildInfoDescs);
+        postbuildDescs = postbuildHeap.get();
+    }
+    for (auto i = 0U; i < pParams->numPostbuildInfoDescs; ++i) {
+        auto& src = pParams->pPostbuildInfoDescs[i];
+        auto& dst = postbuildDescs[i];
+        dst = {};
+        dst.DestBuffer = src.destBuffer;
+        switch (src.infoType) {
+            case NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_CURRENT_SIZE:
+                dst.InfoType = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_CURRENT_SIZE;
+                break;
+            default:
+                return InvalidArgument(n);
+        }
+    }
+
+    if (auto status = OmmArrayInputsToD3d12(buildDesc.Inputs, arrayDesc, pParams->pDesc->inputs);
+        status != NVAPI_OK)
+        return status;
+
+    pCommandList->BuildRaytracingAccelerationStructure(
+        &buildDesc,
+        pParams->numPostbuildInfoDescs,
+        pParams->numPostbuildInfoDescs ? postbuildDescs : nullptr);
+
+    return Ok(n, alreadyLoggedOk);
+}
+
 NVAPI_FUNCTION NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pCommandQueue, NV_OUT_OF_BAND_CQ_TYPE cqType) {
     constexpr auto n = __func__;
     thread_local bool alreadyLoggedOk = false;
