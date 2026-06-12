@@ -41,6 +41,15 @@ namespace dxvk {
                                                                              __uuidof(ID3D12GraphicsCommandListExt2),
                                                                          });
         m_supportsCubin64bit = commandListTier >= 1;
+
+        Com<ID3D12GraphicsCommandList> d3d12CommandList;
+        if (SUCCEEDED(vkd3dCommandList->QueryInterface(IID_PPV_ARGS(&d3d12CommandList)))) {
+            Com<ID3D12Device> device;
+            if (SUCCEEDED(d3d12CommandList->GetDevice(IID_PPV_ARGS(&device)))) {
+                if (auto nvapiDevice = NvapiD3d12Device::GetOrCreate(device.ptr()))
+                    m_supportsOpacityMicromap = nvapiDevice->IsOpacityMicromapSupported();
+            }
+        }
     }
 
     HRESULT NvapiD3d12GraphicsCommandList::LaunchCubinShader(NVDX_ObjectHandle pShader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) const {

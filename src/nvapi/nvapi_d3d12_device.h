@@ -31,6 +31,9 @@ namespace dxvk {
         [[nodiscard]] bool IsNvShaderExtnOpCodeSupported(UINT32 opCode) const;
         [[nodiscard]] HRESULT SetNvShaderExtnSlotSpace(UINT32 uavSlot, UINT32 uavSpace, bool localThread) const;
 
+        [[nodiscard]] static bool IsOpacityMicromapSupported(ID3D12Device* device);
+        [[nodiscard]] bool IsOpacityMicromapSupported() const;
+
       private:
         static std::unordered_map<ID3D12Device*, NvapiD3d12Device> m_nvapiDeviceMap;
         static std::mutex m_mutex;
@@ -45,5 +48,6 @@ namespace dxvk {
         bool m_supportsNvShaderExtn = false;
         bool m_supportsNvxBinaryImport = false;
         bool m_supportsNvxImageViewHandle = false;
+        bool m_supportsOpacityMicromap = false;
     };
 }

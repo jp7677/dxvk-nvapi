@@ -1,5 +1,4 @@
 #include "nvapi_d3d12_device.h"
-#include "../util/com_pointer.h"
 #include "../util/util_log.h"
 
 namespace dxvk {
@@ -88,6 +87,7 @@ namespace dxvk {
 
         m_supportsNvxBinaryImport = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_BINARY_IMPORT);
         m_supportsNvxImageViewHandle = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_IMAGE_VIEW_HANDLE);
+        m_supportsOpacityMicromap = deviceExtTier >= 5 && vkd3dDevice->GetExtensionSupport(D3D12_VK_OPACITY_MICROMAP);
 
         if (deviceExtTier >= 2 && m_supportsNvxBinaryImport && m_supportsNvxImageViewHandle)
             m_supportsCubin64bit = m_vkd3dDevice->SupportsCubin64bit();
@@ -189,5 +189,17 @@ namespace dxvk {
             return E_NOTIMPL;
 
         return m_vkd3dDevice->SetNvShaderExtnSlotSpace(uavSlot, uavSpace, localThread);
+    }
+
+    bool NvapiD3d12Device::IsOpacityMicromapSupported() const {
+        return m_vkd3dDevice && m_supportsOpacityMicromap;
+    }
+
+    bool NvapiD3d12Device::IsOpacityMicromapSupported(ID3D12Device* d3dDevice) {
+        auto device = GetOrCreate(d3dDevice);
+        if (!device)
+            return false;
+
+        return device->IsOpacityMicromapSupported();
     }
 }
