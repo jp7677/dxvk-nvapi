@@ -159,8 +159,13 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         FORBID_CALL(device, GetCudaTextureObject(_, _, _));
         FORBID_CALL(device, GetCudaSurfaceObject(_, _));
         FORBID_CALL(device, CaptureUAVInfo(_));
+        FORBID_CALL(device, SetCreatePipelineStateFlagsNVAPI(_));
+        FORBID_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, _));
         FORBID_CALL(commandList, LaunchCubinShader(_, _, _, _, _, _));
         FORBID_CALL(commandList, LaunchCubinShaderEx(_, _, _, _, _, _, _, _, _));
+        FORBID_CALL(commandList, BuildRaytracingAccelerationStructure(_, _, _));
+        FORBID_CALL(commandList, VerifyOpacityMicromapArrayNVAPI(_));
+        FORBID_CALL(commandList, EmitRaytracingAccelerationStructurePostbuildInfo(_, _, _));
 
         const void* cubinData = nullptr;
         NVDX_ObjectHandle handle{};
@@ -181,6 +186,48 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(NvAPI_D3D12_IsFatbinPTXSupported(static_cast<ID3D12Device*>(&device), &isPTXSupported) == NVAPI_NO_IMPLEMENTATION);
 
         REQUIRE(NvAPI_D3D12_LaunchCubinShader(static_cast<ID3D12GraphicsCommandList*>(&commandList), handle, 0, 0, 0, nullptr, 0) == NVAPI_NO_IMPLEMENTATION);
+
+        {
+            NVAPI_D3D12_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_INPUTS inputs{};
+            NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO info{};
+            NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS params{};
+            params.version = NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS_VER1;
+            params.pDesc = &inputs;
+            params.pInfo = &info;
+            REQUIRE(NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_NO_IMPLEMENTATION);
+        }
+        {
+            NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS params{};
+            params.version = NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS_VER1;
+            params.flags = NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT;
+            REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_NO_IMPLEMENTATION);
+        }
+        {
+            NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS params{};
+            params.version = NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS_VER1;
+            params.serializedDataType = NVAPI_D3D12_SERIALIZED_DATA_RAYTRACING_OPACITY_MICROMAP_ARRAY_EX;
+            REQUIRE(NvAPI_D3D12_CheckDriverMatchingIdentifierEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_NO_IMPLEMENTATION);
+        }
+        {
+            NVAPI_D3D12_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_DESC ommArrayDesc{};
+            NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS params{};
+            params.version = NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS_VER1;
+            params.pDesc = &ommArrayDesc;
+            REQUIRE(NvAPI_D3D12_BuildRaytracingOpacityMicromapArray(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_NO_IMPLEMENTATION);
+        }
+        {
+            NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS params{};
+            params.version = NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS_VER1;
+            REQUIRE(NvAPI_D3D12_RelocateRaytracingOpacityMicromapArray(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_NO_IMPLEMENTATION);
+        }
+        {
+            NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_DESC postbuildDesc{};
+            postbuildDesc.infoType = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_CURRENT_SIZE;
+            NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS params{};
+            params.version = NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS_VER1;
+            params.pDesc = &postbuildDesc;
+            REQUIRE(NvAPI_D3D12_EmitRaytracingOpacityMicromapArrayPostbuildInfo(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_NO_IMPLEMENTATION);
+        }
     }
 
     SECTION("D3D12 methods without cubin extension return error") {
