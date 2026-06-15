@@ -1781,6 +1781,127 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         REQUIRE(commandListRefCount == 0);
     }
 
+    SECTION("OMM entry points with unknown struct version return incompatible-struct-version") {
+        {
+            NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS params{};
+            params.version = NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+        {
+            NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS params{};
+            params.version = NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+        {
+            NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS params{};
+            params.version = NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_D3D12_CheckDriverMatchingIdentifierEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+        {
+            NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS params{};
+            params.version = NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_D3D12_BuildRaytracingOpacityMicromapArray(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+        {
+            NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS params{};
+            params.version = NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_D3D12_RelocateRaytracingOpacityMicromapArray(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+        {
+            NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS params{};
+            params.version = NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_D3D12_EmitRaytracingOpacityMicromapArrayPostbuildInfo(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
+
+    SECTION("OMM entry points with current struct version do not return incompatible-struct-version") {
+        {
+            NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS params{};
+            params.version = NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS_VER;
+            REQUIRE(NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+        {
+            NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS params{};
+            params.version = NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS_VER;
+            REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+        {
+            NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS params{};
+            params.version = NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS_VER;
+            REQUIRE(NvAPI_D3D12_CheckDriverMatchingIdentifierEx(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+        {
+            NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS params{};
+            params.version = NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS_VER;
+            REQUIRE(NvAPI_D3D12_BuildRaytracingOpacityMicromapArray(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+        {
+            NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS params{};
+            params.version = NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS_VER;
+            REQUIRE(NvAPI_D3D12_RelocateRaytracingOpacityMicromapArray(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+        {
+            NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS params{};
+            params.version = NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS_VER;
+            REQUIRE(NvAPI_D3D12_EmitRaytracingOpacityMicromapArrayPostbuildInfo(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
+
+    SECTION("OMM entry points with null arguments return invalid-argument") {
+        {
+            NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS params{};
+            params.version = NVAPI_GET_RAYTRACING_OPACITY_MICROMAP_ARRAY_PREBUILD_INFO_PARAMS_VER1;
+            REQUIRE(NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo(nullptr, &params) == NVAPI_INVALID_ARGUMENT);
+            REQUIRE(NvAPI_D3D12_GetRaytracingOpacityMicromapArrayPrebuildInfo(static_cast<ID3D12Device5*>(&device), nullptr) == NVAPI_INVALID_ARGUMENT);
+        }
+        {
+            NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS params{};
+            params.version = NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS_VER1;
+            REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(nullptr, &params) == NVAPI_INVALID_ARGUMENT);
+            REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), nullptr) == NVAPI_INVALID_ARGUMENT);
+        }
+        {
+            NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS params{};
+            params.version = NVAPI_CHECK_DRIVER_MATCHING_IDENTIFIER_EX_PARAMS_VER1;
+            REQUIRE(NvAPI_D3D12_CheckDriverMatchingIdentifierEx(nullptr, &params) == NVAPI_INVALID_ARGUMENT);
+            REQUIRE(NvAPI_D3D12_CheckDriverMatchingIdentifierEx(static_cast<ID3D12Device5*>(&device), nullptr) == NVAPI_INVALID_ARGUMENT);
+        }
+        {
+            NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS params{};
+            params.version = NVAPI_BUILD_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS_VER1;
+            REQUIRE(NvAPI_D3D12_BuildRaytracingOpacityMicromapArray(nullptr, &params) == NVAPI_INVALID_ARGUMENT);
+            REQUIRE(NvAPI_D3D12_BuildRaytracingOpacityMicromapArray(static_cast<ID3D12GraphicsCommandList4*>(&commandList), nullptr) == NVAPI_INVALID_ARGUMENT);
+        }
+        {
+            NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS params{};
+            params.version = NVAPI_RELOCATE_RAYTRACING_OPACITY_MICROMAP_ARRAY_PARAMS_VER1;
+            REQUIRE(NvAPI_D3D12_RelocateRaytracingOpacityMicromapArray(nullptr, &params) == NVAPI_INVALID_ARGUMENT);
+            REQUIRE(NvAPI_D3D12_RelocateRaytracingOpacityMicromapArray(static_cast<ID3D12GraphicsCommandList4*>(&commandList), nullptr) == NVAPI_INVALID_ARGUMENT);
+        }
+        {
+            NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS params{};
+            params.version = NVAPI_EMIT_RAYTRACING_OPACITY_MICROMAP_ARRAY_POSTBUILD_INFO_PARAMS_VER1;
+            REQUIRE(NvAPI_D3D12_EmitRaytracingOpacityMicromapArrayPostbuildInfo(nullptr, &params) == NVAPI_INVALID_ARGUMENT);
+            REQUIRE(NvAPI_D3D12_EmitRaytracingOpacityMicromapArrayPostbuildInfo(static_cast<ID3D12GraphicsCommandList4*>(&commandList), nullptr) == NVAPI_INVALID_ARGUMENT);
+        }
+    }
+
+    SECTION("SetCreatePipelineStateOptions without the OMM support flag returns OK") {
+        ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_OPACITY_MICROMAP))
+            .RETURN(true);
+
+        NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS params{};
+        params.version = NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS_VER1;
+        params.flags = NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_NONE;
+
+        REQUIRE_CALL(device, SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_NONE))
+            .RETURN(true)
+            .TIMES(1);
+
+        REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+        REQUIRE(deviceRefCount == 0);
+    }
+
     SECTION("D3DLowLatencyDevice methods succeed") {
         auto t = std::make_unique<DefaultTestEnvironment>();
         auto e = t->ConfigureExpectations();
