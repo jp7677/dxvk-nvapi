@@ -3,7 +3,7 @@
 #include "../../src/nvapi_private.h"
 #include "../../src/interfaces/vkd3d-proton_interfaces.h"
 
-class ID3D12Vkd3dDevice : public ID3D12Device5, public ID3D12DeviceExt4, public ID3D12DXVKInteropDevice1 {};
+class ID3D12Vkd3dDevice : public ID3D12Device5, public ID3D12DeviceExt5, public ID3D12DXVKInteropDevice1 {};
 
 class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3dDevice> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -115,9 +115,11 @@ class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3
     IMPLEMENT_MOCK1(SetAGSUAVSlot);
     IMPLEMENT_MOCK1(IsNvShaderExtnOpCodeSupported);
     IMPLEMENT_MOCK3(SetNvShaderExtnSlotSpace);
+
+    IMPLEMENT_MOCK1(SetCreatePipelineStateFlagsNVAPI);
 };
 
-class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList4, public ID3D12GraphicsCommandListExt1 {};
+class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList4, public ID3D12GraphicsCommandListExt2 {};
 
 class D3D12Vkd3dGraphicsCommandListMock final : public trompeloeil::mock_interface<ID3D12Vkd3dGraphicsCommandList> {
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
@@ -200,6 +202,8 @@ class D3D12Vkd3dGraphicsCommandListMock final : public trompeloeil::mock_interfa
     IMPLEMENT_MOCK1(GetVulkanHandle);
     IMPLEMENT_MOCK6(LaunchCubinShader);
     IMPLEMENT_MOCK9(LaunchCubinShaderEx);
+
+    IMPLEMENT_MOCK1(VerifyOpacityMicromapArrayNVAPI);
 };
 
 class ID3D12Vkd3dCommandQueue : public ID3D12CommandQueue, public ID3D12CommandQueueExt {};

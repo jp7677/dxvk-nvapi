@@ -42,8 +42,16 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt2*>(&device))
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
+    ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt3), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt3*>(&device))
+        .LR_SIDE_EFFECT(deviceRefCount++)
+        .RETURN(S_OK);
     ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt4), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt4*>(&device))
+        .LR_SIDE_EFFECT(deviceRefCount++)
+        .RETURN(S_OK);
+    ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt5), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12DeviceExt5*>(&device))
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
     ALLOW_CALL(device, AddRef())
@@ -53,14 +61,25 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(deviceRefCount--)
         .RETURN(deviceRefCount);
 
+    ALLOW_CALL(device, QueryInterface(__uuidof(IUnknown), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IUnknown*>(static_cast<ID3D12Device*>(&device)))
+        .LR_SIDE_EFFECT(deviceRefCount++)
+        .RETURN(S_OK);
+
     ALLOW_CALL(device, QueryInterface(__uuidof(ID3DLowLatencyDevice), _))
         .RETURN(E_NOINTERFACE);
 
     ALLOW_CALL(device, GetExtensionSupport(_))
         .RETURN(true);
+    ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_OPACITY_MICROMAP))
+        .RETURN(false);
     ALLOW_CALL(device, SupportsCubin64bit())
         .RETURN(true);
 
+    ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandList), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandList*>(&commandList))
+        .LR_SIDE_EFFECT(commandListRefCount++)
+        .RETURN(S_OK);
     ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandList1), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandList1*>(&commandList))
         .LR_SIDE_EFFECT(commandListRefCount++)
@@ -73,12 +92,24 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt*>(&commandList))
         .LR_SIDE_EFFECT(commandListRefCount++)
         .RETURN(S_OK);
+    ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt2), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12GraphicsCommandListExt2*>(&commandList))
+        .LR_SIDE_EFFECT(commandListRefCount++)
+        .RETURN(S_OK);
+    ALLOW_CALL(commandList, QueryInterface(__uuidof(IUnknown), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<IUnknown*>(static_cast<ID3D12GraphicsCommandList1*>(&commandList)))
+        .LR_SIDE_EFFECT(commandListRefCount++)
+        .RETURN(S_OK);
     ALLOW_CALL(commandList, AddRef())
         .LR_SIDE_EFFECT(commandListRefCount++)
         .RETURN(commandListRefCount);
     ALLOW_CALL(commandList, Release())
         .LR_SIDE_EFFECT(commandListRefCount--)
         .RETURN(commandListRefCount);
+    ALLOW_CALL(commandList, GetDevice(__uuidof(ID3D12Device), _))
+        .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12Device*>(&device))
+        .LR_SIDE_EFFECT(deviceRefCount++)
+        .RETURN(S_OK);
 
     ALLOW_CALL(commandQueue, QueryInterface(__uuidof(ID3D12CommandQueue), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D12CommandQueue*>(&commandQueue))
@@ -187,6 +218,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         // DXVK_NVAPI_D3D12_NV_SHADER_EXTN = 1 is set in section starting listener
 
         SECTION("IsNvShaderExtnOpCodeSupported without VKD3D-Proton support") {
+            ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt5), _))
+                .RETURN(E_NOTIMPL);
             ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt4), _))
                 .RETURN(E_NOTIMPL);
 
@@ -231,6 +264,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         }
 
         SECTION("SetNvShaderExtnSlotSpace without VKD3D-Proton support returns no-implementation") {
+            ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt5), _))
+                .RETURN(E_NOTIMPL);
             ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt4), _))
                 .RETURN(E_NOTIMPL);
 
@@ -248,6 +283,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         }
 
         SECTION("SetNvShaderExtnSlotSpaceLocalThread without VKD3D-Proton support returns no-implementation") {
+            ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt5), _))
+                .RETURN(E_NOTIMPL);
             ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt4), _))
                 .RETURN(E_NOTIMPL);
 
@@ -547,6 +584,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
     }
 
     SECTION("Launch CuBIN without ID3D12GraphicsCommandListExt1 returns OK") {
+        ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt2), _))
+            .RETURN(E_NOINTERFACE);
         ALLOW_CALL(commandList, QueryInterface(__uuidof(ID3D12GraphicsCommandListExt1), _))
             .RETURN(E_NOINTERFACE);
 
@@ -751,6 +790,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             }
 
             SECTION("GetRaytracingCaps without VKD3D-Proton support returns OK and claims that thread reordering is not supported") {
+                ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt5), _))
+                    .RETURN(E_NOTIMPL);
                 ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt4), _))
                     .RETURN(E_NOTIMPL);
 
@@ -841,13 +882,25 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             }
 
             SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with BLAS for pointer array") {
-                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX** geometryDescExArray = nullptr;
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx[2];
+                geometryDescEx[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                geometryDescEx[0].triangles.IndexBuffer = 3;
+                geometryDescEx[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                geometryDescEx[1].triangles.IndexBuffer = 4;
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX* geometryDescExArray[] = {&geometryDescEx[0], &geometryDescEx[1]};
+
                 desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
                 desc.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY_OF_POINTERS;
+                desc.numDescs = 2;
                 desc.ppGeometryDescs = geometryDescExArray;
 
                 REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
-                REQUIRE(d3d12Desc.ppGeometryDescs == reinterpret_cast<const D3D12_RAYTRACING_GEOMETRY_DESC* const*>(desc.ppGeometryDescs));
+
+                REQUIRE(d3d12Desc.NumDescs == desc.numDescs);
+                REQUIRE(geometryDescs[0].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                REQUIRE(geometryDescs[0].Triangles.IndexBuffer == geometryDescEx[0].triangles.IndexBuffer);
+                REQUIRE(geometryDescs[1].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                REQUIRE(geometryDescs[1].Triangles.IndexBuffer == geometryDescEx[1].triangles.IndexBuffer);
             }
 
             SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with BLAS for array") {
@@ -974,16 +1027,28 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             }
 
             SECTION("BuildRaytracingAccelerationStructureEx with BLAS for pointer array") {
-                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX** geometryDescExArray = nullptr;
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx[2];
+                geometryDescEx[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                geometryDescEx[0].triangles.IndexBuffer = 3;
+                geometryDescEx[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+                geometryDescEx[1].triangles.IndexBuffer = 4;
+                NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX* geometryDescExArray[] = {&geometryDescEx[0], &geometryDescEx[1]};
+
                 desc.inputs.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
                 desc.inputs.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY_OF_POINTERS;
+                desc.inputs.numDescs = 2;
                 desc.inputs.ppGeometryDescs = geometryDescExArray;
 
                 REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
                 REQUIRE(d3d12Desc.DestAccelerationStructureData == desc.destAccelerationStructureData);
-                REQUIRE(d3d12Desc.Inputs.ppGeometryDescs == reinterpret_cast<const D3D12_RAYTRACING_GEOMETRY_DESC* const*>(desc.inputs.ppGeometryDescs));
                 REQUIRE(d3d12Desc.SourceAccelerationStructureData == desc.sourceAccelerationStructureData);
                 REQUIRE(d3d12Desc.ScratchAccelerationStructureData == desc.scratchAccelerationStructureData);
+
+                REQUIRE(d3d12Desc.Inputs.NumDescs == desc.inputs.numDescs);
+                REQUIRE(geometryDescs[0].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                REQUIRE(geometryDescs[0].Triangles.IndexBuffer == geometryDescEx[0].triangles.IndexBuffer);
+                REQUIRE(geometryDescs[1].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES);
+                REQUIRE(geometryDescs[1].Triangles.IndexBuffer == geometryDescEx[1].triangles.IndexBuffer);
             }
 
             SECTION("BuildRaytracingAccelerationStructureEx with BLAS for array") {
