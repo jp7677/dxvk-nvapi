@@ -1279,6 +1279,62 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         }
     }
 
+    SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx rejects a geometry desc stride that is too small") {
+        FORBID_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, _));
+
+        NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx{};
+        NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX desc{};
+        D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info{};
+        NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS params{};
+        params.version = NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS_VER1;
+        params.pDesc = &desc;
+        params.pInfo = &info;
+        desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+        desc.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+        desc.numDescs = 1;
+        desc.pGeometryDescs = &geometryDescEx;
+        desc.geometryDescStrideInBytes = 1;
+
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx for triangles geometry") {
+            geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES_EX;
+
+            REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_INVALID_ARGUMENT);
+        }
+
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx for AABBs geometry") {
+            geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS_EX;
+
+            REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_INVALID_ARGUMENT);
+        }
+
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx for OMM triangles geometry") {
+            ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_OPACITY_MICROMAP))
+                .RETURN(true);
+            geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX;
+
+            REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_INVALID_ARGUMENT);
+        }
+    }
+
+    SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with an empty BLAS returns OK") {
+        NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX desc{};
+        D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info{};
+        NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS params{};
+        params.version = NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS_VER1;
+        params.pDesc = &desc;
+        params.pInfo = &info;
+        desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+        desc.descsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+        desc.numDescs = 0;
+
+        D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS d3d12Desc{};
+        ALLOW_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, &info))
+            .LR_SIDE_EFFECT(d3d12Desc = *_1);
+
+        REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+        REQUIRE(d3d12Desc.NumDescs == 0);
+    }
+
     SECTION("BuildRaytracingAccelerationStructureEx succeeds") {
         SECTION("BuildRaytracingAccelerationStructureEx returns OK") {
             NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC_EX desc{};
