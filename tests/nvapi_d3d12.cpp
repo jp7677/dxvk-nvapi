@@ -885,6 +885,17 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE);
         }
 
+        SECTION("GetRaytracingCaps returns OK and claims that Opacity Micromap is not supported without the NVAPI device extension") {
+            ALLOW_CALL(device, QueryInterface(__uuidof(ID3D12DeviceExt), _))
+                .RETURN(E_NOINTERFACE);
+
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAPS caps = NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_STANDARD;
+            REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_OPACITY_MICROMAP, &caps, sizeof(caps)) == NVAPI_OK);
+            REQUIRE(caps == NVAPI_D3D12_RAYTRACING_OPACITY_MICROMAP_CAP_NONE);
+        }
+
         SECTION("GetRaytracingCaps returns OK and claims that Displacement Micromap is not supported") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
