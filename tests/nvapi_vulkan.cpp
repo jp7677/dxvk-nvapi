@@ -32,13 +32,10 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
         REQUIRE_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkQueueNotifyOutOfBandNV"))))
             .RETURN(nullptr);
 
-        auto vkSemaphore = reinterpret_cast<VkSemaphore>(0x12345678);
         auto vkDevice = std::make_unique<VkDeviceMock>();
 
-        REQUIRE_CALL(*vkDevice, vkCreateSemaphore(_, _, _, _))
-            .LR_SIDE_EFFECT(*_4 = vkSemaphore)
-            .RETURN(VK_SUCCESS);
-        REQUIRE_CALL(*vkDevice, vkDestroySemaphore(_, _, _));
+        FORBID_CALL(*vkDevice, vkCreateSemaphore(_, _, _, _));
+        FORBID_CALL(*vkDevice, vkDestroySemaphore(_, _, _));
 
         HANDLE signalSemaphoreHandle = VK_NULL_HANDLE;
         REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_NO_IMPLEMENTATION);

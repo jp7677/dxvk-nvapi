@@ -26,13 +26,31 @@ NVAPI_FUNCTION NvAPI_Vulkan_InitLowLatencyDevice(HANDLE vkDevice, HANDLE* signal
     if (!semaphore)
         return InvalidPointer(n);
 
-    auto [lowLatencyDevice, vr] = NvapiVulkanLowLatencyDevice::GetOrCreate(device);
+    auto fakeVkReflex = env::getEnvVariable("DXVK_NVAPI_FAKE_VKREFLEX");
+    bool fakeVkReflexAllowed;
+
+    if (fakeVkReflex == "0")
+        fakeVkReflexAllowed = false;
+    else if (fakeVkReflex == "1")
+        fakeVkReflexAllowed = true;
+    else
+        fakeVkReflexAllowed = env::needsLowLatencyDevice();
+
+    auto [lowLatencyDevice, vr] = NvapiVulkanLowLatencyDevice::GetOrCreate(device, fakeVkReflexAllowed);
 
     if (!lowLatencyDevice) {
         switch (vr) {
-            case VK_ERROR_EXTENSION_NOT_PRESENT:
-                log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 or vkSignalSemaphore commands in VkDevice's dispatch table, returning failure to the application due to no fallback possible");
+            case VK_ERROR_INCOMPATIBLE_DRIVER:
+                log::info("Initializing Vulkan Low-Latency failed: device does not appear to support semaphores?!");
                 return NotSupported(n);
+            case VK_ERROR_EXTENSION_NOT_PRESENT:
+                if (fakeVkReflexAllowed) {
+                    log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 or vkSignalSemaphore commands in VkDevice's dispatch table, returning failure to the application due to no fallback possible");
+                    return NotSupported(n);
+                } else {
+                    log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 commands in VkDevice's dispatch table");
+                    return NoImplementation(n);
+                }
             case VK_ERROR_INITIALIZATION_FAILED:
                 log::info("Initializing Vulkan Low-Latency failed: could not find usable Vulkan loader (or winevulkan) module in the current process");
                 [[fallthrough]];
@@ -41,23 +59,11 @@ NVAPI_FUNCTION NvAPI_Vulkan_InitLowLatencyDevice(HANDLE vkDevice, HANDLE* signal
         }
     }
 
-    if (!lowLatencyDevice->IsLayerPresent()) {
-        auto fakeVkReflex = env::getEnvVariable("DXVK_NVAPI_FAKE_VKREFLEX");
+    auto implementation = lowLatencyDevice->GetImplementation();
+    if (implementation == VulkanLowLatencyImplementation::Fake)
+        log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 commands in VkDevice's dispatch table, faking success as a workaround but latency will not be reduced, please ensure that DXVK-NVAPI's Vulkan layer is present for real Reflex support");
 
-        if ((env::needsLowLatencyDevice() && fakeVkReflex != "0") || fakeVkReflex == "1") {
-            log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 commands in VkDevice's dispatch table, faking success as a workaround but latency will not be reduced, please ensure that DXVK-NVAPI's Vulkan layer is present for real Reflex support");
-            *semaphore = lowLatencyDevice->GetSemaphore();
-
-            return Ok(n);
-        }
-
-        log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 commands in VkDevice's dispatch table, please ensure that DXVK-NVAPI's Vulkan layer is present for Reflex support");
-        NvapiVulkanLowLatencyDevice::Destroy(device);
-
-        return NoImplementation(n);
-    }
-
-    log::info("Successfully initialized Vulkan Low-Latency, DXVK-NVAPI's Vulkan layer is present");
+    log::info(str::format("Successfully initialized Vulkan Low-Latency with ", implementation, " implementation"));
     *semaphore = lowLatencyDevice->GetSemaphore();
 
     return Ok(n);
@@ -185,18 +191,7 @@ NVAPI_FUNCTION NvAPI_Vulkan_GetLatency(HANDLE vkDevice, NV_VULKAN_LATENCY_RESULT
     static constexpr auto count = sizeof(pGetLatencyParams->frameReport) / sizeof(*pGetLatencyParams->frameReport);
     static_assert(count == 64);
 
-    std::array<VkLatencyTimingsFrameReportNV, count> timings;
-
-    if (lowLatencyDevice->GetLatencyTimings(timings)) {
-        for (size_t i = 0; i < count; ++i) {
-            std::memcpy(
-                &pGetLatencyParams->frameReport[i].frameID,
-                &timings[i].presentID,
-                offsetof(NV_VULKAN_LATENCY_RESULT_PARAMS::vkFrameReport, rsvd));
-        }
-    } else {
-        std::memset(pGetLatencyParams->frameReport, 0, sizeof(pGetLatencyParams->frameReport));
-    }
+    lowLatencyDevice->GetLatencyTimings(pGetLatencyParams->frameReport);
 
     return Ok(n, alreadyLoggedOk);
 }
@@ -226,11 +221,8 @@ NVAPI_FUNCTION NvAPI_Vulkan_SetLatencyMarker(HANDLE vkDevice, NV_VULKAN_LATENCY_
         return HandleInvalidated(n, alreadyLoggedHandleInvalidated);
 
     auto markerType = pSetLatencyMarkerParams->markerType;
-    auto marker = NvapiVulkanLowLatencyDevice::ToVkLatencyMarkerNV(markerType);
 
-    if (marker != VK_LATENCY_MARKER_MAX_ENUM_NV) {
-        lowLatencyDevice->SetLatencyMarker(pSetLatencyMarkerParams->frameID, marker);
-    } else {
+    if (!lowLatencyDevice->SetLatencyMarker(pSetLatencyMarkerParams->frameID, markerType)) {
         thread_local std::unordered_set<NV_VULKAN_LATENCY_MARKER_TYPE> unsupportedMarkerTypes{};
 
         if (auto [it, inserted] = unsupportedMarkerTypes.insert(markerType); inserted)
@@ -257,10 +249,7 @@ NVAPI_FUNCTION NvAPI_Vulkan_NotifyOutOfBandVkQueue(HANDLE vkDevice, HANDLE queue
     if (!lowLatencyDevice)
         return HandleInvalidated(n);
 
-    static_assert(static_cast<VkOutOfBandQueueTypeNV>(VULKAN_OUT_OF_BAND_QUEUE_TYPE_PRESENT) == VK_OUT_OF_BAND_QUEUE_TYPE_PRESENT_NV);
-    static_assert(static_cast<VkOutOfBandQueueTypeNV>(VULKAN_OUT_OF_BAND_QUEUE_TYPE_RENDER) == VK_OUT_OF_BAND_QUEUE_TYPE_RENDER_NV);
-
-    lowLatencyDevice->QueueNotifyOutOfBand(queue, static_cast<VkOutOfBandQueueTypeNV>(queueType));
+    lowLatencyDevice->QueueNotifyOutOfBand(queue, queueType);
 
     return Ok(n);
 }
