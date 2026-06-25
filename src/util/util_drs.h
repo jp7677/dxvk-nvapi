@@ -15,6 +15,9 @@ namespace dxvk::drs {
         ENTRY(NGX_DLSSG_MULTI_FRAME_COUNT),
         ENTRY(NGX_DLSS_FG_OVERRIDE),
         ENTRY(NGX_DLSS_FG_OVERRIDE_RENDER_PRESET_SELECTION),
+        ENTRY(NGX_DLSS_NR_OVERRIDE),
+        ENTRY(NGX_DLSS_NR_OVERRIDE_RENDER_PRESET_SELECTION),
+        ENTRY(NGX_DLSS_NR_SL_OVERRIDE),
         ENTRY(NGX_DLSS_OVERRIDE_OPTIMAL_SETTINGS),
         ENTRY(NGX_DLSS_RR_MODE),
         ENTRY(NGX_DLSS_RR_OVERRIDE),
@@ -121,6 +124,31 @@ namespace dxvk::drs {
                    ENTRY1(RENDER_PRESET_Z),
                    ENTRY1(RENDER_PRESET_Default),
                    ENTRY1(RENDER_PRESET_Latest),
+                   ENTRY1(DEFAULT),
+               }},
+#undef SETTING
+#define SETTING NGX_DLSS_NR_OVERRIDE
+        {ID(), {
+                   ENTRY1(OFF),
+                   ENTRY1(ON),
+                   ENTRY1(DEFAULT),
+               }},
+#undef SETTING
+#define SETTING NGX_DLSS_NR_OVERRIDE_RENDER_PRESET_SELECTION
+        {ID(), {
+                   ENTRY1(OFF),
+                   ENTRY1(RENDER_PRESET_A),
+                   ENTRY1(RENDER_PRESET_B),
+                   ENTRY1(RENDER_PRESET_C),
+                   ENTRY1(RENDER_PRESET_D),
+                   ENTRY1(RENDER_PRESET_Latest),
+                   ENTRY1(DEFAULT),
+               }},
+#undef SETTING
+#define SETTING NGX_DLSS_NR_SL_OVERRIDE
+        {ID(), {
+                   ENTRY1(OFF),
+                   ENTRY1(ON),
                    ENTRY1(DEFAULT),
                }},
 #undef SETTING
