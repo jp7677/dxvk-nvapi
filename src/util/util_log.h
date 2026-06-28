@@ -128,6 +128,10 @@ namespace dxvk::log {
 
     bool tracing();
 
+    bool latencyMarkerLogging();
+
+    void latencyMarker(const std::string& message);
+
     void write(const std::string& level, const std::string& message);
 
     inline void info(const std::string& message) {

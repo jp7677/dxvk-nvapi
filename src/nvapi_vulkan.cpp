@@ -229,6 +229,12 @@ NVAPI_FUNCTION NvAPI_Vulkan_SetLatencyMarker(HANDLE vkDevice, NV_VULKAN_LATENCY_
     auto marker = NvapiVulkanLowLatencyDevice::ToVkLatencyMarkerNV(markerType);
 
     if (marker != VK_LATENCY_MARKER_MAX_ENUM_NV) {
+        if (log::latencyMarkerLogging())
+            log::latencyMarker(str::format(
+                "api=vulkan frameID=", pSetLatencyMarkerParams->frameID,
+                " markerType=", fromLatencyMarkerType(markerType),
+                " markerValue=", markerType));
+
         lowLatencyDevice->SetLatencyMarker(pSetLatencyMarkerParams->frameID, marker);
     } else {
         thread_local std::unordered_set<NV_VULKAN_LATENCY_MARKER_TYPE> unsupportedMarkerTypes{};

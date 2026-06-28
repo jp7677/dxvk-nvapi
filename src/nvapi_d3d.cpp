@@ -369,6 +369,12 @@ NVAPI_FUNCTION NvAPI_D3D_SetLatencyMarker(IUnknown* pDev, NV_LATENCY_MARKER_PARA
         return Ok(n, alreadyLoggedOk);
     }
 
+    if (log::latencyMarkerLogging())
+        log::latencyMarker(str::format(
+            "api=d3d frameID=", pSetLatencyMarkerParams->frameID,
+            " markerType=", fromLatencyMarkerType(pSetLatencyMarkerParams->markerType),
+            " markerValue=", pSetLatencyMarkerParams->markerType));
+
     switch (lowLatencyDevice->SetLatencyMarker(pSetLatencyMarkerParams->frameID, markerType.value())) {
         case S_OK:
             return Ok(n, alreadyLoggedOk);

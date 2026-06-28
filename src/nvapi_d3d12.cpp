@@ -926,6 +926,13 @@ NVAPI_FUNCTION NvAPI_D3D12_SetAsyncFrameMarker(ID3D12CommandQueue* pCommandQueue
         return Ok(n, alreadyLoggedOk);
     }
 
+    if (log::latencyMarkerLogging())
+        log::latencyMarker(str::format(
+            "api=d3d12_async frameID=", pSetAsyncFrameMarkerParams->frameID,
+            " markerType=", fromLatencyMarkerType(pSetAsyncFrameMarkerParams->markerType),
+            " markerValue=", pSetAsyncFrameMarkerParams->markerType,
+            " presentFrameID=", pSetAsyncFrameMarkerParams->presentFrameID));
+
     switch (lowLatencyDevice->SetLatencyMarker(pSetAsyncFrameMarkerParams->frameID, markerType.value())) {
         case S_OK:
             return Ok(n, alreadyLoggedOk);
