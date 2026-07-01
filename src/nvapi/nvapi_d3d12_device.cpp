@@ -102,7 +102,8 @@ namespace dxvk {
 
         m_supportsNvxBinaryImport = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_BINARY_IMPORT);
         m_supportsNvxImageViewHandle = vkd3dDevice->GetExtensionSupport(D3D12_VK_NVX_IMAGE_VIEW_HANDLE);
-        m_supportsOpacityMicromap = deviceExtTier >= 5 && vkd3dDevice->GetExtensionSupport(D3D12_VK_OPACITY_MICROMAP);
+        m_supportsGlobalPipelineStateFlags = deviceExtTier >= 5;
+        m_supportsOpacityMicromap = m_supportsGlobalPipelineStateFlags && vkd3dDevice->GetExtensionSupport(D3D12_VK_OPACITY_MICROMAP);
 
         if (deviceExtTier >= 2 && m_supportsNvxBinaryImport && m_supportsNvxImageViewHandle)
             m_supportsCubin64bit = m_vkd3dDevice->SupportsCubin64bit();
@@ -207,7 +208,7 @@ namespace dxvk {
     }
 
     bool NvapiD3d12Device::SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG pipeline_state_flags) {
-        return m_vkd3dDevice->SetCreatePipelineStateFlagsNVAPI(pipeline_state_flags);
+        return m_supportsGlobalPipelineStateFlags && m_vkd3dDevice->SetCreatePipelineStateFlagsNVAPI(pipeline_state_flags);
     }
 
     bool NvapiD3d12Device::IsOpacityMicromapSupported() const {
