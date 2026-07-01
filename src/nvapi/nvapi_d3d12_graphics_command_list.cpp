@@ -83,6 +83,6 @@ namespace dxvk {
     }
 
     bool NvapiD3d12GraphicsCommandList::VerifyOpacityMicromapArrayNVAPI(D3D12_GPU_VIRTUAL_ADDRESS opacity_micromap_array) const {
-        return m_vkd3dGraphicsCommandList->VerifyOpacityMicromapArrayNVAPI(opacity_micromap_array);
+        return m_supportsOpacityMicromap && m_vkd3dGraphicsCommandList->VerifyOpacityMicromapArrayNVAPI(opacity_micromap_array);
     }
 }

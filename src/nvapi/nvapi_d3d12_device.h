@@ -53,6 +53,7 @@ namespace dxvk {
         bool m_supportsNvShaderExtn = false;
         bool m_supportsNvxBinaryImport = false;
         bool m_supportsNvxImageViewHandle = false;
+        bool m_supportsGlobalPipelineStateFlags = false;
         bool m_supportsOpacityMicromap = false;
     };
 }
