@@ -386,8 +386,8 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             auto args = GENERATE(
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, {VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME}, 8, 6, true},
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, {}, 0, 0, false},
-                Data{VK_DRIVER_ID_MESA_NVK, 0x2600, {VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME}, 0, 0, true},
-                Data{VK_DRIVER_ID_MESA_NVK, 0x2600, {}, 0, 0, false},
+                Data{VK_DRIVER_ID_MESA_NVK, 0x2600, {VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME}, 8, 9, true},
+                Data{VK_DRIVER_ID_MESA_NVK, 0x2600, {}, 8, 9, false},
                 Data{VK_DRIVER_ID_AMD_OPEN_SOURCE, 0x2000, {}, 0, 0, false},
                 Data{VK_DRIVER_ID_NVIDIA_PROPRIETARY, 0x2000, {}, 0, 0, false});
 

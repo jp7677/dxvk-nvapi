@@ -445,7 +445,7 @@ NVAPI_FUNCTION NvAPI_D3D12_GetGraphicsCapabilities(IUnknown* pDevice, NvU32 stru
 
     // From https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/ and https://en.wikipedia.org/wiki/CUDA#GPUs_supported
     // Note: One might think that SM here is D3D12 Shader Model, in fact it is the "Streaming Multiprocessor" architecture version
-    if (adapter->HasNvProprietaryDriver()) {
+    if (adapter->HasNvProprietaryDriver() || adapter->HasNvkDriver()) {
         // Based on https://gitlab.freedesktop.org/mesa/mesa/-/blob/main/src/nouveau/winsys/nouveau_device.c
         auto architectureId = adapter->GetArchitectureId();
         if (architectureId >= NV_GPU_ARCHITECTURE_GB200) {
