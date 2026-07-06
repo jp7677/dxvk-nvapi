@@ -1,4 +1,6 @@
 #include "./nvapi_vulkan_low_latency_device.h"
+#include "../util/util_env.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
     std::unique_ptr<Vk> NvapiVulkanLowLatencyDevice::m_vk = nullptr;
@@ -28,30 +30,24 @@ namespace dxvk {
         m_vk.reset();
     }
 
-    std::pair<NvapiVulkanLowLatencyDevice*, VkResult> NvapiVulkanLowLatencyDevice::GetOrCreate(VkDevice device, bool allowFake) {
+    std::pair<NvapiVulkanLowLatencyDevice*, VkResult> NvapiVulkanLowLatencyDevice::GetOrCreate(VkDevice device) {
         std::scoped_lock lock{m_mutex};
 
         if (auto lowLatencyDevice = Get(device))
             return {lowLatencyDevice, VK_SUCCESS};
 
-        if (!m_vk || !m_vk->IsAvailable())
+        if (!m_vk || !m_vk->IsAvailable()) {
+            log::info("Initializing Vulkan Low-Latency failed: could not find usable Vulkan loader (or winevulkan) module in the current process");
             return {nullptr, VK_ERROR_INITIALIZATION_FAILED};
-
-#define VK_GET_DEVICE_PROC_ADDR(proc) auto proc = reinterpret_cast<PFN_##proc>(m_vk->GetDeviceProcAddr(device, #proc))
-
-        VK_GET_DEVICE_PROC_ADDR(vkCreateSemaphore);
-        VK_GET_DEVICE_PROC_ADDR(vkDestroySemaphore);
-
-        if (!vkCreateSemaphore || !vkDestroySemaphore)
-            return {nullptr, VK_ERROR_INCOMPATIBLE_DRIVER};
+        }
 
         std::unique_ptr<NvapiVulkanLowLatencyDevice> lowLatencyDevice;
         VkResult vr;
 
-        std::tie(lowLatencyDevice, vr) = NvapiVulkanLowLatency2LayerDevice::TryCreate(device, vkDestroySemaphore, vkCreateSemaphore);
+        std::tie(lowLatencyDevice, vr) = NvapiVulkanLowLatency2LayerDevice::TryCreate(device);
 
-        if ((!lowLatencyDevice || vr != VK_SUCCESS) && allowFake)
-            std::tie(lowLatencyDevice, vr) = NvapiVulkanLowLatencyFakeDevice::TryCreate(device, vkDestroySemaphore, vkCreateSemaphore);
+        if (!lowLatencyDevice || vr != VK_SUCCESS)
+            std::tie(lowLatencyDevice, vr) = NvapiVulkanLowLatencyFakeDevice::TryCreate(device);
 
         if (!lowLatencyDevice || vr != VK_SUCCESS)
             return {nullptr, vr};
@@ -124,6 +120,8 @@ namespace dxvk {
         m_vkDestroySemaphore(m_device, m_semaphore, nullptr);
     }
 
+#define VK_GET_DEVICE_PROC_ADDR(proc) auto proc = reinterpret_cast<PFN_##proc>(m_vk->GetDeviceProcAddr(device, #proc))
+
     NvapiVulkanLowLatencyFakeDevice::NvapiVulkanLowLatencyFakeDevice(
         VkDevice device,
         VkSemaphore semaphore,
@@ -132,22 +130,39 @@ namespace dxvk {
         : NvapiVulkanLowLatencyDevice(device, semaphore, vkDestroySemaphore),
           PFN_INIT(vkSignalSemaphore) {}
 
-    std::pair<std::unique_ptr<NvapiVulkanLowLatencyFakeDevice>, VkResult> NvapiVulkanLowLatencyFakeDevice::TryCreate(
-        VkDevice device,
-        PFN_PARAM(vkDestroySemaphore),
-        PFN_PARAM(vkCreateSemaphore)) {
+    // NvapiVulkanLowLatencyFakeDevice
+
+    std::pair<std::unique_ptr<NvapiVulkanLowLatencyFakeDevice>, VkResult> NvapiVulkanLowLatencyFakeDevice::TryCreate(VkDevice device) {
+        VK_GET_DEVICE_PROC_ADDR(vkCreateSemaphore);
+        VK_GET_DEVICE_PROC_ADDR(vkDestroySemaphore);
+
+        if (!vkCreateSemaphore || !vkDestroySemaphore) {
+            log::info("Initializing Vulkan Low-Latency with VkFakeReflex implementation failed: device does not appear to support semaphores?!");
+            return {nullptr, VK_ERROR_INCOMPATIBLE_DRIVER};
+        }
+
+        auto fakeVkReflex = env::getEnvVariable("DXVK_NVAPI_FAKE_VKREFLEX");
+        if ((!env::needsLowLatencyDevice() && fakeVkReflex != "1") || fakeVkReflex == "0") {
+            log::info("Initializing Vulkan Low-Latency with VkFakeReflex implementation failed: DXVK_NVAPI_FAKE_VKREFLEX not set");
+            return {nullptr, VK_ERROR_FEATURE_NOT_PRESENT};
+        }
+
         // Grab vkSignalSemaphore to fake that Reflex is working
         // The app should have requested either the Vulkan 1.2 or the VK_KHR_timeline_semaphore extension
         // We'll use whichever is available
         VK_GET_DEVICE_PROC_ADDR(vkSignalSemaphore);
 
-        if (!(vkSignalSemaphore || (vkSignalSemaphore = reinterpret_cast<PFN_vkSignalSemaphoreKHR>(m_vk->GetDeviceProcAddr(device, "vkSignalSemaphoreKHR")))))
+        if (!(vkSignalSemaphore || (vkSignalSemaphore = reinterpret_cast<PFN_vkSignalSemaphoreKHR>(m_vk->GetDeviceProcAddr(device, "vkSignalSemaphoreKHR"))))) {
+            log::info("Initializing Vulkan Low-Latency with VkFakeReflex implementation failed: could not find vkSignalSemaphore commands in VkDevice's dispatch table");
             return {nullptr, VK_ERROR_EXTENSION_NOT_PRESENT};
+        }
 
         auto [semaphore, vr] = CreateVkSemaphore(device, vkCreateSemaphore);
 
-        if (vr != VK_SUCCESS)
+        if (vr != VK_SUCCESS) {
+            log::info(str::format("Initializing Vulkan Low-Latency with VkFakeReflex implementation failed: create semaphore failed (", vr, ")?!"));
             return {nullptr, vr};
+        }
 
         // Pretend that Reflex is happening so that apps don't get a pink tint.
         auto lowLatencyDevice = std::make_unique<NvapiVulkanLowLatencyFakeDevice>(
@@ -156,6 +171,7 @@ namespace dxvk {
             vkDestroySemaphore,
             vkSignalSemaphore);
 
+        log::info("Successfully initialized Vulkan Low-Latency with VkFakeReflex implementation: faking success as a workaround but latency will not be reduced");
         return {std::move(lowLatencyDevice), VK_SUCCESS};
     }
 
@@ -191,6 +207,8 @@ namespace dxvk {
 
     void NvapiVulkanLowLatencyFakeDevice::QueueNotifyOutOfBand(VkQueue queue, NV_VULKAN_OUT_OF_BAND_QUEUE_TYPE queueType) {}
 
+    // NvapiVulkanLowLatency2LayerDevice
+
     NvapiVulkanLowLatency2LayerDevice::NvapiVulkanLowLatency2LayerDevice(
         VkDevice device,
         VkSemaphore semaphore,
@@ -207,10 +225,15 @@ namespace dxvk {
           PFN_INIT(vkSetLatencyMarkerNV),
           PFN_INIT(vkQueueNotifyOutOfBandNV) {}
 
-    std::pair<std::unique_ptr<NvapiVulkanLowLatency2LayerDevice>, VkResult> NvapiVulkanLowLatency2LayerDevice::TryCreate(
-        VkDevice device,
-        PFN_PARAM(vkDestroySemaphore),
-        PFN_PARAM(vkCreateSemaphore)) {
+    std::pair<std::unique_ptr<NvapiVulkanLowLatency2LayerDevice>, VkResult> NvapiVulkanLowLatency2LayerDevice::TryCreate(VkDevice device) {
+        VK_GET_DEVICE_PROC_ADDR(vkCreateSemaphore);
+        VK_GET_DEVICE_PROC_ADDR(vkDestroySemaphore);
+
+        if (!vkCreateSemaphore || !vkDestroySemaphore) {
+            log::info("Initializing Vulkan Low-Latency with VkNvLowLatency2 implementation failed: device does not appear to support semaphores?!");
+            return {nullptr, VK_ERROR_INCOMPATIBLE_DRIVER};
+        }
+
         // If the Vulkan Reflex Layer is present it will enable VK_NV_low_latency2 which will let us query
         // these function pointers.
         VK_GET_DEVICE_PROC_ADDR(vkSetLatencySleepModeNV);
@@ -219,15 +242,19 @@ namespace dxvk {
         VK_GET_DEVICE_PROC_ADDR(vkSetLatencyMarkerNV);
         VK_GET_DEVICE_PROC_ADDR(vkQueueNotifyOutOfBandNV);
 
-        if (!(vkSetLatencySleepModeNV && vkLatencySleepNV && vkGetLatencyTimingsNV && vkSetLatencyMarkerNV && vkQueueNotifyOutOfBandNV))
+        if (!(vkSetLatencySleepModeNV && vkLatencySleepNV && vkGetLatencyTimingsNV && vkSetLatencyMarkerNV && vkQueueNotifyOutOfBandNV)) {
+            log::info("Initializing Vulkan Low-Latency with VkNvLowLatency2 implementation failed, DXVK-NVAPI's Vulkan layer is not present");
             return {nullptr, VK_ERROR_EXTENSION_NOT_PRESENT};
+        }
 
         // VK_NV_low_latency2 was requested -> our compatibility layer is present
 
         auto [semaphore, vr] = CreateVkSemaphore(device, vkCreateSemaphore);
 
-        if (vr != VK_SUCCESS)
+        if (vr != VK_SUCCESS) {
+            log::info(str::format("Initializing Vulkan Low-Latency with VkNvLowLatency2 implementation failed: create semaphore failed (", vr, ")?!"));
             return {nullptr, vr};
+        }
 
         auto lowLatencyDevice = std::make_unique<NvapiVulkanLowLatency2LayerDevice>(
             device,
@@ -239,6 +266,7 @@ namespace dxvk {
             vkSetLatencyMarkerNV,
             vkQueueNotifyOutOfBandNV);
 
+        log::info("Successfully initialized Vulkan Low-Latency with VkNvLowLatency2 implementation, DXVK-NVAPI's Vulkan layer is present");
         return {std::move(lowLatencyDevice), VK_SUCCESS};
     }
 

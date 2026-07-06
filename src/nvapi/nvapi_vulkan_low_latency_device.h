@@ -4,30 +4,13 @@
 #include "./nvapi_resource_factory.h"
 
 namespace dxvk {
-    enum class VulkanLowLatencyImplementation {
-        Fake,
-        VkNvLowLatency2,
-    };
-
-    inline std::ostream& operator<<(std::ostream& stream, VulkanLowLatencyImplementation implementation) {
-        switch (implementation) {
-#define CASE(x)                             \
-    case VulkanLowLatencyImplementation::x: \
-        return stream << #x;
-            CASE(Fake)
-            CASE(VkNvLowLatency2)
-#undef CASE
-            default:
-                return stream << "Unknown";
-        }
-    }
 
     class NvapiVulkanLowLatencyDevice {
       public:
         static bool Initialize(NvapiResourceFactory& resourceFactory);
         static void Reset();
 
-        [[nodiscard]] static std::pair<NvapiVulkanLowLatencyDevice*, VkResult> GetOrCreate(VkDevice device, bool allowFake);
+        [[nodiscard]] static std::pair<NvapiVulkanLowLatencyDevice*, VkResult> GetOrCreate(VkDevice device);
         [[nodiscard]] static NvapiVulkanLowLatencyDevice* Get(VkDevice device);
         static bool Destroy(VkDevice device);
 
@@ -38,7 +21,6 @@ namespace dxvk {
 
         [[nodiscard]] VkSemaphore GetSemaphore() const;
 
-        [[nodiscard]] virtual VulkanLowLatencyImplementation GetImplementation() const = 0;
         [[nodiscard]] virtual NvBool GetLowLatencyMode() const = 0;
         [[nodiscard]] virtual VkResult SetLatencySleepMode(std::nullptr_t) = 0;
         [[nodiscard]] virtual VkResult SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs) = 0;
@@ -74,13 +56,9 @@ namespace dxvk {
             VkSemaphore semaphore,
             PFN_PARAM(vkDestroySemaphore),
             PFN_PARAM(vkSignalSemaphore));
-        [[nodiscard]] static std::pair<std::unique_ptr<NvapiVulkanLowLatencyFakeDevice>, VkResult> TryCreate(
-            VkDevice device,
-            PFN_PARAM(vkDestroySemaphore),
-            PFN_PARAM(vkCreateSemaphore));
+        [[nodiscard]] static std::pair<std::unique_ptr<NvapiVulkanLowLatencyFakeDevice>, VkResult> TryCreate(VkDevice device);
 #undef PFN_PARAM
 
-        [[nodiscard]] VulkanLowLatencyImplementation GetImplementation() const override { return VulkanLowLatencyImplementation::Fake; }
         [[nodiscard]] NvBool GetLowLatencyMode() const override;
         [[nodiscard]] VkResult SetLatencySleepMode(std::nullptr_t) override;
         [[nodiscard]] VkResult SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs) override;
@@ -105,13 +83,9 @@ namespace dxvk {
             PFN_PARAM(vkGetLatencyTimingsNV),
             PFN_PARAM(vkSetLatencyMarkerNV),
             PFN_PARAM(vkQueueNotifyOutOfBandNV));
-        [[nodiscard]] static std::pair<std::unique_ptr<NvapiVulkanLowLatency2LayerDevice>, VkResult> TryCreate(
-            VkDevice device,
-            PFN_PARAM(vkDestroySemaphore),
-            PFN_PARAM(vkCreateSemaphore));
 #undef PFN_PARAM
+        [[nodiscard]] static std::pair<std::unique_ptr<NvapiVulkanLowLatency2LayerDevice>, VkResult> TryCreate(VkDevice device);
 
-        [[nodiscard]] VulkanLowLatencyImplementation GetImplementation() const override { return VulkanLowLatencyImplementation::VkNvLowLatency2; }
         [[nodiscard]] NvBool GetLowLatencyMode() const override;
         [[nodiscard]] VkResult SetLatencySleepMode(std::nullptr_t) override;
         [[nodiscard]] VkResult SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs) override;

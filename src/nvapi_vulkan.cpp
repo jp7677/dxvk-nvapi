@@ -2,7 +2,6 @@
 #include "nvapi_globals.h"
 #include "nvapi/nvapi_vulkan_low_latency_device.h"
 #include "util/util_statuscode.h"
-#include "util/util_env.h"
 
 using namespace dxvk;
 
@@ -26,44 +25,20 @@ NVAPI_FUNCTION NvAPI_Vulkan_InitLowLatencyDevice(HANDLE vkDevice, HANDLE* signal
     if (!semaphore)
         return InvalidPointer(n);
 
-    auto fakeVkReflex = env::getEnvVariable("DXVK_NVAPI_FAKE_VKREFLEX");
-    bool fakeVkReflexAllowed;
-
-    if (fakeVkReflex == "0")
-        fakeVkReflexAllowed = false;
-    else if (fakeVkReflex == "1")
-        fakeVkReflexAllowed = true;
-    else
-        fakeVkReflexAllowed = env::needsLowLatencyDevice();
-
-    auto [lowLatencyDevice, vr] = NvapiVulkanLowLatencyDevice::GetOrCreate(device, fakeVkReflexAllowed);
+    auto [lowLatencyDevice, vr] = NvapiVulkanLowLatencyDevice::GetOrCreate(device);
 
     if (!lowLatencyDevice) {
         switch (vr) {
             case VK_ERROR_INCOMPATIBLE_DRIVER:
-                log::info("Initializing Vulkan Low-Latency failed: device does not appear to support semaphores?!");
-                return NotSupported(n);
             case VK_ERROR_EXTENSION_NOT_PRESENT:
-                if (fakeVkReflexAllowed) {
-                    log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 or vkSignalSemaphore commands in VkDevice's dispatch table, returning failure to the application due to no fallback possible");
-                    return NotSupported(n);
-                } else {
-                    log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 commands in VkDevice's dispatch table");
-                    return NoImplementation(n);
-                }
-            case VK_ERROR_INITIALIZATION_FAILED:
-                log::info("Initializing Vulkan Low-Latency failed: could not find usable Vulkan loader (or winevulkan) module in the current process");
-                [[fallthrough]];
+                return NotSupported(n);
+            case VK_ERROR_FEATURE_NOT_PRESENT:
+                return NoImplementation(n);
             default:
                 return Error(n, vr);
         }
     }
 
-    auto implementation = lowLatencyDevice->GetImplementation();
-    if (implementation == VulkanLowLatencyImplementation::Fake)
-        log::info("Initializing Vulkan Low-Latency failed: could not find VK_NV_low_latency2 commands in VkDevice's dispatch table, faking success as a workaround but latency will not be reduced, please ensure that DXVK-NVAPI's Vulkan layer is present for real Reflex support");
-
-    log::info(str::format("Successfully initialized Vulkan Low-Latency with ", implementation, " implementation"));
     *semaphore = lowLatencyDevice->GetSemaphore();
 
     return Ok(n);
