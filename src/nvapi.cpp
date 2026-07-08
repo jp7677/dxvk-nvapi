@@ -375,12 +375,12 @@ NVAPI_FUNCTION NvAPI_Initialize() {
     if (!resourceFactory)
         resourceFactory = std::make_unique<NvapiResourceFactory>();
 
-    nvapiAdapterRegistry = std::make_unique<NvapiAdapterRegistry>(*resourceFactory);
-    if (!nvapiAdapterRegistry->Initialize()) {
-        nvapiAdapterRegistry.reset();
+    auto registry = std::make_unique<NvapiAdapterRegistry>(*resourceFactory);
+    if (!registry->Initialize()) {
         --initializationCount;
         return NvidiaDeviceNotFound(n);
     }
+    nvapiAdapterRegistry = std::move(registry);
 
 #if _WIN64
     SetNgxDebugOptions(); // NGX is 64-bit only
