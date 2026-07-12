@@ -61,7 +61,8 @@
 
 #if defined(__GNUC__)
 #define _ReturnAddress() __builtin_return_address(0);
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && !defined(__clang__)
+#define __builtin_unreachable() __assume(false)
 #include <intrin.h>
 #endif
 

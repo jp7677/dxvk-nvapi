@@ -87,14 +87,12 @@ namespace dxvk {
     NvapiVulkanLowLatencyDevice::NvapiVulkanLowLatencyDevice(
         VkDevice device,
         VkSemaphore semaphore,
-        PFN_PARAM(vkDestroySemaphore))
+        PFN_PARAM(vkDestroySemaphore),
+        LowLatencyDeviceImplementation implementation)
         : m_device(device),
           m_semaphore(semaphore),
-          PFN_INIT(vkDestroySemaphore) {}
-
-    VkSemaphore NvapiVulkanLowLatencyDevice::GetSemaphore() const {
-        return m_semaphore;
-    }
+          PFN_INIT(vkDestroySemaphore),
+          m_implementation(implementation) {}
 
     std::pair<VkSemaphore, VkResult> NvapiVulkanLowLatencyDevice::CreateVkSemaphore(VkDevice device, PFN_PARAM(vkCreateSemaphore)) {
         auto semaphoreTypeCreateInfo = VkSemaphoreTypeCreateInfo{
@@ -120,6 +118,50 @@ namespace dxvk {
         m_vkDestroySemaphore(m_device, m_semaphore, nullptr);
     }
 
+#define INVOKE(call)                                                            \
+    switch (m_implementation) {                                                 \
+        case LowLatencyDeviceImplementation::LowLatency2:                       \
+            return static_cast<NvapiVulkanLowLatency2LayerDevice*>(this)->call; \
+        case LowLatencyDeviceImplementation::VkReflexFake:                      \
+            return static_cast<NvapiVulkanLowLatencyFakeDevice*>(this)->call;   \
+        default:                                                                \
+            __builtin_unreachable();                                            \
+    }
+
+#define INVOKE_CONST(call)                                                            \
+    switch (m_implementation) {                                                       \
+        case LowLatencyDeviceImplementation::LowLatency2:                             \
+            return static_cast<const NvapiVulkanLowLatency2LayerDevice*>(this)->call; \
+        case LowLatencyDeviceImplementation::VkReflexFake:                            \
+            return static_cast<const NvapiVulkanLowLatencyFakeDevice*>(this)->call;   \
+        default:                                                                      \
+            __builtin_unreachable();                                                  \
+    }
+
+    NvBool NvapiVulkanLowLatencyDevice::GetLowLatencyMode() const {
+        INVOKE_CONST(GetLowLatencyMode())}
+
+    VkResult NvapiVulkanLowLatencyDevice::SetLatencySleepMode(std::nullptr_t){
+        INVOKE(SetLatencySleepMode(nullptr))}
+
+    VkResult NvapiVulkanLowLatencyDevice::SetLatencySleepMode(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs){
+        INVOKE(SetLatencySleepMode(lowLatencyMode, lowLatencyBoost, minimumIntervalUs))}
+
+    VkResult NvapiVulkanLowLatencyDevice::LatencySleep(uint64_t value) {
+        INVOKE(LatencySleep(value))
+    }
+
+    void NvapiVulkanLowLatencyDevice::GetLatencyTimings(std::span<NV_VULKAN_LATENCY_RESULT_PARAMS_V1::vkFrameReport, 64> frameReports) {
+        INVOKE(GetLatencyTimings(frameReports))
+    }
+
+    bool NvapiVulkanLowLatencyDevice::SetLatencyMarker(uint64_t frameID, NV_VULKAN_LATENCY_MARKER_TYPE marker) {
+        INVOKE(SetLatencyMarker(frameID, marker))
+    }
+
+    void NvapiVulkanLowLatencyDevice::QueueNotifyOutOfBand(VkQueue queue, NV_VULKAN_OUT_OF_BAND_QUEUE_TYPE queueType){
+        INVOKE(QueueNotifyOutOfBand(queue, queueType))}
+
 #define VK_GET_DEVICE_PROC_ADDR(proc) auto proc = reinterpret_cast<PFN_##proc>(m_vk->GetDeviceProcAddr(device, #proc))
 
     NvapiVulkanLowLatencyFakeDevice::NvapiVulkanLowLatencyFakeDevice(
@@ -127,8 +169,9 @@ namespace dxvk {
         VkSemaphore semaphore,
         PFN_PARAM(vkDestroySemaphore),
         PFN_PARAM(vkSignalSemaphore))
-        : NvapiVulkanLowLatencyDevice(device, semaphore, vkDestroySemaphore),
-          PFN_INIT(vkSignalSemaphore) {}
+        : NvapiVulkanLowLatencyDevice(device, semaphore, vkDestroySemaphore, LowLatencyDeviceImplementation::VkReflexFake),
+          PFN_INIT(vkSignalSemaphore) {
+    }
 
     // NvapiVulkanLowLatencyFakeDevice
 
@@ -218,7 +261,7 @@ namespace dxvk {
         PFN_PARAM(vkGetLatencyTimingsNV),
         PFN_PARAM(vkSetLatencyMarkerNV),
         PFN_PARAM(vkQueueNotifyOutOfBandNV))
-        : NvapiVulkanLowLatencyDevice(device, semaphore, vkDestroySemaphore),
+        : NvapiVulkanLowLatencyDevice(device, semaphore, vkDestroySemaphore, LowLatencyDeviceImplementation::LowLatency2),
           PFN_INIT(vkSetLatencySleepModeNV),
           PFN_INIT(vkLatencySleepNV),
           PFN_INIT(vkGetLatencyTimingsNV),
