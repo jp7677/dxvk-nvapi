@@ -19,6 +19,12 @@ class VkDeviceMock {
     MAKE_MOCK4(vkCreateSemaphore, VkResult(VkDevice, const VkSemaphoreCreateInfo*, const VkAllocationCallbacks*, VkSemaphore*));
     MAKE_MOCK3(vkDestroySemaphore, void(VkDevice, VkSemaphore, const VkAllocationCallbacks*));
     MAKE_MOCK2(vkSignalSemaphore, VkResult(VkDevice, const VkSemaphoreSignalInfo*));
+    MAKE_MOCK4(vkSetLatencySleepModeLegacyNV, void(VkDevice, VkBool32, VkBool32, uint32_t));
+    MAKE_MOCK3(vkLatencySleepLegacyNV, void(VkDevice, VkSemaphore, uint64_t));
+    MAKE_MOCK2(vkGetLatencyTimingsLegacyNV, void(VkDevice, void*));
+    MAKE_MOCK3(vkSetLatencyMarkerLegacyNV, void(VkDevice, uint64_t, uint32_t));
+    MAKE_MOCK2(vkGetSleepStatusLegacyNV, void(VkDevice, VkBool32*));
+    MAKE_MOCK1(vkShutdownLatencyDeviceLegacyNV, void(VkDevice));
     MAKE_MOCK3(vkSetLatencySleepModeNV, VkResult(VkDevice, VkSwapchainKHR, const VkLatencySleepModeInfoNV*));
     MAKE_MOCK3(vkLatencySleepNV, VkResult(VkDevice, VkSwapchainKHR, const VkLatencySleepInfoNV*));
     MAKE_MOCK3(vkGetLatencyTimingsNV, void(VkDevice, VkSwapchainKHR, VkGetLatencyMarkerInfoNV*));
@@ -32,6 +38,24 @@ class VkDeviceMock {
     }
     static VkResult SignalSemaphore(VkDevice device, const VkSemaphoreSignalInfo* pSignalInfo) {
         return reinterpret_cast<VkDeviceMock*>(device)->vkSignalSemaphore(device, pSignalInfo);
+    }
+    static void SetLatencySleepModeLegacyNV(VkDevice device, VkBool32 lowLatencyMode, VkBool32 lowLatencyBoost, uint32_t minimumIntervalUs) {
+        reinterpret_cast<VkDeviceMock*>(device)->vkSetLatencySleepModeLegacyNV(device, lowLatencyMode, lowLatencyBoost, minimumIntervalUs);
+    }
+    static void LatencySleepLegacyNV(VkDevice device, VkSemaphore signalSemaphore, uint64_t value) {
+        reinterpret_cast<VkDeviceMock*>(device)->vkLatencySleepLegacyNV(device, signalSemaphore, value);
+    }
+    static void GetLatencyTimingsLegacyNV(VkDevice device, void* pTimings) {
+        reinterpret_cast<VkDeviceMock*>(device)->vkGetLatencyTimingsLegacyNV(device, pTimings);
+    }
+    static void SetLatencyMarkerLegacyNV(VkDevice device, uint64_t frameID, uint32_t marker) {
+        reinterpret_cast<VkDeviceMock*>(device)->vkSetLatencyMarkerLegacyNV(device, frameID, marker);
+    }
+    static void GetSleepStatusLegacyNV(VkDevice device, VkBool32* pLowLatencyMode) {
+        reinterpret_cast<VkDeviceMock*>(device)->vkGetSleepStatusLegacyNV(device, pLowLatencyMode);
+    }
+    static void ShutdownLatencyDeviceLegacyNV(VkDevice device) {
+        reinterpret_cast<VkDeviceMock*>(device)->vkShutdownLatencyDeviceLegacyNV(device);
     }
     static VkResult SetLatencySleepModeNV(VkDevice device, VkSwapchainKHR swapchain, const VkLatencySleepModeInfoNV* pSleepModeInfo) {
         return reinterpret_cast<VkDeviceMock*>(device)->vkSetLatencySleepModeNV(device, swapchain, pSleepModeInfo);
@@ -56,8 +80,12 @@ class VkPhysicalDeviceMock {
 };
 
 class VkQueueMock {
+    MAKE_MOCK2(vkQueueNotifyOutOfBandLegacyNV, void(VkQueue, uint32_t));
     MAKE_MOCK2(vkQueueNotifyOutOfBandNV, void(VkQueue, const VkOutOfBandQueueTypeInfoNV*));
 
+    static void QueueNotifyOutOfBandLegacyNV(VkQueue queue, uint32_t queueType) {
+        reinterpret_cast<VkQueueMock*>(queue)->vkQueueNotifyOutOfBandLegacyNV(queue, queueType);
+    }
     static void QueueNotifyOutOfBandNV(VkQueue queue, const VkOutOfBandQueueTypeInfoNV* pQueueTypeInfo) {
         reinterpret_cast<VkQueueMock*>(queue)->vkQueueNotifyOutOfBandNV(queue, pQueueTypeInfo);
     }
@@ -86,10 +114,44 @@ class VkMock final : public mock_interface<dxvk::Vk> {
                 .RETURN(reinterpret_cast<PFN_vkVoidFunction>(khr ? VkDeviceMock::SignalSemaphore : nullptr))};
     }
 
-    [[nodiscard]] static std::array<std::unique_ptr<expectation>, 6> ConfigureLL2PFN(VkMock& mock) {
+    [[nodiscard]] static std::array<std::unique_ptr<expectation>, 8> ConfigureLLLegacyPFN(VkMock& mock) {
         return {
             NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkSignalSemaphore"))))
                 .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::SignalSemaphore)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencySleepModeLegacyNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::SetLatencySleepModeLegacyNV)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkLatencySleepLegacyNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::LatencySleepLegacyNV)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkGetLatencyTimingsLegacyNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::GetLatencyTimingsLegacyNV)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencyMarkerLegacyNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::SetLatencyMarkerLegacyNV)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkQueueNotifyOutOfBandLegacyNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkQueueMock::QueueNotifyOutOfBandLegacyNV)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkGetSleepStatusLegacyNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::GetSleepStatusLegacyNV)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkShutdownLatencyDeviceLegacyNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::ShutdownLatencyDeviceLegacyNV))};
+    }
+
+    [[nodiscard]] static std::array<std::unique_ptr<expectation>, 13> ConfigureLL2PFN(VkMock& mock) {
+        return {
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkSignalSemaphore"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::SignalSemaphore)),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencySleepModeLegacyNV"))))
+                .RETURN(nullptr),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkLatencySleepLegacyNV"))))
+                .RETURN(nullptr),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkGetLatencyTimingsLegacyNV"))))
+                .RETURN(nullptr),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencyMarkerLegacyNV"))))
+                .RETURN(nullptr),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkQueueNotifyOutOfBandLegacyNV"))))
+                .RETURN(nullptr),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkGetSleepStatusLegacyNV"))))
+                .RETURN(nullptr),
+            NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkShutdownLatencyDeviceLegacyNV"))))
+                .RETURN(nullptr),
             NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencySleepModeNV"))))
                 .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::SetLatencySleepModeNV)),
             NAMED_ALLOW_CALL(mock, GetDeviceProcAddr(_, eq(std::string_view("vkLatencySleepNV"))))
