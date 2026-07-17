@@ -1,10 +1,11 @@
 #pragma once
 
 #include "../nvapi_private.h"
-#include "./nvapi_resource_factory.h"
+#include "../shared/vk.h"
 
 namespace dxvk {
     enum class LowLatencyDeviceImplementation : uint8_t {
+        LowLatencyLegacy,
         LowLatency2,
         VkReflexFake
     };
@@ -41,6 +42,48 @@ namespace dxvk {
       private:
         LowLatencyDeviceImplementation m_implementation;
         PFN_vkDestroySemaphore m_vkDestroySemaphore;
+    };
+
+    class NvapiVulkanLowLatencyLegacyDevice final : public NvapiVulkanLowLatencyDevice {
+
+      public:
+        [[nodiscard]] static std::pair<std::unique_ptr<NvapiVulkanLowLatencyLegacyDevice>, VkResult> TryCreate(Vk* vk, VkDevice device);
+
+#define PFN_PARAM(proc) PFN_##proc proc
+        [[nodiscard]] explicit NvapiVulkanLowLatencyLegacyDevice(
+            VkDevice device,
+            VkSemaphore semaphore,
+            PFN_PARAM(vkDestroySemaphore),
+            PFN_PARAM(vkSetLatencySleepModeLegacyNV),
+            PFN_PARAM(vkLatencySleepLegacyNV),
+            PFN_PARAM(vkGetLatencyTimingsLegacyNV),
+            PFN_PARAM(vkSetLatencyMarkerLegacyNV),
+            PFN_PARAM(vkQueueNotifyOutOfBandLegacyNV),
+            PFN_PARAM(vkGetSleepStatusLegacyNV),
+            PFN_PARAM(vkShutdownLatencyDeviceLegacyNV));
+#undef PFN_PARAM
+
+        [[nodiscard]] NvBool GetLowLatencyModeImpl();
+        [[nodiscard]] VkResult SetLatencySleepModeImpl(std::nullptr_t);
+        [[nodiscard]] VkResult SetLatencySleepModeImpl(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs);
+        [[nodiscard]] VkResult LatencySleepImpl(uint64_t value);
+        void GetLatencyTimingsImpl(std::span<NV_VULKAN_LATENCY_RESULT_PARAMS_V1::vkFrameReport, 64> frameReports);
+        [[nodiscard]] bool SetLatencyMarkerImpl(uint64_t frameID, NV_VULKAN_LATENCY_MARKER_TYPE marker);
+        void QueueNotifyOutOfBandImpl(VkQueue queue, NV_VULKAN_OUT_OF_BAND_QUEUE_TYPE queueType);
+
+        ~NvapiVulkanLowLatencyLegacyDevice() override { m_vkShutdownLatencyDeviceLegacyNV(m_device); }
+
+      private:
+#define PFN_MEMBER(proc) \
+    PFN_##proc m_##proc {}
+        PFN_MEMBER(vkSetLatencySleepModeLegacyNV);
+        PFN_MEMBER(vkLatencySleepLegacyNV);
+        PFN_MEMBER(vkGetLatencyTimingsLegacyNV);
+        PFN_MEMBER(vkSetLatencyMarkerLegacyNV);
+        PFN_MEMBER(vkQueueNotifyOutOfBandLegacyNV);
+        PFN_MEMBER(vkGetSleepStatusLegacyNV);
+        PFN_MEMBER(vkShutdownLatencyDeviceLegacyNV);
+#undef PFN_MEMBER
     };
 
     class NvapiVulkanLowLatency2LayerDevice final : public NvapiVulkanLowLatencyDevice {

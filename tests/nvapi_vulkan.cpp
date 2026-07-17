@@ -7,6 +7,21 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
     auto t = std::make_unique<DefaultTestEnvironment>();
     auto e = t->ConfigureExpectations();
 
+    ALLOW_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencySleepModeLegacyNV"))))
+        .RETURN(nullptr);
+    ALLOW_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkLatencySleepLegacyNV"))))
+        .RETURN(nullptr);
+    ALLOW_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkGetLatencyTimingsLegacyNV"))))
+        .RETURN(nullptr);
+    ALLOW_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencyMarkerLegacyNV"))))
+        .RETURN(nullptr);
+    ALLOW_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkQueueNotifyOutOfBandLegacyNV"))))
+        .RETURN(nullptr);
+    ALLOW_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkGetSleepStatusLegacyNV"))))
+        .RETURN(nullptr);
+    ALLOW_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkShutdownLatencyDeviceLegacyNV"))))
+        .RETURN(nullptr);
+
     SECTION("InitLowLatencyDevice fails to initialize when Vulkan is not available") {
         ALLOW_CALL(*t->Vk(), IsAvailable()).RETURN(false);
         FORBID_CALL(*t->Vk(), GetDeviceProcAddr(_, _));
