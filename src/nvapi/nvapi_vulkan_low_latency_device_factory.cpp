@@ -44,7 +44,10 @@ namespace dxvk {
         std::unique_ptr<NvapiVulkanLowLatencyDevice> lowLatencyDevice;
         VkResult vr;
 
-        std::tie(lowLatencyDevice, vr) = NvapiVulkanLowLatency2LayerDevice::TryCreate(m_vk.get(), device);
+        std::tie(lowLatencyDevice, vr) = NvapiVulkanLowLatencyLegacyDevice::TryCreate(m_vk.get(), device);
+
+        if (!lowLatencyDevice || vr != VK_SUCCESS)
+            std::tie(lowLatencyDevice, vr) = NvapiVulkanLowLatency2LayerDevice::TryCreate(m_vk.get(), device);
 
         if (!lowLatencyDevice || vr != VK_SUCCESS)
             std::tie(lowLatencyDevice, vr) = NvapiVulkanLowLatencyFakeDevice::TryCreate(m_vk.get(), device);

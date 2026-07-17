@@ -6,6 +6,8 @@ namespace dxvk {
 
 #define INVOKE(call)                                                            \
     switch (m_implementation) {                                                 \
+        case LowLatencyDeviceImplementation::LowLatencyLegacy:                  \
+            return static_cast<NvapiVulkanLowLatencyLegacyDevice*>(this)->call; \
         case LowLatencyDeviceImplementation::LowLatency2:                       \
             return static_cast<NvapiVulkanLowLatency2LayerDevice*>(this)->call; \
         case LowLatencyDeviceImplementation::VkReflexFake:                      \
@@ -68,6 +70,113 @@ namespace dxvk {
     }
 
 #define VK_GET_DEVICE_PROC_ADDR(proc) auto proc = reinterpret_cast<PFN_##proc>(vk->GetDeviceProcAddr(device, #proc))
+
+    // NvapiVulkanLowLatencyLegacyDevice
+
+    std::pair<std::unique_ptr<NvapiVulkanLowLatencyLegacyDevice>, VkResult> NvapiVulkanLowLatencyLegacyDevice::TryCreate(Vk* vk, VkDevice device) {
+        VK_GET_DEVICE_PROC_ADDR(vkCreateSemaphore);
+        VK_GET_DEVICE_PROC_ADDR(vkDestroySemaphore);
+
+        if (!vkCreateSemaphore || !vkDestroySemaphore) {
+            log::info("Initializing Vulkan Low-Latency with VkNvLowLatencyLegacy implementation failed: device does not appear to support semaphores?!");
+            return {nullptr, VK_ERROR_INCOMPATIBLE_DRIVER};
+        }
+
+        VK_GET_DEVICE_PROC_ADDR(vkSetLatencySleepModeLegacyNV);
+        VK_GET_DEVICE_PROC_ADDR(vkLatencySleepLegacyNV);
+        VK_GET_DEVICE_PROC_ADDR(vkGetLatencyTimingsLegacyNV);
+        VK_GET_DEVICE_PROC_ADDR(vkSetLatencyMarkerLegacyNV);
+        VK_GET_DEVICE_PROC_ADDR(vkQueueNotifyOutOfBandLegacyNV);
+        VK_GET_DEVICE_PROC_ADDR(vkGetSleepStatusLegacyNV);
+        VK_GET_DEVICE_PROC_ADDR(vkShutdownLatencyDeviceLegacyNV);
+
+        if (!(vkSetLatencySleepModeLegacyNV && vkLatencySleepLegacyNV && vkGetLatencyTimingsLegacyNV && vkSetLatencyMarkerLegacyNV && vkQueueNotifyOutOfBandLegacyNV && vkGetSleepStatusLegacyNV && vkShutdownLatencyDeviceLegacyNV)) {
+            log::info("Initializing Vulkan Low-Latency with VkNvLowLatencyLegacy implementation failed, device (or winevulkan) does not support revision 2 of VK_NV_low_latency extension");
+            return {nullptr, VK_ERROR_EXTENSION_NOT_PRESENT};
+        }
+
+        auto [semaphore, vr] = CreateVkSemaphore(device, vkCreateSemaphore);
+
+        if (vr != VK_SUCCESS) {
+            log::info(str::format("Initializing Vulkan Low-Latency with VkNvLowLatencyLegacy implementation failed: create semaphore failed (", vr, ")?!"));
+            return {nullptr, vr};
+        }
+
+        auto lowLatencyDevice = std::make_unique<NvapiVulkanLowLatencyLegacyDevice>(
+            device,
+            semaphore,
+            vkDestroySemaphore,
+            vkSetLatencySleepModeLegacyNV,
+            vkLatencySleepLegacyNV,
+            vkGetLatencyTimingsLegacyNV,
+            vkSetLatencyMarkerLegacyNV,
+            vkQueueNotifyOutOfBandLegacyNV,
+            vkGetSleepStatusLegacyNV,
+            vkShutdownLatencyDeviceLegacyNV);
+
+        log::info("Successfully initialized Vulkan Low-Latency with VkNvLowLatencyLegacy implementation");
+        return {std::move(lowLatencyDevice), VK_SUCCESS};
+    }
+
+    NvapiVulkanLowLatencyLegacyDevice::NvapiVulkanLowLatencyLegacyDevice(
+        VkDevice device,
+        VkSemaphore semaphore,
+        PFN_PARAM(vkDestroySemaphore),
+        PFN_PARAM(vkSetLatencySleepModeLegacyNV),
+        PFN_PARAM(vkLatencySleepLegacyNV),
+        PFN_PARAM(vkGetLatencyTimingsLegacyNV),
+        PFN_PARAM(vkSetLatencyMarkerLegacyNV),
+        PFN_PARAM(vkQueueNotifyOutOfBandLegacyNV),
+        PFN_PARAM(vkGetSleepStatusLegacyNV),
+        PFN_PARAM(vkShutdownLatencyDeviceLegacyNV))
+        : NvapiVulkanLowLatencyDevice(LowLatencyDeviceImplementation::LowLatencyLegacy, device, semaphore, vkDestroySemaphore),
+          PFN_INIT(vkSetLatencySleepModeLegacyNV),
+          PFN_INIT(vkLatencySleepLegacyNV),
+          PFN_INIT(vkGetLatencyTimingsLegacyNV),
+          PFN_INIT(vkSetLatencyMarkerLegacyNV),
+          PFN_INIT(vkQueueNotifyOutOfBandLegacyNV),
+          PFN_INIT(vkGetSleepStatusLegacyNV),
+          PFN_INIT(vkShutdownLatencyDeviceLegacyNV) {}
+
+    NvBool NvapiVulkanLowLatencyLegacyDevice::GetLowLatencyModeImpl() {
+        VkBool32 lowLatencyMode;
+
+        m_vkGetSleepStatusLegacyNV(m_device, &lowLatencyMode);
+
+        return lowLatencyMode ? NV_TRUE : NV_FALSE;
+    }
+
+    VkResult NvapiVulkanLowLatencyLegacyDevice::SetLatencySleepModeImpl(std::nullptr_t) {
+        m_vkSetLatencySleepModeLegacyNV(m_device, VK_FALSE, VK_FALSE, 0);
+
+        return VK_SUCCESS;
+    }
+
+    VkResult NvapiVulkanLowLatencyLegacyDevice::SetLatencySleepModeImpl(bool lowLatencyMode, bool lowLatencyBoost, uint32_t minimumIntervalUs) {
+        m_vkSetLatencySleepModeLegacyNV(m_device, lowLatencyMode ? VK_TRUE : VK_FALSE, lowLatencyBoost ? VK_TRUE : VK_FALSE, minimumIntervalUs);
+
+        return VK_SUCCESS;
+    }
+
+    VkResult NvapiVulkanLowLatencyLegacyDevice::LatencySleepImpl(uint64_t value) {
+        m_vkLatencySleepLegacyNV(m_device, m_semaphore, value);
+
+        return VK_SUCCESS;
+    }
+
+    void NvapiVulkanLowLatencyLegacyDevice::GetLatencyTimingsImpl(std::span<NV_VULKAN_LATENCY_RESULT_PARAMS_V1::vkFrameReport, 64> frameReports) {
+        m_vkGetLatencyTimingsLegacyNV(m_device, frameReports.data());
+    }
+
+    bool NvapiVulkanLowLatencyLegacyDevice::SetLatencyMarkerImpl(uint64_t frameID, NV_VULKAN_LATENCY_MARKER_TYPE marker) {
+        m_vkSetLatencyMarkerLegacyNV(m_device, frameID, marker);
+
+        return true;
+    }
+
+    void NvapiVulkanLowLatencyLegacyDevice::QueueNotifyOutOfBandImpl(VkQueue queue, NV_VULKAN_OUT_OF_BAND_QUEUE_TYPE queueType) {
+        m_vkQueueNotifyOutOfBandLegacyNV(queue, queueType);
+    }
 
     // NvapiVulkanLowLatency2LayerDevice
 
