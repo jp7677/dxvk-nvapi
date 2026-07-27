@@ -173,6 +173,199 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
 
             REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
         }
+
+        SECTION("Uses LowLatencyLegacy over LowLatency2Layer if both are available") {
+            auto vkSemaphore = reinterpret_cast<VkSemaphore>(0x12345678);
+            auto vkDevice = std::make_unique<VkDeviceMock>();
+
+            ALLOW_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencySleepModeNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::SetLatencySleepModeNV));
+            ALLOW_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkLatencySleepNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::LatencySleepNV));
+            ALLOW_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkGetLatencyTimingsNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::GetLatencyTimingsNV));
+            ALLOW_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkSetLatencyMarkerNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkDeviceMock::SetLatencyMarkerNV));
+            ALLOW_CALL(*t->Vk(), GetDeviceProcAddr(_, eq(std::string_view("vkQueueNotifyOutOfBandNV"))))
+                .RETURN(reinterpret_cast<PFN_vkVoidFunction>(VkQueueMock::QueueNotifyOutOfBandNV));
+
+            REQUIRE_CALL(*vkDevice, vkCreateSemaphore(_, _, _, _))
+                .LR_SIDE_EFFECT(*_4 = vkSemaphore)
+                .RETURN(VK_SUCCESS);
+
+            HANDLE signalSemaphoreHandle = VK_NULL_HANDLE;
+            REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
+            REQUIRE(signalSemaphoreHandle == vkSemaphore);
+
+            REQUIRE_CALL(*vkDevice, vkSetLatencySleepModeLegacyNV(_, _, _, _))
+                .WITH(_2 == VK_TRUE && _3 == VK_FALSE && _4 == 16666);
+            FORBID_CALL(*vkDevice, vkSetLatencySleepModeNV(_, _, _));
+
+            NV_VULKAN_SET_SLEEP_MODE_PARAMS setSleepModeParams;
+            setSleepModeParams.version = NV_VULKAN_SET_SLEEP_MODE_PARAMS_VER1;
+            setSleepModeParams.bLowLatencyMode = true;
+            setSleepModeParams.bLowLatencyBoost = false;
+            setSleepModeParams.minimumIntervalUs = 16666;
+            REQUIRE(NvAPI_Vulkan_SetSleepMode(vkDevice.get(), &setSleepModeParams) == NVAPI_OK);
+
+            REQUIRE_CALL(*vkDevice, vkShutdownLatencyDeviceLegacyNV(_));
+            REQUIRE_CALL(*vkDevice, vkDestroySemaphore(_, _, _));
+
+            REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
+        }
+
+        SECTION("Other entrypoints succeed") {
+            auto vkDevice = std::make_unique<VkDeviceMock>();
+            auto vkQueue = std::make_unique<VkQueueMock>();
+            HANDLE signalSemaphoreHandle = VK_NULL_HANDLE;
+
+            ALLOW_CALL(*vkDevice, vkCreateSemaphore(_, _, _, _))
+                .RETURN(VK_SUCCESS);
+            ALLOW_CALL(*vkDevice, vkDestroySemaphore(_, _, _));
+            ALLOW_CALL(*vkDevice, vkShutdownLatencyDeviceLegacyNV(_));
+
+            SECTION("SetSleepMode / GetSleepStatus returns OK") {
+                REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
+
+                REQUIRE_CALL(*vkDevice, vkSetLatencySleepModeLegacyNV(_, _, _, _))
+                    .WITH(_2 == VK_TRUE && _3 == VK_FALSE && _4 == 16666);
+
+                NV_VULKAN_SET_SLEEP_MODE_PARAMS setSleepModeParams;
+                setSleepModeParams.version = NV_VULKAN_SET_SLEEP_MODE_PARAMS_VER1;
+                setSleepModeParams.bLowLatencyMode = true;
+                setSleepModeParams.bLowLatencyBoost = false;
+                setSleepModeParams.minimumIntervalUs = 16666;
+                REQUIRE(NvAPI_Vulkan_SetSleepMode(vkDevice.get(), &setSleepModeParams) == NVAPI_OK);
+
+                REQUIRE_CALL(*vkDevice, vkGetSleepStatusLegacyNV(_, _))
+                    .SIDE_EFFECT(*_2 = VK_TRUE);
+
+                NV_VULKAN_GET_SLEEP_STATUS_PARAMS getSleepStatusParams{};
+                getSleepStatusParams.version = NV_VULKAN_GET_SLEEP_STATUS_PARAMS_VER1;
+                REQUIRE(NvAPI_Vulkan_GetSleepStatus(vkDevice.get(), &getSleepStatusParams) == NVAPI_OK);
+                REQUIRE(getSleepStatusParams.bLowLatencyMode == NV_TRUE);
+
+                REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
+            }
+
+            SECTION("GetSleepStatus with unknown struct version returns incompatible-struct-version") {
+                NV_VULKAN_GET_SLEEP_STATUS_PARAMS params;
+                params.version = NV_VULKAN_GET_SLEEP_STATUS_PARAMS_VER1 + 1;
+                REQUIRE(NvAPI_Vulkan_GetSleepStatus(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("GetSleepStatus with current struct version returns not incompatible-struct-version") {
+                // This test should fail when a header update provides a newer not yet implemented struct version
+                NV_VULKAN_GET_SLEEP_STATUS_PARAMS params;
+                params.version = NV_VULKAN_GET_SLEEP_STATUS_PARAMS_VER;
+                REQUIRE(NvAPI_Vulkan_GetSleepStatus(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("SetSleepMode with unknown struct version returns incompatible-struct-version") {
+                NV_VULKAN_SET_SLEEP_MODE_PARAMS params;
+                params.version = NV_VULKAN_SET_SLEEP_MODE_PARAMS_VER1 + 1;
+                REQUIRE(NvAPI_Vulkan_SetSleepMode(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("SetSleepMode with current struct version returns not incompatible-struct-version") {
+                // This test should fail when a header update provides a newer not yet implemented struct version
+                NV_VULKAN_SET_SLEEP_MODE_PARAMS params;
+                params.version = NV_VULKAN_SET_SLEEP_MODE_PARAMS_VER;
+                REQUIRE(NvAPI_Vulkan_SetSleepMode(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("Sleep returns OK") {
+                auto signal = 1365ULL;
+
+                REQUIRE_CALL(*vkDevice, vkLatencySleepLegacyNV(_, _, _))
+                    .WITH(_3 == signal);
+
+                REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
+                REQUIRE(NvAPI_Vulkan_Sleep(vkDevice.get(), signal) == NVAPI_OK);
+                REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
+            }
+
+            SECTION("GetLatency returns OK") {
+                REQUIRE_CALL(*vkDevice, vkGetLatencyTimingsLegacyNV(_, _))
+                    .SIDE_EFFECT({
+                        auto* fr = static_cast<NV_VULKAN_LATENCY_RESULT_PARAMS::vkFrameReport*>(_2);
+                        fr[0].frameID = 5;
+                        fr[0].inputSampleTime = 8;
+                        fr[1].frameID = 6;
+                        fr[1].inputSampleTime = 7;
+                    });
+
+                REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
+
+                NV_VULKAN_LATENCY_RESULT_PARAMS params{};
+                params.version = NV_VULKAN_LATENCY_RESULT_PARAMS_VER1;
+                REQUIRE(NvAPI_Vulkan_GetLatency(vkDevice.get(), &params) == NVAPI_OK);
+                REQUIRE(params.frameReport[0].frameID == 5);
+                REQUIRE(params.frameReport[0].inputSampleTime == 8);
+                REQUIRE(params.frameReport[1].frameID == 6);
+                REQUIRE(params.frameReport[1].inputSampleTime == 7);
+
+                REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
+            }
+
+            SECTION("GetLatency with unknown struct version returns incompatible-struct-version") {
+                NV_VULKAN_LATENCY_RESULT_PARAMS params;
+                params.version = NV_VULKAN_LATENCY_RESULT_PARAMS_VER1 + 1;
+                REQUIRE(NvAPI_Vulkan_GetLatency(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("GetLatency with current struct version returns not incompatible-struct-version") {
+                // This test should fail when a header update provides a newer not yet implemented struct version
+                NV_VULKAN_LATENCY_RESULT_PARAMS params;
+                params.version = NV_VULKAN_LATENCY_RESULT_PARAMS_VER;
+                REQUIRE(NvAPI_Vulkan_GetLatency(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("SetLatencyMarker returns OK") {
+                sequence seq1, seq2;
+                REQUIRE_CALL(*vkDevice, vkSetLatencyMarkerLegacyNV(_, _, _))
+                    .IN_SEQUENCE(seq1)
+                    .WITH(_2 == 4 && _3 == VULKAN_PRESENT_START);
+                REQUIRE_CALL(*vkDevice, vkSetLatencyMarkerLegacyNV(_, _, _))
+                    .IN_SEQUENCE(seq2)
+                    .WITH(_2 == 4 && _3 == static_cast<NV_VULKAN_LATENCY_MARKER_TYPE>(15));
+
+                REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
+
+                NV_VULKAN_LATENCY_MARKER_PARAMS params;
+                params.version = NV_VULKAN_LATENCY_MARKER_PARAMS_VER1;
+                params.frameID = 4;
+                params.markerType = VULKAN_PRESENT_START;
+                REQUIRE(NvAPI_Vulkan_SetLatencyMarker(vkDevice.get(), &params) == NVAPI_OK);
+
+                params.markerType = static_cast<NV_VULKAN_LATENCY_MARKER_TYPE>(15);
+                REQUIRE(NvAPI_Vulkan_SetLatencyMarker(vkDevice.get(), &params) == NVAPI_OK);
+
+                REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
+            }
+
+            SECTION("SetLatencyMarker with unknown struct version returns incompatible-struct-version") {
+                NV_VULKAN_LATENCY_MARKER_PARAMS params;
+                params.version = NV_VULKAN_LATENCY_MARKER_PARAMS_VER1 + 1;
+                REQUIRE(NvAPI_Vulkan_SetLatencyMarker(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("SetLatencyMarker with current struct version returns not incompatible-struct-version") {
+                // This test should fail when a header update provides a newer not yet implemented struct version
+                NV_VULKAN_LATENCY_MARKER_PARAMS params;
+                params.version = NV_VULKAN_LATENCY_MARKER_PARAMS_VER;
+                REQUIRE(NvAPI_Vulkan_SetLatencyMarker(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+            }
+
+            SECTION("NotifyOutOfBandVkQueue returns OK") {
+                REQUIRE_CALL(*vkQueue, vkQueueNotifyOutOfBandLegacyNV(_, _))
+                    .WITH(_2 == VULKAN_OUT_OF_BAND_QUEUE_TYPE_PRESENT);
+
+                REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), &signalSemaphoreHandle) == NVAPI_OK);
+                REQUIRE(NvAPI_Vulkan_NotifyOutOfBandVkQueue(vkDevice.get(), vkQueue.get(), VULKAN_OUT_OF_BAND_QUEUE_TYPE_PRESENT) == NVAPI_OK);
+                REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
+            }
+        }
     }
 
     SECTION("VkReflex with LowLatency2Layer") {
