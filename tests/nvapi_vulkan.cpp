@@ -151,6 +151,62 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
         REQUIRE(NvAPI_Vulkan_InitLowLatencyDevice(vkDevice.get(), reinterpret_cast<HANDLE*>(&result)) == NVAPI_NOT_SUPPORTED);
     }
 
+    SECTION("VkReflex shared") {
+        auto vkDevice = std::make_unique<VkDeviceMock>();
+
+        SECTION("GetSleepStatus with unknown struct version returns incompatible-struct-version") {
+            NV_VULKAN_GET_SLEEP_STATUS_PARAMS params;
+            params.version = NV_VULKAN_GET_SLEEP_STATUS_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_Vulkan_GetSleepStatus(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetSleepStatus with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            NV_VULKAN_GET_SLEEP_STATUS_PARAMS params;
+            params.version = NV_VULKAN_GET_SLEEP_STATUS_PARAMS_VER;
+            REQUIRE(NvAPI_Vulkan_GetSleepStatus(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("SetSleepMode with unknown struct version returns incompatible-struct-version") {
+            NV_VULKAN_SET_SLEEP_MODE_PARAMS params;
+            params.version = NV_VULKAN_SET_SLEEP_MODE_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_Vulkan_SetSleepMode(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("SetSleepMode with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            NV_VULKAN_SET_SLEEP_MODE_PARAMS params;
+            params.version = NV_VULKAN_SET_SLEEP_MODE_PARAMS_VER;
+            REQUIRE(NvAPI_Vulkan_SetSleepMode(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetLatency with unknown struct version returns incompatible-struct-version") {
+            NV_VULKAN_LATENCY_RESULT_PARAMS params;
+            params.version = NV_VULKAN_LATENCY_RESULT_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_Vulkan_GetLatency(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("GetLatency with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            NV_VULKAN_LATENCY_RESULT_PARAMS params;
+            params.version = NV_VULKAN_LATENCY_RESULT_PARAMS_VER;
+            REQUIRE(NvAPI_Vulkan_GetLatency(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("SetLatencyMarker with unknown struct version returns incompatible-struct-version") {
+            NV_VULKAN_LATENCY_MARKER_PARAMS params;
+            params.version = NV_VULKAN_LATENCY_MARKER_PARAMS_VER1 + 1;
+            REQUIRE(NvAPI_Vulkan_SetLatencyMarker(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+
+        SECTION("SetLatencyMarker with current struct version returns not incompatible-struct-version") {
+            // This test should fail when a header update provides a newer not yet implemented struct version
+            NV_VULKAN_LATENCY_MARKER_PARAMS params;
+            params.version = NV_VULKAN_LATENCY_MARKER_PARAMS_VER;
+            REQUIRE(NvAPI_Vulkan_SetLatencyMarker(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
+        }
+    }
+
     SECTION("VkReflex with LowLatencyLegacy") {
         ALLOW_CALL(*t->Vk(), IsAvailable()).RETURN(true);
         auto e1 = VkMock::ConfigureDefaultPFN(*t->Vk());
@@ -248,32 +304,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
                 REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
             }
 
-            SECTION("GetSleepStatus with unknown struct version returns incompatible-struct-version") {
-                NV_VULKAN_GET_SLEEP_STATUS_PARAMS params;
-                params.version = NV_VULKAN_GET_SLEEP_STATUS_PARAMS_VER1 + 1;
-                REQUIRE(NvAPI_Vulkan_GetSleepStatus(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
-            SECTION("GetSleepStatus with current struct version returns not incompatible-struct-version") {
-                // This test should fail when a header update provides a newer not yet implemented struct version
-                NV_VULKAN_GET_SLEEP_STATUS_PARAMS params;
-                params.version = NV_VULKAN_GET_SLEEP_STATUS_PARAMS_VER;
-                REQUIRE(NvAPI_Vulkan_GetSleepStatus(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
-            SECTION("SetSleepMode with unknown struct version returns incompatible-struct-version") {
-                NV_VULKAN_SET_SLEEP_MODE_PARAMS params;
-                params.version = NV_VULKAN_SET_SLEEP_MODE_PARAMS_VER1 + 1;
-                REQUIRE(NvAPI_Vulkan_SetSleepMode(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
-            SECTION("SetSleepMode with current struct version returns not incompatible-struct-version") {
-                // This test should fail when a header update provides a newer not yet implemented struct version
-                NV_VULKAN_SET_SLEEP_MODE_PARAMS params;
-                params.version = NV_VULKAN_SET_SLEEP_MODE_PARAMS_VER;
-                REQUIRE(NvAPI_Vulkan_SetSleepMode(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
             SECTION("Sleep returns OK") {
                 auto signal = 1365ULL;
 
@@ -308,19 +338,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
                 REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
             }
 
-            SECTION("GetLatency with unknown struct version returns incompatible-struct-version") {
-                NV_VULKAN_LATENCY_RESULT_PARAMS params;
-                params.version = NV_VULKAN_LATENCY_RESULT_PARAMS_VER1 + 1;
-                REQUIRE(NvAPI_Vulkan_GetLatency(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
-            SECTION("GetLatency with current struct version returns not incompatible-struct-version") {
-                // This test should fail when a header update provides a newer not yet implemented struct version
-                NV_VULKAN_LATENCY_RESULT_PARAMS params;
-                params.version = NV_VULKAN_LATENCY_RESULT_PARAMS_VER;
-                REQUIRE(NvAPI_Vulkan_GetLatency(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
             SECTION("SetLatencyMarker returns OK") {
                 sequence seq1, seq2;
                 REQUIRE_CALL(*vkDevice, vkSetLatencyMarkerLegacyNV(_, _, _))
@@ -342,19 +359,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
                 REQUIRE(NvAPI_Vulkan_SetLatencyMarker(vkDevice.get(), &params) == NVAPI_OK);
 
                 REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
-            }
-
-            SECTION("SetLatencyMarker with unknown struct version returns incompatible-struct-version") {
-                NV_VULKAN_LATENCY_MARKER_PARAMS params;
-                params.version = NV_VULKAN_LATENCY_MARKER_PARAMS_VER1 + 1;
-                REQUIRE(NvAPI_Vulkan_SetLatencyMarker(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
-            SECTION("SetLatencyMarker with current struct version returns not incompatible-struct-version") {
-                // This test should fail when a header update provides a newer not yet implemented struct version
-                NV_VULKAN_LATENCY_MARKER_PARAMS params;
-                params.version = NV_VULKAN_LATENCY_MARKER_PARAMS_VER;
-                REQUIRE(NvAPI_Vulkan_SetLatencyMarker(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
             }
 
             SECTION("NotifyOutOfBandVkQueue returns OK") {
@@ -471,32 +475,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
                 REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
             }
 
-            SECTION("GetSleepStatus with unknown struct version returns incompatible-struct-version") {
-                NV_VULKAN_GET_SLEEP_STATUS_PARAMS params;
-                params.version = NV_VULKAN_GET_SLEEP_STATUS_PARAMS_VER1 + 1;
-                REQUIRE(NvAPI_Vulkan_GetSleepStatus(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
-            SECTION("GetSleepStatus with current struct version returns not incompatible-struct-version") {
-                // This test should fail when a header update provides a newer not yet implemented struct version
-                NV_VULKAN_GET_SLEEP_STATUS_PARAMS params;
-                params.version = NV_VULKAN_GET_SLEEP_STATUS_PARAMS_VER;
-                REQUIRE(NvAPI_Vulkan_GetSleepStatus(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
-            SECTION("SetSleepMode with unknown struct version returns incompatible-struct-version") {
-                NV_VULKAN_SET_SLEEP_MODE_PARAMS params;
-                params.version = NV_VULKAN_SET_SLEEP_MODE_PARAMS_VER1 + 1;
-                REQUIRE(NvAPI_Vulkan_SetSleepMode(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
-            SECTION("SetSleepMode with current struct version returns not incompatible-struct-version") {
-                // This test should fail when a header update provides a newer not yet implemented struct version
-                NV_VULKAN_SET_SLEEP_MODE_PARAMS params;
-                params.version = NV_VULKAN_SET_SLEEP_MODE_PARAMS_VER;
-                REQUIRE(NvAPI_Vulkan_SetSleepMode(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
             SECTION("Sleep returns OK") {
                 auto signal = 1365ULL;
 
@@ -552,19 +530,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
                 REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
             }
 
-            SECTION("GetLatency with unknown struct version returns incompatible-struct-version") {
-                NV_VULKAN_LATENCY_RESULT_PARAMS params;
-                params.version = NV_VULKAN_LATENCY_RESULT_PARAMS_VER1 + 1;
-                REQUIRE(NvAPI_Vulkan_GetLatency(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
-            SECTION("GetLatency with current struct version returns not incompatible-struct-version") {
-                // This test should fail when a header update provides a newer not yet implemented struct version
-                NV_VULKAN_LATENCY_RESULT_PARAMS params;
-                params.version = NV_VULKAN_LATENCY_RESULT_PARAMS_VER;
-                REQUIRE(NvAPI_Vulkan_GetLatency(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
             SECTION("SetLatencyMarker returns OK") {
                 REQUIRE_CALL(*vkDevice, vkSetLatencyMarkerNV(_, _, _))
                     .WITH(_3->marker == VK_LATENCY_MARKER_PRESENT_START_NV);
@@ -590,19 +555,6 @@ TEST_CASE("Vulkan methods succeed", "[.vulkan]") {
                 REQUIRE(NvAPI_Vulkan_SetLatencyMarker(vkDevice.get(), &params) == NVAPI_OK);
 
                 REQUIRE(NvAPI_Vulkan_DestroyLowLatencyDevice(vkDevice.get()) == NVAPI_OK);
-            }
-
-            SECTION("SetLatencyMarker with unknown struct version returns incompatible-struct-version") {
-                NV_VULKAN_LATENCY_MARKER_PARAMS params;
-                params.version = NV_VULKAN_LATENCY_MARKER_PARAMS_VER1 + 1;
-                REQUIRE(NvAPI_Vulkan_SetLatencyMarker(vkDevice.get(), &params) == NVAPI_INCOMPATIBLE_STRUCT_VERSION);
-            }
-
-            SECTION("SetLatencyMarker with current struct version returns not incompatible-struct-version") {
-                // This test should fail when a header update provides a newer not yet implemented struct version
-                NV_VULKAN_LATENCY_MARKER_PARAMS params;
-                params.version = NV_VULKAN_LATENCY_MARKER_PARAMS_VER;
-                REQUIRE(NvAPI_Vulkan_SetLatencyMarker(vkDevice.get(), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
             }
 
             SECTION("NotifyOutOfBandVkQueue returns OK") {
