@@ -8,7 +8,7 @@ This implementation currently offers entry points for supporting the following f
 
 - NVIDIA DLSS for Vulkan, by supporting the relevant adapter information by querying from [Vulkan](https://www.vulkan.org/).
 - NVIDIA DLSS for D3D11 and D3D12, by querying from Vulkan and forwarding the relevant calls into DXVK / VKD3D-Proton.
-- NVIDIA Reflex, by forwarding the relevant calls into either DXVK / VKD3D-Proton or its custom Vulkan layer.
+- NVIDIA Reflex, by forwarding the relevant calls into either DXVK / VKD3D-Proton or a supported Vulkan implementation.
 - Several NVAPI D3D11 extensions, among others `SetDepthBoundsTest` and `UAVOverlap`, by forwarding the relevant calls into DXVK.
 - NVIDIA PhysX, by supporting entry points for querying PhysX capabilities.
 - Several GPU topology related methods for adapter and display information, by querying from DXVK and Vulkan.
@@ -23,7 +23,10 @@ While originally being developed for usage with Unreal Engine 4, most notably fo
 
 This implementation is supposed to be used on Linux using Wine or derivatives like Proton. Usage on Windows is discouraged. Please do not replace `nvapi.dll`/`nvapi64.dll`/`nvofapi64.dll` on Windows from NVIDIA's driver package with this version. DXVK-NVAPI uses several DXVK and VKD3D-Proton extension points, thus using DXVK (D3D11 and DXGI) is a requirement. Using Wine's D3D11 or DXGI implementation will fail. Usage of DXVK-NVAPI is not restricted to NVIDIA GPUs, though the default behavior is to skip GPUs not running the NVIDIA proprietary driver or Mesa NVK. Some entry points offer no functionality or make no sense when a different GPU vendor is detected. DLSS requires an NVIDIA GPU, Turing or newer, running the proprietary driver.
 
-In order to support Vulkan flavor of NVIDIA Reflex, an [additional Vulkan layer](./layer) is required which intercepts (technically invalid) Vulkan calls made by DXVK-NVAPI, enriches them with extra data, and forwards to a Vulkan driver that supports [`VK_NV_low_latency2`](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_NV_low_latency2.html) device extension.
+In order to support Vulkan flavor of NVIDIA Reflex, one of two backing implementations can be used:
+
+- A Vulkan driver that supports revision 2 of [`VK_NV_low_latency`](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_NV_low_latency.html) device extension and winevulkan 1.4.357 or newer. This relies on the application enabling this extension on its own, which notably prevents Red Dead Redemption 2 from working using this method out of the box. Going forward, this will be the preferred choice.
+- An [additional Vulkan layer](./layer) which intercepts (technically invalid) Vulkan calls made by DXVK-NVAPI, enriches them with extra data, and forwards to a Vulkan driver that supports [`VK_NV_low_latency2`](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_NV_low_latency2.html) device extension. This layer will _replace_ requests to enable `VK_NV_low_latency` with itself.
 
 When available, DXVK-NVAPI uses NVIDIA's NVML management library to query temperature, utilization and others for NVIDIA GPUs. See [wine-nvml](https://github.com/Saancreed/wine-nvml) how to add NVML support to Wine/Proton.
 
