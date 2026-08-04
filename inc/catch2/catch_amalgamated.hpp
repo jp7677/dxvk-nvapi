@@ -6,8 +6,8 @@
 
 // SPDX-License-Identifier: BSL-1.0
 
-//  Catch v3.15.2
-//  Generated: 2026-07-07 20:39:49.020441
+//  Catch v3.15.3
+//  Generated: 2026-07-26 22:17:52.004020
 //  ----------------------------------------------------------
 //  This file is an amalgamation of multiple different files.
 //  You probably shouldn't edit it directly.
@@ -7572,7 +7572,7 @@ namespace Catch {
 
 #define CATCH_VERSION_MAJOR 3
 #define CATCH_VERSION_MINOR 15
-#define CATCH_VERSION_PATCH 2
+#define CATCH_VERSION_PATCH 3
 
 #endif // CATCH_VERSION_MACROS_HPP_INCLUDED
 
@@ -7828,7 +7828,7 @@ namespace Generators {
         void skipToNthElementImpl( std::size_t n ) override {
             if ( n >= m_values.size() ) {
                 Detail::throw_generator_exception(
-                    "Coud not jump to Nth element: not enough elements" );
+                    "Could not jump to Nth element: not enough elements" );
             }
             m_idx = n;
         }
@@ -8011,7 +8011,7 @@ namespace Generators {
         void skipToNthElementImpl( std::size_t n ) override {
             if ( n >= m_target ) {
                 Detail::throw_generator_exception(
-                    "Coud not jump to Nth element: not enough elements" );
+                    "Could not jump to Nth element: not enough elements" );
             }
 
             m_generator.skipToNthElement( n );
@@ -10309,10 +10309,18 @@ namespace Catch {
             writeImpl( value, !std::is_arithmetic<T>::value );
         }
         void write( StringRef value ) &&;
+        void write( float value ) &&;
+        void write( double value ) &&;
         void write( bool value ) &&;
 
     private:
         void writeImpl( StringRef value, bool quote );
+
+        // Helper to deal with non-finite floating point values, which
+        // are not standard JSON, but we use JS/Python/etc. approach of
+        // emitting `NaN`, `Infinity`, `-Infinity` as number(like).
+        template <typename T>
+        void writeFloatingPoint( T value );
 
         // Without this SFINAE, this overload is a better match
         // for `std::string`, `char const*`, `char const[N]` args.
