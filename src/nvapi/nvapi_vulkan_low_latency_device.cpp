@@ -49,7 +49,7 @@ namespace dxvk {
 #define PFN_PARAM(proc) PFN_##proc proc
 #define PFN_INIT(proc) m_##proc(proc)
 
-    std::pair<VkSemaphore, VkResult> CreateVkSemaphore(VkDevice device, PFN_PARAM(vkCreateSemaphore)) {
+    static std::pair<VkSemaphore, VkResult> CreateVkSemaphore(VkDevice device, PFN_PARAM(vkCreateSemaphore)) {
         auto semaphoreTypeCreateInfo = VkSemaphoreTypeCreateInfo{
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
             .pNext = nullptr,
