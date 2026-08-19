@@ -39,5 +39,10 @@ namespace dxvk {
         std::unique_ptr<Nvml> m_nvml;
         std::vector<NvapiAdapter*> m_nvapiAdapters;
         std::vector<NvapiOutput*> m_nvapiOutputs;
+#ifdef DXVK_NVAPI_GRPC
+        std::string m_grpcSocketPath;
+        std::unique_ptr<NvapiService> m_grpcService;
+        std::unique_ptr<grpc::Server> m_grpcServer;
+#endif
     };
 }

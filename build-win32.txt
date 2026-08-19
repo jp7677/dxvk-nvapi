@@ -1,4 +1,6 @@
 [binaries]
+cmake = 'cmake'
+c = 'i686-w64-mingw32-gcc'
 cpp = 'i686-w64-mingw32-g++'
 strip = 'i686-w64-mingw32-strip'
 ar = 'i686-w64-mingw32-ar'
@@ -8,6 +10,7 @@ cpp_args=['-msse', '-msse2']
 cpp_link_args = ['-static', '-static-libgcc', '-static-libstdc++']
 
 [properties]
+cmake_toolchain_file = '/usr/share/mingw/toolchain-i686-w64-mingw32.cmake'
 needs_exe_wrapper = true
 
 [host_machine]

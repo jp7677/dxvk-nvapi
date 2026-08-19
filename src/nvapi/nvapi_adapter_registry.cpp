@@ -4,13 +4,21 @@
 #include "nvapi_d3d_low_latency_device.h"
 #include "nvapi_vulkan_low_latency_device_factory.h"
 #include "../util/util_log.h"
-
+#ifdef DXVK_NVAPI_GRPC
+#include "absl/log/initialize.h"
+#endif
 namespace dxvk {
 
     NvapiAdapterRegistry::NvapiAdapterRegistry(NvapiResourceFactory& resourceFactory)
         : m_resourceFactory(resourceFactory) {}
 
     NvapiAdapterRegistry::~NvapiAdapterRegistry() {
+#ifdef DXVK_NVAPI_GRPC
+        if (!m_grpcSocketPath.empty()) {
+            DeleteFileA(m_grpcSocketPath.c_str());
+        }
+#endif
+
         NvapiD3d11Device::Reset();
         NvapiD3d12Device::Reset();
         NvapiD3dLowLatencyDevice::Reset();
@@ -38,6 +46,27 @@ namespace dxvk {
         m_nvml = m_resourceFactory.CreateNvml();
         if (m_nvml->IsAvailable())
             log::info("NVML loaded and initialized successfully");
+
+#ifdef DXVK_NVAPI_GRPC
+        m_grpcSocketPath = GrpcSocketPath();
+        if (!m_grpcSocketPath.empty()) {
+            DeleteFileA(m_grpcSocketPath.c_str());
+
+            log::info(std::format("GRPC socket path: '{}'", m_grpcSocketPath));
+
+            absl::InitializeLog();
+            m_grpcService = std::make_unique<NvapiService>();
+            m_grpcServer = m_resourceFactory.CreateGrpcServer(m_grpcService.get(), m_grpcSocketPath);
+
+            if (m_grpcServer)
+                log::info("GRPC server started");
+            else {
+                log::info("GRPC server failed to start");
+                m_grpcService = {};
+                m_grpcSocketPath = {};
+            }
+        }
+#endif
 
         Com<IDXGIVkInteropFactory1> dxgiVkInteropFactory;
         if (SUCCEEDED(m_dxgiFactory->QueryInterface(IID_PPV_ARGS(&dxgiVkInteropFactory))))

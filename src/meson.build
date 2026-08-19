@@ -34,11 +34,18 @@ nvapi_src = files([
   'nvapi_interface.cpp',
 ])
 
+nvapi_deps = [ lib_dxgi, lib_d3d11, lib_d3d12, lib_version ]
+
+if enable_grpc
+  nvapi_src += files(['nvapi/nvapi_grpc.cpp', 'nvapi/nvapi.grpc.pb.cc', 'nvapi/nvapi.pb.cc'])
+  nvapi_deps += grpc_deps
+endif
+
 target_name = 'nvapi'+target_suffix
 nvapi_dll = shared_library(target_name, [ nvapi_src, dxvk_nvapi_version ],
   cpp_args            : '-DDXVK_NVAPI_TARGET_NAME="'+target_name+'"',
   name_prefix         : '',
-  dependencies        : [ lib_dxgi, lib_d3d11, lib_d3d12, lib_version ],
+  dependencies        : nvapi_deps,
   include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, nvofapi_headers ],
   vs_module_defs      : target_name+'.def',
   install             : true)

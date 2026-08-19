@@ -29,6 +29,12 @@ std::unique_ptr<dxvk::Nvml> MockFactory::CreateNvml() {
     return std::move(m_nvmlMock);
 }
 
+#ifdef DXVK_NVAPI_GRPC
+std::unique_ptr<grpc::Server> MockFactory::CreateGrpcServer(dxvk::NvapiService* service, const std::string& path) {
+    return {};
+}
+#endif
+
 DXGIDxvkFactoryMock* MockFactory::GetDXGIFactoryMock() const {
     return m_dxgiFactoryMock.get();
 }

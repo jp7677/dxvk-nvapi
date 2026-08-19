@@ -52,10 +52,17 @@ nvapi_tests_src = files([
   'util.cpp',
 ])
 
+nvapi_deps = [ lib_dxgi, lib_d3d11, lib_d3d12, lib_version ]
+
+if enable_grpc
+  nvapi_src += files(['../src/nvapi/nvapi_grpc.cpp', '../src/nvapi/nvapi.grpc.pb.cc', '../src/nvapi/nvapi.pb.cc'])
+  nvapi_deps += grpc_deps
+endif
+
 target_name = 'nvapi'+target_suffix+'-tests'
 nvapi_exe = executable(target_name, [ nvapi_src, catch2_src, nvapi_tests_src, dxvk_nvapi_version ],
   cpp_args            : '-DDXVK_NVAPI_TARGET_NAME="'+target_name+'"',
-  dependencies        : [ lib_dxgi, lib_d3d11, lib_d3d12, lib_version ],
+  dependencies        : nvapi_deps,
   include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, catch2_headers, trompeloeil_headers ],
   install             : true)
 

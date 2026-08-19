@@ -13,6 +13,12 @@ dxvk_is_msvc = cpp.get_argument_syntax() == 'msvc'
 
 compiler_args = ['-DNOMINMAX', '-DWIN32_LEAN_AND_MEAN']
 link_args = []
+
+enable_grpc = get_option('enable_grpc')
+if enable_grpc
+  compiler_args += ['-DDXVK_NVAPI_GRPC']
+endif
+
 if not dxvk_is_msvc
   compiler_args += ['-Wno-unused-parameter']
   if get_option('buildtype') == 'debug' or get_option('buildtype') == 'debugoptimized'
@@ -52,6 +58,31 @@ nvofapi_headers = include_directories('./inc/nvofapi')
 catch2_headers = include_directories('./inc/catch2')
 catch2_src = files(['./inc/catch2/catch_amalgamated.cpp'])
 trompeloeil_headers = include_directories('./inc/trompeloeil')
+
+if enable_grpc
+  cmake = import('cmake')
+
+  grpc_options = cmake.subproject_options()
+  grpc_options.add_cmake_defines({'BUILD_SHARED_LIBS': 'false'})
+  grpc_options.add_cmake_defines({'gRPC_BUILD_TESTS': 'off'})
+  grpc_options.add_cmake_defines({'gRPC_BUILD_CODEGEN': 'off'})
+  grpc_options.add_cmake_defines({'gRPC_DOWNLOAD_ARCHIVES': 'off'})
+  grpc_options.add_cmake_defines({'gRPC_BUILD_GRPCPP_OTEL_PLUGIN': 'off'})
+  grpc_options.add_cmake_defines({'gRPC_BUILD_GRPC_CPP_PLUGIN': 'on'})
+  grpc_options.add_cmake_defines({'gRPC_BUILD_GRPC_CSHARP_PLUGIN': 'off'})
+  grpc_options.add_cmake_defines({'gRPC_BUILD_GRPC_NODE_PLUGIN': 'off'})
+  grpc_options.add_cmake_defines({'gRPC_BUILD_GRPC_OBJECTIVE_C_PLUGIN': 'off'})
+  grpc_options.add_cmake_defines({'gRPC_BUILD_GRPC_PHP_PLUGIN': 'off'})
+  grpc_options.add_cmake_defines({'gRPC_BUILD_GRPC_PYTHON_PLUGIN': 'off'})
+  grpc_options.add_cmake_defines({'gRPC_BUILD_GRPC_RUBY_PLUGIN': 'off'})
+  grpc_options.add_cmake_defines({'gRPC_USE_PROTO_LITE': 'on'})
+
+  grpc = cmake.subproject('grpc', options: grpc_options)
+
+  grpcpp_dep = grpc.dependency('grpc++_unsecure')
+
+  grpc_deps = [grpcpp_dep]
+endif
 
 lib_dxgi = cpp.find_library('dxgi')
 lib_d3d11 = cpp.find_library('d3d11')

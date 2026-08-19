@@ -2,6 +2,9 @@
 #include "../interfaces/dxvk_interfaces.h"
 #include "../util/util_string.h"
 #include "../util/util_log.h"
+#ifdef DXVK_NVAPI_GRPC
+#include "grpcpp/server_builder.h"
+#endif
 
 namespace dxvk {
     std::unique_ptr<Vk> NvapiResourceFactory::CreateVulkan(Com<IDXGIFactory1>& dxgiFactory) {
@@ -35,4 +38,17 @@ namespace dxvk {
     std::unique_ptr<Nvml> NvapiResourceFactory::CreateNvml() {
         return std::make_unique<Nvml>();
     }
+
+#ifdef DXVK_NVAPI_GRPC
+    std::unique_ptr<grpc::Server> NvapiResourceFactory::CreateGrpcServer(NvapiService* service, const std::string& path) {
+        grpc::ServerBuilder builder;
+
+        auto address = "unix:" + path;
+
+        builder.AddListeningPort(address, grpc::InsecureServerCredentials());
+        builder.RegisterService(service);
+
+        return builder.BuildAndStart();
+    }
+#endif
 }

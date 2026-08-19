@@ -5,6 +5,10 @@
 #include "../shared/resource_factory.h"
 #include "../shared/vk.h"
 #include "nvml.h"
+#ifdef DXVK_NVAPI_GRPC
+#include "grpcpp/server.h"
+#include "nvapi_grpc.h"
+#endif
 
 namespace dxvk {
     class NvapiResourceFactory : ResourceFactory {
@@ -15,5 +19,8 @@ namespace dxvk {
         virtual Com<IDXGIFactory1> CreateDXGIFactory1();
         virtual Com<ID3D12Device> CreateD3D12Device(Com<IDXGIAdapter3>& dxgiAdapter, D3D_FEATURE_LEVEL featureLevel);
         virtual std::unique_ptr<Nvml> CreateNvml();
+#ifdef DXVK_NVAPI_GRPC
+        virtual std::unique_ptr<grpc::Server> CreateGrpcServer(NvapiService* service, const std::string& path);
+#endif
     };
 }

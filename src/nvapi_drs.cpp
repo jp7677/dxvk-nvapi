@@ -173,16 +173,25 @@ inline static std::string GetSettingName(NvU32 settingId) {
     return {"Unknown"};
 }
 
-NVAPI_FUNCTION NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
-    static constexpr auto n = FUNC;
+std::pair<std::unordered_map<NvU32, NvU32>*, std::mutex*> DrsDwords() {
     static const auto nvapiDrsSettingsEnvName = "DXVK_NVAPI_DRS_SETTINGS";
     static const auto nvapiDrsSettingsEnvPrefix = "DXVK_NVAPI_DRS_";
     static const auto nvapiDrsSettingsString = dxvk::env::getEnvVariable(nvapiDrsSettingsEnvName);
-    static const auto nvapiDrsDwords = dxvk::drs::enrichwithenv(dxvk::drs::parsedrsdwordsettings(nvapiDrsSettingsString), nvapiDrsSettingsEnvPrefix);
+    static auto nvapiDrsDwords = dxvk::drs::enrichwithenv(dxvk::drs::parsedrsdwordsettings(nvapiDrsSettingsString), nvapiDrsSettingsEnvPrefix);
+    static auto mutex = std::mutex{};
+
+    return std::make_pair(&nvapiDrsDwords, &mutex);
+}
+
+NVAPI_FUNCTION NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting) {
+    static constexpr auto n = FUNC;
+    static auto [map, mutex] = DrsDwords();
+    static auto& nvapiDrsDwords = *map;
 
     if (log::tracing())
         log::trace(n, log::fmt::hnd(hSession), log::fmt::hnd(hProfile), settingId, log::fmt::ptr(pSetting));
 
+    std::scoped_lock lock(*mutex);
     static std::once_flag once;
     std::call_once(once, []() {
         if (nvapiDrsDwords.empty())

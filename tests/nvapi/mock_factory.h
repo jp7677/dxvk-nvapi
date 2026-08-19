@@ -19,6 +19,9 @@ class MockFactory final : public dxvk::NvapiResourceFactory {
     std::unique_ptr<dxvk::Vk> CreateVulkan(dxvk::Com<IDXGIFactory1>& dxgiFactory) override;
     std::unique_ptr<dxvk::Vk> CreateVulkan(const char* moduleName) override;
     std::unique_ptr<dxvk::Nvml> CreateNvml() override;
+#ifdef DXVK_NVAPI_GRPC
+    std::unique_ptr<grpc::Server> CreateGrpcServer(dxvk::NvapiService* service, const std::string& path) override;
+#endif
 
     [[nodiscard]] DXGIDxvkFactoryMock* GetDXGIFactoryMock() const;
     [[nodiscard]] D3D12Vkd3dDeviceMock* GetD3D12DeviceMock() const;

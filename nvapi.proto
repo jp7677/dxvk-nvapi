@@ -1,0 +1,22 @@
+edition = "2024";
+
+option optimize_for = LITE_RUNTIME;
+
+enum NvapiStatus {
+  SUCCESS = 0;
+  ERROR   = -1;
+}
+
+message NvapiReply {
+  NvapiStatus status  = 1;
+  string      message = 2;
+}
+
+message SetDwordSettingRequest {
+  fixed32 id    = 1;
+  uint32  value = 2;
+}
+
+service DxvkNvapi {
+  rpc SetDwordSetting (SetDwordSettingRequest) returns (NvapiReply) {}
+}

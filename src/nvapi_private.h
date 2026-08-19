@@ -73,3 +73,5 @@
 #define NVAPI_QUERY_INTERFACE extern "C" void* __cdecl
 #define NVAPI_FUNCTION extern "C" NvAPI_Status __cdecl
 #define FUNC std::string_view{__func__};
+
+std::pair<std::unordered_map<NvU32, NvU32>*, std::mutex*> DrsDwords();

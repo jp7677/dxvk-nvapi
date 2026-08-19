@@ -10,3 +10,6 @@
 [submodule "external/DirectX-Headers"]
 	path = external/DirectX-Headers
 	url = https://github.com/microsoft/DirectX-Headers
+[submodule "subprojects/grpc"]
+	path = subprojects/grpc
+	url = https://github.com/grpc/grpc
