@@ -11,8 +11,12 @@ on:
 jobs:
   build-test-package-linux:
     runs-on: ubuntu-latest
+    container: docker.io/library/archlinux:base-devel
 
     steps:
+    - name: Install build tooling
+      run: pacman -Syu --needed --noconfirm git clang mingw-w64-gcc meson ninja wine
+
     - name: Checkout code
       uses: actions/checkout@v7
       with:
@@ -32,22 +36,18 @@ jobs:
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
     - name: Lint source code
-      uses: misyltoad/arch-mingw-github-action@v8
-      with:
-        command: |
-          meson setup --cross-file "./build-win64.txt" -Denable_tests=True build/lint
-          ninja clang-format-check -C build/lint
+      run: |
+        meson setup --cross-file "./build-win64.txt" -Denable_tests=True build/lint
+        ninja clang-format-check -C build/lint
 
     - name: Build and run tests
-      uses: misyltoad/arch-mingw-github-action@v8
-      with:
-        command: |
-          ./package-release.sh "${{ env.VERSION }}" build --enable-tests
-          mkdir "${HOME}/tests-prefix"
-          export WINEPREFIX="${HOME}/tests-prefix"
-          export WINEDEBUG=-all
-          wine "./build/dxvk-nvapi-${{ env.VERSION }}/x64/nvapi64-tests.exe" [@unit-tests] -o nvapi64-tests.log
-          wine "./build/dxvk-nvapi-${{ env.VERSION }}/x64/nvofapi64-tests.exe" [@unit-tests] -o nvofapi64-tests.log
+      run: |
+        ./package-release.sh "${{ env.VERSION }}" build --enable-tests
+        mkdir "${HOME}/tests-prefix"
+        export WINEPREFIX="${HOME}/tests-prefix"
+        export WINEDEBUG=-all
+        wine "./build/dxvk-nvapi-${{ env.VERSION }}/x64/nvapi64-tests.exe" [@unit-tests] -o nvapi64-tests.log
+        wine "./build/dxvk-nvapi-${{ env.VERSION }}/x64/nvofapi64-tests.exe" [@unit-tests] -o nvofapi64-tests.log
 
     - name: Present tests results
       if: success() || failure()
