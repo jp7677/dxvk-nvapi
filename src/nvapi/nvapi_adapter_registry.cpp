@@ -5,6 +5,7 @@
 #include "nvapi_vulkan_low_latency_device_factory.h"
 #include "../util/util_log.h"
 #ifdef DXVK_NVAPI_GRPC
+#include "../util/util_env.h"
 #include "absl/log/initialize.h"
 #endif
 namespace dxvk {
@@ -48,18 +49,17 @@ namespace dxvk {
             log::info("NVML loaded and initialized successfully");
 
 #ifdef DXVK_NVAPI_GRPC
-        m_grpcSocketPath = GrpcSocketPath();
-        if (!m_grpcSocketPath.empty()) {
-            DeleteFileA(m_grpcSocketPath.c_str());
-
-            log::info(std::format("GRPC socket path: '{}'", m_grpcSocketPath));
+        auto ports = GrpcExecutableToPortMap();
+        auto port = ports.find(env::getExecutableName());
+        if (port != ports.end()) {
+            auto address = std::format("dns:127.0.0.1:{}", port->second);
 
             absl::InitializeLog();
             m_grpcService = std::make_unique<NvapiService>();
-            m_grpcServer = m_resourceFactory.CreateGrpcServer(m_grpcService.get(), m_grpcSocketPath);
+            m_grpcServer = m_resourceFactory.CreateGrpcServer(m_grpcService.get(), address);
 
             if (m_grpcServer)
-                log::info("GRPC server started");
+                log::info(str::format("GRPC server started on ", address));
             else {
                 log::info("GRPC server failed to start");
                 m_grpcService = {};

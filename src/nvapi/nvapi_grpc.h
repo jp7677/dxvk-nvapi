@@ -6,6 +6,7 @@
 #include "nvapi.grpc.pb.h"
 
 namespace dxvk {
+    const std::unordered_map<std::string_view, NvU32>& GrpcExecutableToPortMap();
     const std::string GrpcSocketPath();
 
     class NvapiService final : public DxvkNvapi::Service {

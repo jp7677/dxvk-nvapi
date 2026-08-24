@@ -92,9 +92,9 @@ inline constexpr NvapiStatus NvapiStatus_MAX =
   return -1 <= value && value <= 0;
 }
 inline constexpr int NvapiStatus_ARRAYSIZE = 0 + 1;
-[[nodiscard]] ::absl::string_view NvapiStatus_Name(NvapiStatus value);
+[[nodiscard]] const ::std::string& NvapiStatus_Name(NvapiStatus value);
 template <typename T>
-[[nodiscard]] ::absl::string_view NvapiStatus_Name(T value) {
+[[nodiscard]] const ::std::string& NvapiStatus_Name(T value) {
   static_assert(::std::is_same<T, NvapiStatus>::value ||
                     ::std::is_integral<T>::value,
                 "Incorrect type passed to NvapiStatus_Name().");
@@ -456,13 +456,17 @@ class  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED NvapiReply final : public ::google:
   [[nodiscard]] bool has_message()
       const;
   void clear_message() ;
-  [[nodiscard]] ::absl::string_view message() const;
-  template <typename Arg_ = ::std::string&&>
-  void set_message(Arg_&& arg);
+  [[nodiscard]] const ::std::string& message() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
+  void set_message(Arg_&& arg, Args_... args);
+  ::std::string* PROTOBUF_NONNULL mutable_message();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_message();
+  void set_allocated_message(::std::string* PROTOBUF_NULLABLE value);
 
   private:
-  ::absl::string_view _internal_message() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_message(::absl::string_view value);
+  const ::std::string& _internal_message() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_message(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_message();
 
   public:
   // .NvapiStatus status = 1;
@@ -572,26 +576,62 @@ inline void NvapiReply::clear_message() {
   _impl_.message_.ClearToEmpty();
   ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
-inline ::absl::string_view NvapiReply::message() const
+inline const ::std::string& NvapiReply::message() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:NvapiReply.message)
   return _internal_message();
 }
-template <typename Arg_>
-PROTOBUF_ALWAYS_INLINE void NvapiReply::set_message(Arg_&& arg) {
+template <typename Arg_, typename... Args_>
+PROTOBUF_ALWAYS_INLINE void NvapiReply::set_message(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   SetHasBit(_impl_._has_bits_[0], 0x00000001U);
-  _impl_.message_.Set(static_cast<Arg_&&>(arg), GetArena());
+  _impl_.message_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:NvapiReply.message)
 }
-inline ::absl::string_view NvapiReply::_internal_message() const {
+inline ::std::string* PROTOBUF_NONNULL NvapiReply::mutable_message()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ::std::string* _s = _internal_mutable_message();
+  // @@protoc_insertion_point(field_mutable:NvapiReply.message)
+  return _s;
+}
+inline const ::std::string& NvapiReply::_internal_message() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return _impl_.message_.Get();
 }
-inline void NvapiReply::_internal_set_message(::absl::string_view value) {
+inline void NvapiReply::_internal_set_message(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.message_.Set(value, GetArena());
+}
+inline ::std::string* PROTOBUF_NONNULL NvapiReply::_internal_mutable_message() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.message_.Mutable( GetArena());
+}
+inline ::std::string* PROTOBUF_NULLABLE NvapiReply::release_message() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:NvapiReply.message)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  auto* released = _impl_.message_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.message_.Set("", GetArena());
+  }
+  return released;
+}
+inline void NvapiReply::set_allocated_message(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  }
+  _impl_.message_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.message_.IsDefault()) {
+    _impl_.message_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:NvapiReply.message)
 }
 
 // -------------------------------------------------------------------

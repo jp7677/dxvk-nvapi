@@ -338,14 +338,19 @@ static const int NvapiStatus_entries_by_number[] = {
   }
   return success;
 }
-[[nodiscard]] ::absl::string_view NvapiStatus_Name(NvapiStatus value) {
+static ::google::protobuf::internal::ExplicitlyConstructed<::std::string>
+    NvapiStatus_strings[2] = {};
+
+[[nodiscard]] const ::std::string& NvapiStatus_Name(NvapiStatus value) {
+  static const bool kDummy = ::google::protobuf::internal::InitializeEnumStrings(
+      NvapiStatus_entries, NvapiStatus_entries_by_number, 2,
+      NvapiStatus_strings);
+  (void)kDummy;
+
   int idx = ::google::protobuf::internal::LookUpEnumName(NvapiStatus_entries,
                                   NvapiStatus_entries_by_number,
                                   2, value);
-  return idx == -1
-             ? ""
-             : NvapiStatus_entries[NvapiStatus_entries_by_number[idx]]
-                   .name;
+  return idx == -1 ? ::google::protobuf::internal::GetEmptyString() : NvapiStatus_strings[idx].get();
 }
 // ===================================================================
 
@@ -475,7 +480,7 @@ PROTOBUF_NOINLINE void NvapiReply::Clear() {
 
   // string message = 2;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    const ::absl::string_view _s = this_._internal_message();
+    const ::std::string& _s = this_._internal_message();
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
         _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "NvapiReply.message");
     target = stream->WriteStringMaybeAliased(2, _s, target);
@@ -565,7 +570,7 @@ void NvapiReply::InternalSwap(NvapiReply* PROTOBUF_RESTRICT PROTOBUF_NONNULL oth
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  _impl_.message_.InternalSwap(&_impl_.message_, &other->_impl_.message_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.message_, &other->_impl_.message_, arena);
   swap(_impl_.status_, other->_impl_.status_);
 }
 

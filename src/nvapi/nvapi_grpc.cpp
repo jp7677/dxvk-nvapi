@@ -1,11 +1,42 @@
 #ifdef DXVK_NVAPI_GRPC
 
 #include "nvapi_grpc.h"
+#include "../util/util_env.h"
 #include "../util/util_log.h"
+#include "../util/util_string.h"
 #include <winsock2.h>
 #include <afunix.h>
 
 namespace dxvk {
+    static std::unordered_map<std::string_view, NvU32> parseports(const std::string& str) {
+        std::unordered_map<std::string_view, NvU32> result;
+        if (str.empty())
+            return result;
+
+        auto entries = str::split<std::vector<std::string_view>>(str, std::regex(","));
+
+        for (auto entry : entries) {
+            auto eq = entry.find('=');
+
+            if (eq == entry.npos || eq == 0 || eq == entry.size() - 1)
+                continue;
+
+            NvU32 value;
+            if (str::parsedword(entry.substr(eq + 1), value))
+                result[std::string_view(entry.begin(), entry.begin() + eq)] = value;
+        }
+
+        return result;
+    }
+
+    const std::unordered_map<std::string_view, NvU32>& GrpcExecutableToPortMap() {
+        static const auto nvapiGrpcPortsEnvName = "DXVK_NVAPI_GRPC_PORTS";
+        static const auto nvapiGrpcPortsString = env::getEnvVariable(nvapiGrpcPortsEnvName);
+        static const auto nvapiGrpcPorts = parseports(nvapiGrpcPortsString);
+
+        return nvapiGrpcPorts;
+    }
+
     const std::string GrpcSocketPath() {
         std::string path(UNIX_PATH_MAX, 0);
 

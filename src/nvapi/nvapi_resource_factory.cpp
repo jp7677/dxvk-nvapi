@@ -40,10 +40,8 @@ namespace dxvk {
     }
 
 #ifdef DXVK_NVAPI_GRPC
-    std::unique_ptr<grpc::Server> NvapiResourceFactory::CreateGrpcServer(NvapiService* service, const std::string& path) {
+    std::unique_ptr<grpc::Server> NvapiResourceFactory::CreateGrpcServer(NvapiService* service, const std::string& address) {
         grpc::ServerBuilder builder;
-
-        auto address = "unix:" + path;
 
         builder.AddListeningPort(address, grpc::InsecureServerCredentials());
         builder.RegisterService(service);
