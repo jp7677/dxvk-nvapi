@@ -13,15 +13,19 @@ namespace dxvk {
     }
 
     NvapiD3d12GraphicsCommandList* NvapiD3d12GraphicsCommandList::GetOrCreate(ID3D12GraphicsCommandList* commandList) {
-        std::scoped_lock lock{m_mutex};
-
-        auto itF = m_nvapiDeviceMap.find(commandList);
-        if (itF != m_nvapiDeviceMap.end())
-            return &itF->second;
-
         Com<ID3D12GraphicsCommandListExt> commandListExt;
         if (FAILED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt))))
             return nullptr;
+
+        std::scoped_lock lock{m_mutex};
+
+        auto itF = m_nvapiDeviceMap.find(commandList);
+        if (itF != m_nvapiDeviceMap.end()) {
+            if (itF->second.m_vkd3dGraphicsCommandList == commandListExt.ptr())
+                return &itF->second;
+
+            m_nvapiDeviceMap.erase(itF);
+        }
 
         auto [itI, inserted] = m_nvapiDeviceMap.emplace(
             std::piecewise_construct,

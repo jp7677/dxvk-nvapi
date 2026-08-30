@@ -11,15 +11,20 @@ namespace dxvk {
     }
 
     NvapiD3d12CommandQueue* NvapiD3d12CommandQueue::GetOrCreate(ID3D12CommandQueue* commandQueue) {
-        std::scoped_lock lock{m_mutex};
-
-        auto itF = m_nvapiDeviceMap.find(commandQueue);
-        if (itF != m_nvapiDeviceMap.end())
-            return &itF->second;
-
+        // Same non-owning-key hazard as NvapiD3d12GraphicsCommandList::GetOrCreate; see there.
         Com<ID3D12CommandQueueExt> commandQueueExt;
         if (FAILED(commandQueue->QueryInterface(IID_PPV_ARGS(&commandQueueExt))))
             return nullptr;
+
+        std::scoped_lock lock{m_mutex};
+
+        auto itF = m_nvapiDeviceMap.find(commandQueue);
+        if (itF != m_nvapiDeviceMap.end()) {
+            if (itF->second.m_vkd3dCommandQueue == commandQueueExt.ptr())
+                return &itF->second;
+
+            m_nvapiDeviceMap.erase(itF);
+        }
 
         auto [itI, inserted] = m_nvapiDeviceMap.emplace(
             std::piecewise_construct,
