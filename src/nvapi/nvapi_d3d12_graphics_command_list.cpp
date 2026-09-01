@@ -4,38 +4,53 @@
 #include "../util/util_log.h"
 
 namespace dxvk {
-    std::unordered_map<ID3D12GraphicsCommandList*, NvapiD3d12GraphicsCommandList> NvapiD3d12GraphicsCommandList::m_nvapiDeviceMap;
+    thread_local NvapiAsConverter NvapiD3d12GraphicsCommandList::m_asConverter;
+    std::atomic<LONGLONG> NvapiD3d12GraphicsCommandList::m_resetTimestamp;
     std::mutex NvapiD3d12GraphicsCommandList::m_mutex;
 
     void NvapiD3d12GraphicsCommandList::Reset() {
-        std::scoped_lock lock{m_mutex};
-        m_nvapiDeviceMap.clear();
+        LARGE_INTEGER count;
+        QueryPerformanceCounter(&count);
+        m_resetTimestamp.store(count.QuadPart, std::memory_order_release);
     }
 
-    NvapiD3d12GraphicsCommandList* NvapiD3d12GraphicsCommandList::GetOrCreate(ID3D12GraphicsCommandList* commandList) {
+    std::optional<NvapiD3d12GraphicsCommandList> NvapiD3d12GraphicsCommandList::GetOrCreate(ID3D12GraphicsCommandList* commandList) {
+        static constexpr GUID NvapiD3d12GraphicsCommandListGuid = {0x1d409261, 0xd613, 0x4ef4, {0x86, 0x10, 0x25, 0x0e, 0x8b, 0x3b, 0x56, 0x56}};
+
+        NvapiD3d12GraphicsCommandList nvapiGraphicsCommandList{nullptr};
+        UINT size = sizeof(nvapiGraphicsCommandList);
+
+        auto result = commandList->GetPrivateData(NvapiD3d12GraphicsCommandListGuid, &size, &nvapiGraphicsCommandList);
+        if (SUCCEEDED(result) && size == sizeof(nvapiGraphicsCommandList) && nvapiGraphicsCommandList.m_creationTimestamp > m_resetTimestamp.load(std::memory_order_acquire))
+            return nvapiGraphicsCommandList;
+
+        size = sizeof(nvapiGraphicsCommandList);
         std::scoped_lock lock{m_mutex};
 
-        auto itF = m_nvapiDeviceMap.find(commandList);
-        if (itF != m_nvapiDeviceMap.end())
-            return &itF->second;
+        result = commandList->GetPrivateData(NvapiD3d12GraphicsCommandListGuid, &size, &nvapiGraphicsCommandList);
+        if (SUCCEEDED(result) && size == sizeof(nvapiGraphicsCommandList) && nvapiGraphicsCommandList.m_creationTimestamp > m_resetTimestamp.load(std::memory_order_acquire))
+            return nvapiGraphicsCommandList;
 
         Com<ID3D12GraphicsCommandListExt> commandListExt;
         if (FAILED(commandList->QueryInterface(IID_PPV_ARGS(&commandListExt))))
-            return nullptr;
+            return std::nullopt;
 
-        auto [itI, inserted] = m_nvapiDeviceMap.emplace(
-            std::piecewise_construct,
-            std::forward_as_tuple(commandList),
-            std::forward_as_tuple(commandListExt.ptr()));
+        LARGE_INTEGER count;
+        QueryPerformanceCounter(&count);
 
-        if (!inserted)
-            return nullptr;
+        nvapiGraphicsCommandList = NvapiD3d12GraphicsCommandList{commandListExt.ptr()};
+        nvapiGraphicsCommandList.m_creationTimestamp = count.QuadPart;
 
-        return &itI->second;
+        commandList->SetPrivateData(NvapiD3d12GraphicsCommandListGuid, sizeof(nvapiGraphicsCommandList), &nvapiGraphicsCommandList);
+
+        return nvapiGraphicsCommandList;
     }
 
     NvapiD3d12GraphicsCommandList::NvapiD3d12GraphicsCommandList(ID3D12GraphicsCommandListExt* vkd3dCommandList)
         : m_vkd3dGraphicsCommandList(static_cast<ID3D12GraphicsCommandListExt2*>(vkd3dCommandList)) { // NOLINT(*-pro-type-static-cast-downcast)
+        if (!vkd3dCommandList)
+            return;
+
         uint32_t commandListTier = probeInterfaceChain(vkd3dCommandList, {
                                                                              __uuidof(ID3D12GraphicsCommandListExt1),
                                                                              __uuidof(ID3D12GraphicsCommandListExt2),

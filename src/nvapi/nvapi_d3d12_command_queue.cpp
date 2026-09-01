@@ -2,34 +2,45 @@
 #include "../util/com_pointer.h"
 
 namespace dxvk {
-    std::unordered_map<ID3D12CommandQueue*, NvapiD3d12CommandQueue> NvapiD3d12CommandQueue::m_nvapiDeviceMap;
+    std::atomic<LONGLONG> NvapiD3d12CommandQueue::m_resetTimestamp;
     std::mutex NvapiD3d12CommandQueue::m_mutex;
 
     void NvapiD3d12CommandQueue::Reset() {
-        std::scoped_lock lock{m_mutex};
-        m_nvapiDeviceMap.clear();
+        LARGE_INTEGER count;
+        QueryPerformanceCounter(&count);
+        m_resetTimestamp.store(count.QuadPart, std::memory_order_release);
     }
 
-    NvapiD3d12CommandQueue* NvapiD3d12CommandQueue::GetOrCreate(ID3D12CommandQueue* commandQueue) {
+    std::optional<NvapiD3d12CommandQueue> NvapiD3d12CommandQueue::GetOrCreate(ID3D12CommandQueue* commandQueue) {
+        static constexpr GUID NvapiD3d12CommandQueueGuid = {0x3579ec19, 0x2741, 0x488a, {0xbb, 0x39, 0x5c, 0x03, 0xcd, 0x89, 0x5e, 0x2a}};
+
+        NvapiD3d12CommandQueue nvapiCommandQueue{nullptr};
+        UINT size = sizeof(nvapiCommandQueue);
+
+        auto result = commandQueue->GetPrivateData(NvapiD3d12CommandQueueGuid, &size, &nvapiCommandQueue);
+        if (SUCCEEDED(result) && size == sizeof(nvapiCommandQueue) && nvapiCommandQueue.m_creationTimestamp > m_resetTimestamp.load(std::memory_order_acquire))
+            return nvapiCommandQueue;
+
+        size = sizeof(nvapiCommandQueue);
         std::scoped_lock lock{m_mutex};
 
-        auto itF = m_nvapiDeviceMap.find(commandQueue);
-        if (itF != m_nvapiDeviceMap.end())
-            return &itF->second;
+        result = commandQueue->GetPrivateData(NvapiD3d12CommandQueueGuid, &size, &nvapiCommandQueue);
+        if (SUCCEEDED(result) && size == sizeof(nvapiCommandQueue) && nvapiCommandQueue.m_creationTimestamp > m_resetTimestamp.load(std::memory_order_acquire))
+            return nvapiCommandQueue;
 
         Com<ID3D12CommandQueueExt> commandQueueExt;
         if (FAILED(commandQueue->QueryInterface(IID_PPV_ARGS(&commandQueueExt))))
-            return nullptr;
+            return std::nullopt;
 
-        auto [itI, inserted] = m_nvapiDeviceMap.emplace(
-            std::piecewise_construct,
-            std::forward_as_tuple(commandQueue),
-            std::forward_as_tuple(commandQueueExt.ptr()));
+        LARGE_INTEGER count;
+        QueryPerformanceCounter(&count);
 
-        if (!inserted)
-            return nullptr;
+        nvapiCommandQueue = NvapiD3d12CommandQueue{commandQueueExt.ptr()};
+        nvapiCommandQueue.m_creationTimestamp = count.QuadPart;
 
-        return &itI->second;
+        commandQueue->SetPrivateData(NvapiD3d12CommandQueueGuid, sizeof(nvapiCommandQueue), &nvapiCommandQueue);
+
+        return nvapiCommandQueue;
     }
 
     NvapiD3d12CommandQueue::NvapiD3d12CommandQueue(ID3D12CommandQueueExt* vkd3dCommandQueue)

@@ -645,7 +645,7 @@ NVAPI_FUNCTION NvAPI_D3D12_SetDepthBoundsTestValues(ID3D12GraphicsCommandList* p
     return Ok(n, alreadyLoggedOk);
 }
 
-inline static bool IsThreadReorderingSupported(ID3D12Device* pDevice, NvapiD3d12Device* device) {
+inline static bool IsThreadReorderingSupported(ID3D12Device* pDevice, std::optional<NvapiD3d12Device>& device) {
     if (!env::isD3d12NvShaderExtnEnabled())
         return false;
 
