@@ -10,15 +10,13 @@ namespace dxvk {
       public:
         static void Reset();
         [[nodiscard]] static bool Cubin64bitSupportAvailable(NvapiResourceFactory* factory, NvapiAdapterRegistry* registry);
-        [[nodiscard]] static NvapiD3d12Device* GetOrCreate(ID3D12Device* device);
+        [[nodiscard]] static std::optional<NvapiD3d12Device> GetOrCreate(ID3D12Device* device);
         [[nodiscard]] static uint32_t FindCubinSmem(NVDX_ObjectHandle);
 
         explicit NvapiD3d12Device(ID3D12DeviceExt* vkd3dDevice);
 
-        // Prevent default construction and copy semantics.
+        // Prevent default construction semantics.
         NvapiD3d12Device() = delete;
-        NvapiD3d12Device(const NvapiD3d12Device&) = delete;
-        NvapiD3d12Device& operator=(const NvapiD3d12Device&) = delete;
 
         [[nodiscard]] HRESULT CreateCubinComputeShaderWithName(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader);
         [[nodiscard]] HRESULT CreateCubinComputeShaderEx(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, NvU32 smemSize, const char* shaderName, NVDX_ObjectHandle* pShader);
@@ -41,7 +39,7 @@ namespace dxvk {
         [[nodiscard]] bool SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG pipeline_state_flags);
 
       private:
-        static std::unordered_map<ID3D12Device*, NvapiD3d12Device> m_nvapiDeviceMap;
+        static std::atomic<LONGLONG> m_resetTimestamp;
         static std::mutex m_mutex;
 
         static std::unordered_map<NVDX_ObjectHandle, NvU32> m_cubinSmemMap;
@@ -49,6 +47,7 @@ namespace dxvk {
 
         static std::optional<bool> m_cubin64bitSupportAvailable;
 
+        LONGLONG m_creationTimestamp{};
         ID3D12DeviceExt5* m_vkd3dDevice{};
         bool m_supportsCubin64bit = false;
         bool m_supportsNvShaderExtn = false;

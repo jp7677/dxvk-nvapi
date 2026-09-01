@@ -2,7 +2,7 @@
 #include "../util/util_log.h"
 
 namespace dxvk {
-    std::unordered_map<ID3D12Device*, NvapiD3d12Device> NvapiD3d12Device::m_nvapiDeviceMap;
+    std::atomic<LONGLONG> NvapiD3d12Device::m_resetTimestamp;
     std::mutex NvapiD3d12Device::m_mutex;
 
     std::unordered_map<NVDX_ObjectHandle, NvU32> NvapiD3d12Device::m_cubinSmemMap;
@@ -12,7 +12,9 @@ namespace dxvk {
 
     void NvapiD3d12Device::Reset() {
         std::scoped_lock lock{m_mutex, m_cubinSmemMutex};
-        m_nvapiDeviceMap.clear();
+        LARGE_INTEGER count;
+        QueryPerformanceCounter(&count);
+        m_resetTimestamp.store(count.QuadPart, std::memory_order_release);
         m_cubinSmemMap.clear();
         m_cubin64bitSupportAvailable.reset();
     }
@@ -43,26 +45,36 @@ namespace dxvk {
         return m_cubin64bitSupportAvailable.emplace(false);
     }
 
-    NvapiD3d12Device* NvapiD3d12Device::GetOrCreate(ID3D12Device* device) {
+    std::optional<NvapiD3d12Device> NvapiD3d12Device::GetOrCreate(ID3D12Device* device) {
+        static constexpr GUID NvapiD3d12DeviceGuid = {0x0266efbf, 0x6dc7, 0x4017, {0xb4, 0x21, 0x3d, 0x93, 0xce, 0xd0, 0x90, 0x64}};
+
+        NvapiD3d12Device nvapiDevice{nullptr};
+        UINT size = sizeof(nvapiDevice);
+
+        auto result = device->GetPrivateData(NvapiD3d12DeviceGuid, &size, &nvapiDevice);
+        if (SUCCEEDED(result) && size == sizeof(nvapiDevice) && nvapiDevice.m_creationTimestamp > m_resetTimestamp.load(std::memory_order_acquire))
+            return nvapiDevice;
+
+        size = sizeof(nvapiDevice);
         std::scoped_lock lock{m_mutex};
 
-        auto itF = m_nvapiDeviceMap.find(device);
-        if (itF != m_nvapiDeviceMap.end())
-            return &itF->second;
+        result = device->GetPrivateData(NvapiD3d12DeviceGuid, &size, &nvapiDevice);
+        if (SUCCEEDED(result) && size == sizeof(nvapiDevice) && nvapiDevice.m_creationTimestamp > m_resetTimestamp.load(std::memory_order_acquire))
+            return nvapiDevice;
 
         Com<ID3D12DeviceExt> deviceExt;
         if (FAILED(device->QueryInterface(IID_PPV_ARGS(&deviceExt))))
-            return nullptr;
+            return std::nullopt;
 
-        auto [itI, inserted] = m_nvapiDeviceMap.emplace(
-            std::piecewise_construct,
-            std::forward_as_tuple(device),
-            std::forward_as_tuple(deviceExt.ptr()));
+        LARGE_INTEGER count;
+        QueryPerformanceCounter(&count);
 
-        if (!inserted)
-            return nullptr;
+        nvapiDevice = NvapiD3d12Device{deviceExt.ptr()};
+        nvapiDevice.m_creationTimestamp = count.QuadPart;
 
-        return &itI->second;
+        device->SetPrivateData(NvapiD3d12DeviceGuid, sizeof(nvapiDevice), &nvapiDevice);
+
+        return nvapiDevice;
     }
 
     uint32_t NvapiD3d12Device::FindCubinSmem(NVDX_ObjectHandle pShader) {
@@ -77,6 +89,9 @@ namespace dxvk {
 
     NvapiD3d12Device::NvapiD3d12Device(ID3D12DeviceExt* vkd3dDevice)
         : m_vkd3dDevice(static_cast<ID3D12DeviceExt5*>(vkd3dDevice)) { // NOLINT(*-pro-type-static-cast-downcast)
+        if (!vkd3dDevice)
+            return;
+
         uint32_t deviceExtTier = probeInterfaceChain(vkd3dDevice, {
                                                                       __uuidof(ID3D12DeviceExt1),
                                                                       __uuidof(ID3D12DeviceExt2),

@@ -9,7 +9,7 @@ namespace dxvk {
 
       public:
         static void Reset();
-        [[nodiscard]] static NvapiD3d12GraphicsCommandList* GetOrCreate(ID3D12GraphicsCommandList* commandList);
+        [[nodiscard]] static std::optional<NvapiD3d12GraphicsCommandList> GetOrCreate(ID3D12GraphicsCommandList* commandList);
 
         explicit NvapiD3d12GraphicsCommandList(ID3D12GraphicsCommandListExt* vkd3dCommandList);
 
@@ -21,15 +21,16 @@ namespace dxvk {
         [[nodiscard]] bool VerifyOpacityMicromapArrayNVAPI(D3D12_GPU_VIRTUAL_ADDRESS opacity_micromap_array) const;
 
       private:
-        static std::unordered_map<ID3D12GraphicsCommandList*, NvapiD3d12GraphicsCommandList> m_nvapiDeviceMap;
+        static std::atomic<LONGLONG> m_resetTimestamp;
         static std::mutex m_mutex;
 
+        LONGLONG m_creationTimestamp{};
         ID3D12GraphicsCommandListExt2* m_vkd3dGraphicsCommandList{};
         bool m_supportsCubinSMem = false;
         bool m_supportsOpacityMicromap = false;
 
         // Reused across calls so the per-build geometry-desc scratch settles at
-        // its max-N and stops hitting the heap. Per-instance state - not thread-safe.
-        NvapiAsConverter m_asConverter;
+        // its max-N and stops hitting the heap. Not thread-safe.
+        static thread_local NvapiAsConverter m_asConverter;
     };
 }
