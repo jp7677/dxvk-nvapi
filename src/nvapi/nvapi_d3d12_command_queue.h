@@ -8,7 +8,7 @@ namespace dxvk {
 
       public:
         static void Reset();
-        [[nodiscard]] static NvapiD3d12CommandQueue* GetOrCreate(ID3D12CommandQueue* device);
+        [[nodiscard]] static NvapiD3d12CommandQueue* GetOrCreate(ID3D12CommandQueue* commandQueue);
 
         explicit NvapiD3d12CommandQueue(ID3D12CommandQueueExt* vkd3dCommandQueue);
 

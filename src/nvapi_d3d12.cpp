@@ -1115,11 +1115,11 @@ NVAPI_FUNCTION NvAPI_D3D12_NotifyOutOfBandCommandQueue(ID3D12CommandQueue* pComm
     if (cqType == OUT_OF_BAND_RENDER_PRESENT && !std::exchange(alreadyLoggedTypeRenderPresent, true))
         log::info("NvAPI_D3D12_NotifyOutOfBandCommandQueue is called with OUT_OF_BAND_RENDER_PRESENT");
 
-    auto device = NvapiD3d12CommandQueue::GetOrCreate(pCommandQueue);
-    if (!device)
+    auto queue = NvapiD3d12CommandQueue::GetOrCreate(pCommandQueue);
+    if (!queue)
         return NoImplementation(n, alreadyLoggedNoImplementation);
 
-    switch (device->NotifyOutOfBandCommandQueue(static_cast<D3D12_OUT_OF_BAND_CQ_TYPE>(cqType))) {
+    switch (queue->NotifyOutOfBandCommandQueue(static_cast<D3D12_OUT_OF_BAND_CQ_TYPE>(cqType))) {
         case S_OK:
             return Ok(n, alreadyLoggedOk);
         case E_NOTIMPL:
