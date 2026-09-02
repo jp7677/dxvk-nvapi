@@ -3,14 +3,79 @@
 #include "../../src/nvapi_private.h"
 #include "../../src/interfaces/vkd3d-proton_interfaces.h"
 
+class PrivateDataStore final {
+    struct GuidHash {
+        std::size_t operator()(const GUID& guid) const {
+            static constexpr auto hash = []<typename T>(T t) { return std::hash<T>{}(t); };
+
+            uint64_t data4;
+            std::memcpy(&data4, guid.Data4, sizeof(data4));
+
+            return hash(guid.Data1) ^ hash(guid.Data2) ^ hash(guid.Data3) ^ hash(data4);
+        }
+    };
+
+    struct GuidEquals {
+        bool operator()(const GUID& lhs, const GUID& rhs) const {
+            return !std::memcmp(&lhs, &rhs, sizeof(GUID));
+        }
+    };
+
+    std::unordered_map<GUID, std::vector<std::byte>, GuidHash, GuidEquals> m_privateData;
+    std::mutex m_privateDataMutex;
+
+  public:
+    HRESULT STDMETHODCALLTYPE GetPrivateData(const GUID& guid, UINT* pDataSize, void* pData) {
+        if (!pDataSize)
+            return E_INVALIDARG;
+
+        std::scoped_lock lock{m_privateDataMutex};
+
+        auto it = m_privateData.find(guid);
+        if (it == m_privateData.end())
+            return DXGI_ERROR_NOT_FOUND;
+
+        auto& data = it->second;
+        auto size = *pDataSize;
+        *pDataSize = data.size();
+
+        if (data.size() > size)
+            return DXGI_ERROR_MORE_DATA;
+
+        std::memcpy(pData, data.data(), data.size());
+
+        return S_OK;
+    }
+
+    HRESULT STDMETHODCALLTYPE SetPrivateData(const GUID& guid, UINT DataSize, const void* pData) {
+        auto ptr = static_cast<const std::byte*>(pData);
+        std::vector<std::byte> data{ptr, ptr + DataSize};
+
+        std::scoped_lock lock{m_privateDataMutex};
+
+        m_privateData.insert_or_assign(guid, std::move(data));
+
+        return S_OK;
+    }
+};
+
 class ID3D12Vkd3dDevice : public ID3D12Device5, public ID3D12DeviceExt5, public ID3D12DXVKInteropDevice1 {};
 
 class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3dDevice> {
+    PrivateDataStore m_store;
+
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
-    IMPLEMENT_MOCK3(GetPrivateData);
-    IMPLEMENT_MOCK3(SetPrivateData);
+
+    HRESULT STDMETHODCALLTYPE GetPrivateData(const GUID& guid, UINT* pDataSize, void* pData) override {
+        return m_store.GetPrivateData(guid, pDataSize, pData);
+    }
+
+    HRESULT STDMETHODCALLTYPE SetPrivateData(const GUID& guid, UINT DataSize, const void* pData) override {
+        return m_store.SetPrivateData(guid, DataSize, pData);
+    }
+
     IMPLEMENT_MOCK2(SetPrivateDataInterface);
     IMPLEMENT_MOCK1(SetName);
     IMPLEMENT_MOCK0(GetNodeCount);
@@ -122,11 +187,20 @@ class D3D12Vkd3dDeviceMock final : public trompeloeil::mock_interface<ID3D12Vkd3
 class ID3D12Vkd3dGraphicsCommandList : public ID3D12GraphicsCommandList4, public ID3D12GraphicsCommandListExt2 {};
 
 class D3D12Vkd3dGraphicsCommandListMock final : public trompeloeil::mock_interface<ID3D12Vkd3dGraphicsCommandList> {
+    PrivateDataStore m_store;
+
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
-    IMPLEMENT_MOCK3(GetPrivateData);
-    IMPLEMENT_MOCK3(SetPrivateData);
+
+    HRESULT STDMETHODCALLTYPE GetPrivateData(const GUID& guid, UINT* pDataSize, void* pData) override {
+        return m_store.GetPrivateData(guid, pDataSize, pData);
+    }
+
+    HRESULT STDMETHODCALLTYPE SetPrivateData(const GUID& guid, UINT DataSize, const void* pData) override {
+        return m_store.SetPrivateData(guid, DataSize, pData);
+    }
+
     IMPLEMENT_MOCK2(SetPrivateDataInterface);
     IMPLEMENT_MOCK1(SetName);
     IMPLEMENT_MOCK2(GetDevice);
@@ -209,11 +283,20 @@ class D3D12Vkd3dGraphicsCommandListMock final : public trompeloeil::mock_interfa
 class ID3D12Vkd3dCommandQueue : public ID3D12CommandQueue, public ID3D12CommandQueueExt {};
 
 class D3D12Vkd3dCommandQueueMock final : public trompeloeil::mock_interface<ID3D12Vkd3dCommandQueue> {
+    PrivateDataStore m_store;
+
     MAKE_MOCK2(QueryInterface, HRESULT(REFIID, void**), override);
     MAKE_MOCK0(AddRef, ULONG(), override);
     MAKE_MOCK0(Release, ULONG(), override);
-    IMPLEMENT_MOCK3(GetPrivateData);
-    IMPLEMENT_MOCK3(SetPrivateData);
+
+    HRESULT STDMETHODCALLTYPE GetPrivateData(const GUID& guid, UINT* pDataSize, void* pData) override {
+        return m_store.GetPrivateData(guid, pDataSize, pData);
+    }
+
+    HRESULT STDMETHODCALLTYPE SetPrivateData(const GUID& guid, UINT DataSize, const void* pData) override {
+        return m_store.SetPrivateData(guid, DataSize, pData);
+    }
+
     IMPLEMENT_MOCK2(SetPrivateDataInterface);
     IMPLEMENT_MOCK1(SetName);
     IMPLEMENT_MOCK2(GetDevice);
