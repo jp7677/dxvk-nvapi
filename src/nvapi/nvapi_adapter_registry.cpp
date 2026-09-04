@@ -1,6 +1,8 @@
 #include "nvapi_adapter_registry.h"
 #include "nvapi_d3d11_device.h"
 #include "nvapi_d3d12_device.h"
+#include "nvapi_d3d12_command_queue.h"
+#include "nvapi_d3d12_graphics_command_list.h"
 #include "nvapi_d3d_low_latency_device.h"
 #include "nvapi_vulkan_low_latency_device_factory.h"
 #include "../util/util_log.h"
@@ -13,6 +15,8 @@ namespace dxvk {
     NvapiAdapterRegistry::~NvapiAdapterRegistry() {
         NvapiD3d11Device::Reset();
         NvapiD3d12Device::Reset();
+        NvapiD3d12CommandQueue::Reset();
+        NvapiD3d12GraphicsCommandList::Reset();
         NvapiD3dLowLatencyDevice::Reset();
         NvapiVulkanLowLatencyDeviceFactory::Reset();
 
