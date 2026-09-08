@@ -27,6 +27,7 @@ namespace dxvk::drs {
         ENTRY(NGX_DLSS_SR_OVERRIDE),
         ENTRY(NGX_DLSS_SR_OVERRIDE_RENDER_PRESET_SELECTION),
         ENTRY(NGX_DLSS_SR_OVERRIDE_SCALING_RATIO),
+        ENTRY(SL_DLSS_OVERRIDE),
 #undef ENTRY
 #undef SETTING_ID
     };
@@ -252,6 +253,13 @@ namespace dxvk::drs {
                    ENTRY1(RENDER_PRESET_N),
                    ENTRY1(RENDER_PRESET_O),
                    ENTRY1(RENDER_PRESET_Latest),
+                   ENTRY1(DEFAULT),
+               }},
+#undef SETTING
+#define SETTING SL_DLSS_OVERRIDE
+        {ID(), {
+                   ENTRY1(OFF),
+                   ENTRY1(ON),
                    ENTRY1(DEFAULT),
                }},
 #undef SETTING
