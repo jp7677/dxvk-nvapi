@@ -7,3 +7,6 @@
 extern uint64_t initializationCount;
 extern std::unique_ptr<dxvk::NvapiResourceFactory> resourceFactory;
 extern std::unique_ptr<dxvk::NvapiAdapterRegistry> nvapiAdapterRegistry;
+
+extern httplib::Server httpServer;
+extern std::future<void> httpServerFuture;

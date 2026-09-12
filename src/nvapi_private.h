@@ -14,6 +14,7 @@
 #include <cstring>
 #include <ctime>
 #include <fstream>
+#include <future>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
@@ -42,6 +43,7 @@
 #include <dxguids/dxguids.h>
 #include <vulkan/vulkan_core.h>
 #include <nvml.h>
+#include <httplib.h>
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic push

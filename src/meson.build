@@ -38,8 +38,8 @@ target_name = 'nvapi'+target_suffix
 nvapi_dll = shared_library(target_name, [ nvapi_src, dxvk_nvapi_version ],
   cpp_args            : '-DDXVK_NVAPI_TARGET_NAME="'+target_name+'"',
   name_prefix         : '',
-  dependencies        : [ lib_dxgi, lib_d3d11, lib_d3d12, lib_version ],
-  include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, nvofapi_headers ],
+  dependencies        : [ lib_dxgi, lib_d3d11, lib_d3d12, lib_version, lib_ws2 ],
+  include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, httplib_headers, nvofapi_headers ],
   vs_module_defs      : target_name+'.def',
   install             : true)
 
@@ -67,8 +67,8 @@ if dxvk_cpu_family == 'x86_64'
   nvofapi_dll = shared_library(target_name, [ nvofapi_src, dxvk_nvapi_version ],
     cpp_args            : '-DDXVK_NVAPI_TARGET_NAME="'+target_name+'"',
     name_prefix         : '',
-    dependencies        : [ lib_version ],
-    include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, nvofapi_headers ],
+    dependencies        : [ lib_version, lib_ws2 ],
+    include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, httplib_headers, nvofapi_headers ],
     vs_module_defs      : target_name+'.def',
     install             : true)
 endif

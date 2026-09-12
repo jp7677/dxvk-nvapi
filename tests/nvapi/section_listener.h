@@ -38,5 +38,11 @@ class SectionListener : public Catch::EventListenerBase {
         nvapiAdapterRegistry.reset();
         initializationCount = 0ULL;
         resourceFactory.reset();
+
+        if (httpServer.is_running())
+            httpServer.stop();
+
+        if (httpServerFuture.valid())
+            httpServerFuture.wait_for(std::chrono::milliseconds(100));
     }
 };

@@ -349,6 +349,12 @@ NVAPI_FUNCTION NvAPI_Unload() {
     if (--initializationCount == 0)
         nvapiAdapterRegistry.reset();
 
+    if (httpServer.is_running())
+        httpServer.stop();
+
+    if (httpServerFuture.valid())
+        httpServerFuture.wait_for(std::chrono::seconds(1));
+
     return Ok(n);
 }
 
@@ -363,14 +369,16 @@ NVAPI_FUNCTION NvAPI_Initialize() {
     if (++initializationCount > 1)
         return Ok(n);
 
-    log::info(str::format(
+    auto info = str::format(
         "DXVK-NVAPI ", DXVK_NVAPI_VERSION,
         " NVAPI",
         " ", DXVK_NVAPI_BUILD_COMPILER,
         " ", DXVK_NVAPI_BUILD_COMPILER_VERSION,
         " ", DXVK_NVAPI_BUILD_TARGET,
         " ", DXVK_NVAPI_BUILD_TYPE,
-        " (", env::getExecutableName(), ")"));
+        " (", env::getExecutableName(), ")");
+
+    log::info(info);
 
     if (!resourceFactory)
         resourceFactory = std::make_unique<NvapiResourceFactory>();
@@ -382,8 +390,20 @@ NVAPI_FUNCTION NvAPI_Initialize() {
     }
     nvapiAdapterRegistry = std::move(registry);
 
-#if _WIN64
-    SetNgxDebugOptions(); // NGX is 64-bit only
+#if _WIN64  // NGX is 64-bit only
+    SetNgxDebugOptions();
+
+    httpServer.Get("/", [info](const httplib::Request&, httplib::Response& res) {
+        res.set_content(info, "text/plain");
+    });
+
+    httpServer.set_logger([](const httplib::Request& req, const httplib::Response& res) {
+        log::info(str::format(req.method, " ", req.path, " ", res.status));
+    });
+
+    httpServerFuture = std::async(std::launch::async, [] {
+        httpServer.listen("127.0.0.1", 18080);
+    });
 #endif
 
     return Ok(n);

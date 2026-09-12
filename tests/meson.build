@@ -55,8 +55,8 @@ nvapi_tests_src = files([
 target_name = 'nvapi'+target_suffix+'-tests'
 nvapi_exe = executable(target_name, [ nvapi_src, catch2_src, nvapi_tests_src, dxvk_nvapi_version ],
   cpp_args            : '-DDXVK_NVAPI_TARGET_NAME="'+target_name+'"',
-  dependencies        : [ lib_dxgi, lib_d3d11, lib_d3d12, lib_version ],
-  include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, catch2_headers, trompeloeil_headers ],
+  dependencies        : [ lib_dxgi, lib_d3d11, lib_d3d12, lib_version, lib_ws2 ],
+  include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, httplib_headers, catch2_headers, trompeloeil_headers ],
   install             : true)
 
 nvofapi_src = files([
@@ -88,6 +88,6 @@ nvofapi_tests_src = files([
 target_name = 'nvofapi'+target_suffix+'-tests'
 nvofapi_exe = executable(target_name, [ nvofapi_src, catch2_src, nvofapi_tests_src, dxvk_nvapi_version ],
   cpp_args            : '-DDXVK_NVAPI_TARGET_NAME="'+target_name+'"',
-  dependencies        : [ lib_version ],
-  include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, nvofapi_headers, catch2_headers, trompeloeil_headers ],
+  dependencies        : [ lib_version, lib_ws2 ],
+  include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, httplib_headers, nvofapi_headers, catch2_headers, trompeloeil_headers ],
   install             : true)
