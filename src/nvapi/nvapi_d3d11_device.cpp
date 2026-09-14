@@ -1,5 +1,7 @@
 #include "nvapi_d3d11_device.h"
 #include "../util/com_pointer.h"
+#include "../util/util_string.h"
+#include "../util/util_log.h"
 
 namespace dxvk {
     std::unordered_map<IUnknown*, std::shared_ptr<NvapiD3d11Device>> NvapiD3d11Device::m_nvapiDeviceMap;
@@ -60,7 +62,7 @@ namespace dxvk {
     }
 
     NvapiD3d11Device::NvapiD3d11Device(ID3D11VkExtDevice* dxvkDevice, ID3D11VkExtContext* dxvkContext)
-        : m_dxvkDevice(static_cast<ID3D11VkExtDevice1*>(dxvkDevice)), m_dxvkContext(static_cast<ID3D11VkExtContext1*>(dxvkContext)) { // NOLINT(*-pro-type-static-cast-downcast)
+        : m_dxvkDevice(static_cast<ID3D11VkExtDevice2*>(dxvkDevice)), m_dxvkContext(static_cast<ID3D11VkExtContext2*>(dxvkContext)) { // NOLINT(*-pro-type-static-cast-downcast)
         m_supportsExtDepthBounds = m_dxvkDevice->GetExtensionSupport(D3D11_VK_EXT_DEPTH_BOUNDS);
         m_supportsNvxBinaryImport = m_dxvkDevice->GetExtensionSupport(D3D11_VK_NVX_BINARY_IMPORT);
         m_supportsExtBarrierControl = m_dxvkDevice->GetExtensionSupport(D3D11_VK_EXT_BARRIER_CONTROL);
@@ -69,6 +71,34 @@ namespace dxvk {
 
         m_supportsExtDevice1 = probeInterfaceChain(dxvkDevice, {__uuidof(ID3D11VkExtDevice1)}) >= 1;
         m_supportsExtContext1 = probeInterfaceChain(dxvkContext, {__uuidof(ID3D11VkExtContext1)}) >= 1;
+
+        // Revision-2 interfaces exist only on a DXVK that implements the
+        // multi-view entry points. Without them, shader creation falls back
+        // to the plain path.
+        m_supportsExtDevice2 = probeInterfaceChain(dxvkDevice, {__uuidof(ID3D11VkExtDevice1), __uuidof(ID3D11VkExtDevice2)}) >= 2;
+        m_supportsExtContext2 = probeInterfaceChain(dxvkContext, {__uuidof(ID3D11VkExtContext1), __uuidof(ID3D11VkExtContext2)}) >= 2;
+    }
+
+    HRESULT NvapiD3d11Device::CreateVertexShaderNvSemantics(const void* pShaderBytecode, size_t bytecodeLength, ID3D11ClassLinkage* pClassLinkage, const D3D11_VK_NV_CUSTOM_SEMANTIC* pSemantics, uint32_t numSemantics, ID3D11VertexShader** ppVertexShader) const {
+        if (!m_supportsExtDevice2)
+            return E_NOTIMPL;
+
+        return m_dxvkDevice->CreateVertexShaderNvSemantics(pShaderBytecode, bytecodeLength, pClassLinkage, pSemantics, numSemantics, ppVertexShader);
+    }
+
+    HRESULT NvapiD3d11Device::CreateGeometryShaderNvSemantics(const void* pShaderBytecode, size_t bytecodeLength, ID3D11ClassLinkage* pClassLinkage, const D3D11_VK_NV_CUSTOM_SEMANTIC* pSemantics, uint32_t numSemantics, bool useViewportMask, ID3D11GeometryShader** ppGeometryShader) const {
+        if (!m_supportsExtDevice2)
+            return E_NOTIMPL;
+
+        return m_dxvkDevice->CreateGeometryShaderNvSemantics(pShaderBytecode, bytecodeLength, pClassLinkage, pSemantics, numSemantics, useViewportMask, ppGeometryShader);
+    }
+
+    bool NvapiD3d11Device::SetMultiviewMode(uint32_t numViews, bool independentViewportMask) const {
+        if (!m_supportsExtContext2)
+            return false;
+
+        m_dxvkContext->SetMultiviewModeNV(numViews, independentViewportMask ? TRUE : FALSE);
+        return true;
     }
 
     HRESULT NvapiD3d11Device::SetDepthBoundsTest(const bool enable, const float minDepth, const float maxDepth) const {
