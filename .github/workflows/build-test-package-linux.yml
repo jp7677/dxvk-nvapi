@@ -42,6 +42,9 @@ jobs:
         meson setup --cross-file "./build-win64.txt" -Denable_tests=True build/lint
         ninja clang-format-check -C build/lint
 
+    - name: Print build version
+      run: git describe --always --tags --dirty=+
+
     - name: Build and run tests
       run: |
         ./package-release.sh "${{ env.VERSION }}" build --enable-tests
@@ -51,7 +54,7 @@ jobs:
         wine "./build/dxvk-nvapi-${{ env.VERSION }}/x64/nvapi64-tests.exe" [@unit-tests] -o nvapi64-tests.log
         wine "./build/dxvk-nvapi-${{ env.VERSION }}/x64/nvofapi64-tests.exe" [@unit-tests] -o nvofapi64-tests.log
 
-    - name: Present tests results
+    - name: Print tests results
       if: success() || failure()
       run: |
         if [ -e nvapi64-tests.log ]; then cat nvapi64-tests.log; fi
@@ -59,6 +62,9 @@ jobs:
 
     - name: Create tarball
       run: tar cvfz "dxvk-nvapi-${{ env.VERSION }}.tar.gz" -C "./build/dxvk-nvapi-${{ env.VERSION }}" .
+
+    - name: Print digest
+      run: sha256sum "dxvk-nvapi-${{ env.VERSION }}.tar.gz"
 
     - name: Upload artifact
       uses: actions/upload-artifact@v7

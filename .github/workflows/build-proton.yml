@@ -22,5 +22,8 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
+    - name: Print build version
+      run: git describe --always --tags --dirty=+
+
     - name: Build
       run: ./package-release.sh master build --enable-tests

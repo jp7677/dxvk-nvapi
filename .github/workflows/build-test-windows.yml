@@ -32,6 +32,9 @@ jobs:
         Write-Output "VSDEVCMD=${installationPath}\Common7\Tools\VsDevCmd.bat" `
           | Out-File -FilePath "${Env:GITHUB_ENV}" -Append
 
+    - name: Print build version
+      run: git describe --always --tags --dirty=+
+
     - name: Build MSVC x86
       shell: pwsh
       run: |
