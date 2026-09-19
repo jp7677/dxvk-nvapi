@@ -14,8 +14,10 @@ jobs:
     container: docker.io/library/archlinux:base-devel
 
     steps:
-    - name: Install build tooling
-      run: pacman -Syu --needed --noconfirm git clang mingw-w64-gcc meson ninja wine
+    - name: Setup build container
+      run: |
+        pacman -Syu --needed --noconfirm git clang mingw-w64-gcc meson ninja wine
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
     - name: Checkout code
       uses: actions/checkout@v7
