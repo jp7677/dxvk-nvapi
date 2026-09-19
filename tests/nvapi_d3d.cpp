@@ -206,6 +206,12 @@ TEST_CASE("D3D Reflex depending methods succeed", "[.d3d]") {
             params.version = NV_LATENCY_MARKER_PARAMS_VER;
             REQUIRE(NvAPI_D3D_SetLatencyMarker(nullptr, &params) == NVAPI_INVALID_ARGUMENT);
         }
+
+        SECTION("SetReflexSync returns invalid-argument") {
+            NV_SET_REFLEX_SYNC_PARAMS params{};
+            params.version = NV_SET_REFLEX_SYNC_PARAMS_VER1;
+            REQUIRE(NvAPI_D3D_SetReflexSync(nullptr, &params) == NVAPI_INVALID_ARGUMENT);
+        }
     }
 
     SECTION("Reflex depending methods succeed when D3DLowLatencyDevice is available") {
@@ -279,6 +285,13 @@ TEST_CASE("D3D Reflex depending methods succeed", "[.d3d]") {
                 params.version = NV_LATENCY_MARKER_PARAMS_VER;
                 REQUIRE(NvAPI_D3D_SetLatencyMarker(reinterpret_cast<IUnknown*>(&d3d11Device), &params) == NVAPI_NO_IMPLEMENTATION);
             }
+
+            SECTION("SetReflexSync returns no-implementation") {
+                NV_SET_REFLEX_SYNC_PARAMS params{};
+                params.version = NV_SET_REFLEX_SYNC_PARAMS_VER1;
+                params.bEnable = true;
+                REQUIRE(NvAPI_D3D_SetReflexSync(reinterpret_cast<IUnknown*>(&d3d11Device), &params) == NVAPI_NO_IMPLEMENTATION);
+            }
         }
 
         SECTION("D3DLowLatencyDevice supports low latency") {
@@ -325,6 +338,58 @@ TEST_CASE("D3D Reflex depending methods succeed", "[.d3d]") {
 
                 REQUIRE(NvAPI_D3D_GetSleepStatus(reinterpret_cast<IUnknown*>(&d3d11Device), &status) == NVAPI_OK);
                 REQUIRE_FALSE(status.bLowLatencyMode);
+            }
+
+            SECTION("SetReflexSync bEnable calls ID3DLowLatencyDevice::SetLatencySleepMode(true) and returns OK") {
+                REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(true, false, 0U))
+                    .RETURN(S_OK);
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_SET_REFLEX_SYNC_PARAMS params{};
+                params.version = NV_SET_REFLEX_SYNC_PARAMS_VER1;
+                params.bEnable = true;
+                REQUIRE(NvAPI_D3D_SetReflexSync(reinterpret_cast<IUnknown*>(&d3d11Device), &params) == NVAPI_OK);
+            }
+
+            SECTION("SetReflexSync bDisable calls ID3DLowLatencyDevice::SetLatencySleepMode(false) and returns OK") {
+                REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(false, false, 0U))
+                    .RETURN(S_OK);
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_SET_REFLEX_SYNC_PARAMS params{};
+                params.version = NV_SET_REFLEX_SYNC_PARAMS_VER1;
+                params.bDisable = true;
+                REQUIRE(NvAPI_D3D_SetReflexSync(reinterpret_cast<IUnknown*>(&d3d11Device), &params) == NVAPI_OK);
+            }
+
+            SECTION("SetReflexSync bDisable wins when both bEnable and bDisable are set") {
+                REQUIRE_CALL(lowLatencyDevice, SetLatencySleepMode(false, false, 0U))
+                    .RETURN(S_OK);
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_SET_REFLEX_SYNC_PARAMS params{};
+                params.version = NV_SET_REFLEX_SYNC_PARAMS_VER1;
+                params.bEnable = true;
+                params.bDisable = true;
+                REQUIRE(NvAPI_D3D_SetReflexSync(reinterpret_cast<IUnknown*>(&d3d11Device), &params) == NVAPI_OK);
+            }
+
+            SECTION("SetReflexSync with neither bEnable nor bDisable does not touch low latency mode and returns OK") {
+                // Dynamic MFG pacing fields have no backend to route to (see the
+                // comment in NvAPI_D3D_SetReflexSync) -- confirm this doesn't
+                // silently pretend to apply them by calling SetLatencySleepMode.
+                FORBID_CALL(lowLatencyDevice, SetLatencySleepMode(_, _, _));
+
+                REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+                NV_SET_REFLEX_SYNC_PARAMS params{};
+                params.version = NV_SET_REFLEX_SYNC_PARAMS_VER1;
+                params.fgMultiplier = 3;
+                params.dfgTargetFps = 120;
+                REQUIRE(NvAPI_D3D_SetReflexSync(reinterpret_cast<IUnknown*>(&d3d11Device), &params) == NVAPI_OK);
             }
 
             SECTION("Sleep calls ID3DLowLatencyDevice::LatencySleep and returns OK") {
