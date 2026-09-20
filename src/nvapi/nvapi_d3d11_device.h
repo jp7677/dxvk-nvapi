@@ -30,14 +30,18 @@ namespace dxvk {
         [[nodiscard]] HRESULT CreateSamplerStateAndGetDriverHandle(const D3D11_SAMPLER_DESC* pSamplerDesc, ID3D11SamplerState** ppSamplerState, uint32_t* pDriverHandle) const;
         [[nodiscard]] bool IsFatbinPTXSupported() const;
 
+        [[nodiscard]] HRESULT CreateVertexShaderNvSemantics(const void* pShaderBytecode, size_t bytecodeLength, ID3D11ClassLinkage* pClassLinkage, const D3D11_VK_NV_CUSTOM_SEMANTIC* pSemantics, uint32_t numSemantics, ID3D11VertexShader** ppVertexShader) const;
+        [[nodiscard]] HRESULT CreateGeometryShaderNvSemantics(const void* pShaderBytecode, size_t bytecodeLength, ID3D11ClassLinkage* pClassLinkage, const D3D11_VK_NV_CUSTOM_SEMANTIC* pSemantics, uint32_t numSemantics, bool useViewportMask, ID3D11GeometryShader** ppGeometryShader) const;
+        bool SetMultiviewMode(uint32_t numViews, bool independentViewportMask) const;
+
       private:
         [[nodiscard]] static NvapiD3d11Device* Get(IUnknown* deviceOrContext);
 
         static std::unordered_map<IUnknown*, std::shared_ptr<NvapiD3d11Device>> m_nvapiDeviceMap;
         static std::mutex m_mutex;
 
-        ID3D11VkExtDevice1* m_dxvkDevice{};
-        ID3D11VkExtContext1* m_dxvkContext{};
+        ID3D11VkExtDevice2* m_dxvkDevice{};
+        ID3D11VkExtContext2* m_dxvkContext{};
 
         bool m_supportsExtDepthBounds;
         bool m_supportsNvxBinaryImport;
@@ -46,5 +50,7 @@ namespace dxvk {
         bool m_supportsExtMultiDrawIndirect;
         bool m_supportsExtDevice1;
         bool m_supportsExtContext1;
+        bool m_supportsExtDevice2;
+        bool m_supportsExtContext2;
     };
 }
