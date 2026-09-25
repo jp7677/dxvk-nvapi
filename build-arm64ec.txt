@@ -1,0 +1,16 @@
+[binaries]
+cpp = 'arm64ec-w64-mingw32-clang++'
+strip = 'arm64ec-w64-mingw32-strip'
+ar = 'arm64ec-w64-mingw32-ar'
+
+[built-in options]
+cpp_link_args = ['-static']
+
+[properties]
+needs_exe_wrapper = true
+
+[host_machine]
+system = 'windows'
+cpu_family = 'aarch64'
+cpu = 'aarch64'
+endian = 'little'
