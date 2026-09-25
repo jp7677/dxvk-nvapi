@@ -62,7 +62,7 @@ nvofapi_src = files([
 ])
 
 # Only build 64-bit versions of nvofapi
-if dxvk_cpu_family == 'x86_64'
+if dxvk_is_64bit
   target_name = 'nvofapi'+target_suffix
   nvofapi_dll = shared_library(target_name, [ nvofapi_src, dxvk_nvapi_version ],
     cpp_args            : '-DDXVK_NVAPI_TARGET_NAME="'+target_name+'"',

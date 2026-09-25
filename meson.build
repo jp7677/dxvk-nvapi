@@ -38,7 +38,8 @@ add_project_arguments(cpp.get_supported_arguments(compiler_args), language: 'cpp
 add_project_link_arguments(cpp.get_supported_link_arguments(link_args), language: 'cpp')
 
 dxvk_cpu_family = target_machine.cpu_family()
-if dxvk_cpu_family == 'x86_64'
+dxvk_is_64bit = cpp.sizeof('void*') == 8
+if dxvk_is_64bit
   target_suffix = '64'
 else
   target_suffix = ''
