@@ -27,3 +27,26 @@ jobs:
 
     - name: Build
       run: ./package-release.sh master build --enable-tests
+
+  build-proton-arm64ec:
+    runs-on: ubuntu-24.04-arm
+    container:
+      image: registry.gitlab.steamos.cloud/proton/steamrt4/sdk/arm64-llvm:latest
+      options: --user 1001 # to match GHA's "runner" user: https://github.com/actions/runner/blob/3d34a3c6d6dfd7599e489b3c04fcf95a8a428434/images/Dockerfile#L52
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Print build version
+      run: git describe --always --tags --dirty=+
+
+    - name: Build ARM64EC
+      run: |
+        meson setup --cross-file ./build-arm64ec.txt --buildtype release build/arm64ec
+        ninja -C build/arm64ec
+        test -f build/arm64ec/src/nvapi64.dll
+        test -f build/arm64ec/src/nvofapi64.dll
