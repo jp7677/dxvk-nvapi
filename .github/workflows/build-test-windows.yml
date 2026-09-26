@@ -21,7 +21,7 @@ jobs:
 
     - name: Setup Meson
       shell: pwsh
-      run: pip install meson ninja
+      run: pip install meson
 
     - name: Find Visual Studio
       shell: pwsh
