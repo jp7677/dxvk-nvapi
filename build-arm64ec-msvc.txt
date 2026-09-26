@@ -1,0 +1,16 @@
+[binaries]
+cpp = 'cl'
+ar = 'lib'
+
+[built-in options]
+cpp_args = ['/arm64EC']
+cpp_link_args = ['/MACHINE:ARM64EC']
+
+[properties]
+needs_exe_wrapper = true
+
+[host_machine]
+system = 'windows'
+cpu_family = 'aarch64'
+cpu = 'aarch64'
+endian = 'little'

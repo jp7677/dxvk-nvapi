@@ -66,24 +66,6 @@ jobs:
         & "${Env:COMSPEC}" /s /c "`"${Env:VSDEVCMD}`" -arch=arm64 -host_arch=x64 -no_logo && set" `
           | % { , ($_ -Split '=', 2) } `
           | % { [System.Environment]::SetEnvironmentVariable($_[0], $_[1]) }
-        @"
-        [binaries]
-        cpp = 'cl'
-        ar = 'lib'
-
-        [built-in options]
-        cpp_args = ['/arm64EC']
-        cpp_link_args = ['/MACHINE:ARM64EC']
-
-        [properties]
-        needs_exe_wrapper = true
-
-        [host_machine]
-        system = 'windows'
-        cpu_family = 'aarch64'
-        cpu = 'aarch64'
-        endian = 'little'
-        "@ | Out-File -Encoding ascii build-arm64ec-msvc.txt
         meson setup --buildtype release --backend ninja --cross-file build-arm64ec-msvc.txt build-msvc-arm64ec
         ninja -C build-msvc-arm64ec
 
