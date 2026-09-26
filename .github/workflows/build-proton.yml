@@ -19,8 +19,8 @@ jobs:
     - name: Setup container
       run: |
         curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20260908/llvm-mingw-20260908-ucrt-ubuntu-22.04-x86_64.tar.xz
-        mkdir /opt/llvm-mingw
-        tar -C /opt/llvm-mingw -xf llvm-mingw-*.tar.xz --strip-components=1
+        mkdir -p "$RUNNER_TEMP/llvm-mingw"
+        tar -C "$RUNNER_TEMP/llvm-mingw" -xf llvm-mingw-*.tar.xz --strip-components=1
 
     - name: Checkout code
       uses: actions/checkout@v7
@@ -32,4 +32,4 @@ jobs:
       run: git describe --always --tags --dirty=+
 
     - name: Build
-      run: PATH=$PATH:/opt/llvm-mingw/bin ./package-release.sh master build --enable-tests --build-arm64x
+      run: PATH="$PATH:$RUNNER_TEMP/llvm-mingw/bin" ./package-release.sh master build --enable-tests --build-arm64x
