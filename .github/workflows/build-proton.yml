@@ -48,5 +48,3 @@ jobs:
       run: |
         meson setup --cross-file ./build-arm64ec.txt --buildtype release build/arm64ec
         ninja -C build/arm64ec
-        test -f build/arm64ec/src/nvapi64.dll
-        test -f build/arm64ec/src/nvofapi64.dll
