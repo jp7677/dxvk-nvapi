@@ -39,7 +39,7 @@ The Vulkan Reflex layer has higher requirements: Meson 1.0 and a C++ compiler th
 Run:
 
 ```bash
-./package-release.sh master /your/path [--disable-layer] [--enable-tests]
+./package-release.sh master /your/path [--disable-layer] [--enable-tests] [--build-arm64x]
 ```
 
 Alternatively [DXVK-Docker](https://github.com/jp7677/dxvk-docker) provides a way for a build setup using docker/podman.
