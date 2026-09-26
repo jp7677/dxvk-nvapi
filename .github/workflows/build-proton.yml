@@ -16,6 +16,12 @@ jobs:
       options: --user 1001 # to match GHA's "runner" user: https://github.com/actions/runner/blob/3d34a3c6d6dfd7599e489b3c04fcf95a8a428434/images/Dockerfile#L52
 
     steps:
+    - name: Setup container
+      run: |
+        curl -LO https://github.com/mstorsjo/llvm-mingw/releases/download/20260908/llvm-mingw-20260908-ucrt-ubuntu-22.04-x86_64.tar.xz
+        mkdir -p "$RUNNER_TEMP/llvm-mingw"
+        tar -C "$RUNNER_TEMP/llvm-mingw" -xf llvm-mingw-*.tar.xz --strip-components=1
+
     - name: Checkout code
       uses: actions/checkout@v7
       with:
@@ -26,4 +32,4 @@ jobs:
       run: git describe --always --tags --dirty=+
 
     - name: Build
-      run: ./package-release.sh master build --enable-tests
+      run: PATH="$PATH:$RUNNER_TEMP/llvm-mingw/bin" ./package-release.sh master build --enable-tests --build-arm64x

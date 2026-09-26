@@ -18,6 +18,9 @@ jobs:
       run: |
         pacman -Syu --needed --noconfirm git clang mingw-w64-gcc meson ninja wine
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        curl -fLO https://github.com/mstorsjo/llvm-mingw/releases/download/20260908/llvm-mingw-20260908-ucrt-ubuntu-22.04-x86_64.tar.xz
+        mkdir /opt/llvm-mingw
+        tar -C /opt/llvm-mingw -xf llvm-mingw-*.tar.xz --strip-components=1
 
     - name: Checkout code
       uses: actions/checkout@v7
@@ -47,7 +50,8 @@ jobs:
 
     - name: Build and run tests
       run: |
-        ./package-release.sh "${{ env.VERSION }}" build --enable-tests
+        export PATH="$PATH:/opt/llvm-mingw/bin"
+        ./package-release.sh "${{ env.VERSION }}" build --enable-tests --build-arm64x
         mkdir "${HOME}/tests-prefix"
         export WINEPREFIX="${HOME}/tests-prefix"
         export WINEDEBUG=-all
