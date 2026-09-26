@@ -23,6 +23,7 @@ shift 2
 opt_enabletests=false
 opt_disablelayer=0
 opt_devbuild=0
+opt_build_arm64x=0
 
 crossfile="build-win"
 
@@ -39,6 +40,9 @@ while [ $# -gt 0 ]; do
     ;;
   "--dev-build")
     opt_devbuild=1
+    ;;
+  "--build-arm64x")
+    opt_build_arm64x=1
     ;;
   *)
     echo "Unrecognized option: $1" >&2
@@ -72,12 +76,12 @@ function build_arch {
   rm -f version.h config.h
 
   meson setup                                \
-    --cross-file "$SRC_DIR/$crossfile$1.txt" \
+    --cross-file "$SRC_DIR/$2.txt"           \
     --buildtype "release"                    \
     --prefix "$BUILD_DIR"                    \
     --strip                                  \
-    --bindir "x$1"                           \
-    --libdir "x$1"                           \
+    --bindir "$1"                            \
+    --libdir "$1"                            \
     -Denable_tests=$opt_enabletests          \
     "$BUILD_DIR/build.$1"
 
@@ -89,7 +93,7 @@ function build_arch {
 
   if [ $opt_devbuild -eq 0 ]; then
     # get rid of some useless .a files
-    rm "$BUILD_DIR/x$1/"*.!(dll|exe)
+    rm "$BUILD_DIR/$1/"*.!(dll|exe)
     rm -R "$BUILD_DIR/build.$1"
   fi
 }
@@ -126,8 +130,11 @@ function copy_extra {
 }
 
 prepare
-build_arch 32
-build_arch 64
+build_arch x32 build-win32
+build_arch x64 build-win64
+if [ $opt_build_arm64x -eq 1 ]; then
+  build_arch arm64x build-arm64x
+fi
 cd "$SRC_DIR"
 if (( ! opt_disablelayer )); then
   build_layer
