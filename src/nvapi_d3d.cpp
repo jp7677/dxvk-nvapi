@@ -378,3 +378,75 @@ NVAPI_FUNCTION NvAPI_D3D_SetLatencyMarker(IUnknown* pDev, NV_LATENCY_MARKER_PARA
             return Error(n, alreadyLoggedError);
     }
 }
+
+NVAPI_FUNCTION NvAPI_D3D_SetReflexSync(IUnknown* pDev, NV_SET_REFLEX_SYNC_PARAMS* pSetReflexSyncParams) {
+    static constexpr auto n = FUNC;
+    thread_local bool alreadyLoggedOk = false;
+    thread_local bool alreadyLoggedNoImplementation = false;
+    thread_local bool alreadyLoggedError = false;
+    thread_local bool alreadyLoggedUnsupportedFields = false;
+
+    if (log::tracing())
+        log::trace(n, log::fmt::ptr(pDev), log::fmt::ptr(pSetReflexSyncParams));
+
+    if (!nvapiAdapterRegistry)
+        return ApiNotInitialized(n);
+
+    if (!pDev || !pSetReflexSyncParams)
+        return InvalidArgument(n);
+
+    if (pSetReflexSyncParams->version != NV_SET_REFLEX_SYNC_PARAMS_VER1)
+        return IncompatibleStructVersion(n, pSetReflexSyncParams->version);
+
+    if (env::needsUnsupportedLowLatencyDevice())
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+
+    auto lowLatencyDevice = NvapiD3dLowLatencyDevice::GetOrCreate(pDev);
+    if (!lowLatencyDevice || !lowLatencyDevice->SupportsLowLatency())
+        return NoImplementation(n, alreadyLoggedNoImplementation);
+
+    // Reflex Sync's bEnable/bDisable toggle is the one part of this call with a
+    // real backend: it maps onto the same low-latency-mode state SetSleepMode
+    // already controls (see NvAPI_D3D_SetSleepMode above) -- there is no
+    // separate Vulkan concept of "sync" distinct from low-latency sleep mode.
+    //
+    // Every other field here -- vblankIntervalUs, timeInQueueUs[Target],
+    // fgMultiplier, dfgMaxMultiplier, dfgTargetFps -- describes NVIDIA's
+    // proprietary driver-internal Dynamic Multi-Frame-Generation pacing.
+    // VK_NV_low_latency2 (NvapiVulkanLowLatencyDevice) exposes sleep mode,
+    // markers and latency queries only; there is no public Vulkan mechanism
+    // for a frame multiplier or a vblank-interval hint to route through on
+    // Linux. Pretending to honour them would be an unverified claim of the
+    // exact kind this project has had to walk back before -- so this accepts
+    // the call (a game's Reflex path stops seeing NVAPI_NO_IMPLEMENTATION and
+    // retry-spamming) without pretending those fields do anything, and says
+    // so once per process rather than swallowing them silently.
+    if (!std::exchange(alreadyLoggedUnsupportedFields, true) &&
+        (pSetReflexSyncParams->vblankIntervalUs || pSetReflexSyncParams->timeInQueueUs ||
+         pSetReflexSyncParams->timeInQueueUsTarget || pSetReflexSyncParams->fgMultiplier ||
+         pSetReflexSyncParams->dfgMaxMultiplier || pSetReflexSyncParams->dfgTargetFps)) {
+        log::info(str::format(n, ": dynamic Multi-Frame-Generation pacing fields (vblankIntervalUs=",
+            pSetReflexSyncParams->vblankIntervalUs, ", timeInQueueUs=", pSetReflexSyncParams->timeInQueueUs,
+            ", timeInQueueUsTarget=", pSetReflexSyncParams->timeInQueueUsTarget,
+            ", fgMultiplier=", static_cast<uint32_t>(pSetReflexSyncParams->fgMultiplier),
+            ", dfgMaxMultiplier=", static_cast<uint32_t>(pSetReflexSyncParams->dfgMaxMultiplier),
+            ", dfgTargetFps=", pSetReflexSyncParams->dfgTargetFps,
+            ") were received but have no effect: no public Vulkan mechanism exists to drive NVIDIA's "
+            "proprietary Dynamic MFG pacing from this translation layer. Only bEnable/bDisable "
+            "(low-latency mode) are honoured."));
+    }
+
+    if (!pSetReflexSyncParams->bEnable && !pSetReflexSyncParams->bDisable)
+        return Ok(n, alreadyLoggedOk);
+
+    // bDisable wins if a caller somehow sets both -- disabling is the safe default.
+    const bool enable = pSetReflexSyncParams->bEnable && !pSetReflexSyncParams->bDisable;
+    switch (lowLatencyDevice->SetLatencySleepMode(enable, false, 0)) {
+        case S_OK:
+            return Ok(n, alreadyLoggedOk);
+        case E_NOTIMPL:
+            return NoImplementation(n, alreadyLoggedNoImplementation);
+        default:
+            return Error(n, alreadyLoggedError);
+    }
+}
