@@ -159,6 +159,67 @@ ID3D11VkExtContext1 : public ID3D11VkExtContext {
         uint32_t numWriteResources) = 0;
 };
 
+/**
+ * \brief NVAPI custom shader semantic (SMP / multi-view)
+ *
+ * Mirrors the information from NVAPI's NV_CUSTOM_SEMANTIC without
+ * depending on NVIDIA headers. Type values match NV_CUSTOM_SEMANTIC_TYPE
+ * (2 = viewport mask, 4 = viewport mask 2, 5 = per-view position).
+ *
+ * Name[256] matches NVIDIA's own NVCustomSemanticNameString buffer size
+ * exactly. Every semantic name observed fits comfortably in far less,
+ * but matching NVIDIA's maximum removes any truncation risk and lets the
+ * compiler prove the strncpy calls below cannot truncate, which silences
+ * -Wstringop-truncation properly rather than suppressing it.
+ */
+struct D3D11_VK_NV_CUSTOM_SEMANTIC {
+    uint32_t Type;
+    char Name[256];
+    BOOL RegisterSpecified;
+    uint32_t RegisterNum;
+    uint32_t RegisterMask;
+};
+
+/**
+ * \brief Extended D3D11 device, revision 2
+ *
+ * Adds NVAPI-style extended shader creation for
+ * SMP / multi-view rendering (dxvk-nvapi interop).
+ */
+MIDL_INTERFACE("1d5c6a10-9f4b-4e0a-b6a4-2c8e13d70f51")
+ID3D11VkExtDevice2 : public ID3D11VkExtDevice1 {
+
+    virtual HRESULT STDMETHODCALLTYPE CreateVertexShaderNvSemantics(
+        const void* pShaderBytecode,
+        SIZE_T BytecodeLength,
+        ID3D11ClassLinkage* pClassLinkage,
+        const D3D11_VK_NV_CUSTOM_SEMANTIC* pSemantics,
+        uint32_t NumSemantics,
+        ID3D11VertexShader** ppVertexShader) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE CreateGeometryShaderNvSemantics(
+        const void* pShaderBytecode,
+        SIZE_T BytecodeLength,
+        ID3D11ClassLinkage* pClassLinkage,
+        const D3D11_VK_NV_CUSTOM_SEMANTIC* pSemantics,
+        uint32_t NumSemantics,
+        BOOL UseViewportMask,
+        ID3D11GeometryShader** ppGeometryShader) = 0;
+};
+
+/**
+ * \brief Extended D3D11 context, revision 2
+ *
+ * Adds the SMP multi-view mode toggle (dxvk-nvapi interop).
+ */
+MIDL_INTERFACE("7e2c1b9f-4d38-4a11-9b6e-0f5a8c42d3e7")
+ID3D11VkExtContext2 : public ID3D11VkExtContext1 {
+
+    virtual void STDMETHODCALLTYPE SetMultiviewModeNV(
+        uint32_t NumViews,
+        BOOL IndependentViewportMask) = 0;
+};
+
 MIDL_INTERFACE("2a289dbd-2d0a-4a51-89f7-f2adce465cd6")
 IDXGIVkInteropFactory1 : public IDXGIVkInteropFactory {
     virtual HRESULT STDMETHODCALLTYPE GetGlobalHDRState(
@@ -176,6 +237,8 @@ __CRT_UUID_DECL(IDXGIVkInteropFactory1, 0x2a289dbd, 0x2d0a, 0x4a51, 0x89, 0xf7, 
 __CRT_UUID_DECL(IDXGIVkInteropAdapter, 0x3a6d8f2c, 0xb0e8, 0x4ab4, 0xb4, 0xdc, 0x4f, 0xd2, 0x48, 0x91, 0xbf, 0xa5);
 __CRT_UUID_DECL(ID3D11VkExtDevice, 0x8a6e3c42, 0xf74c, 0x45b7, 0x82, 0x65, 0xa2, 0x31, 0xb6, 0x77, 0xca, 0x17);
 __CRT_UUID_DECL(ID3D11VkExtDevice1, 0xcfcf64ef, 0x9586, 0x46d0, 0xbc, 0xa4, 0x97, 0xcf, 0x2c, 0xa6, 0x1b, 0x06);
+__CRT_UUID_DECL(ID3D11VkExtDevice2, 0x1d5c6a10, 0x9f4b, 0x4e0a, 0xb6, 0xa4, 0x2c, 0x8e, 0x13, 0xd7, 0x0f, 0x51);
 __CRT_UUID_DECL(ID3D11VkExtContext, 0xfd0bca13, 0x5cb6, 0x4c3a, 0x98, 0x7e, 0x47, 0x50, 0xde, 0x2c, 0xa7, 0x91);
 __CRT_UUID_DECL(ID3D11VkExtContext1, 0x874b09b2, 0xae0b, 0x41d8, 0x84, 0x76, 0x5f, 0x3b, 0x7a, 0x0e, 0x87, 0x9d);
+__CRT_UUID_DECL(ID3D11VkExtContext2, 0x7e2c1b9f, 0x4d38, 0x4a11, 0x9b, 0x6e, 0x0f, 0x5a, 0x8c, 0x42, 0xd3, 0xe7);
 #endif

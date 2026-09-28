@@ -27,6 +27,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtDevice1*>(&device))
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(S_OK);
+    ALLOW_CALL(device, QueryInterface(__uuidof(ID3D11VkExtDevice2), _))
+        .RETURN(E_NOINTERFACE);
     ALLOW_CALL(device, AddRef())
         .LR_SIDE_EFFECT(deviceRefCount++)
         .RETURN(deviceRefCount);
@@ -57,6 +59,8 @@ TEST_CASE("D3D11 methods succeed", "[.d3d11]") {
         .LR_SIDE_EFFECT(*_2 = static_cast<ID3D11VkExtContext1*>(&context))
         .LR_SIDE_EFFECT(contextRefCount++)
         .RETURN(S_OK);
+    ALLOW_CALL(context, QueryInterface(__uuidof(ID3D11VkExtContext2), _))
+        .RETURN(E_NOINTERFACE);
     ALLOW_CALL(context, AddRef())
         .LR_SIDE_EFFECT(contextRefCount++)
         .RETURN(contextRefCount);
