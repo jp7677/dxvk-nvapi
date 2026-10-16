@@ -49,7 +49,7 @@ jobs:
       shell: bash
       run: |
         meson setup build/32 . \
-          --cross-file ./build-win32-llvm.txt \
+          --cross-file ./build-llvm-win32.txt \
           --buildtype release \
           --prefix ~+/install \
           --bindir bin \
@@ -61,7 +61,7 @@ jobs:
       shell: bash
       run: |
         meson setup build/64 . \
-          --cross-file ./build-win64-llvm.txt \
+          --cross-file ./build-llvm-win64.txt \
           --buildtype release \
           --prefix ~+/install \
           --bindir bin \
@@ -73,7 +73,7 @@ jobs:
       shell: bash
       run: |
         meson setup build/layer layer \
-          --cross-file ./build-win64-llvm.txt \
+          --cross-file ./build-llvm-win64.txt \
           --buildtype release \
           --prefix ~+/install/bin/layer \
           --bindir '' \

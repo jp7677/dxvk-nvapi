@@ -130,10 +130,10 @@ function copy_extra {
 }
 
 prepare
-build_arch x32 build-win32
-build_arch x64 build-win64
+build_arch x32 build-mingw-win32
+build_arch x64 build-mingw-win64
 if [ $opt_build_arm64x -eq 1 ]; then
-  build_arch arm64x build-arm64x
+  build_arch arm64x build-mingw-arm64x
 fi
 cd "$SRC_DIR"
 if (( ! opt_disablelayer )); then
