@@ -178,7 +178,7 @@ The actual unit tests can be run with `nvapi64-tests.exe [@unit-tests]` to valid
 Producing a debug build and starting a debugging session with the test suite can be achieved with the following snippet:
 
 ```bash
-meson setup --reconfigure --cross-file "./build-win64.txt" --buildtype "debugoptimized" -Denable_tests=True buildDir
+meson setup --reconfigure --cross-file "./build-mingw-win64.txt" --buildtype "debugoptimized" -Denable_tests=True buildDir
 meson compile -C buildDir
 
 DXVK_LOG_LEVEL=none DXVK_NVAPI_LOG_LEVEL=none WINEDEBUG=-all WINEDLLOVERRIDES=nvapi64=n WINEPATH=buildDir/src winedbg --gdb buildDir/tests/nvapi64-tests.exe [@all]
