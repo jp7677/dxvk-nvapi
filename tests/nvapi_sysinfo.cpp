@@ -543,7 +543,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(info.systemVideoMemory == 1014);
             REQUIRE(info.sharedSystemMemory == 16382);
             REQUIRE(info.availableDedicatedVideoMemory == 8190);
-            REQUIRE(info.curAvailableDedicatedVideoMemory == 4096);
+            REQUIRE(info.curAvailableDedicatedVideoMemory == 3072);
         }
 
         SECTION("GetMemoryInfo (V3) returns OK") {
@@ -554,7 +554,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(info.systemVideoMemory == 1014);
             REQUIRE(info.sharedSystemMemory == 16382);
             REQUIRE(info.availableDedicatedVideoMemory == 8190);
-            REQUIRE(info.curAvailableDedicatedVideoMemory == 4096);
+            REQUIRE(info.curAvailableDedicatedVideoMemory == 3072);
             REQUIRE(info.dedicatedVideoMemoryEvictionsSize == 0);
             REQUIRE(info.dedicatedVideoMemoryEvictionCount == 0);
         }
@@ -570,7 +570,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             NV_DISPLAY_DRIVER_MEMORY_INFO info;
             info.version = NV_DISPLAY_DRIVER_MEMORY_INFO_VER;
             REQUIRE(NvAPI_GPU_GetMemoryInfo(handle, &info) == NVAPI_OK);
-            REQUIRE(info.curAvailableDedicatedVideoMemory == 8190);
+            REQUIRE(info.curAvailableDedicatedVideoMemory == 7166);
         }
 
         SECTION("GetMemoryInfo with unknown struct version returns incompatible-struct-version") {
@@ -615,7 +615,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             REQUIRE(info.systemVideoMemory == 1014 * 1024);
             REQUIRE(info.sharedSystemMemory == 16382 * 1024);
             REQUIRE(info.availableDedicatedVideoMemory == 8190 * 1024);
-            REQUIRE(info.curAvailableDedicatedVideoMemory == 4096 * 1024);
+            REQUIRE(info.curAvailableDedicatedVideoMemory == 3072 * 1024);
             REQUIRE(info.dedicatedVideoMemoryEvictionsSize == 0);
             REQUIRE(info.dedicatedVideoMemoryEvictionCount == 0);
             REQUIRE(info.dedicatedVideoMemoryPromotionsSize == 0);
@@ -633,7 +633,7 @@ TEST_CASE("Sysinfo methods succeed", "[.sysinfo]") {
             NV_GPU_MEMORY_INFO_EX_V1 info;
             info.version = NV_GPU_MEMORY_INFO_EX_VER_1;
             REQUIRE(NvAPI_GPU_GetMemoryInfoEx(handle, &info) == NVAPI_OK);
-            REQUIRE(info.curAvailableDedicatedVideoMemory == 8190 * 1024);
+            REQUIRE(info.curAvailableDedicatedVideoMemory == 7166 * 1024);
         }
 
         SECTION("GetMemoryInfoEx with unknown struct version returns incompatible-struct-version") {
