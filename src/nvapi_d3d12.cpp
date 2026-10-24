@@ -893,16 +893,35 @@ NVAPI_FUNCTION NvAPI_D3D12_SetCreatePipelineStateOptions(ID3D12Device5* pDevice,
     if (!device)
         return NoImplementation(n, alreadyLoggedNoImplementation);
 
-    if (!device->IsOpacityMicromapSupported())
-        return NotSupported(n);
+    static constexpr auto supportedNvapiFlags =
+        static_cast<NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS>(
+            NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT | NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_SPHERE_SUPPORT | NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_LSS_SUPPORT);
 
-    auto flags = D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_NONE;
-    static constexpr auto supportedNvapiFlags = NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT;
     if (pState->flags & ~supportedNvapiFlags)
         return NotSupported(n);
 
-    if (pState->flags & NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT)
-        flags = static_cast<D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG>(flags | D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT);
+    auto flags = D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_NONE;
+
+    if (pState->flags & NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT) {
+        if (device->IsOpacityMicromapSupported())
+            flags = static_cast<D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG>(flags | D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT);
+        else
+            return NotSupported(n);
+    }
+
+    if (pState->flags & NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_SPHERE_SUPPORT) {
+        if (device->IsSpheresSupported())
+            flags = static_cast<D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG>(flags | D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_SPHERE_SUPPORT);
+        else
+            return NotSupported(n);
+    }
+
+    if (pState->flags & NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_LSS_SUPPORT) {
+        if (device->IsLinearSweptSpheresSupported())
+            flags = static_cast<D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG>(flags | D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_LSS_SUPPORT);
+        else
+            return NotSupported(n);
+    }
 
     if (!device->SetCreatePipelineStateFlagsNVAPI(flags))
         return NotSupported(n);
