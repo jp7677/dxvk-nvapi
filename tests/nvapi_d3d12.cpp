@@ -2184,6 +2184,8 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         {
             NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS params{};
             params.version = NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS_VER;
+            ALLOW_CALL(device, SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_NONE))
+                .RETURN(false);
             REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
         {
