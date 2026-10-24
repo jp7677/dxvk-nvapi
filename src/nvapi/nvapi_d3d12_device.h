@@ -36,6 +36,8 @@ namespace dxvk {
 
         [[nodiscard]] static bool IsOpacityMicromapSupported(ID3D12Device* device);
         [[nodiscard]] bool IsOpacityMicromapSupported() const;
+        [[nodiscard]] bool IsSpheresSupported() const;
+        [[nodiscard]] bool IsLinearSweptSpheresSupported() const;
         [[nodiscard]] bool SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG pipeline_state_flags);
 
       private:
@@ -55,5 +57,7 @@ namespace dxvk {
         bool m_supportsNvxImageViewHandle = false;
         bool m_supportsGlobalPipelineStateFlags = false;
         bool m_supportsOpacityMicromap = false;
+        bool m_supportsSpheres = false;
+        bool m_supportsLinearSweptSpheres = false;
     };
 }
