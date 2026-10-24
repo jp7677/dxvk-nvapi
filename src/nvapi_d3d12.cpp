@@ -728,14 +728,20 @@ NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingCaps(ID3D12Device* pDevice, NVAPI_D3D12_
             if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_SPHERES_CAPS))
                 return InvalidArgument(n);
 
-            *static_cast<NVAPI_D3D12_RAYTRACING_SPHERES_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_SPHERES_CAP_NONE;
+            supported = device && env::isD3d12NvShaderExtnEnabled() && device->IsSpheresSupported();
+            *static_cast<NVAPI_D3D12_RAYTRACING_SPHERES_CAPS*>(pData) = supported
+                ? NVAPI_D3D12_RAYTRACING_SPHERES_CAP_STANDARD
+                : NVAPI_D3D12_RAYTRACING_SPHERES_CAP_NONE;
             break;
 
         case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_LINEAR_SWEPT_SPHERES:
             if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS))
                 return InvalidArgument(n);
 
-            *static_cast<NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_NONE;
+            supported = device && env::isD3d12NvShaderExtnEnabled() && device->IsLinearSweptSpheresSupported();
+            *static_cast<NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS*>(pData) = supported
+                ? NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_STANDARD
+                : NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_NONE;
             break;
 
         default:
