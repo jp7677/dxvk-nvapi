@@ -1,4 +1,5 @@
 #include "nvapi_as_convert.h"
+#include "../interfaces/vkd3d-proton_interfaces.h"
 #include "../util/util_log.h"
 
 namespace dxvk {
@@ -79,11 +80,11 @@ namespace dxvk {
                 log::info("Unsupported NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_DMM_TRIANGLES_EX");
                 return NVAPI_NOT_SUPPORTED;
             case NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_SPHERES_EX:
-                log::info("Unsupported NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_SPHERES_EX");
-                return NVAPI_NOT_SUPPORTED;
+                d3d12Type = D3D12_VK_EXT_RAYTRACING_GEOMETRY_TYPE_SPHERES_NVAPI;
+                return NVAPI_OK;
             case NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_LSS_EX:
-                log::info("Unsupported NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_LSS_EX");
-                return NVAPI_NOT_SUPPORTED;
+                d3d12Type = D3D12_VK_EXT_RAYTRACING_GEOMETRY_TYPE_LSS_NVAPI;
+                return NVAPI_OK;
             default:
                 log::info(str::format("Unsupported NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_ ", nvapiType));
                 return NVAPI_INVALID_ARGUMENT;
@@ -145,7 +146,7 @@ namespace dxvk {
 
     NvAPI_Status NvapiAsConverter::Convert(D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& d3d12Desc,
         const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX& nvapiDesc,
-        bool supportsOmm) {
+        bool supportsOmm, bool supportsSpheres, bool supportsLinearSweptSpheres) {
         memset(&d3d12Desc, 0x00, sizeof(d3d12Desc));
 
         d3d12Desc.Type = nvapiDesc.type;
@@ -220,6 +221,40 @@ namespace dxvk {
                             nvapiGeomDesc.ommTriangles.ommAttachment.opacityMicromapArray;
 
                         break;
+
+                    case NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_SPHERES_EX: {
+                        if (!supportsSpheres) {
+                            log::info("SPHERES geometry passed to acceleration structure build when not supported");
+                            return NVAPI_NOT_SUPPORTED;
+                        }
+                        if (usesStride && nvapiDesc.geometryDescStrideInBytes < offsetof(NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX, spheres) + sizeof(NVAPI_D3D12_RAYTRACING_GEOMETRY_SPHERES_DESC)) {
+                            log::info(str::format("geometryDescStrideInBytes ", nvapiDesc.geometryDescStrideInBytes,
+                                " too small for SPHERES geometry."));
+                            return NVAPI_INVALID_ARGUMENT;
+                        }
+
+                        // vkd3d-proton API expects the union to be a pointer directly to NVAPI-compatible desc struct
+                        const auto* desc = &nvapiGeomDesc.spheres;
+                        memcpy(&d3d12GeomDesc.Triangles, &desc, sizeof(void*));
+                        break;
+                    }
+
+                    case NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_LSS_EX: {
+                        if (!supportsLinearSweptSpheres) {
+                            log::info("LSS geometry passed to acceleration structure build when not supported");
+                            return NVAPI_NOT_SUPPORTED;
+                        }
+                        if (usesStride && nvapiDesc.geometryDescStrideInBytes < offsetof(NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX, lss) + sizeof(NVAPI_D3D12_RAYTRACING_GEOMETRY_LSS_DESC)) {
+                            log::info(str::format("geometryDescStrideInBytes ", nvapiDesc.geometryDescStrideInBytes,
+                                " too small for LSS geometry."));
+                            return NVAPI_INVALID_ARGUMENT;
+                        }
+
+                        // See above
+                        const auto* desc = &nvapiGeomDesc.lss;
+                        memcpy(&d3d12GeomDesc.Triangles, &desc, sizeof(void*));
+                        break;
+                    }
 
                     default:
                         log::info(str::format("Unsupported geometry type ", nvapiGeomDesc.type));

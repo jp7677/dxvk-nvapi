@@ -61,8 +61,11 @@ namespace dxvk {
         if (SUCCEEDED(vkd3dCommandList->QueryInterface(IID_PPV_ARGS(&d3d12CommandList)))) {
             Com<ID3D12Device> device;
             if (SUCCEEDED(d3d12CommandList->GetDevice(IID_PPV_ARGS(&device)))) {
-                if (auto nvapiDevice = NvapiD3d12Device::GetOrCreate(device.ptr()))
+                if (auto nvapiDevice = NvapiD3d12Device::GetOrCreate(device.ptr())) {
                     m_supportsOpacityMicromap = nvapiDevice->IsOpacityMicromapSupported();
+                    m_supportsSpheres = nvapiDevice->IsSpheresSupported();
+                    m_supportsLinearSweptSpheres = nvapiDevice->IsLinearSweptSpheresSupported();
+                }
             }
         }
     }

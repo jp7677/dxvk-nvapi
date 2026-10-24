@@ -770,7 +770,7 @@ NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D
     /* Cannot cache the NvapiAsConverter per device, as device doesn't have to be thread safe, and NvapiAsConverter
      * is destructive */
     NvapiAsConverter asConverter;
-    switch (asConverter.Convert(inputs, *pParams->pDesc, supportsOmm)) {
+    switch (asConverter.Convert(inputs, *pParams->pDesc, supportsOmm, device->IsSpheresSupported(), device->IsLinearSweptSpheresSupported())) {
         case NVAPI_OK:
             break;
         case NVAPI_INVALID_ARGUMENT:
@@ -813,7 +813,7 @@ NVAPI_FUNCTION NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(ID3D12Graphics
     buildDesc.SourceAccelerationStructureData = pParams->pDesc->sourceAccelerationStructureData;
     buildDesc.ScratchAccelerationStructureData = pParams->pDesc->scratchAccelerationStructureData;
     buildDesc.DestAccelerationStructureData = pParams->pDesc->destAccelerationStructureData;
-    switch (commandList->GetAsConverter().Convert(buildDesc.Inputs, pParams->pDesc->inputs, supportsOmm)) {
+    switch (commandList->GetAsConverter().Convert(buildDesc.Inputs, pParams->pDesc->inputs, supportsOmm, commandList->IsSpheresSupported(), commandList->IsLinearSweptSpheresSupported())) {
         case NVAPI_OK:
             break;
         case NVAPI_INVALID_ARGUMENT:
