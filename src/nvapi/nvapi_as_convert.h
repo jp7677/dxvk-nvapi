@@ -26,7 +26,7 @@ namespace dxvk {
 
         [[nodiscard]] NvAPI_Status Convert(D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& d3d12Desc,
             const NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX& nvapiDesc,
-            bool supportsOmm);
+            bool supportsOmm, bool supportsSpheres, bool supportsLinearSweptSpheres);
 
       private:
         static constexpr size_t StackReserve = 16;

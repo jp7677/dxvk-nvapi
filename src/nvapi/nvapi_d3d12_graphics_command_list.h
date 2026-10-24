@@ -16,6 +16,9 @@ namespace dxvk {
         [[nodiscard]] HRESULT LaunchCubinShader(NVDX_ObjectHandle shader, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const void* params, NvU32 paramSize) const;
         [[nodiscard]] bool IsOpacityMicromapSupported() const { return m_supportsOpacityMicromap; }
 
+        [[nodiscard]] bool IsSpheresSupported() const { return m_supportsSpheres; }
+        [[nodiscard]] bool IsLinearSweptSpheresSupported() const { return m_supportsLinearSweptSpheres; }
+
         NvapiAsConverter& GetAsConverter() { return m_asConverter; }
 
         [[nodiscard]] bool VerifyOpacityMicromapArrayNVAPI(D3D12_GPU_VIRTUAL_ADDRESS opacity_micromap_array) const;
@@ -28,6 +31,8 @@ namespace dxvk {
         ID3D12GraphicsCommandListExt2* m_vkd3dGraphicsCommandList{};
         bool m_supportsCubinSMem = false;
         bool m_supportsOpacityMicromap = false;
+        bool m_supportsSpheres = false;
+        bool m_supportsLinearSweptSpheres = false;
 
         // Reused across calls so the per-build geometry-desc scratch settles at
         // its max-N and stops hitting the heap. Not thread-safe.

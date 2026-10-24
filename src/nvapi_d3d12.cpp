@@ -765,12 +765,14 @@ NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D
         return NoImplementation(n, alreadyLoggedNoImplementation);
 
     const bool supportsOmm = device->IsOpacityMicromapSupported();
+    const bool supportsSpheres = device->IsSpheresSupported();
+    const bool supportsLss = device->IsLinearSweptSpheresSupported();
 
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs;
     /* Cannot cache the NvapiAsConverter per device, as device doesn't have to be thread safe, and NvapiAsConverter
      * is destructive */
     NvapiAsConverter asConverter;
-    switch (asConverter.Convert(inputs, *pParams->pDesc, supportsOmm)) {
+    switch (asConverter.Convert(inputs, *pParams->pDesc, supportsOmm, supportsSpheres, supportsLss)) {
         case NVAPI_OK:
             break;
         case NVAPI_INVALID_ARGUMENT:
@@ -808,12 +810,14 @@ NVAPI_FUNCTION NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(ID3D12Graphics
         return NoImplementation(n, alreadyLoggedNoImplementation);
 
     const bool supportsOmm = commandList->IsOpacityMicromapSupported();
+    const bool supportsSpheres = commandList->IsSpheresSupported();
+    const bool supportsLss = commandList->IsLinearSweptSpheresSupported();
 
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc;
     buildDesc.SourceAccelerationStructureData = pParams->pDesc->sourceAccelerationStructureData;
     buildDesc.ScratchAccelerationStructureData = pParams->pDesc->scratchAccelerationStructureData;
     buildDesc.DestAccelerationStructureData = pParams->pDesc->destAccelerationStructureData;
-    switch (commandList->GetAsConverter().Convert(buildDesc.Inputs, pParams->pDesc->inputs, supportsOmm)) {
+    switch (commandList->GetAsConverter().Convert(buildDesc.Inputs, pParams->pDesc->inputs, supportsOmm, supportsSpheres, supportsLss)) {
         case NVAPI_OK:
             break;
         case NVAPI_INVALID_ARGUMENT:
