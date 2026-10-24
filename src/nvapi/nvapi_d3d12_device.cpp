@@ -1,5 +1,6 @@
 #include "nvapi_d3d12_device.h"
 #include "../util/util_log.h"
+#include "nvShaderExtnEnums.h"
 
 namespace dxvk {
     std::atomic<LONGLONG> NvapiD3d12Device::m_resetTimestamp;
@@ -109,6 +110,9 @@ namespace dxvk {
             m_supportsCubin64bit = m_vkd3dDevice->SupportsCubin64bit();
         if (deviceExtTier >= 4)
             m_supportsNvShaderExtn = true;
+
+        m_supportsSpheres = IsNvShaderExtnOpCodeSupported(NV_EXTN_OP_RT_SPHERE_OBJECT_POSITION_AND_RADIUS);
+        m_supportsLinearSweptSpheres = IsNvShaderExtnOpCodeSupported(NV_EXTN_OP_RT_LSS_OBJECT_POSITIONS_AND_RADII);
     }
 
     HRESULT NvapiD3d12Device::CreateCubinComputeShaderWithName(const void* cubinData, NvU32 cubinSize, NvU32 blockX, NvU32 blockY, NvU32 blockZ, const char* shaderName, NVDX_ObjectHandle* pShader) {
@@ -213,6 +217,14 @@ namespace dxvk {
 
     bool NvapiD3d12Device::IsOpacityMicromapSupported() const {
         return m_vkd3dDevice && m_supportsOpacityMicromap;
+    }
+
+    bool NvapiD3d12Device::IsSpheresSupported() const {
+        return m_supportsSpheres;
+    }
+
+    bool NvapiD3d12Device::IsLinearSweptSpheresSupported() const {
+        return m_supportsLinearSweptSpheres;
     }
 
     bool NvapiD3d12Device::IsOpacityMicromapSupported(ID3D12Device* d3dDevice) {
