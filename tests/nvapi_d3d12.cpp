@@ -74,6 +74,10 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .RETURN(false);
     ALLOW_CALL(device, SupportsCubin64bit())
         .RETURN(true);
+    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_SPHERE_OBJECT_POSITION_AND_RADIUS)))
+        .RETURN(false);
+    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_LSS_OBJECT_POSITIONS_AND_RADII)))
+        .RETURN(false);
 
     ALLOW_CALL(commandList, QueryInterface(__uuidof(IUnknown), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<IUnknown*>(static_cast<ID3D12GraphicsCommandList1*>(&commandList)))
@@ -1127,6 +1131,10 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         .RETURN(false);
     ALLOW_CALL(device, SupportsCubin64bit())
         .RETURN(true);
+    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_SPHERE_OBJECT_POSITION_AND_RADIUS)))
+        .RETURN(false);
+    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_LSS_OBJECT_POSITIONS_AND_RADII)))
+        .RETURN(false);
 
     ALLOW_CALL(commandList, QueryInterface(__uuidof(IUnknown), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<IUnknown*>(static_cast<ID3D12GraphicsCommandList1*>(&commandList)))
