@@ -413,6 +413,11 @@ NVAPI_FUNCTION NvAPI_GPU_GetMemoryInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_DISP
     auto memoryInfo = adapter->GetMemoryInfo();
     auto memoryBudgetInfo = adapter->GetCurrentMemoryBudgetInfo();
 
+    // Ensure that currently available memory is lower than dedicated memory, relevant on 32Bit platforms because DXVK limits dedicated video on those
+    auto minMemoryBudget = std::min(memoryBudgetInfo.Budget, memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory);
+    // dont just std::max since minMemoryBudget is unsigned
+    auto clampedCurAvailableDedicatedVideoMemory = memoryBudgetInfo.CurrentUsage > minMemoryBudget ? 0 : minMemoryBudget - memoryBudgetInfo.CurrentUsage;
+
     switch (pMemoryInfo->version) {
         case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_1: {
             auto pMemoryInfoV1 = reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO_V1*>(pMemoryInfo);
@@ -428,8 +433,7 @@ NVAPI_FUNCTION NvAPI_GPU_GetMemoryInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_DISP
             pMemoryInfoV2->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
             pMemoryInfoV2->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
             pMemoryInfoV2->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
-            // Ensure that currently available memory is lower than dedicated memory, relevant on 32Bit platforms because DXVK limits dedicated video on those
-            pMemoryInfoV2->curAvailableDedicatedVideoMemory = (std::min(memoryBudgetInfo.Budget, memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) - memoryBudgetInfo.CurrentUsage) / 1024;
+            pMemoryInfoV2->curAvailableDedicatedVideoMemory = clampedCurAvailableDedicatedVideoMemory / 1024;
             break;
         }
         case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3: {
@@ -438,7 +442,7 @@ NVAPI_FUNCTION NvAPI_GPU_GetMemoryInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_DISP
             pMemoryInfoV3->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
             pMemoryInfoV3->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
             pMemoryInfoV3->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
-            pMemoryInfoV3->curAvailableDedicatedVideoMemory = (std::min(memoryBudgetInfo.Budget, memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) - memoryBudgetInfo.CurrentUsage) / 1024;
+            pMemoryInfoV3->curAvailableDedicatedVideoMemory = clampedCurAvailableDedicatedVideoMemory / 1024;
             pMemoryInfoV3->dedicatedVideoMemoryEvictionsSize = 0;
             pMemoryInfoV3->dedicatedVideoMemoryEvictionCount = 0;
             break;
@@ -470,6 +474,11 @@ NVAPI_FUNCTION NvAPI_GPU_GetMemoryInfoEx(NvPhysicalGpuHandle hPhysicalGpu, NV_GP
     auto memoryInfo = adapter->GetMemoryInfo();
     auto memoryBudgetInfo = adapter->GetCurrentMemoryBudgetInfo();
 
+    // See comment in NvAPI_GPU_GetMemoryInfo
+    auto minMemoryBudget = std::min(memoryBudgetInfo.Budget, memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory);
+    // dont just std::max since minMemoryBudget is unsigned
+    auto clampedCurAvailableDedicatedVideoMemory = memoryBudgetInfo.CurrentUsage > minMemoryBudget ? 0 : minMemoryBudget - memoryBudgetInfo.CurrentUsage;
+
     switch (pMemoryInfo->version) {
         case NV_GPU_MEMORY_INFO_EX_VER_1: {
             auto pMemoryInfoV1 = reinterpret_cast<NV_GPU_MEMORY_INFO_EX*>(pMemoryInfo);
@@ -478,7 +487,7 @@ NVAPI_FUNCTION NvAPI_GPU_GetMemoryInfoEx(NvPhysicalGpuHandle hPhysicalGpu, NV_GP
             pMemoryInfoV1->sharedSystemMemory = memoryInfo.SharedSystemMemory;
             pMemoryInfoV1->availableDedicatedVideoMemory = memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory;
             // See comment in NvAPI_GPU_GetMemoryInfo
-            pMemoryInfoV1->curAvailableDedicatedVideoMemory = std::min(memoryBudgetInfo.Budget, memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) - memoryBudgetInfo.CurrentUsage;
+            pMemoryInfoV1->curAvailableDedicatedVideoMemory = clampedCurAvailableDedicatedVideoMemory;
             pMemoryInfoV1->dedicatedVideoMemoryEvictionsSize = 0;
             pMemoryInfoV1->dedicatedVideoMemoryEvictionCount = 0;
             pMemoryInfoV1->dedicatedVideoMemoryPromotionsSize = 0;
