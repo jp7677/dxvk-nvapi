@@ -4,7 +4,7 @@ project('dxvk-nvapi',
     'cpp_std=c++20',
     'warning_level=2'
   ],
-  version : 'v0.9.2',
+  version : 'v0.9.3',
   meson_version : '>= 0.58.0')
 
 cpp = meson.get_compiler('cpp')

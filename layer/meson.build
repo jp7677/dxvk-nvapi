@@ -2,7 +2,7 @@ project(
     'dxvk-nvapi-vkreflex-layer',
     ['cpp'],
     default_options: ['cpp_std=c++20'],
-    version: 'v0.9.2',
+    version: 'v0.9.3',
     meson_version: '>= 1.0',
 )
 
