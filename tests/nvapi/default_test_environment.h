@@ -10,6 +10,7 @@ using namespace trompeloeil;
 using namespace dxvk;
 
 class DefaultTestEnvironment {
+
   public:
     DefaultTestEnvironment();
 
