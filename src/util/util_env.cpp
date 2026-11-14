@@ -55,17 +55,17 @@ namespace dxvk::env {
         // Get file path of caller DLL
         char modulePath[MAX_PATH];
         HMODULE hModule = nullptr;
-        if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, static_cast<const char*>(pReturnAddress), &hModule)) {
+        if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, static_cast<const char*>(pReturnAddress), &hModule))
             // Failed to get the path, won't try to WAR.
             return false;
-        }
+
         uint32_t pathLen = GetModuleFileName(hModule, modulePath, MAX_PATH);
 
         // Check if module name is either nvngx_dlss.dll, or matches the OTA
         // hashing pattern app_???????.bin
-        if (_stricmp("nvngx_dlss.dll", modulePath + pathLen - 14) == 0) {
+        if (pathLen >= 14 && _stricmp("nvngx_dlss.dll", modulePath + pathLen - 14) == 0) {
             // nvngx_dlss.dll detected
-        } else if (_strnicmp("app_", modulePath + pathLen - 15, 4) == 0 && _stricmp(".bin", modulePath + pathLen - 4) == 0) {
+        } else if (pathLen >= 15 && _strnicmp("app_", modulePath + pathLen - 15, 4) == 0 && _stricmp(".bin", modulePath + pathLen - 4) == 0) {
             // app_???????.bin matches OTA pattern
         } else {
             // Filename does not match known patterns
@@ -74,50 +74,40 @@ namespace dxvk::env {
 
         // Get the version metadata from the DLL
         uint32_t infoSize = GetFileVersionInfoSizeA(modulePath, nullptr);
-        if (infoSize == 0) {
+        if (infoSize == 0)
             return false;
-        }
 
-        auto* verInfo = new uint8_t[infoSize];
-
-        if (!GetFileVersionInfoA(modulePath, 0, infoSize, verInfo)) {
-            delete[] verInfo;
+        auto verInfo = std::vector<uint8_t>(infoSize);
+        if (!GetFileVersionInfoA(modulePath, 0, infoSize, verInfo.data()))
             return false;
-        }
 
         VS_FIXEDFILEINFO* fixedInfo = nullptr;
         uint32_t fixedSize = 0;
 
-        VerQueryValueA(verInfo, "\\", reinterpret_cast<void**>(&fixedInfo), &fixedSize);
+        if (!VerQueryValueA(verInfo.data(), "\\", reinterpret_cast<void**>(&fixedInfo), &fixedSize))
+            return false;
 
         // Double-check that we are reading a VS_FIXEDFILEINFO structure
-        if (fixedInfo->dwSignature != 0xFEEF04BD) {
-            delete[] verInfo;
+        if (fixedInfo->dwSignature != 0xFEEF04BD)
             return false;
-        }
 
         // Only DLSS 2.x versions prior to 2.4 are affected by this bug
         uint32_t majorVersion = (fixedInfo->dwFileVersionMS & 0xFFFF0000) >> 16;
         uint32_t minorVersion = fixedInfo->dwFileVersionMS & 0x0000FFFF;
-        if (majorVersion != 2 || minorVersion >= 4) {
-            delete[] verInfo;
+        if (majorVersion != 2 || minorVersion >= 4)
             return false;
-        }
 
-        // Lastly compare the product name to be absolutely certain we were
-        // called by DLSS
+        // Lastly compare the product name to be absolutely certain we were called by DLSS
         char* productName;
         uint32_t productNameSize;
-        VerQueryValueA(verInfo, R"(\StringFileInfo\040904E4\ProductName)", reinterpret_cast<void**>(&productName), &productNameSize);
-
-        if (strcmp(productName, "NVIDIA Deep Learning SuperSampling") == 0) {
-            // A DLSS version between 2.0 and 2.4 was detected, applying WAR
-            delete[] verInfo;
-            return true;
-        } else {
-            delete[] verInfo;
+        if (!VerQueryValueA(verInfo.data(), R"(\StringFileInfo\040904E4\ProductName)", reinterpret_cast<void**>(&productName), &productNameSize))
             return false;
-        }
+
+        if (strcmp(productName, "NVIDIA Deep Learning SuperSampling") != 0)
+            return false;
+
+        // A DLSS version between 2.0 and 2.4 was detected, applying work around
+        return true;
     }
 
     bool needsAmpereSpoofing(NV_GPU_ARCHITECTURE_ID architectureId, void* pReturnAddress) {
