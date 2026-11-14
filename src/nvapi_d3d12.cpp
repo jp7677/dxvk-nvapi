@@ -728,14 +728,20 @@ NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingCaps(ID3D12Device* pDevice, NVAPI_D3D12_
             if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_SPHERES_CAPS))
                 return InvalidArgument(n);
 
-            *static_cast<NVAPI_D3D12_RAYTRACING_SPHERES_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_SPHERES_CAP_NONE;
+            supported = device && env::isD3d12NvShaderExtnEnabled() && device->IsSpheresSupported();
+            *static_cast<NVAPI_D3D12_RAYTRACING_SPHERES_CAPS*>(pData) = supported
+                ? NVAPI_D3D12_RAYTRACING_SPHERES_CAP_STANDARD
+                : NVAPI_D3D12_RAYTRACING_SPHERES_CAP_NONE;
             break;
 
         case NVAPI_D3D12_RAYTRACING_CAPS_TYPE_LINEAR_SWEPT_SPHERES:
             if (dataSize != sizeof(NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS))
                 return InvalidArgument(n);
 
-            *static_cast<NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS*>(pData) = NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_NONE;
+            supported = device && env::isD3d12NvShaderExtnEnabled() && device->IsLinearSweptSpheresSupported();
+            *static_cast<NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS*>(pData) = supported
+                ? NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_STANDARD
+                : NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_NONE;
             break;
 
         default:
@@ -765,12 +771,14 @@ NVAPI_FUNCTION NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(ID3D
         return NoImplementation(n, alreadyLoggedNoImplementation);
 
     const bool supportsOmm = device->IsOpacityMicromapSupported();
+    const bool supportsSpheres = device->IsSpheresSupported();
+    const bool supportsLss = device->IsLinearSweptSpheresSupported();
 
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs;
     /* Cannot cache the NvapiAsConverter per device, as device doesn't have to be thread safe, and NvapiAsConverter
      * is destructive */
     NvapiAsConverter asConverter;
-    switch (asConverter.Convert(inputs, *pParams->pDesc, supportsOmm)) {
+    switch (asConverter.Convert(inputs, *pParams->pDesc, supportsOmm, supportsSpheres, supportsLss)) {
         case NVAPI_OK:
             break;
         case NVAPI_INVALID_ARGUMENT:
@@ -808,12 +816,14 @@ NVAPI_FUNCTION NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(ID3D12Graphics
         return NoImplementation(n, alreadyLoggedNoImplementation);
 
     const bool supportsOmm = commandList->IsOpacityMicromapSupported();
+    const bool supportsSpheres = commandList->IsSpheresSupported();
+    const bool supportsLss = commandList->IsLinearSweptSpheresSupported();
 
     D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc;
     buildDesc.SourceAccelerationStructureData = pParams->pDesc->sourceAccelerationStructureData;
     buildDesc.ScratchAccelerationStructureData = pParams->pDesc->scratchAccelerationStructureData;
     buildDesc.DestAccelerationStructureData = pParams->pDesc->destAccelerationStructureData;
-    switch (commandList->GetAsConverter().Convert(buildDesc.Inputs, pParams->pDesc->inputs, supportsOmm)) {
+    switch (commandList->GetAsConverter().Convert(buildDesc.Inputs, pParams->pDesc->inputs, supportsOmm, supportsSpheres, supportsLss)) {
         case NVAPI_OK:
             break;
         case NVAPI_INVALID_ARGUMENT:
@@ -893,16 +903,35 @@ NVAPI_FUNCTION NvAPI_D3D12_SetCreatePipelineStateOptions(ID3D12Device5* pDevice,
     if (!device)
         return NoImplementation(n, alreadyLoggedNoImplementation);
 
-    if (!device->IsOpacityMicromapSupported())
-        return NotSupported(n);
+    static constexpr auto supportedNvapiFlags =
+        static_cast<NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS>(
+            NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT | NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_SPHERE_SUPPORT | NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_LSS_SUPPORT);
 
-    auto flags = D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_NONE;
-    static constexpr auto supportedNvapiFlags = NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT;
     if (pState->flags & ~supportedNvapiFlags)
         return NotSupported(n);
 
-    if (pState->flags & NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT)
-        flags = static_cast<D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG>(flags | D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT);
+    auto flags = D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_NONE;
+
+    if (pState->flags & NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT) {
+        if (device->IsOpacityMicromapSupported())
+            flags = static_cast<D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG>(flags | D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT);
+        else
+            return NotSupported(n);
+    }
+
+    if (pState->flags & NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_SPHERE_SUPPORT) {
+        if (device->IsSpheresSupported())
+            flags = static_cast<D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG>(flags | D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_SPHERE_SUPPORT);
+        else
+            return NotSupported(n);
+    }
+
+    if (pState->flags & NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_LSS_SUPPORT) {
+        if (device->IsLinearSweptSpheresSupported())
+            flags = static_cast<D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAG>(flags | D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_LSS_SUPPORT);
+        else
+            return NotSupported(n);
+    }
 
     if (!device->SetCreatePipelineStateFlagsNVAPI(flags))
         return NotSupported(n);

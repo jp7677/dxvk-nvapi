@@ -74,6 +74,10 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
         .RETURN(false);
     ALLOW_CALL(device, SupportsCubin64bit())
         .RETURN(true);
+    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_SPHERE_OBJECT_POSITION_AND_RADIUS)))
+        .RETURN(false);
+    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_LSS_OBJECT_POSITIONS_AND_RADII)))
+        .RETURN(false);
 
     ALLOW_CALL(commandList, QueryInterface(__uuidof(IUnknown), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<IUnknown*>(static_cast<ID3D12GraphicsCommandList1*>(&commandList)))
@@ -1127,6 +1131,10 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         .RETURN(false);
     ALLOW_CALL(device, SupportsCubin64bit())
         .RETURN(true);
+    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_SPHERE_OBJECT_POSITION_AND_RADIUS)))
+        .RETURN(false);
+    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_LSS_OBJECT_POSITIONS_AND_RADII)))
+        .RETURN(false);
 
     ALLOW_CALL(commandList, QueryInterface(__uuidof(IUnknown), _))
         .LR_SIDE_EFFECT(*_2 = static_cast<IUnknown*>(static_cast<ID3D12GraphicsCommandList1*>(&commandList)))
@@ -2176,6 +2184,8 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         {
             NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS params{};
             params.version = NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS_VER;
+            ALLOW_CALL(device, SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_NONE))
+                .RETURN(false);
             REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) != NVAPI_INCOMPATIBLE_STRUCT_VERSION);
         }
         {
