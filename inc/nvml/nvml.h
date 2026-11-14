@@ -698,16 +698,16 @@ typedef enum nvmlPcieUtilCounter_enum
  */
 typedef enum nvmlValueType_enum
 {
-    NVML_VALUE_TYPE_DOUBLE = 0,
-    NVML_VALUE_TYPE_UNSIGNED_INT = 1,
-    NVML_VALUE_TYPE_UNSIGNED_LONG = 2,
-    NVML_VALUE_TYPE_UNSIGNED_LONG_LONG = 3,
-    NVML_VALUE_TYPE_SIGNED_LONG_LONG = 4,
-    NVML_VALUE_TYPE_SIGNED_INT = 5,
-    NVML_VALUE_TYPE_UNSIGNED_SHORT = 6,
+    NVML_VALUE_TYPE_DOUBLE = 0,                  //!< Double-precision floating-point value
+    NVML_VALUE_TYPE_UNSIGNED_INT = 1,            //!< Unsigned 32-bit integer value
+    NVML_VALUE_TYPE_UNSIGNED_LONG = 2,           //!< Unsigned long integer value
+    NVML_VALUE_TYPE_UNSIGNED_LONG_LONG = 3,      //!< Unsigned 64-bit integer value
+    NVML_VALUE_TYPE_SIGNED_LONG_LONG = 4,        //!< Signed 64-bit integer value
+    NVML_VALUE_TYPE_SIGNED_INT = 5,              //!< Signed 32-bit integer value
+    NVML_VALUE_TYPE_UNSIGNED_SHORT = 6,          //!< Unsigned 16-bit integer value
 
     // Keep this last
-    NVML_VALUE_TYPE_COUNT
+    NVML_VALUE_TYPE_COUNT                        //!< Maximum value above +1
 }nvmlValueType_t;
 
 /**
@@ -1080,6 +1080,13 @@ typedef struct
     unsigned int timeRun;  //!< [out] Cumulative number of seconds the GPU has had the driver loaded
 } nvmlBBXTimeData_v1_t;
 
+/**
+ * GPU Uptime
+ */
+typedef struct {
+    unsigned int uptime; //!< [out] Number of seconds the GPU has been up since it was initialized by the driver
+} nvmlGpuUptime_v1_t;
+
 /** @} */
 
 /***************************************************************************************************/
@@ -1138,8 +1145,8 @@ typedef enum nvmlBrandType_enum
     NVML_BRAND_GEFORCE_RTX          = 15,  // Unused
     NVML_BRAND_TITAN_RTX            = 16,  // Unused
     NVML_BRAND_NVIDIA_DLA           = 17,  // Deprecated NVIDIA Deep Learning Accelerator
-    NVML_BRAND_NVIDIA_VGAMEDEV      = 18,  // NVIDIA RTX Virtual Game Dev
     NVML_BRAND_NVIDIA_NPU           = 19,  // NVIDIA NPU
+    NVML_BRAND_NVIDIA_VGAMEDEV      = 18,  // NVIDIA RTX Virtual Game Dev
     // Keep this last
     NVML_BRAND_COUNT                = 20,
 } nvmlBrandType_t;
@@ -1223,7 +1230,9 @@ typedef enum nvmlComputeMode_enum
  */
 typedef struct nvmlClkMonFaultInfo_struct {
     /**
-     * The Domain which faulted
+     * The clock domain that faulted, encoded as a legacy 1-hot bitmask with
+     * one bit set. The bit is set as per the clock domain identifier. For example,
+     * a value of 0x4 (bit index 2) corresponds to clock domain identifier 2.
      */
     unsigned int   clkApiDomain;
 
@@ -1527,7 +1536,7 @@ typedef enum nvmlReturn_enum
     NVML_ERROR_CORRUPTED_INFOROM = 14,         //!< infoROM is corrupted
     NVML_ERROR_GPU_IS_LOST = 15,               //!< The GPU has fallen off the bus or has otherwise become inaccessible
     NVML_ERROR_RESET_REQUIRED = 16,            //!< The GPU requires a reset before it can be used again
-    NVML_ERROR_OPERATING_SYSTEM = 17,          //!< The GPU control device has been blocked by the operating system/cgroups
+    NVML_ERROR_OPERATING_SYSTEM = 17,          //!< A generic operating system error occurred
     NVML_ERROR_LIB_RM_VERSION_MISMATCH = 18,   //!< RM detects a driver/library version mismatch
     NVML_ERROR_IN_USE = 19,                    //!< An operation cannot be performed because the GPU is currently in use
     NVML_ERROR_MEMORY = 20,                    //!< Insufficient memory
@@ -1689,11 +1698,11 @@ typedef struct
 typedef nvmlPlatformInfo_v2_t nvmlPlatformInfo_t;
 #define nvmlPlatformInfo_v2 NVML_STRUCT_VERSION(PlatformInfo, 2) //!< Version macro for \a nvmlPlatformInfo_v2_t
 
-/**
- * Structure to store hostname information
- */
 #define NVML_DEVICE_HOSTNAME_BUFFER_SIZE 64 //!< Buffer size for hostname string.
 
+/**
+ * Stores the hostname string assigned to a GPU device.
+ */
 typedef struct
 {
     char value[NVML_DEVICE_HOSTNAME_BUFFER_SIZE];   //!< null-terminated hostname string
@@ -1741,6 +1750,9 @@ typedef struct nvmlRemappedRowsInfo_v2_t
 #define NVML_RUSD_POLL_PROC_UTIL   0x80                  //!< Enable RUSD polling on process utilization group
 #define NVML_RUSD_POLL_ALL         0xFFFFFFFFFFFFFFFF    //!< Enable RUSD polling on all groups
 
+/**
+ * Stores RUSD polling configuration for a GPU.
+ */
 typedef struct
 {
     unsigned int version;
@@ -1887,6 +1899,9 @@ typedef struct
 
 #define nvmlPowerValue_v2 NVML_STRUCT_VERSION(PowerValue, 2) //!< Version macro for \a nvmlPowerValue_v2_t
 
+/**
+ * Stores Adaptive TGP Mode state and telemetry for a GPU.
+ */
 typedef struct
 {
     nvmlEnableState_t inBandEnableRequest;    //!< [out] In-band enable requested (NVML_FEATURE_ENABLED) or not requested (NVML_FEATURE_DISABLED)
@@ -2009,6 +2024,7 @@ typedef enum nvmlDeviceVgpuCapability_enum
     NVML_DEVICE_VGPU_CAP_HOMOGENEOUS_PLACEMENTS           = 9,    //!< Query whether the GPU supports reporting of placements of timesliced vGPU profiles with identical framebuffer sizes
     NVML_DEVICE_VGPU_CAP_MIG_TIMESLICING_SUPPORTED        = 10,   //!< Query whether the GPU supports timesliced vGPU on MIG
     NVML_DEVICE_VGPU_CAP_MIG_TIMESLICING_ENABLED          = 11,   //!< Set/Get MIG timesliced mode reporting, without impacting the underlying functionality
+    NVML_DEVICE_VGPU_CAP_UVM_STUN                         = 12,   //!< Query whether the GPU supports UVM stun
     // Keep this last
     NVML_DEVICE_VGPU_CAP_COUNT
 } nvmlDeviceVgpuCapability_t;
@@ -3194,7 +3210,11 @@ typedef struct
 #define NVML_FI_DEV_BANK_REMAPPER_HISTOGRAM_MAX     305 //!< Number of groups with full bank remap availability.
 #define NVML_FI_DEV_BANK_REMAPPER_HISTOGRAM_NONE    306 //!< Number of groups with no spare bankremap availability.
 #define NVML_FI_DEV_PENDING_BANK_REMAPPING          307 //!< If any banks are pending remapping. 1=yes 0=no
-#define NVML_FI_MAX                                 308 //!< One greater than the largest field ID defined above
+
+#define NVML_FI_DEV_GPU_TEMP                        308 //!< Current GPU temperature in degrees C with sub-degree precision
+#define NVML_FI_PWR_SMOOTHING_LIMITED_TIME          309 //!< Running total of time the GPU has been limited by power smoothing in ns
+
+#define NVML_FI_MAX                                 310 //!< One greater than the largest field ID defined above
 
 /**
  * NVML_FI_DEV_MCLK_SWITCH_TYPE enumerations
@@ -4023,17 +4043,21 @@ typedef enum nvmlPcieLinkState_enum
 /**
  * Confidential Compute CPU Capabilities values
  */
-#define NVML_CC_SYSTEM_CPU_CAPS_NONE         0 //!< No confidential compute CPU capability.
-#define NVML_CC_SYSTEM_CPU_CAPS_AMD_SEV      1 //!< AMD SEV CPU capability.
-#define NVML_CC_SYSTEM_CPU_CAPS_INTEL_TDX    2 //!< Intel TDX CPU capability.
-#define NVML_CC_SYSTEM_CPU_CAPS_AMD_SEV_SNP  3 //!< AMD SEV-SNP CPU capability.
-#define NVML_CC_SYSTEM_CPU_CAPS_AMD_SNP_VTOM 4 //!< AMD SNP-VTOM CPU capability.
+#define NVML_CC_SYSTEM_CPU_CAPS_NONE              0 //!< No confidential compute CPU capability.
+#define NVML_CC_SYSTEM_CPU_CAPS_AMD_SEV           1 //!< AMD SEV CPU capability.
+#define NVML_CC_SYSTEM_CPU_CAPS_INTEL_TDX         2 //!< Intel TDX CPU capability.
+#define NVML_CC_SYSTEM_CPU_CAPS_AMD_SEV_SNP       3 //!< AMD SEV-SNP CPU capability.
+#define NVML_CC_SYSTEM_CPU_CAPS_AMD_SNP_VTOM      4 //!< AMD SNP-VTOM CPU capability.
+#define NVML_CC_SYSTEM_CPU_CAPS_ARM_CCA           5 //!< ARM CCA CPU capability.
+#define NVML_CC_SYSTEM_CPU_CAPS_INTEL_TDX_CONNECT 6 //!< Intel TDX Connect CPU capability.
+#define NVML_CC_SYSTEM_CPU_CAPS_AMD_SEV_TIO       7 //!< AMD SEV-TIO CPU capability.
 
 /**
  * Confidenial Compute GPU Capabilities values
  */
 #define NVML_CC_SYSTEM_GPUS_CC_NOT_CAPABLE 0 //!< GPUs are not confidential compute capable.
 #define NVML_CC_SYSTEM_GPUS_CC_CAPABLE     1 //!< GPUs are confidential compute capable.
+#define NVML_CC_SYSTEM_GPUS_CC_BMSAI_CAPABLE 2 //!< GPUs are Baremetal Secure AI capable.
 
 typedef struct nvmlConfComputeSystemCaps_st {
     unsigned int cpuCaps;
@@ -4058,6 +4082,7 @@ typedef struct nvmlConfComputeSystemCaps_st {
  */
 #define NVML_CC_SYSTEM_FEATURE_DISABLED 0 //!< Feature is disabled.
 #define NVML_CC_SYSTEM_FEATURE_ENABLED  1 //!< Feature is enabled.
+#define NVML_CC_SYSTEM_FEATURE_BMSAI_ENABLED 2 //!< Feature is enabled for Baremetal Secure AI.
 
 typedef struct nvmlConfComputeSystemState_st {
     unsigned int environment;
@@ -4085,6 +4110,30 @@ typedef struct {
 
 typedef nvmlSystemConfComputeSettings_v1_t nvmlSystemConfComputeSettings_t;
 #define nvmlSystemConfComputeSettings_v1 NVML_STRUCT_VERSION(SystemConfComputeSettings, 1) //!< Version macro for \a nvmlSystemConfComputeSettings_v1_t
+
+/**
+ * Confidential Compute TDISP state values
+ */
+#define NVML_CC_SYSTEM_TDISP_STATE_DISABLED  0 //!< The GPUs are not running behind a TDI.
+#define NVML_CC_SYSTEM_TDISP_STATE_NOT_READY 1 //!< The TDIs are UNLOCKED, i.e. TDISP FW-only mode.
+#define NVML_CC_SYSTEM_TDISP_STATE_READY     2 //!< The TDIs completed the TSM handshake and reached RUN, i.e. TDISP secure mode.
+
+/**
+ * Confidential Compute System settings, version 2
+ *
+ * Adds \a tdispState, the TDISP state of the GPUs, reported as a single value
+ * so that callers do not have to combine flags.
+ */
+typedef struct {
+    unsigned int version;
+    unsigned int environment;
+    unsigned int ccFeature;
+    unsigned int devToolsMode;
+    unsigned int multiGpuMode;
+    unsigned int tdispState;
+} nvmlSystemConfComputeSettings_v2_t;
+
+#define nvmlSystemConfComputeSettings_v2 NVML_STRUCT_VERSION(SystemConfComputeSettings, 2) //!< Version macro for \a nvmlSystemConfComputeSettings_v2_t
 
 /**
  * Protected memory size
@@ -4405,6 +4454,14 @@ typedef struct
  *
  * For all products.
  *
+ */
+/**
+ * @note With the environment variable \c NVML_MPS_DEVICE_ENUMERATION set to
+ *       1, this API selects the MPS locality-domain view described in
+ *       \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @return
  * - \ref NVML_SUCCESS                   if the NVML Library was properly initialized.
  * - \ref NVML_ERROR_DRIVER_NOT_LOADED   if the NVIDIA driver is not running.
@@ -4432,6 +4489,15 @@ nvmlReturn_t DECLDIR nvmlInit_v2(void);
  *
  * For all products.
  *
+ */
+/**
+ * @note With the environment variable \c NVML_MPS_DEVICE_ENUMERATION set to
+ *       1, this API selects the MPS locality-domain view.
+ *       \ref NVML_INIT_FLAG_NO_ATTACH is not supported in that view. See
+ *       \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param[in]  flags                     NVML_INIT_FLAG_* flags that can modify NVML Init behavior.
  *
  * @return
@@ -4463,6 +4529,13 @@ nvmlReturn_t DECLDIR nvmlInitWithFlags(unsigned int flags);
  *
  * For all products.
  *
+ */
+/**
+ * @note The final matching shutdown releases the process-local MPS
+ *       locality-domain view described in \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @return
  * - \ref NVML_SUCCESS                 if the NVML Library was properly shut down.
  * - \ref NVML_ERROR_UNINITIALIZED     if the NVML Library was not previously initialized.
@@ -4484,6 +4557,13 @@ nvmlReturn_t DECLDIR nvmlShutdown(void);
  *
  * For all products.
  *
+ */
+/**
+ * @note This helper is available in the MPS locality-domain view described in
+ *       \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param result                               NVML error code to convert
  *
  * @return String representation of the error.
@@ -4692,6 +4772,13 @@ nvmlReturn_t DECLDIR nvmlSystemGetDriverVersion(char *version, unsigned int leng
  *
  * For all products.
  *
+ */
+/**
+ * @note This query is available in the MPS locality-domain view described in
+ *       \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * The version identifier is an alphanumeric string.  It will not exceed 80 characters in length
  * (including the NULL terminator).  See \ref nvmlConstants::NVML_SYSTEM_NVML_VERSION_BUFFER_SIZE.
  *
@@ -4710,7 +4797,7 @@ nvmlReturn_t DECLDIR nvmlSystemGetNVMLVersion(char *version, unsigned int length
  *
  * For all products.
  *
- * The CUDA driver version returned will be retreived from the currently installed version of CUDA.
+ * The CUDA driver version returned will be retrieved from the currently installed version of CUDA.
  * If the cuda library is not found, this function will return a known supported version number.
  *
  * @param cudaDriverVersion                    Reference in which to return the version identifier
@@ -5056,6 +5143,14 @@ nvmlReturn_t DECLDIR nvmlUnitGetDevices(nvmlUnit_t unit, unsigned int *deviceCou
  *       library.
  *       Old _v1 version of nvmlDeviceGetCount doesn't count devices that NVML has no permission to talk to.
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API returns the number of
+ *       MPS-reported device entries. Each locality domain has its own NVML
+ *       index and \c nvmlDevice_t handle. See \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param deviceCount                          Reference in which to return the number of accessible devices
  *
  * @return
@@ -5116,6 +5211,13 @@ nvmlReturn_t DECLDIR nvmlDeviceGetAttributes_v2(nvmlDevice_t device, nvmlDeviceA
  *       If you don't touch macros that map old (_v1) versions to _v2 versions at the top of the file you don't
  *       need to worry about that.
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API returns the locality-domain
+ *       handle associated with \a index. See \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param index                                The index of the target GPU, >= 0 and < \a accessibleDevices
  * @param device                               Reference in which to return the device handle
  *
@@ -5179,6 +5281,14 @@ DEPRECATED(13.0) nvmlReturn_t DECLDIR nvmlDeviceGetHandleBySerial(const char *se
  * Starting from NVML 5, this API causes NVML to initialize the target GPU
  * NVML may initialize additional GPUs as it searches for the target GPU
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API returns the locality-domain
+ *       handle whose MPS-provided UUID matches \a uuid. See
+ *       \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @return
  *         - \ref NVML_SUCCESS                  if \a device has been set
  *         - \ref NVML_ERROR_UNINITIALIZED      if the library has not been successfully initialized
@@ -5205,6 +5315,14 @@ nvmlReturn_t DECLDIR nvmlDeviceGetHandleByUUID(const char *uuid, nvmlDevice_t *d
  * This API causes NVML to initialize the target GPU
  * NVML may initialize additional GPUs as it searches for the target GPU
  *
+ */
+/**
+ * @note This API returns \ref NVML_ERROR_NOT_SUPPORTED in the MPS
+ *       locality-domain view. Use \ref nvmlDeviceGetHandleByUUID() with the
+ *       ASCII UUID instead. See \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @return
  *         - \ref NVML_SUCCESS                          if \a device has been set
  *         - \ref NVML_ERROR_UNINITIALIZED              if the library has not been successfully initialized
@@ -5230,6 +5348,15 @@ nvmlReturn_t DECLDIR nvmlDeviceGetHandleByUUIDV(const nvmlUUID_t *uuid, nvmlDevi
  * \note NVML 4.304 and older version of nvmlDeviceGetHandleByPciBusId"_v1" returns NVML_ERROR_NOT_FOUND
  *       instead of NVML_ERROR_NO_PERMISSION.
  *
+ */
+/**
+ * @note In the MPS locality-domain view, multiple locality domains can share a
+ *       PCI bus ID. This API returns the first matching handle in NVML
+ *       enumeration order. Use UUID or index to select a specific locality
+ *       domain. See \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param pciBusId                             The PCI bus id of the target GPU
  *                                             Accept the following formats (all numbers in hexadecimal):
  *                                               domain:bus:device.function in format %x:%x:%x.%x
@@ -5263,6 +5390,13 @@ nvmlReturn_t DECLDIR nvmlDeviceGetHandleByPciBusId_v2(const char *pciBusId, nvml
  * When used with MIG device handles the API returns MIG device names which can be used to identify devices
  * based on their attributes.
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API returns the name supplied by
+ *       MPS for the locality domain. See \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param device                               The identifier of the target device
  * @param name                                 Reference in which to return the product name
  * @param length                               The maximum allowed length of the string returned in \a name
@@ -5315,6 +5449,13 @@ nvmlReturn_t DECLDIR nvmlDeviceGetBrand(nvmlDevice_t device, nvmlBrandType_t *ty
  *
  * Note: The NVML index may not correlate with other APIs, such as the CUDA device index.
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API returns the NVML index of the
+ *       locality-domain handle. See \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param device                               The identifier of the target device
  * @param index                                Reference in which to return the NVML index of the device
  *
@@ -5471,6 +5612,14 @@ nvmlReturn_t DECLDIR nvmlDeviceGetCpuAffinityWithinScope(nvmlDevice_t device, un
  * For Kepler &tm; or newer fully supported devices.
  * Supported on Linux only.
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API returns the CPU affinity of
+ *       the physical parent associated with the locality-domain handle. See
+ *       \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param device                               The identifier of the target device
  * @param cpuSetSize                           The size of the cpuSet array that is safe to access
  * @param cpuSet                               Array reference in which to return a bitmask of CPUs, 64 CPUs per
@@ -5528,6 +5677,14 @@ nvmlReturn_t DECLDIR nvmlDeviceClearCpuAffinity(nvmlDevice_t device);
  * Get the NUMA node of the given GPU device.
  * This only applies to platforms where the GPUs are NUMA nodes.
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API returns the NUMA node
+ *       supplied by MPS for the locality domain. See
+ *       \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param[in]      device                  The device handle
  * @param[out]     node                    NUMA node ID of the device
  *
@@ -5639,6 +5796,14 @@ nvmlReturn_t DECLDIR nvmlDeviceGetTopologyNearestGpus(nvmlDevice_t device, nvmlG
 /**
  * Retrieve the status for a given p2p capability index between a given pair of GPU
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API returns the directed P2P
+ *       status supplied by MPS for the two locality-domain handles. See
+ *       \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param device1                              The first device
  * @param device2                              The second device
  * @param p2pIndex                             p2p Capability Index being looked for between \a device1 and \a device2
@@ -5664,6 +5829,13 @@ nvmlReturn_t DECLDIR nvmlDeviceGetP2PStatus(nvmlDevice_t device1, nvmlDevice_t d
  * When used with MIG device handles the API returns globally unique UUIDs which can be used to identify MIG
  * devices across both GPU and MIG devices. UUIDs are immutable for the lifetime of a MIG device.
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API returns the UUID supplied by
+ *       MPS for the locality domain. See \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param device                               The identifier of the target device
  * @param uuid                                 Reference in which to return the GPU UUID
  * @param length                               The maximum allowed length of the string returned in \a uuid
@@ -5852,6 +6024,27 @@ nvmlReturn_t DECLDIR nvmlDeviceGetLastBBXFlushTime(nvmlDevice_t device, unsigned
  */
 
 nvmlReturn_t DECLDIR nvmlDeviceGetBBXTimeData_v1(nvmlDevice_t device, nvmlBBXTimeData_v1_t *timeData);
+
+/**
+ * Retrieves the GPU uptime. The uptime denotes the number of seconds elapsed
+ * since the GPU was initialized by the driver. The uptime resets to zero on a host reboot,
+ * driver unload/reload, or a GPU reset.
+ *
+ * For MIG device handles, the parent GPU uptime is returned.
+ *
+ * @param device                               The identifier of the target device
+ * @param uptime                               Reference in which to return the GPU uptime
+ *
+ * @return
+ *         - \ref NVML_SUCCESS                 if \a uptime has been set
+ *         - \ref NVML_ERROR_UNINITIALIZED     if the library has not been successfully initialized
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a device is invalid or \a uptime is NULL
+ *         - \ref NVML_ERROR_NOT_SUPPORTED     if the device does not support this feature
+ *         - \ref NVML_ERROR_GPU_IS_LOST       if the target GPU has fallen off the bus or is otherwise inaccessible
+ *         - \ref NVML_ERROR_UNKNOWN           on any unexpected error
+ */
+nvmlReturn_t DECLDIR nvmlDeviceGetGpuUptime_v1(nvmlDevice_t device, nvmlGpuUptime_v1_t *uptime);
+
 /**
  * Retrieves the display mode for the device.
  *
@@ -5952,6 +6145,15 @@ nvmlReturn_t DECLDIR nvmlDeviceGetPciInfoExt(nvmlDevice_t device, nvmlPciInfoExt
  *
  * See \ref nvmlPciInfo_t for details on the available PCI info.
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API and its v1 and v2 variants
+ *       return the PCI attributes supplied by MPS. Multiple locality domains
+ *       can report the same physical parent's PCI attributes. See
+ *       \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param device                               The identifier of the target device
  * @param pci                                  Reference in which to return the PCI info
  *
@@ -6494,6 +6696,11 @@ typedef nvmlTemperature_v1_t nvmlTemperature_t;
  *
  * For all products.
  *
+ * Note: This API reports the current GPU temperature rounded to a whole degree Celsius.
+ * For the current GPU temperature at higher precision, use
+ * \ref nvmlDeviceGetFieldValues with the \ref NVML_FI_DEV_GPU_TEMP field, which returns the
+ * temperature in degrees C as a double value.
+ *
  * @param[in]       device                      Target device identifier.
  * @param[in,out]   temperature                 Structure specifying the sensor type (input) and retrieved
  *                                              temperature value (output).
@@ -6507,7 +6714,6 @@ typedef nvmlTemperature_v1_t nvmlTemperature_t;
  *         - \ref NVML_ERROR_UNKNOWN            on any unexpected error
  */
 nvmlReturn_t DECLDIR nvmlDeviceGetTemperatureV(nvmlDevice_t device, nvmlTemperature_t *temperature);
-
 
 /**
  * Retrieves the temperature threshold for the GPU with the specified threshold type in degrees C.
@@ -7163,7 +7369,7 @@ nvmlReturn_t DECLDIR nvmlDeviceSetAdaptiveTgpMode_v1(nvmlDevice_t device, nvmlEn
  * %RUBIN_OR_NEWER%
  *
  * Populates \a info with the in-band request, out-of-band enablement status, out-of-band
- * override status, arbitrated enablement state, and adjusted base power limit. The adjusted base
+ * override status, arbitrated enablement state, and adjusted TGP power limit. The adjusted TGP
  * power is valid only when feature is enabled.
  * See \ref nvmlAdaptiveTgpModeInfo_v1_t for field details.
  *
@@ -7238,6 +7444,14 @@ nvmlReturn_t DECLDIR nvmlDeviceGetGpuOperationMode(nvmlDevice_t device, nvmlGpuO
  *       but instead shares memory with the system. As a result, \ref NVML_ERROR_NOT_SUPPORTED
  *       will be returned in this case.
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API returns MPS-provided total,
+ *       used, and free memory for the locality domain. Reserved memory is
+ *       included in used memory. See \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param device                               The identifier of the target device
  * @param memory                               Reference in which to return the memory information
  *
@@ -7280,6 +7494,14 @@ nvmlReturn_t DECLDIR nvmlDeviceGetMemoryInfo(nvmlDevice_t device, nvmlMemory_t *
  *       but instead shares memory with the system. As a result, \ref NVML_ERROR_NOT_SUPPORTED
  *       will be returned in this case.
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API returns MPS-provided total,
+ *       used, free, and reserved memory for the locality domain. See
+ *       \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param device                               The identifier of the target device
  * @param memory                               Reference in which to return the memory information
  *
@@ -7383,6 +7605,14 @@ nvmlReturn_t DECLDIR nvmlDeviceGetComputeMode(nvmlDevice_t device, nvmlComputeMo
  * CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR attributes that would be
  * returned by CUDA's cuDeviceGetAttribute().
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API returns the compute
+ *       capability supplied by MPS for the locality domain. See
+ *       \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param device                               The identifier of the target device
  * @param major                                Reference in which to return the major CUDA compute capability
  * @param minor                                Reference in which to return the minor CUDA compute capability
@@ -8398,7 +8628,7 @@ nvmlReturn_t DECLDIR nvmlDeviceGetAdaptiveClockInfoStatus(nvmlDevice_t device, u
  * @param type                                 The PCI Bus type
  *
  * return
- *         - \ref NVML_SUCCESS                 if the bus \a type is successfully retreived
+ *         - \ref NVML_SUCCESS                 if the bus \a type is successfully retrieved
  *         - \ref NVML_ERROR_UNINITIALIZED     if the library has not been successfully initialized
  *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a device is invalid or \a type is NULL
  *         - \ref NVML_ERROR_UNKNOWN           on any unexpected error
@@ -8672,7 +8902,7 @@ nvmlReturn_t DECLDIR nvmlSystemSetConfComputeGpusReadyState(unsigned int isAccep
  * @param pKeyRotationThrInfo                  Reference to the key rotation threshold data
  *
  * @return
- *         - \ref NVML_SUCCESS                 if \a key rotation threashold max attacker advantage has been set
+ *         - \ref NVML_SUCCESS                 if \a key rotation threshold max attacker advantage has been set
  *         - \ref NVML_ERROR_UNINITIALIZED     if the library has not been successfully initialized
  *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a device is invalid or \a memory is NULL
  *         - \ref NVML_ERROR_INVALID_STATE     if confidential compute GPU ready state is enabled
@@ -8702,6 +8932,32 @@ nvmlReturn_t DECLDIR nvmlSystemSetConfComputeKeyRotationThresholdInfo(
 nvmlReturn_t DECLDIR nvmlSystemGetConfComputeSettings(nvmlSystemConfComputeSettings_t *settings);
 
 /**
+ * Get Conf Computing System Settings, version 2.
+ *
+ * Returns everything \ref nvmlSystemGetConfComputeSettings reports, plus the
+ * TDISP state of the GPUs in \a tdispState.
+ *
+ * All GPUs, and therefore all TDIs, are expected to be in the same state. If
+ * they are not, the system level state is ambiguous and NVML_ERROR_UNKNOWN is
+ * returned.
+ *
+ * For Hopper &tm; or newer fully supported devices.
+ * Supported on Linux, Windows TCC.
+ *
+ * @param settings                                     System CC settings
+ *
+ * @return
+ *         - \ref NVML_SUCCESS                         If the query is success
+ *         - \ref NVML_ERROR_UNINITIALIZED             If the library has not been successfully initialized
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT          If \a settings is NULL
+ *         - \ref NVML_ERROR_NOT_SUPPORTED             If the device does not support this feature
+ *         - \ref NVML_ERROR_GPU_IS_LOST               If the target GPU has fallen off the bus or is otherwise inaccessible
+ *         - \ref NVML_ERROR_ARGUMENT_VERSION_MISMATCH If the provided version is invalid/unsupported
+ *         - \ref NVML_ERROR_UNKNOWN                   On any unexpected error
+ */
+nvmlReturn_t DECLDIR nvmlSystemGetConfComputeSettings_v2(nvmlSystemConfComputeSettings_v2_t *settings);
+
+/**
  * Retrieve GSP firmware version.
  *
  * The caller passes in buffer via \a version and corresponding GSP firmware numbered version
@@ -8711,7 +8967,7 @@ nvmlReturn_t DECLDIR nvmlSystemGetConfComputeSettings(nvmlSystemConfComputeSetti
  * @param version                              The retrieved GSP firmware version
  *
  * @return
- *         - \ref NVML_SUCCESS                 if GSP firmware version is sucessfully retrieved
+ *         - \ref NVML_SUCCESS                 if GSP firmware version is successfully retrieved
  *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a device is invalid or GSP \a version pointer is NULL
  *         - \ref NVML_ERROR_NOT_SUPPORTED     if GSP firmware is not enabled for GPU
  *         - \ref NVML_ERROR_UNKNOWN           on any unexpected error
@@ -8729,7 +8985,7 @@ nvmlReturn_t DECLDIR nvmlDeviceGetGspFirmwareVersion(nvmlDevice_t device, char *
  * @param defaultMode                          Pointer to specify if GSP firmware is supported by default on \a device
  *
  * @return
- *         - \ref NVML_SUCCESS                 if GSP firmware mode is sucessfully retrieved
+ *         - \ref NVML_SUCCESS                 if GSP firmware mode is successfully retrieved
  *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a device is invalid or any of \a isEnabled or \a defaultMode is NULL
  *         - \ref NVML_ERROR_NOT_SUPPORTED     if GSP firmware is not enabled for GPU
  *         - \ref NVML_ERROR_UNKNOWN           on any unexpected error
@@ -8809,6 +9065,13 @@ nvmlReturn_t DECLDIR nvmlDeviceSetPowerManagementLimit_v2(nvmlDevice_t device, n
  * See \ref nvmlDeviceGetAccountingStats for more details.
  * See \ref nvmlDeviceSetAccountingMode
  *
+ */
+/**
+ * @note In the MPS locality-domain view, this API returns the physical parent's
+ *       accounting mode as reported by MPS. See \ref nvmlMpsDeviceEnumeration.
+ *
+ */
+/**
  * @param device                               The identifier of the target device
  * @param mode                                 Reference in which to return the current accounting mode
  *
@@ -10033,6 +10296,7 @@ nvmlReturn_t DECLDIR nvmlDeviceClearAccountingPids(nvmlDevice_t device);
     (((var) >> NVML_NVLINK_##type##_SHIFT) &         \
     (NVML_NVLINK_##type##_WIDTH))                    \
 
+
 /*
  * NVML_FI_DEV_NVLINK_GET_STATE state enums
  */
@@ -10149,6 +10413,16 @@ typedef struct
 } nvmlNvLinkInfo_v2_t;
 typedef nvmlNvLinkInfo_v2_t nvmlNvLinkInfo_t;
 #define nvmlNvLinkInfo_v2 NVML_STRUCT_VERSION(NvLinkInfo, 2) //!< Version macro for \a nvmlNvLinkInfo_v2_t
+
+/**
+ * Struct to represent per device NVLINK information v3
+ */
+typedef struct
+{
+    unsigned int isNvleEnabled;            //!< OUT - NVLINK encryption enablement
+    nvmlNvlinkFirmwareInfo_t firmwareInfo; //!< OUT - NVLINK Firmware info
+    unsigned int isNvleReady;              //!< OUT - Whether NVLE is ready on the GPU
+} nvmlNvLinkInfo_v3_t;
 
 /**
  * Retrieves the state of the device's NvLink for the link specified
@@ -10540,6 +10814,22 @@ nvmlReturn_t DECLDIR nvmlDeviceSetNvlinkBwModeAsync_v1(nvmlDevice_t device, nvml
 nvmlReturn_t DECLDIR nvmlDeviceGetNvLinkInfo(nvmlDevice_t device, nvmlNvLinkInfo_t *info);
 
 /**
+ * Query NVLINK information associated with this device (v3).
+ *
+ * @param[in]  device                              The identifier of the target device
+ * @param[out] info                                Reference to \a nvmlNvLinkInfo_v3_t
+ *
+ * @return
+ *         - \ref NVML_SUCCESS                          if query is success
+ *         - \ref NVML_ERROR_UNINITIALIZED              if the library has not been successfully initialized
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT           if \a device is invalid, or \a info is NULL
+ *         - \ref NVML_ERROR_NOT_SUPPORTED              if the device does not support this feature
+ *         - \ref NVML_ERROR_GPU_IS_LOST                if the target GPU has fallen off the bus or is otherwise inaccessible
+ *         - \ref NVML_ERROR_UNKNOWN                    on any unexpected error
+ */
+nvmlReturn_t DECLDIR nvmlDeviceGetNvLinkInfo_v3(nvmlDevice_t device, nvmlNvLinkInfo_v3_t *info);
+
+/**
  * Per-link NVLink telemetry sample types.
  */
 typedef enum
@@ -10598,6 +10888,163 @@ typedef struct
  */
 nvmlReturn_t DECLDIR nvmlDeviceGetNvLinkTelemetrySamples_v1(nvmlDevice_t device,
                                                             nvmlNvlinkTelemetrySamples_v1_t *samples);
+
+/**
+ * Maximum number of entries in the NVLink FLA/SPA(GPA) remap tables.
+ */
+#define NVML_NVLINK_MAX_REMAP_TABLE_ENTRIES_V2  4096
+#define NVML_NVLINK_REMAP_TABLE_ENTRIES_CHUNK   128
+
+/**
+ * Structure for NVLink remap table information.
+ */
+typedef struct
+{
+    unsigned int alid;                                                    //!< ALID of the GPU
+    unsigned int flaRemapTabAddr[NVML_NVLINK_MAX_REMAP_TABLE_ENTRIES_V2];  //!< FLA remap table addrs for all the remap table entries
+    unsigned int gpaRemapTabAddr[NVML_NVLINK_MAX_REMAP_TABLE_ENTRIES_V2];  //!< SPA/GPA remap table addrs for all the remap table entries
+    unsigned int remapTabSize;                                            //!< Number of entries in the remap tables
+} nvmlNvlinkGetRemapTableInfo_v1_t;
+
+/**
+ * Get the NVLink remap table information.
+ *
+ * This API returns the remap table addresses for all the entries in the FLA and SPA/GPA remap tables.
+ *
+ * @param[in]   device             The identifier of the target device.
+ * @param[out]  remapTableInfo     Reference to \ref nvmlNvlinkGetRemapTableInfo_v1_t struct.
+ *
+ * @return
+ *         - \ref NVML_SUCCESS                         if the operation completed successfully
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT          if \a device or \a remapTableInfo is invalid
+ *         - \ref NVML_ERROR_NOT_SUPPORTED             if the device does not support this feature
+ *         - \ref NVML_ERROR_NO_PERMISSION             if the user doesn't have permission to perform this operation
+ *         - \ref NVML_ERROR_UNKNOWN                   if an error was encountered during the operation
+ */
+nvmlReturn_t DECLDIR nvmlDeviceGetNvlinkRemapTableInfo_v1(nvmlDevice_t device,
+                                                          nvmlNvlinkGetRemapTableInfo_v1_t *remapTableInfo);
+
+/**
+ * Structure for the NVLink NVLE ready state.
+ */
+typedef struct
+{
+    unsigned char bNvleReady;   //!< Whether NVLE is ready on the GPU
+} nvmlNvlinkSetNvleReady_v1_t;
+
+/**
+ * Set the NVLink NVLE ready state.
+ *
+ * This API signals whether NVLE (NVLink Encryption) is ready on the given device.
+ *
+ * @param[in]   device             The identifier of the target device.
+ * @param[in]   setNvleReady       Reference to \ref nvmlNvlinkSetNvleReady_v1_t struct.
+ *
+ * @return
+ *         - \ref NVML_SUCCESS                         if the operation completed successfully
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT          if \a device or \a setNvleReady is invalid
+ *         - \ref NVML_ERROR_NOT_SUPPORTED             if the device does not support this feature
+ *         - \ref NVML_ERROR_NO_PERMISSION             if the user doesn't have permission to perform this operation
+ *         - \ref NVML_ERROR_UNKNOWN                   if an error was encountered during the operation
+ */
+nvmlReturn_t DECLDIR nvmlDeviceSetNvlinkNvleReady_v1(nvmlDevice_t device,
+                                                     nvmlNvlinkSetNvleReady_v1_t *setNvleReady);
+
+/**
+ * Structure for the NVLink remap table and MSE lock operation.
+ */
+typedef struct
+{
+    unsigned char bRemapTableLocked;        //!< Whether the remap table of the GPU is locked
+    unsigned char bRemapTableLockDisabled;  //!< Whether locking of the remap table is disabled
+} nvmlNvlinkLockRemapTable_v1_t;
+
+/**
+ * Lock the NVLink remap table to prevent MSE from making further updates.
+ *
+ * This API requests to lock the remap table to prevent MSE (Multi-Socket Engine)
+ * from making any further updates to the remap table for the given links.
+ *
+ * @param[in]      device             The identifier of the target device.
+ * @param[in,out]  remapTableLockInfo Reference to \ref nvmlNvlinkLockRemapTable_v1_t struct.
+ *
+ * @return
+ *         - \ref NVML_SUCCESS                         if the operation completed successfully
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT          if \a device or \a remapTableLockInfo is invalid
+ *         - \ref NVML_ERROR_NOT_SUPPORTED             if the device does not support this feature
+ *         - \ref NVML_ERROR_NO_PERMISSION             if the user doesn't have permission to perform this operation
+ *         - \ref NVML_ERROR_UNKNOWN                   if an error was encountered during the operation
+ */
+nvmlReturn_t DECLDIR nvmlDeviceLockNvlinkRemapTable_v1(nvmlDevice_t device,
+                                                       nvmlNvlinkLockRemapTable_v1_t *remapTableLockInfo);
+
+/**
+ * Size in bytes of the NVLink NVLE private (opaque) info buffer.
+ */
+#define NVML_NVLINK_NVLE_PRIVATE_INFO_SIZE 256
+
+/**
+ * Structure for NVLink NVLE private (opaque) information.
+ */
+typedef struct
+{
+    unsigned char data[NVML_NVLINK_NVLE_PRIVATE_INFO_SIZE];   //!< Buffer that receives the opaque private info blob
+    unsigned int  size;                                       //!< Number of valid bytes written to \a data on output
+} nvmlNvlinkNvlePrivateInfo_v1_t;
+
+/**
+ * Size in bytes of the AES-256-GCM key secret used for NVLink encryption.
+ */
+#define NVML_NVLINK_NVLE_AES_256_GCM_KEY_SIZE_BYTES 32
+
+/**
+ * Structure for NVLink NVLE encryption key setup.
+ */
+typedef struct
+{
+    unsigned char nvleKey[NVML_NVLINK_NVLE_AES_256_GCM_KEY_SIZE_BYTES];  //!< Key secret from which keyMgr will derive the key
+    unsigned int  localGpuAlid;                                          //!< ALID of the local GPU
+    unsigned int  remoteGpuAlid;                                         //!< ALID of the remote GPU
+    nvmlNvlinkNvlePrivateInfo_v1_t localGpuNvlePrivateInfo;           //!< NVLE private info of the local GPU
+    nvmlNvlinkNvlePrivateInfo_v1_t remoteGpuNvlePrivateInfo;          //!< NVLE private info of the remote GPU
+} nvmlNvlinkSetupNvleEncryptionKey_v1_t;
+
+/**
+ * Setup the NVLink NVLE encryption key.
+ *
+ * This API sets the NVLE encryption key between GPUs with the given ALIDs.
+ *
+ * @param[in]   device             The identifier of the target device.
+ * @param[in]   encryptionKey      Reference to \ref nvmlNvlinkSetupNvleEncryptionKey_v1_t struct.
+ *
+ * @return
+ *         - \ref NVML_SUCCESS                         if the operation completed successfully
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT          if \a device or \a encryptionKey is invalid
+ *         - \ref NVML_ERROR_NOT_SUPPORTED             if the device does not support this feature
+ *         - \ref NVML_ERROR_NO_PERMISSION             if the user doesn't have permission to perform this operation
+ *         - \ref NVML_ERROR_UNKNOWN                   if an error was encountered during the operation
+ */
+nvmlReturn_t DECLDIR nvmlDeviceSetupNvlinkNvleEncryptionKey_v1(nvmlDevice_t device,
+                                                               nvmlNvlinkSetupNvleEncryptionKey_v1_t *encryptionKey);
+
+/**
+ * Get NVLink NVLE private (opaque) information.
+ *
+ * This API retrieves opaque NVLE private information for the given device and
+ * copies it into the \a data buffer, setting \a size to the number of bytes written.
+ *
+ * @param[in]   device        The identifier of the target device.
+ * @param[out]  privateInfo   Reference to \ref nvmlNvlinkNvlePrivateInfo_v1_t struct.
+ *
+ * @return
+ *         - \ref NVML_SUCCESS                         if the operation completed successfully
+ *         - \ref NVML_ERROR_INVALID_ARGUMENT          if \a device or \a privateInfo is invalid
+ *         - \ref NVML_ERROR_NOT_SUPPORTED             if the device does not support this feature
+ *         - \ref NVML_ERROR_NO_PERMISSION             if the user doesn't have permission to perform this operation
+ *         - \ref NVML_ERROR_UNKNOWN                   if an error was encountered during the operation
+ */
+nvmlReturn_t DECLDIR nvmlDeviceGetNvlinkNvlePrivateInfo_v1(nvmlDevice_t device,
+                                                           nvmlNvlinkNvlePrivateInfo_v1_t *privateInfo);
 
 /** @} */ // @defgroup NvLink NvLink Methods
 
@@ -12186,7 +12633,7 @@ nvmlReturn_t DECLDIR nvmlVgpuInstanceGetGpuInstanceId(nvmlVgpuInstance_t vgpuIns
 * @param length                               Size of the vgpuPciId buffer
 *
 * @return
-*         - \ref NVML_SUCCESS                 if vGPU PCI Id is sucessfully retrieved
+*         - \ref NVML_SUCCESS                 if vGPU PCI Id is successfully retrieved
 *         - \ref NVML_ERROR_UNINITIALIZED     if the library has not been successfully initialized
 *         - \ref NVML_ERROR_INVALID_ARGUMENT  if \a vgpuInstance is 0, or \a vgpuPciId is NULL
 *         - \ref NVML_ERROR_NOT_FOUND         if \a vgpuInstance does not match a valid active vGPU instance on the system
@@ -13329,7 +13776,7 @@ typedef struct
  *
  * Supported on Linux only.
  *
- * @param device                                        Identifer of target GPU device
+ * @param device                                        Identifier of target GPU device
  * @param buffer                                        Structure holding the input data in TLV format as well as
  *                                                      the PRM register contents in TLV format (in the case of a successful
  *                                                      read operation).
@@ -13429,7 +13876,7 @@ typedef struct
  *
  * Supported on Linux only.
  *
- * @param device                                    Identifer of target GPU device
+ * @param device                                    Identifier of target GPU device
  * @param counterList                               Structure holding the input parameters as well as the retrieved counter values
  *
  * @return
@@ -14436,8 +14883,7 @@ nvmlReturn_t DECLDIR nvmlDeviceGetDeviceHandleFromMigDeviceHandle(nvmlDevice_t m
 /***************************************************************************************************/
 /** @defgroup GPM NVML GPM
  * @note For NVIDIA vGPU Software products
- * @note (A) GPM is supported only on MIG-backed vGPU profiles that are allocated all of the instance's frame buffer
- * @note (B) No GPM support on Windows
+ * @note GPM is supported only on MIG-backed vGPU profiles that are allocated all of the instance's frame buffer
  *  @{
  */
 /***************************************************************************************************/
@@ -15176,6 +15622,9 @@ typedef struct
  */
 /***************************************************************************************************/
 #define NVML_WORKLOAD_POWER_MAX_PROFILES        (255)
+/**
+ * Workload power profile identifiers.
+ */
 typedef enum
 {
     NVML_POWER_PROFILE_MAX_P                       = 0,
@@ -15414,11 +15863,20 @@ nvmlReturn_t DECLDIR nvmlDeviceWorkloadPowerProfileUpdateProfiles_v1(nvmlDevice_
  *  @{
  */
 /***************************************************************************************************/
+
 /**
- * Macro for accomodating the gaps in field values for power smoothing.
+ * Deprecated, do not use.
  */
-#define NVML_POWER_SMOOTHING_IDX_FROM_FIELD_VAL(field_val)  \
+#define NVML_POWER_SMOOTHING_IDX_FROM_FIELD_VAL(field_val) NVML_POWER_SMOOTHING_IDX_FROM_FIELD_VAL_DEPRECATED(field_val)
+
+
+#define NVML_POWER_SMOOTHING_IDX_FROM_FIELD_VAL_DEPRECATED(field_val)  \
     ( \
+        ((field_val) >= NVML_FI_PWR_SMOOTHING_LIMITED_TIME) ? \
+        ((field_val) - NVML_FI_PWR_SMOOTHING_ENABLED - \
+            (NVML_FI_PWR_SMOOTHING_PRIMARY_POWER_FLOOR - NVML_FI_PWR_SMOOTHING_ADMIN_OVERRIDE_RAMP_DOWN_HYST_VAL - 1) - \
+            (NVML_FI_PWR_SMOOTHING_SOC_POWER_SMOOTHING_ENABLED - NVML_FI_PWR_SMOOTHING_ADMIN_OVERRIDE_PRIMARY_FLOOR_ACT_OFFSET - 1) - \
+            (NVML_FI_PWR_SMOOTHING_LIMITED_TIME - NVML_FI_PWR_SMOOTHING_SOC_POWER_SMOOTHING_ENABLED - 1)) : \
         ((field_val) >= NVML_FI_PWR_SMOOTHING_SOC_POWER_SMOOTHING_ENABLED) ? \
         ((field_val) - NVML_FI_PWR_SMOOTHING_ENABLED - \
             (NVML_FI_PWR_SMOOTHING_PRIMARY_POWER_FLOOR - NVML_FI_PWR_SMOOTHING_ADMIN_OVERRIDE_RAMP_DOWN_HYST_VAL - 1) - \
@@ -15436,10 +15894,10 @@ nvmlReturn_t DECLDIR nvmlDeviceWorkloadPowerProfileUpdateProfiles_v1(nvmlDevice_
 #define NVML_POWER_SMOOTHING_PROFILE_PARAM_RAMP_UP_RATE         1 //!< Ramp up rate.
 #define NVML_POWER_SMOOTHING_PROFILE_PARAM_RAMP_DOWN_RATE       2 //!< Ramp down rate.
 #define NVML_POWER_SMOOTHING_PROFILE_PARAM_RAMP_DOWN_HYSTERESIS 3 //!< Ramp down hysteresis.
-#define NVML_POWER_SMOOTHING_PROFILE_PARAM_SECONDARY_POWER_FLOOR      4 //!< Secondary power floor value in Watts for a given profile
+#define NVML_POWER_SMOOTHING_PROFILE_PARAM_SECONDARY_POWER_FLOOR      4 //!< Secondary power floor value for a given profile
 #define NVML_POWER_SMOOTHING_PROFILE_PARAM_PRIMARY_FLOOR_ACT_WIN_MULT 5 //!< Primary floor activation window multiplier value for a given profile
 #define NVML_POWER_SMOOTHING_PROFILE_PARAM_PRIMARY_FLOOR_TAR_WIN_MULT 6 //!< Primary floor target window multiplier value for a given profile
-#define NVML_POWER_SMOOTHING_PROFILE_PARAM_PRIMARY_FLOOR_ACT_OFFSET   7 //!< Primary floor activation offset value in Watts for a given profile
+#define NVML_POWER_SMOOTHING_PROFILE_PARAM_PRIMARY_FLOOR_ACT_OFFSET   7 //!< Primary floor activation offset value for a given profile
 
 /**
  * Power Smoothing Structure for Profile information
@@ -15449,7 +15907,7 @@ typedef struct
     unsigned int version; //!< the API version number
 
     unsigned int profileId; //!< The requested profile ID
-    unsigned int paramId;   //!< The requested paramater ID
+    unsigned int paramId;   //!< The requested parameter ID
     double value;           //!< The requested value for the given parameter
 } nvmlPowerSmoothingProfile_v1_t;
 typedef nvmlPowerSmoothingProfile_v1_t  nvmlPowerSmoothingProfile_t;
@@ -15467,7 +15925,7 @@ typedef nvmlPowerSmoothingState_v1_t  nvmlPowerSmoothingState_t;
 #define nvmlPowerSmoothingState_v1 NVML_STRUCT_VERSION(PowerSmoothingState, 1) //!< Version macro for \a nvmlPowerSmoothingState_v1_t
 
 /**
- * Activiate a specific preset profile for datacenter power smoothing.
+ * Activate a specific preset profile for datacenter power smoothing.
  * The API only sets the active preset profile based on the input profileId,
  * and ignores the other parameters of the structure.
  * Requires root/admin permissions.
@@ -15496,9 +15954,13 @@ nvmlReturn_t DECLDIR nvmlDevicePowerSmoothingActivatePresetProfile(nvmlDevice_t 
  * For Blackwell &tm; or newer fully supported devices.
  *
  * NVML_POWER_SMOOTHING_PROFILE_PARAM_PERCENT_TMP_FLOOR expects a value as a percentage from 00.00-100.00%
- * NVML_POWER_SMOOTHING_PROFILE_PARAM_RAMP_UP_RATE expects a value in W/s
- * NVML_POWER_SMOOTHING_PROFILE_PARAM_RAMP_DOWN_RATE expects a value in W/s
+ * NVML_POWER_SMOOTHING_PROFILE_PARAM_RAMP_UP_RATE expects a value in mW/s
+ * NVML_POWER_SMOOTHING_PROFILE_PARAM_RAMP_DOWN_RATE expects a value in mW/s
  * NVML_POWER_SMOOTHING_PROFILE_PARAM_RAMP_DOWN_HYSTERESIS expects a value in ms
+ * NVML_POWER_SMOOTHING_PROFILE_PARAM_SECONDARY_POWER_FLOOR expects a value in mW
+ * NVML_POWER_SMOOTHING_PROFILE_PARAM_PRIMARY_FLOOR_ACT_WIN_MULT expects a value from 0-255
+ * NVML_POWER_SMOOTHING_PROFILE_PARAM_PRIMARY_FLOOR_TAR_WIN_MULT expects a value from 0-255
+ * NVML_POWER_SMOOTHING_PROFILE_PARAM_PRIMARY_FLOOR_ACT_OFFSET expects a value in mW
  *
  * @param device                                      The identifier of the target device
  * @param profile                                     Reference to \ref nvmlPowerSmoothingProfile_v1_t struct
@@ -15534,6 +15996,9 @@ nvmlReturn_t  DECLDIR nvmlDevicePowerSmoothingSetState(nvmlDevice_t device,
                                                        nvmlPowerSmoothingState_t *state);
 /** @} */ // @defgroup
 
+/** @addtogroup nvmlDeviceQueries
+ *  @{
+ */
 /**
  * Retrieves the counts of SRAM unique uncorrected ECC errors
  *
@@ -15572,7 +16037,11 @@ nvmlReturn_t  DECLDIR nvmlDevicePowerSmoothingSetState(nvmlDevice_t device,
  */
 nvmlReturn_t DECLDIR nvmlDeviceGetSramUniqueUncorrectedEccErrorCounts(nvmlDevice_t device,
                                                                       nvmlEccSramUniqueUncorrectedErrorCounts_t *errorCounts);
+/** @} */
 
+/** @addtogroup nvmlDeviceQueries
+ *  @{
+ */
 /**
  * Get the status of row remapper.
  *
@@ -15591,7 +16060,11 @@ nvmlReturn_t DECLDIR nvmlDeviceGetSramUniqueUncorrectedEccErrorCounts(nvmlDevice
  *         - \ref NVML_ERROR_UNKNOWN           Unexpected error
  */
 nvmlReturn_t DECLDIR nvmlDeviceGetRemappedRows_v2(nvmlDevice_t device, nvmlRemappedRowsInfo_v2_t *info);
+/** @} */
 
+/** @addtogroup nvmlDeviceCommands
+ *  @{
+ */
 /**
  * Set Read-only user shared data (RUSD) settings for GPU.
  * Requires root/admin permissions.
@@ -15608,7 +16081,11 @@ nvmlReturn_t DECLDIR nvmlDeviceGetRemappedRows_v2(nvmlDevice_t device, nvmlRemap
  *
  **/
 nvmlReturn_t DECLDIR nvmlDeviceSetRusdSettings_v1(nvmlDevice_t device, nvmlRusdSettings_v1_t *settings);
+/** @} */
 
+/** @addtogroup nvmlDeviceStructs
+ *  @{
+ */
 /**
  * Structure to store bank remapper histogram
  */
@@ -15628,14 +16105,18 @@ typedef struct
     unsigned int bPending;                              //!< Whether there exists any pending bank remapping. 0 for no pending remapping, 1 for pending remapping.
     nvmlEccBankRemapperHistogram_v1_t histogram;        //!< Bank remapper histogram
 } nvmlEccBankRemapperStatus_v1_t;
+/** @} */
 
+/** @addtogroup nvmlDeviceQueries
+ *  @{
+ */
 /**
  * Get bank remapper status.
  *
  * %RUBIN_OR_NEWER%
  *
  * @param device                 The identifier of the target device
- * @param pBankRemapperStatus    Reference to \a nvmlEccBankRemapperStatus_t
+ * @param pBankRemapperStatus    Reference to \ref nvmlEccBankRemapperStatus_v1_t
  *
  * @return
  * - \ref NVML_SUCCESS if \a pBankRemapperStatus was populated
@@ -15647,6 +16128,49 @@ typedef struct
  */
 nvmlReturn_t DECLDIR nvmlDeviceGetBankRemapperStatus_v1(nvmlDevice_t device,
                                                         nvmlEccBankRemapperStatus_v1_t *pBankRemapperStatus);
+/** @} */
+
+/**
+ * @addtogroup nvmlMpsDeviceEnumeration MPS Locality Domain Device Enumeration
+ *
+ * On supported Linux systems, set the following environment variable before
+ * the first NVML initialization to enumerate the device view reported by MPS:
+ *
+ * \code
+ * NVML_MPS_DEVICE_ENUMERATION=1
+ * \endcode
+ *
+ * Each MPS locality domain has an \c nvmlDevice_t handle and an NVML index in
+ * this process-local view. A device that is not divided into locality domains
+ * can appear as one MPS device entry. These handles do not represent physical
+ * parent GPUs, and unsupported operations are not redirected to a parent.
+ *
+ * The supported APIs are:
+ *
+ * - Initialization and library information:
+ *   \c nvmlInit(), \ref nvmlInit_v2(), \ref nvmlInitWithFlags(),
+ *   \ref nvmlShutdown(), \ref nvmlSystemGetNVMLVersion(), and
+ *   \ref nvmlErrorString().
+ * - Enumeration and identity:
+ *   \ref nvmlDeviceGetCount_v2(), \ref nvmlDeviceGetHandleByIndex_v2(),
+ *   \ref nvmlDeviceGetIndex(), \ref nvmlDeviceGetHandleByUUID(),
+ *   \ref nvmlDeviceGetUUID(), \ref nvmlDeviceGetHandleByPciBusId_v2(),
+ *   and \ref nvmlDeviceGetName().
+ * - Device attributes:
+ *   \ref nvmlDeviceGetCudaComputeCapability(), \c nvmlDeviceGetPciInfo(),
+ *   \c nvmlDeviceGetPciInfo_v2(), \ref nvmlDeviceGetPciInfo_v3(),
+ *   \ref nvmlDeviceGetNumaNodeId(), and \ref nvmlDeviceGetCpuAffinity().
+ * - Telemetry and capability status:
+ *   \ref nvmlDeviceGetMemoryInfo(), \ref nvmlDeviceGetMemoryInfo_v2(),
+ *   \ref nvmlDeviceGetP2PStatus(), and
+ *   \ref nvmlDeviceGetAccountingMode().
+ *
+ * Every other public NVML API returns \ref NVML_ERROR_NOT_SUPPORTED while this
+ * view is selected. \ref NVML_INIT_FLAG_NO_ATTACH and fork after initialization
+ * are unsupported. If the selected MPS session becomes invalid, MPS-backed APIs
+ * return \ref NVML_ERROR_INVALID_STATE without falling back to physical GPU
+ * enumeration.
+ */
 
 /**
  * NVML API versioning support
