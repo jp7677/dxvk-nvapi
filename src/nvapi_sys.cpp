@@ -60,18 +60,10 @@ NVAPI_FUNCTION NvAPI_SYS_GetDisplayDriverInfo(NV_DISPLAY_DRIVER_INFO* pDriverInf
         return IncompatibleStructVersion(n, pDriverInfo->version);
 
     switch (pDriverInfo->version) {
-        case NV_DISPLAY_DRIVER_INFO_VER1: {
-            auto pDriverInfoV1 = reinterpret_cast<NV_DISPLAY_DRIVER_INFO_V1*>(pDriverInfo);
-            pDriverInfoV1->driverVersion = nvapiAdapterRegistry->GetFirstAdapter()->GetDriverVersion();
-            str::tonvss(pDriverInfoV1->szBuildBranch, str::format("r", NVAPI_SDK_VERSION, "_", DXVK_NVAPI_VERSION));
-            pDriverInfoV1->bIsDCHDriver = 1;              // Assume DCH driver for Windows
-            pDriverInfoV1->bIsNVIDIAStudioPackage = 0;    // Let's not support "Studio Package"
-            pDriverInfoV1->bIsNVIDIAGameReadyPackage = 1; // GameReady Package should be "safe" even if other packages is used
-            pDriverInfoV1->bIsNVIDIARTXProductionBranchPackage = 0;
-            pDriverInfoV1->bIsNVIDIARTXNewFeatureBranchPackage = 0;
-            break;
-        }
-        case NV_DISPLAY_DRIVER_INFO_VER2: {
+        case NV_DISPLAY_DRIVER_INFO_VER2:
+            str::tonvss(pDriverInfo->szBuildBaseBranch, str::format("r", NVAPI_SDK_VERSION));
+            [[fallthrough]];
+        case NV_DISPLAY_DRIVER_INFO_VER1:
             pDriverInfo->driverVersion = nvapiAdapterRegistry->GetFirstAdapter()->GetDriverVersion();
             str::tonvss(pDriverInfo->szBuildBranch, str::format("r", NVAPI_SDK_VERSION, "_", DXVK_NVAPI_VERSION));
             pDriverInfo->bIsDCHDriver = 1;              // Assume DCH driver for Windows
@@ -79,9 +71,7 @@ NVAPI_FUNCTION NvAPI_SYS_GetDisplayDriverInfo(NV_DISPLAY_DRIVER_INFO* pDriverInf
             pDriverInfo->bIsNVIDIAGameReadyPackage = 1; // GameReady Package should be "safe" even if other packages is used
             pDriverInfo->bIsNVIDIARTXProductionBranchPackage = 0;
             pDriverInfo->bIsNVIDIARTXNewFeatureBranchPackage = 0;
-            str::tonvss(pDriverInfo->szBuildBaseBranch, str::format("r", NVAPI_SDK_VERSION));
             break;
-        }
         default:
             return Error(n); // Unreachable, but just to be sure
     }
