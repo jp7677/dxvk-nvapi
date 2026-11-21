@@ -95,18 +95,10 @@ NVAPI_FUNCTION NvAPI_D3D_GetCurrentSLIState(IUnknown* pDevice, NV_GET_CURRENT_SL
         return InvalidArgument(n);
 
     switch (pSliState->version) {
-        case NV_GET_CURRENT_SLI_STATE_VER1: {
-            auto pSliStateV1 = reinterpret_cast<NV_GET_CURRENT_SLI_STATE_V1*>(pSliState);
-            // Report that SLI is not available
-            pSliStateV1->maxNumAFRGroups = 1;
-            pSliStateV1->numAFRGroups = 1;
-            pSliStateV1->currentAFRIndex = 0;
-            pSliStateV1->nextFrameAFRIndex = 0;
-            pSliStateV1->previousFrameAFRIndex = 0;
-            pSliStateV1->bIsCurAFRGroupNew = false;
-            break;
-        }
         case NV_GET_CURRENT_SLI_STATE_VER2:
+            pSliState->numVRSLIGpus = 0;
+            [[fallthrough]];
+        case NV_GET_CURRENT_SLI_STATE_VER1:
             // Report that SLI is not available
             pSliState->maxNumAFRGroups = 1;
             pSliState->numAFRGroups = 1;
@@ -114,7 +106,6 @@ NVAPI_FUNCTION NvAPI_D3D_GetCurrentSLIState(IUnknown* pDevice, NV_GET_CURRENT_SL
             pSliState->nextFrameAFRIndex = 0;
             pSliState->previousFrameAFRIndex = 0;
             pSliState->bIsCurAFRGroupNew = false;
-            pSliState->numVRSLIGpus = 0;
             break;
         default:
             break; // Handled above
