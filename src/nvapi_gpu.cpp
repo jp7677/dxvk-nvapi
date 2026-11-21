@@ -637,22 +637,9 @@ NVAPI_FUNCTION NvAPI_GPU_GetArchInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_AR
 
     auto revisionId = NV_GPU_CHIP_REV_UNKNOWN;
 
-    switch (pGpuArchInfo->version) {
-        case NV_GPU_ARCH_INFO_VER_1: {
-            auto pGpuArchInfoV1 = reinterpret_cast<NV_GPU_ARCH_INFO_V1*>(pGpuArchInfo);
-            pGpuArchInfoV1->architecture = architectureId;
-            pGpuArchInfoV1->implementation = implementationId;
-            pGpuArchInfoV1->revision = revisionId;
-            break;
-        }
-        case NV_GPU_ARCH_INFO_VER_2:
-            pGpuArchInfo->architecture_id = architectureId;
-            pGpuArchInfo->implementation_id = implementationId;
-            pGpuArchInfo->revision_id = revisionId;
-            break;
-        default:
-            return Error(n); // Unreachable, but just to be sure
-    }
+    pGpuArchInfo->architecture = architectureId;
+    pGpuArchInfo->implementation = implementationId;
+    pGpuArchInfo->revision = revisionId;
 
     return Ok(n);
 }
