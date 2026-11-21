@@ -293,97 +293,69 @@ NVAPI_FUNCTION NvAPI_DISP_GetDisplayConfig(NvU32* pathInfoCount, NV_DISPLAYCONFI
         auto& displayMode = output->GetDisplayMode();
         auto& colorData = output->GetColorData();
 
-        switch (pathInfo[0].version) {
-            case NV_DISPLAYCONFIG_PATH_INFO_VER1: {
-                auto& pathInfoV1 = reinterpret_cast<NV_DISPLAYCONFIG_PATH_INFO_V1*>(pathInfo)[i];
-                if (pathInfoV1.version != NV_DISPLAYCONFIG_PATH_INFO_VER1)
-                    return IncompatibleStructVersion(n, pathInfo->version);
+        auto fillPath = [&](auto& path) -> NvAPI_Status {
+            if (path.version != pathInfo->version)
+                return IncompatibleStructVersion(n, pathInfo->version);
 
-                pathInfoV1.reserved_sourceId = 0;
-
-                if (pathInfoV1.sourceModeInfo) {
-                    *pathInfoV1.sourceModeInfo = {};
-                    pathInfoV1.sourceModeInfo->resolution.width = displayMode.Width;
-                    pathInfoV1.sourceModeInfo->resolution.height = displayMode.Height;
-                    pathInfoV1.sourceModeInfo->resolution.colorDepth = BitsPerColorToColorDepth(colorData.BitsPerColor);
-                    pathInfoV1.sourceModeInfo->colorFormat = NV_FORMAT_UNKNOWN;
-                    pathInfoV1.sourceModeInfo->position.x = displayMode.Left;
-                    pathInfoV1.sourceModeInfo->position.y = displayMode.Top;
-                    pathInfoV1.sourceModeInfo->spanningOrientation = NV_DISPLAYCONFIG_SPAN_NONE;
-                    pathInfoV1.sourceModeInfo->bGDIPrimary = output->IsPrimary();
-                }
-
-                if (!pathInfoV1.targetInfo)
-                    pathInfoV1.targetInfoCount = 1; // Just single or extended mode, ignore clone/mirror display setups
-                else {
-                    if (pathInfoV1.targetInfoCount < 1)
-                        return InsufficientBuffer(n);
-
-                    pathInfoV1.targetInfoCount = 1;
-                    pathInfoV1.targetInfo[0].displayId = output->GetId();
-                    if (pathInfoV1.targetInfo[0].details) {
-                        if (pathInfoV1.targetInfo[0].details->version != NV_DISPLAYCONFIG_PATH_ADVANCED_TARGET_INFO_VER1)
-                            return IncompatibleStructVersion(n, pathInfo->version);
-
-                        *pathInfoV1.targetInfo[0].details = {};
-                        pathInfoV1.targetInfo[0].details->version = NV_DISPLAYCONFIG_PATH_ADVANCED_TARGET_INFO_VER1;
-                        pathInfoV1.targetInfo[0].details->refreshRate1K = displayMode.RefreshRate * 1000;
-                        pathInfoV1.targetInfo[0].details->rotation = NV_ROTATE_0;
-                        pathInfoV1.targetInfo[0].details->scaling = NV_SCALING_DEFAULT;
-                        pathInfoV1.targetInfo[0].details->connector = NVAPI_GPU_CONNECTOR_UNKNOWN;
-                    }
-                }
-
-                break;
-            }
-            case NV_DISPLAYCONFIG_PATH_INFO_VER2: {
-                if (pathInfo[i].version != NV_DISPLAYCONFIG_PATH_INFO_VER2)
-                    return IncompatibleStructVersion(n, pathInfo->version);
-
-                pathInfo[i].sourceId = 0;
-                pathInfo[i].IsNonNVIDIAAdapter = !output->GetParent()->HasNvProprietaryDriver() && !output->GetParent()->HasNvkDriver();
-                pathInfo[i].reserved = 0;
+            path.reserved_sourceId = 0;
+            if constexpr (requires { path.IsNonNVIDIAAdapter; }) {
+                path.IsNonNVIDIAAdapter = !output->GetParent()->HasNvProprietaryDriver() && !output->GetParent()->HasNvkDriver();
+                path.reserved = 0;
                 // Ignore pOSAdapterID
-
-                if (pathInfo[i].sourceModeInfo) {
-                    *pathInfo[i].sourceModeInfo = {};
-                    pathInfo[i].sourceModeInfo->resolution.width = displayMode.Width;
-                    pathInfo[i].sourceModeInfo->resolution.height = displayMode.Height;
-                    pathInfo[i].sourceModeInfo->resolution.colorDepth = BitsPerColorToColorDepth(colorData.BitsPerColor);
-                    pathInfo[i].sourceModeInfo->colorFormat = NV_FORMAT_UNKNOWN;
-                    pathInfo[i].sourceModeInfo->position.x = displayMode.Left;
-                    pathInfo[i].sourceModeInfo->position.y = displayMode.Top;
-                    pathInfo[i].sourceModeInfo->spanningOrientation = NV_DISPLAYCONFIG_SPAN_NONE;
-                    pathInfo[i].sourceModeInfo->bGDIPrimary = output->IsPrimary();
-                }
-
-                if (!pathInfo[i].targetInfo)
-                    pathInfo[i].targetInfoCount = 1; // See comment above
-                else {
-                    if (pathInfo[i].targetInfoCount < 1)
-                        return InsufficientBuffer(n);
-
-                    pathInfo[i].targetInfoCount = 1;
-                    pathInfo[i].targetInfo[0].displayId = output->GetId();
-                    pathInfo[i].targetInfo[0].targetId = 0;
-                    if (pathInfo[i].targetInfo[0].details) {
-                        if (pathInfo[i].targetInfo[0].details->version != NV_DISPLAYCONFIG_PATH_ADVANCED_TARGET_INFO_VER1)
-                            return IncompatibleStructVersion(n, pathInfo->version);
-
-                        *pathInfo[i].targetInfo[0].details = {};
-                        pathInfo[i].targetInfo[0].details->version = NV_DISPLAYCONFIG_PATH_ADVANCED_TARGET_INFO_VER1;
-                        pathInfo[i].targetInfo[0].details->refreshRate1K = displayMode.RefreshRate * 1000;
-                        pathInfo[i].targetInfo[0].details->rotation = NV_ROTATE_0;
-                        pathInfo[i].targetInfo[0].details->scaling = NV_SCALING_DEFAULT;
-                        pathInfo[i].targetInfo[0].details->connector = NVAPI_GPU_CONNECTOR_UNKNOWN;
-                    }
-                }
-
-                break;
             }
+
+            if (path.sourceModeInfo) {
+                *path.sourceModeInfo = {};
+                path.sourceModeInfo->resolution.width = displayMode.Width;
+                path.sourceModeInfo->resolution.height = displayMode.Height;
+                path.sourceModeInfo->resolution.colorDepth = BitsPerColorToColorDepth(colorData.BitsPerColor);
+                path.sourceModeInfo->colorFormat = NV_FORMAT_UNKNOWN;
+                path.sourceModeInfo->position.x = displayMode.Left;
+                path.sourceModeInfo->position.y = displayMode.Top;
+                path.sourceModeInfo->spanningOrientation = NV_DISPLAYCONFIG_SPAN_NONE;
+                path.sourceModeInfo->bGDIPrimary = output->IsPrimary();
+            }
+
+            if (!path.targetInfo)
+                path.targetInfoCount = 1; // Just single or extended mode, ignore clone/mirror display setups
+            else {
+                if (path.targetInfoCount < 1)
+                    return InsufficientBuffer(n);
+
+                path.targetInfoCount = 1;
+                path.targetInfo[0].displayId = output->GetId();
+                if constexpr (requires { path.targetInfo[0].targetId; })
+                    path.targetInfo[0].targetId = 0;
+                if (path.targetInfo[0].details) {
+                    if (path.targetInfo[0].details->version != NV_DISPLAYCONFIG_PATH_ADVANCED_TARGET_INFO_VER1)
+                        return IncompatibleStructVersion(n, pathInfo->version);
+
+                    *path.targetInfo[0].details = {};
+                    path.targetInfo[0].details->version = NV_DISPLAYCONFIG_PATH_ADVANCED_TARGET_INFO_VER1;
+                    path.targetInfo[0].details->refreshRate1K = displayMode.RefreshRate * 1000;
+                    path.targetInfo[0].details->rotation = NV_ROTATE_0;
+                    path.targetInfo[0].details->scaling = NV_SCALING_DEFAULT;
+                    path.targetInfo[0].details->connector = NVAPI_GPU_CONNECTOR_UNKNOWN;
+                }
+            }
+
+            return NVAPI_OK;
+        };
+
+        NvAPI_Status status;
+        switch (pathInfo[0].version) {
+            case NV_DISPLAYCONFIG_PATH_INFO_VER1:
+                status = fillPath(reinterpret_cast<NV_DISPLAYCONFIG_PATH_INFO_V1*>(pathInfo)[i]);
+                break;
+            case NV_DISPLAYCONFIG_PATH_INFO_VER2:
+                status = fillPath(pathInfo[i]);
+                break;
             default:
                 return IncompatibleStructVersion(n, pathInfo->version);
         }
+
+        if (status != NVAPI_OK)
+            return status;
     }
 
     return Ok(n);
