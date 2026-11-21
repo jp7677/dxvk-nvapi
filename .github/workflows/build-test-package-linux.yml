@@ -14,19 +14,30 @@ jobs:
     container: docker.io/library/archlinux:base-devel
 
     steps:
-    - name: Setup build container
+    - name: Install packages
+      run: pacman -Syu --needed --noconfirm git clang mingw-w64-gcc meson ninja wine
+
+    - name: Prepare LLVM MinGW
+      env:
+        LLVM_MINGW_VERSION: 20261104
+        LLVM_MINGW_DIGEST: sha256:919380403de87dca3c581c2053230cd298af5e891286628ba0613b7fed370926
       run: |
-        pacman -Syu --needed --noconfirm git clang mingw-w64-gcc meson ninja wine
-        git config --global --add safe.directory "$GITHUB_WORKSPACE"
-        curl -fLO https://github.com/mstorsjo/llvm-mingw/releases/download/20260908/llvm-mingw-20260908-ucrt-ubuntu-22.04-x86_64.tar.xz
-        mkdir /opt/llvm-mingw
-        tar -C /opt/llvm-mingw -xf llvm-mingw-*.tar.xz --strip-components=1
+        curl -sfLO https://github.com/mstorsjo/llvm-mingw/releases/download/${LLVM_MINGW_VERSION}/llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-ubuntu-22.04-x86_64.tar.xz
+        echo "${LLVM_MINGW_DIGEST#sha256:} llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-ubuntu-22.04-x86_64.tar.xz" | sha256sum --check
+        mkdir -p "$RUNNER_TEMP/llvm-mingw"
+        tar -C "$RUNNER_TEMP/llvm-mingw" -xf llvm-mingw-${LLVM_MINGW_VERSION}-ucrt-ubuntu-22.04-x86_64.tar.xz --strip-components=1
 
     - name: Checkout code
       uses: actions/checkout@v7
       with:
         submodules: recursive
         fetch-depth: 0
+
+    - name: Set git directory permissions
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+    - name: Print build version
+      run: git describe --always --tags --dirty=+
 
     - name: Set version (none-tag)
       if: github.ref_type != 'tag'
@@ -45,12 +56,9 @@ jobs:
         meson setup --cross-file "./build-mingw-win64.txt" -Denable_tests=True build/lint
         ninja clang-format-check -C build/lint
 
-    - name: Print build version
-      run: git describe --always --tags --dirty=+
-
     - name: Build and run tests
       run: |
-        export PATH="$PATH:/opt/llvm-mingw/bin"
+        export PATH="$PATH:$RUNNER_TEMP/llvm-mingw/bin"
         ./package-release.sh "${{ env.VERSION }}" build --enable-tests --build-arm64x
         mkdir "${HOME}/tests-prefix"
         export WINEPREFIX="${HOME}/tests-prefix"
