@@ -419,34 +419,19 @@ NVAPI_FUNCTION NvAPI_GPU_GetMemoryInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_DISP
     auto clampedCurAvailableDedicatedVideoMemory = memoryBudgetInfo.CurrentUsage > minMemoryBudget ? 0 : minMemoryBudget - memoryBudgetInfo.CurrentUsage;
 
     switch (pMemoryInfo->version) {
-        case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_1: {
-            auto pMemoryInfoV1 = reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO_V1*>(pMemoryInfo);
-            pMemoryInfoV1->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
-            pMemoryInfoV1->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
-            pMemoryInfoV1->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
-            pMemoryInfoV1->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
+        case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3:
+            pMemoryInfo->dedicatedVideoMemoryEvictionsSize = 0;
+            pMemoryInfo->dedicatedVideoMemoryEvictionCount = 0;
+            [[fallthrough]];
+        case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_2:
+            pMemoryInfo->curAvailableDedicatedVideoMemory = clampedCurAvailableDedicatedVideoMemory / 1024;
+            [[fallthrough]];
+        case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_1:
+            pMemoryInfo->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
+            pMemoryInfo->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
+            pMemoryInfo->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
+            pMemoryInfo->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
             break;
-        }
-        case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_2: {
-            auto pMemoryInfoV2 = reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO_V2*>(pMemoryInfo);
-            pMemoryInfoV2->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
-            pMemoryInfoV2->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
-            pMemoryInfoV2->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
-            pMemoryInfoV2->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
-            pMemoryInfoV2->curAvailableDedicatedVideoMemory = clampedCurAvailableDedicatedVideoMemory / 1024;
-            break;
-        }
-        case NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3: {
-            auto pMemoryInfoV3 = reinterpret_cast<NV_DISPLAY_DRIVER_MEMORY_INFO_V3*>(pMemoryInfo);
-            pMemoryInfoV3->dedicatedVideoMemory = memoryInfo.DedicatedVideoMemory / 1024;
-            pMemoryInfoV3->systemVideoMemory = memoryInfo.DedicatedSystemMemory / 1024;
-            pMemoryInfoV3->sharedSystemMemory = memoryInfo.SharedSystemMemory / 1024;
-            pMemoryInfoV3->availableDedicatedVideoMemory = (memoryInfo.DedicatedVideoMemory - memoryInfo.ReservedVideoMemory) / 1024;
-            pMemoryInfoV3->curAvailableDedicatedVideoMemory = clampedCurAvailableDedicatedVideoMemory / 1024;
-            pMemoryInfoV3->dedicatedVideoMemoryEvictionsSize = 0;
-            pMemoryInfoV3->dedicatedVideoMemoryEvictionCount = 0;
-            break;
-        }
         default:
             return IncompatibleStructVersion(n, pMemoryInfo->version);
     }
