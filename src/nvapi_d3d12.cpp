@@ -38,6 +38,15 @@ NVAPI_FUNCTION NvAPI_D3D12_IsNvShaderExtnOpCodeSupported(ID3D12Device* pDevice, 
         } else {
             *pSupported = device->IsNvShaderExtnOpCodeSupported(opCode);
         }
+    } else if (env::isNvidiaRtxMegaGeometrySample()) {
+        if (opCode == NV_EXTN_OP_SHFL) {
+            // NVIDIA RTX Mega Geometry sample queries NV_EXTN_OP_SHFL for detecting HLSL extension UAV support,
+            // query NV_EXTN_OP_RT_GET_CLUSTER_ID instead since we want it to detect SER support
+            log::info("Querying NV_EXTN_OP_RT_GET_CLUSTER_ID for HLSL support for NVIDIA RTX Mega Geometry Sample");
+            *pSupported = device->IsNvShaderExtnOpCodeSupported(NV_EXTN_OP_RT_GET_CLUSTER_ID);
+        } else {
+            *pSupported = device->IsNvShaderExtnOpCodeSupported(opCode);
+        }
     } else
         *pSupported = env::isD3d12NvShaderExtnEnabled() && device->IsNvShaderExtnOpCodeSupported(opCode);
 
