@@ -140,8 +140,6 @@ NVAPI_FUNCTION NvAPI_D3D1x_GetGraphicsCapabilities(IUnknown* pDevice, NvU32 stru
         case NV_D3D1x_GRAPHICS_CAPS_VER1: {
             auto pGraphicsCapsV1 = reinterpret_cast<NV_D3D1x_GRAPHICS_CAPS_V1*>(pGraphicsCaps);
             *pGraphicsCapsV1 = {};
-            pGraphicsCapsV1->bExclusiveScissorRectsSupported = 0;
-            pGraphicsCapsV1->bVariablePixelRateShadingSupported = 0;
             break;
         }
         case NV_D3D1x_GRAPHICS_CAPS_VER2:
@@ -149,11 +147,6 @@ NVAPI_FUNCTION NvAPI_D3D1x_GetGraphicsCapabilities(IUnknown* pDevice, NvU32 stru
             // bFastUAVClearSupported is reported mostly for the sake of DLSS.
             // All NVIDIA Vulkan drivers support this.
             pGraphicsCaps->bFastUAVClearSupported = 1;
-            // dummy SM version number (unused by DLSS):
-            pGraphicsCaps->majorSMVersion = 0;
-            pGraphicsCaps->minorSMVersion = 0;
-            pGraphicsCaps->bExclusiveScissorRectsSupported = 0;
-            pGraphicsCaps->bVariablePixelRateShadingSupported = 0;
             break;
         default:
             return IncompatibleStructVersion(n, structVersion);
