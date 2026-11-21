@@ -59,6 +59,8 @@ nvapi_exe = executable(target_name, [ nvapi_src, catch2_src, nvapi_tests_src, dx
   include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, catch2_headers, trompeloeil_headers ],
   install             : true)
 
+test('nvapi', nvapi_exe, args: ['[@unit-tests]'])
+
 nvofapi_src = files([
   '../src/util/util_string.cpp',
   '../src/util/util_env.cpp',
@@ -91,3 +93,5 @@ nvofapi_exe = executable(target_name, [ nvofapi_src, catch2_src, nvofapi_tests_s
   dependencies        : [ lib_version ],
   include_directories : [ nvapi_headers, vk_headers, dx_headers, nvml_headers, nvofapi_headers, catch2_headers, trompeloeil_headers ],
   install             : true)
+
+test('nvofapi', nvofapi_exe, args: ['[@unit-tests]'])

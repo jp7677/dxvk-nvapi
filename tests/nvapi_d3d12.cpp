@@ -931,12 +931,34 @@ TEST_CASE("D3D12 methods succeed", "[.d3d12]") {
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_SPHERES_CAP_NONE);
         }
 
+        SECTION("GetRaytracingCaps returns OK and claims that Spheres is supported with the Spheres extension") {
+            ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_SPHERE_OBJECT_POSITION_AND_RADIUS)))
+                .RETURN(true);
+
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NVAPI_D3D12_RAYTRACING_SPHERES_CAPS caps = NVAPI_D3D12_RAYTRACING_SPHERES_CAP_NONE;
+            REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_SPHERES, &caps, sizeof(caps)) == NVAPI_OK);
+            REQUIRE(caps == NVAPI_D3D12_RAYTRACING_SPHERES_CAP_STANDARD);
+        }
+
         SECTION("GetRaytracingCaps returns OK and claims that Linear Swept Spheres is not supported") {
             REQUIRE(NvAPI_Initialize() == NVAPI_OK);
 
             NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS caps{};
             REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_LINEAR_SWEPT_SPHERES, &caps, sizeof(caps)) == NVAPI_OK);
             REQUIRE(caps == NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_NONE);
+        }
+
+        SECTION("GetRaytracingCaps returns OK and claims that LSS is supported with the LSS extension") {
+            ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_LSS_OBJECT_POSITIONS_AND_RADII)))
+                .RETURN(true);
+
+            REQUIRE(NvAPI_Initialize() == NVAPI_OK);
+
+            NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAPS caps = NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_NONE;
+            REQUIRE(NvAPI_D3D12_GetRaytracingCaps(static_cast<ID3D12Device*>(&device), NVAPI_D3D12_RAYTRACING_CAPS_TYPE_LINEAR_SWEPT_SPHERES, &caps, sizeof(caps)) == NVAPI_OK);
+            REQUIRE(caps == NVAPI_D3D12_RAYTRACING_LINEAR_SWEPT_SPHERES_CAP_STANDARD);
         }
     }
 
@@ -1203,7 +1225,7 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
 
             D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS d3d12Desc{};
             std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs{};
-            ALLOW_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, &info))
+            REQUIRE_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, &info))
                 .LR_SIDE_EFFECT({
                     d3d12Desc = *_1;
 
@@ -1280,6 +1302,44 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
                     REQUIRE(geometryDescs[1].Type == D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS);
                     REQUIRE(geometryDescs[1].AABBs.AABBCount == geometryDescEx[1].aabbs.AABBCount);
                 }
+
+                SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx for Spheres geometry") {
+                    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_SPHERE_OBJECT_POSITION_AND_RADIUS)))
+                        .RETURN(true);
+
+                    geometryDescEx[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_SPHERES_EX;
+                    geometryDescEx[0].spheres.vertexCount = 3;
+                    geometryDescEx[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_SPHERES_EX;
+                    geometryDescEx[1].spheres.vertexCount = 4;
+
+                    REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                    REQUIRE(d3d12Desc.NumDescs == desc.numDescs);
+                    REQUIRE(d3d12Desc.DescsLayout == desc.descsLayout);
+                    REQUIRE(geometryDescs[0].Type == D3D12_VK_EXT_RAYTRACING_GEOMETRY_TYPE_SPHERES_NVAPI);
+                    // Misuse first pointer type in union to cast
+                    REQUIRE(reinterpret_cast<const NVAPI_D3D12_RAYTRACING_GEOMETRY_SPHERES_DESC*>(geometryDescs[0].OmmTriangles.pTriangles)->vertexCount == geometryDescEx[0].spheres.vertexCount);
+                    REQUIRE(geometryDescs[1].Type == D3D12_VK_EXT_RAYTRACING_GEOMETRY_TYPE_SPHERES_NVAPI);
+                    REQUIRE(reinterpret_cast<const NVAPI_D3D12_RAYTRACING_GEOMETRY_SPHERES_DESC*>(geometryDescs[1].OmmTriangles.pTriangles)->vertexCount == geometryDescEx[1].spheres.vertexCount);
+                }
+
+                SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx for LSS geometry") {
+                    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_LSS_OBJECT_POSITIONS_AND_RADII)))
+                        .RETURN(true);
+
+                    geometryDescEx[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_LSS_EX;
+                    geometryDescEx[0].lss.vertexCount = 3;
+                    geometryDescEx[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_LSS_EX;
+                    geometryDescEx[1].lss.vertexCount = 4;
+
+                    REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                    REQUIRE(d3d12Desc.NumDescs == desc.numDescs);
+                    REQUIRE(d3d12Desc.DescsLayout == desc.descsLayout);
+                    REQUIRE(geometryDescs[0].Type == D3D12_VK_EXT_RAYTRACING_GEOMETRY_TYPE_LSS_NVAPI);
+                    // See above
+                    REQUIRE(reinterpret_cast<const NVAPI_D3D12_RAYTRACING_GEOMETRY_LSS_DESC*>(geometryDescs[0].OmmTriangles.pTriangles)->vertexCount == geometryDescEx[0].lss.vertexCount);
+                    REQUIRE(geometryDescs[1].Type == D3D12_VK_EXT_RAYTRACING_GEOMETRY_TYPE_LSS_NVAPI);
+                    REQUIRE(reinterpret_cast<const NVAPI_D3D12_RAYTRACING_GEOMETRY_LSS_DESC*>(geometryDescs[1].OmmTriangles.pTriangles)->vertexCount == geometryDescEx[1].lss.vertexCount);
+                }
             }
 
             SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with BLAS for array of R520 structures") {
@@ -1347,12 +1407,10 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         params.pDesc = &desc;
         params.pInfo = &info;
 
-        FORBID_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, _));
-
         D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS d3d12Desc{};
         std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs{};
         std::vector<D3D12_GPU_VIRTUAL_ADDRESS> ommArrays{};
-        ALLOW_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, &info))
+        REQUIRE_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, &info))
             .LR_SIDE_EFFECT({
                 d3d12Desc = *_1;
 
@@ -1478,7 +1536,7 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         desc.type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
 
         D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS capturedFlags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
-        ALLOW_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, &info))
+        REQUIRE_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, &info))
             .LR_SIDE_EFFECT(capturedFlags = _1->Flags);
 
         SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with allow OMM update flag") {
@@ -1503,11 +1561,16 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         }
     }
 
-    SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx fails for OMM triangles when Opacity Micromaps are not supported") {
+    SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx fails for geometry type when extensions are not supported") {
+        auto args = GENERATE(
+            NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX,
+            NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_SPHERES_EX,
+            NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_LSS_EX);
+
         FORBID_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, _));
 
         NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx{};
-        geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX;
+        geometryDescEx.type = args;
         NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS_EX desc{};
         D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO info{};
         NVAPI_GET_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO_EX_PARAMS params{};
@@ -1569,6 +1632,22 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
 
             REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_INVALID_ARGUMENT);
         }
+
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx for Spheres triangles geometry") {
+            ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_SPHERE_OBJECT_POSITION_AND_RADIUS)))
+                .RETURN(true);
+            geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_SPHERES_EX;
+
+            REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_INVALID_ARGUMENT);
+        }
+
+        SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx for LSS triangles geometry") {
+            ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_LSS_OBJECT_POSITIONS_AND_RADII)))
+                .RETURN(true);
+            geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_LSS_EX;
+
+            REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_INVALID_ARGUMENT);
+        }
     }
 
     SECTION("GetRaytracingAccelerationStructurePrebuildInfoEx with an empty BLAS returns OK") {
@@ -1583,7 +1662,7 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         desc.numDescs = 0;
 
         D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS d3d12Desc{};
-        ALLOW_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, &info))
+        REQUIRE_CALL(device, GetRaytracingAccelerationStructurePrebuildInfo(_, &info))
             .LR_SIDE_EFFECT(d3d12Desc = *_1);
 
         REQUIRE(NvAPI_D3D12_GetRaytracingAccelerationStructurePrebuildInfoEx(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
@@ -1599,7 +1678,7 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
 
             D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC d3d12Desc{};
             std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs{};
-            ALLOW_CALL(commandList, BuildRaytracingAccelerationStructure(_, params.numPostbuildInfoDescs, params.pPostbuildInfoDescs))
+            REQUIRE_CALL(commandList, BuildRaytracingAccelerationStructure(_, params.numPostbuildInfoDescs, params.pPostbuildInfoDescs))
                 .LR_SIDE_EFFECT({
                     d3d12Desc = *_1;
 
@@ -1688,6 +1767,42 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
                     REQUIRE(d3d12Desc.SourceAccelerationStructureData == desc.sourceAccelerationStructureData);
                     REQUIRE(d3d12Desc.ScratchAccelerationStructureData == desc.scratchAccelerationStructureData);
                 }
+
+                SECTION("BuildRaytracingAccelerationStructureEx for Spheres geometry") {
+                    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_SPHERE_OBJECT_POSITION_AND_RADIUS)))
+                        .RETURN(true);
+
+                    geometryDescEx[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_SPHERES_EX;
+                    geometryDescEx[0].spheres.vertexCount = 3;
+                    geometryDescEx[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_SPHERES_EX;
+                    geometryDescEx[1].spheres.vertexCount = 4;
+
+                    REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+                    REQUIRE(d3d12Desc.Inputs.NumDescs == desc.inputs.numDescs);
+                    REQUIRE(geometryDescs[0].Type == D3D12_VK_EXT_RAYTRACING_GEOMETRY_TYPE_SPHERES_NVAPI);
+                    // Misuse first pointer type in union to cast
+                    REQUIRE(reinterpret_cast<const NVAPI_D3D12_RAYTRACING_GEOMETRY_SPHERES_DESC*>(geometryDescs[0].OmmTriangles.pTriangles)->vertexCount == geometryDescEx[0].spheres.vertexCount);
+                    REQUIRE(geometryDescs[1].Type == D3D12_VK_EXT_RAYTRACING_GEOMETRY_TYPE_SPHERES_NVAPI);
+                    REQUIRE(reinterpret_cast<const NVAPI_D3D12_RAYTRACING_GEOMETRY_SPHERES_DESC*>(geometryDescs[1].OmmTriangles.pTriangles)->vertexCount == geometryDescEx[1].spheres.vertexCount);
+                }
+
+                SECTION("BuildRaytracingAccelerationStructureEx for LSS geometry") {
+                    ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_LSS_OBJECT_POSITIONS_AND_RADII)))
+                        .RETURN(true);
+
+                    geometryDescEx[0].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_LSS_EX;
+                    geometryDescEx[0].lss.vertexCount = 3;
+                    geometryDescEx[1].type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_LSS_EX;
+                    geometryDescEx[1].lss.vertexCount = 4;
+
+                    REQUIRE(NvAPI_D3D12_BuildRaytracingAccelerationStructureEx(static_cast<ID3D12GraphicsCommandList4*>(&commandList), &params) == NVAPI_OK);
+                    REQUIRE(d3d12Desc.Inputs.NumDescs == desc.inputs.numDescs);
+                    REQUIRE(geometryDescs[0].Type == D3D12_VK_EXT_RAYTRACING_GEOMETRY_TYPE_LSS_NVAPI);
+                    // See above
+                    REQUIRE(reinterpret_cast<const NVAPI_D3D12_RAYTRACING_GEOMETRY_LSS_DESC*>(geometryDescs[0].OmmTriangles.pTriangles)->vertexCount == geometryDescEx[0].lss.vertexCount);
+                    REQUIRE(geometryDescs[1].Type == D3D12_VK_EXT_RAYTRACING_GEOMETRY_TYPE_LSS_NVAPI);
+                    REQUIRE(reinterpret_cast<const NVAPI_D3D12_RAYTRACING_GEOMETRY_LSS_DESC*>(geometryDescs[1].OmmTriangles.pTriangles)->vertexCount == geometryDescEx[1].lss.vertexCount);
+                }
             }
 
             SECTION("BuildRaytracingAccelerationStructureEx with BLAS for array of R520 structures") {
@@ -1762,7 +1877,7 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC d3d12Desc{};
         std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs{};
         std::vector<D3D12_GPU_VIRTUAL_ADDRESS> ommArrays{};
-        ALLOW_CALL(commandList, BuildRaytracingAccelerationStructure(_, params.numPostbuildInfoDescs, params.pPostbuildInfoDescs))
+        REQUIRE_CALL(commandList, BuildRaytracingAccelerationStructure(_, params.numPostbuildInfoDescs, params.pPostbuildInfoDescs))
             .LR_SIDE_EFFECT({
                 d3d12Desc = *_1;
 
@@ -1889,7 +2004,7 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         params.pDesc = &desc;
 
         D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS capturedFlags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_NONE;
-        ALLOW_CALL(commandList, BuildRaytracingAccelerationStructure(_, _, _))
+        REQUIRE_CALL(commandList, BuildRaytracingAccelerationStructure(_, _, _))
             .LR_SIDE_EFFECT(capturedFlags = _1->Inputs.Flags);
 
         SECTION("BuildRaytracingAccelerationStructureEx with TLAS and allow OMM update flag") {
@@ -1921,11 +2036,16 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
         }
     }
 
-    SECTION("BuildRaytracingAccelerationStructureEx fails for OMM triangles when Opacity Micromaps are not supported") {
+    SECTION("BuildRaytracingAccelerationStructureEx fails for geometry type when extensions are not supported") {
+        auto args = GENERATE(
+            NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX,
+            NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_SPHERES_EX,
+            NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_LSS_EX);
+
         FORBID_CALL(commandList, BuildRaytracingAccelerationStructure(_, _, _));
 
         NVAPI_D3D12_RAYTRACING_GEOMETRY_DESC_EX geometryDescEx{};
-        geometryDescEx.type = NVAPI_D3D12_RAYTRACING_GEOMETRY_TYPE_OMM_TRIANGLES_EX;
+        geometryDescEx.type = args;
         NVAPI_D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC_EX desc{};
         NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS params{};
         params.version = NVAPI_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_EX_PARAMS_VER1;
@@ -2026,29 +2146,82 @@ TEST_CASE("D3D12 raytracing methods succeed", "[.d3d12]") {
     }
 
     SECTION("SetCreatePipelineStateOptions succeeds") {
-        ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_OPACITY_MICROMAP))
-            .RETURN(true);
-
         NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS params{};
         params.version = NVAPI_D3D12_SET_CREATE_PIPELINE_STATE_OPTIONS_PARAMS_VER1;
-        params.flags = NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT;
 
-        SECTION("SetCreatePipelineStateOptions returns OK when the override is accepted") {
-            REQUIRE_CALL(device, SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT))
-                .RETURN(true)
-                .TIMES(1);
+        SECTION("SetCreatePipelineStateOptions with OMM flag succeeds") {
+            ALLOW_CALL(device, GetExtensionSupport(D3D12_VK_OPACITY_MICROMAP))
+                .RETURN(true);
 
-            REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
-            REQUIRE(deviceRefCount == 0);
+            params.flags = NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT;
+
+            SECTION("SetCreatePipelineStateOptions returns OK when the override is accepted") {
+                REQUIRE_CALL(device, SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT))
+                    .RETURN(true)
+                    .TIMES(1);
+
+                REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                REQUIRE(deviceRefCount == 0);
+            }
+
+            SECTION("SetCreatePipelineStateOptions returns not-supported when the override is rejected") {
+                REQUIRE_CALL(device, SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT))
+                    .RETURN(false)
+                    .TIMES(1);
+
+                REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_NOT_SUPPORTED);
+                REQUIRE(deviceRefCount == 0);
+            }
         }
 
-        SECTION("SetCreatePipelineStateOptions returns not-supported when the override is rejected") {
-            REQUIRE_CALL(device, SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_OMM_SUPPORT))
-                .RETURN(false)
-                .TIMES(1);
+        SECTION("SetCreatePipelineStateOptions with Spheres flag succeeds") {
+            ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_SPHERE_OBJECT_POSITION_AND_RADIUS)))
+                .RETURN(true);
 
-            REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_NOT_SUPPORTED);
-            REQUIRE(deviceRefCount == 0);
+            params.flags = NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_SPHERE_SUPPORT;
+
+            SECTION("SetCreatePipelineStateOptions returns OK when the override is accepted") {
+                REQUIRE_CALL(device, SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_SPHERE_SUPPORT))
+                    .RETURN(true)
+                    .TIMES(1);
+
+                REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                REQUIRE(deviceRefCount == 0);
+            }
+
+            SECTION("SetCreatePipelineStateOptions returns not-supported when the override is rejected") {
+                REQUIRE_CALL(device, SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_SPHERE_SUPPORT))
+                    .RETURN(false)
+                    .TIMES(1);
+
+                REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_NOT_SUPPORTED);
+                REQUIRE(deviceRefCount == 0);
+            }
+        }
+
+        SECTION("SetCreatePipelineStateOptions with LSS flag succeeds") {
+            ALLOW_CALL(device, IsNvShaderExtnOpCodeSupported(static_cast<UINT32>(NV_EXTN_OP_RT_LSS_OBJECT_POSITIONS_AND_RADII)))
+                .RETURN(true);
+
+            params.flags = NVAPI_D3D12_PIPELINE_CREATION_STATE_FLAGS_ENABLE_LSS_SUPPORT;
+
+            SECTION("SetCreatePipelineStateOptions returns OK when the override is accepted") {
+                REQUIRE_CALL(device, SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_LSS_SUPPORT))
+                    .RETURN(true)
+                    .TIMES(1);
+
+                REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_OK);
+                REQUIRE(deviceRefCount == 0);
+            }
+
+            SECTION("SetCreatePipelineStateOptions returns not-supported when the override is rejected") {
+                REQUIRE_CALL(device, SetCreatePipelineStateFlagsNVAPI(D3D12_VK_EXT_PIPELINE_CREATION_STATE_FLAGS_ENABLE_LSS_SUPPORT))
+                    .RETURN(false)
+                    .TIMES(1);
+
+                REQUIRE(NvAPI_D3D12_SetCreatePipelineStateOptions(static_cast<ID3D12Device5*>(&device), &params) == NVAPI_NOT_SUPPORTED);
+                REQUIRE(deviceRefCount == 0);
+            }
         }
     }
 

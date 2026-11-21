@@ -5,6 +5,7 @@ winsysroot = '@GLOBAL_SOURCE_ROOT@/winsysroot'
 cpp = ['clang-cl', '/clang:--target=x86_64-pc-windows-msvc', '/clang:-fuse-ld=lld-link', '/winsysroot', winsysroot]
 strip = 'llvm-strip'
 ar = 'llvm-ar'
+exe_wrapper = 'wine'
 
 [built-in options]
 cpp_args = ['/MT', '-Wno-c++11-narrowing']

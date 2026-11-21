@@ -23,14 +23,22 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
-    - name: Suppress repository ownership mismatch errors
-      run: git config --global --add safe.directory '*'
+    - name: Set git directory permissions
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+    - name: Print build version
+      run: git describe --always --tags --dirty=+
 
     - name: Prepare MSVCRT and Windows SDK
+      env:
+        XWIN_VERSION: 0.10.0
+        XWIN_DIGEST: sha256:d870eb4b2f390878af6da1ccd3cf321d22fcb72720984853b4be732ae597fc88
       run: |
-        xwin_version=$(curl -s https://api.github.com/repos/Jake-Shadle/xwin/releases/latest | jq -r .tag_name)
-        curl -sL "https://github.com/Jake-Shadle/xwin/releases/download/${xwin_version}/xwin-${xwin_version}-x86_64-unknown-linux-musl.tar.gz" | bsdtar -xf-
-        "./xwin-${xwin_version}-x86_64-unknown-linux-musl/xwin" \
+        curl -sfLO "https://github.com/Jake-Shadle/xwin/releases/download/${XWIN_VERSION}/xwin-${XWIN_VERSION}-x86_64-unknown-linux-musl.tar.gz"
+        echo "${XWIN_DIGEST#sha256:} xwin-${XWIN_VERSION}-x86_64-unknown-linux-musl.tar.gz" | sha256sum --check
+        mkdir -p "$RUNNER_TEMP/xwin"
+        tar -C "$RUNNER_TEMP/xwin" -xf "xwin-${XWIN_VERSION}-x86_64-unknown-linux-musl.tar.gz" --strip-components=1
+        "$RUNNER_TEMP/xwin/xwin" \
           --accept-license \
           --arch x86_64,x86 \
           splat \
@@ -41,9 +49,6 @@ jobs:
         cd './winsysroot/Windows Kits/10'
         test -e ./Include || mv ./include ./Include
         test -e ./Lib || mv ./lib ./Lib
-
-    - name: Print build version
-      run: git describe --always --tags --dirty=+
 
     - name: Build x86
       shell: bash

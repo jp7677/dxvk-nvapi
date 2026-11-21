@@ -17,6 +17,8 @@ namespace dxvk::env {
 
     bool isNvidiaRtxPathTracingSample();
 
+    bool isNvidiaRtxMegaGeometrySample();
+
     bool isD3d12NvShaderExtnEnabled();
 
     std::optional<NV_GPU_ARCHITECTURE_ID> needsGpuArchitectureSpoofing(NV_GPU_ARCHITECTURE_ID architectureId, void* returnAddress);
