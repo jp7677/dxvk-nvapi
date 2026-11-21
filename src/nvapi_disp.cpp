@@ -86,11 +86,17 @@ NVAPI_FUNCTION NvAPI_Disp_GetHdrCapabilities(NvU32 displayId, NV_HDR_CAPABILITIE
 
     const auto& data = output->GetColorData();
 
-    switch (pHdrCapabilities->version) {
+    switch (auto version = pHdrCapabilities->version) {
+        case NV_HDR_CAPABILITIES_VER3:
+            pHdrCapabilities->hdr10plus_vsvdb = {};
+            [[fallthrough]];
+        case NV_HDR_CAPABILITIES_VER2:
+            pHdrCapabilities->dv_static_metadata = {};
+            [[fallthrough]];
         case NV_HDR_CAPABILITIES_VER1: {
             auto pHdrCapabilitiesV1 = reinterpret_cast<NV_HDR_CAPABILITIES_V1*>(pHdrCapabilities);
             *pHdrCapabilitiesV1 = {};
-            pHdrCapabilitiesV1->version = NV_HDR_CAPABILITIES_VER1;
+            pHdrCapabilitiesV1->version = version;
             pHdrCapabilitiesV1->isST2084EotfSupported = data.HasST2084Support;
             pHdrCapabilitiesV1->display_data.displayPrimary_x0 = data.RedPrimaryX;
             pHdrCapabilitiesV1->display_data.displayPrimary_y0 = data.RedPrimaryY;
@@ -105,40 +111,6 @@ NVAPI_FUNCTION NvAPI_Disp_GetHdrCapabilities(NvU32 displayId, NV_HDR_CAPABILITIE
             pHdrCapabilitiesV1->display_data.desired_content_max_frame_average_luminance = data.MaxFullFrameLuminance;
             break;
         }
-        case NV_HDR_CAPABILITIES_VER2: {
-            auto pHdrCapabilitiesV2 = reinterpret_cast<NV_HDR_CAPABILITIES_V2*>(pHdrCapabilities);
-            *pHdrCapabilitiesV2 = {};
-            pHdrCapabilitiesV2->version = NV_HDR_CAPABILITIES_VER2;
-            pHdrCapabilitiesV2->isST2084EotfSupported = data.HasST2084Support;
-            pHdrCapabilitiesV2->display_data.displayPrimary_x0 = data.RedPrimaryX;
-            pHdrCapabilitiesV2->display_data.displayPrimary_y0 = data.RedPrimaryY;
-            pHdrCapabilitiesV2->display_data.displayPrimary_x1 = data.GreenPrimaryX;
-            pHdrCapabilitiesV2->display_data.displayPrimary_y1 = data.GreenPrimaryY;
-            pHdrCapabilitiesV2->display_data.displayPrimary_x2 = data.BluePrimaryX;
-            pHdrCapabilitiesV2->display_data.displayPrimary_y2 = data.BluePrimaryY;
-            pHdrCapabilitiesV2->display_data.displayWhitePoint_x = data.WhitePointX;
-            pHdrCapabilitiesV2->display_data.displayWhitePoint_y = data.WhitePointY;
-            pHdrCapabilitiesV2->display_data.desired_content_min_luminance = data.MinLuminance;
-            pHdrCapabilitiesV2->display_data.desired_content_max_luminance = data.MaxLuminance;
-            pHdrCapabilitiesV2->display_data.desired_content_max_frame_average_luminance = data.MaxFullFrameLuminance;
-            break;
-        }
-        case NV_HDR_CAPABILITIES_VER3:
-            *pHdrCapabilities = {};
-            pHdrCapabilities->version = NV_HDR_CAPABILITIES_VER3;
-            pHdrCapabilities->isST2084EotfSupported = data.HasST2084Support;
-            pHdrCapabilities->display_data.displayPrimary_x0 = data.RedPrimaryX;
-            pHdrCapabilities->display_data.displayPrimary_y0 = data.RedPrimaryY;
-            pHdrCapabilities->display_data.displayPrimary_x1 = data.GreenPrimaryX;
-            pHdrCapabilities->display_data.displayPrimary_y1 = data.GreenPrimaryY;
-            pHdrCapabilities->display_data.displayPrimary_x2 = data.BluePrimaryX;
-            pHdrCapabilities->display_data.displayPrimary_y2 = data.BluePrimaryY;
-            pHdrCapabilities->display_data.displayWhitePoint_x = data.WhitePointX;
-            pHdrCapabilities->display_data.displayWhitePoint_y = data.WhitePointY;
-            pHdrCapabilities->display_data.desired_content_min_luminance = data.MinLuminance;
-            pHdrCapabilities->display_data.desired_content_max_luminance = data.MaxLuminance;
-            pHdrCapabilities->display_data.desired_content_max_frame_average_luminance = data.MaxFullFrameLuminance;
-            break;
         default:
             return IncompatibleStructVersion(n, pHdrCapabilities->version);
     }
