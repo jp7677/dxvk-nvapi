@@ -717,22 +717,21 @@ NVAPI_FUNCTION NvAPI_GPU_GetGPUInfo(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_INF
     if (!nvapiAdapterRegistry->IsAdapter(adapter))
         return ExpectedPhysicalGpuHandle(n);
 
-    switch (pGpuInfo->version) {
-        case NV_GPU_INFO_VER1: {
-            auto pGpuInfoV1 = reinterpret_cast<NV_GPU_INFO_V1*>(pGpuInfo);
-            *pGpuInfoV1 = {};
-            pGpuInfoV1->version = NV_GPU_INFO_VER1;
-            break;
-        }
+    switch (auto version = pGpuInfo->version) {
         case NV_GPU_INFO_VER2:
             *pGpuInfo = {};
-            pGpuInfo->version = NV_GPU_INFO_VER2;
             if (adapter->GetArchitectureId() >= NV_GPU_ARCHITECTURE_TU100) {
                 // Values are taken from RTX4080
                 pGpuInfo->rayTracingCores = 76;
                 pGpuInfo->tensorCores = 304;
             }
+            [[fallthrough]];
+        case NV_GPU_INFO_VER1: {
+            auto pGpuInfoV1 = reinterpret_cast<NV_GPU_INFO_V1*>(pGpuInfo);
+            *pGpuInfoV1 = {};
+            pGpuInfoV1->version = version;
             break;
+        }
         default:
             return IncompatibleStructVersion(n, pGpuInfo->version);
     }
