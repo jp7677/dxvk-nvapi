@@ -919,31 +919,20 @@ NVAPI_FUNCTION NvAPI_GPU_GetThermalSettings(NvPhysicalGpuHandle hPhysicalGpu, Nv
             sensors = sensorIndex == NVAPI_THERMAL_TARGET_ALL
                 ? thermalSettings.count
                 : sensorIndex < thermalSettings.count;
-            switch (pThermalSettings->version) {
-                case NV_GPU_THERMAL_SETTINGS_VER_1: {
+            pThermalSettings->count = thermalSettings.count;
+            for (auto i = 0U; i < sensors; i++) {
+                pThermalSettings->sensor[i].controller = Nvml::ToNvThermalController(thermalSettings.sensor[i].controller);
+                pThermalSettings->sensor[i].target = Nvml::ToNvThermalTarget(thermalSettings.sensor[i].target);
+                if (pThermalSettings->version == NV_GPU_THERMAL_SETTINGS_VER_1) {
                     auto pThermalSettingsV1 = reinterpret_cast<NV_GPU_THERMAL_SETTINGS_V1*>(pThermalSettings);
-                    pThermalSettingsV1->count = thermalSettings.count;
-                    for (auto i = 0U; i < sensors; i++) {
-                        pThermalSettingsV1->sensor[i].controller = Nvml::ToNvThermalController(thermalSettings.sensor[i].controller);
-                        pThermalSettingsV1->sensor[i].target = Nvml::ToNvThermalTarget(thermalSettings.sensor[i].target);
-                        pThermalSettingsV1->sensor[i].currentTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].currentTemp, 0));
-                        pThermalSettingsV1->sensor[i].defaultMaxTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].defaultMaxTemp, 0));
-                        pThermalSettingsV1->sensor[i].defaultMinTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].defaultMinTemp, 0));
-                    }
-                    break;
+                    pThermalSettingsV1->sensor[i].currentTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].currentTemp, 0));
+                    pThermalSettingsV1->sensor[i].defaultMaxTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].defaultMaxTemp, 0));
+                    pThermalSettingsV1->sensor[i].defaultMinTemp = static_cast<NvU32>(std::max(thermalSettings.sensor[i].defaultMinTemp, 0));
+                } else {
+                    pThermalSettings->sensor[i].currentTemp = static_cast<NvS32>(thermalSettings.sensor[i].currentTemp);
+                    pThermalSettings->sensor[i].defaultMaxTemp = static_cast<NvS32>(thermalSettings.sensor[i].defaultMaxTemp);
+                    pThermalSettings->sensor[i].defaultMinTemp = static_cast<NvS32>(thermalSettings.sensor[i].defaultMinTemp);
                 }
-                case NV_GPU_THERMAL_SETTINGS_VER_2:
-                    pThermalSettings->count = thermalSettings.count;
-                    for (auto i = 0U; i < sensors; i++) {
-                        pThermalSettings->sensor[i].controller = Nvml::ToNvThermalController(thermalSettings.sensor[i].controller);
-                        pThermalSettings->sensor[i].target = Nvml::ToNvThermalTarget(thermalSettings.sensor[i].target);
-                        pThermalSettings->sensor[i].currentTemp = static_cast<NvS32>(thermalSettings.sensor[i].currentTemp);
-                        pThermalSettings->sensor[i].defaultMaxTemp = static_cast<NvS32>(thermalSettings.sensor[i].defaultMaxTemp);
-                        pThermalSettings->sensor[i].defaultMinTemp = static_cast<NvS32>(thermalSettings.sensor[i].defaultMinTemp);
-                    }
-                    break;
-                default:
-                    return Error(n); // Unreachable, but just to be sure
             }
             return Ok(n, alreadyLoggedOk);
         case NVML_ERROR_FUNCTION_NOT_FOUND:
@@ -953,18 +942,7 @@ NVAPI_FUNCTION NvAPI_GPU_GetThermalSettings(NvPhysicalGpuHandle hPhysicalGpu, Nv
         case NVML_ERROR_INVALID_ARGUMENT:
             return InvalidArgument(n);
         case NVML_ERROR_NOT_SUPPORTED:
-            switch (pThermalSettings->version) {
-                case NV_GPU_THERMAL_SETTINGS_VER_1: {
-                    auto pThermalSettingsV1 = reinterpret_cast<NV_GPU_THERMAL_SETTINGS_V1*>(pThermalSettings);
-                    pThermalSettingsV1->count = 0;
-                    break;
-                }
-                case NV_GPU_THERMAL_SETTINGS_VER_2:
-                    pThermalSettings->count = 0;
-                    break;
-                default:
-                    return Error(n); // Unreachable, but just to be sure
-            }
+            pThermalSettings->count = 0;
             return NotSupported(n);
         case NVML_ERROR_GPU_IS_LOST:
             return HandleInvalidated(n);
@@ -983,44 +961,17 @@ NVAPI_FUNCTION NvAPI_GPU_GetThermalSettings(NvPhysicalGpuHandle hPhysicalGpu, Nv
     result = nvml->DeviceGetTemperatureV(nvmlDevice, &temp);
     switch (result) {
         case NVML_SUCCESS:
-            switch (pThermalSettings->version) {
-                case NV_GPU_THERMAL_SETTINGS_VER_1: {
-                    auto pThermalSettingsV1 = reinterpret_cast<NV_GPU_THERMAL_SETTINGS_V1*>(pThermalSettings);
-                    pThermalSettingsV1->count = 1;
-                    pThermalSettingsV1->sensor[0].controller = NVAPI_THERMAL_CONTROLLER_UNKNOWN;
-                    pThermalSettingsV1->sensor[0].target = NVAPI_THERMAL_TARGET_GPU;
-                    pThermalSettingsV1->sensor[0].currentTemp = temp.temperature;
-                    pThermalSettingsV1->sensor[0].defaultMaxTemp = 127;
-                    pThermalSettingsV1->sensor[0].defaultMinTemp = 0;
-                    break;
-                }
-                case NV_GPU_THERMAL_SETTINGS_VER_2:
-                    pThermalSettings->count = 1;
-                    pThermalSettings->sensor[0].controller = NVAPI_THERMAL_CONTROLLER_UNKNOWN;
-                    pThermalSettings->sensor[0].target = NVAPI_THERMAL_TARGET_GPU;
-                    pThermalSettings->sensor[0].currentTemp = temp.temperature;
-                    pThermalSettings->sensor[0].defaultMaxTemp = 127;
-                    pThermalSettings->sensor[0].defaultMinTemp = -256;
-                    break;
-                default:
-                    return Error(n); // Unreachable, but just to be sure
-            }
+            pThermalSettings->count = 1;
+            pThermalSettings->sensor[0].controller = NVAPI_THERMAL_CONTROLLER_UNKNOWN;
+            pThermalSettings->sensor[0].target = NVAPI_THERMAL_TARGET_GPU;
+            pThermalSettings->sensor[0].currentTemp = temp.temperature;
+            pThermalSettings->sensor[0].defaultMaxTemp = 127;
+            pThermalSettings->sensor[0].defaultMinTemp = pThermalSettings->version == NV_GPU_THERMAL_SETTINGS_VER_1 ? 0 : -256;
             return Ok(n, alreadyLoggedOk);
         case NVML_ERROR_FUNCTION_NOT_FOUND:
             return NoImplementation(n, alreadyLoggedNoNvml);
         case NVML_ERROR_NOT_SUPPORTED:
-            switch (pThermalSettings->version) {
-                case NV_GPU_THERMAL_SETTINGS_VER_1: {
-                    auto pThermalSettingsV1 = reinterpret_cast<NV_GPU_THERMAL_SETTINGS_V1*>(pThermalSettings);
-                    pThermalSettingsV1->count = 0;
-                    break;
-                }
-                case NV_GPU_THERMAL_SETTINGS_VER_2:
-                    pThermalSettings->count = 0;
-                    break;
-                default:
-                    return Error(n); // Unreachable, but just to be sure
-            }
+            pThermalSettings->count = 0;
             return NotSupported(n);
         case NVML_ERROR_GPU_IS_LOST:
             return HandleInvalidated(n);
