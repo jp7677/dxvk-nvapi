@@ -183,6 +183,18 @@ namespace dxvk::env {
         return false;
     }
 
+    bool isNvidiaRtxMegaGeometrySample() {
+        static bool alreadyLogged = false;
+        if (getExecutableName() == std::string("rtxmg_demo.exe")) {
+            if (!std::exchange(alreadyLogged, true))
+                log::info(str::format("NVIDIA RTX Mega Geometry Sample (rtxmg_demo.exe) detected"));
+
+            return true;
+        }
+
+        return false;
+    }
+
     bool isD3d12NvShaderExtnEnabled() {
         static bool alreadyLogged = false;
 
