@@ -2,12 +2,10 @@
 cpp = 'x86_64-w64-mingw32-g++'
 strip = 'x86_64-w64-mingw32-strip'
 ar = 'x86_64-w64-mingw32-ar'
+exe_wrapper = 'wine'
 
 [built-in options]
 cpp_link_args = ['-static', '-static-libgcc', '-static-libstdc++']
-
-[properties]
-needs_exe_wrapper = true
 
 [host_machine]
 system = 'windows'
