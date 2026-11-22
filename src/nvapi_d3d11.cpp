@@ -83,13 +83,9 @@ NVAPI_FUNCTION NvAPI_D3D11_MultiGPU_GetCaps(PNV_MULTIGPU_CAPS pMultiGPUCaps) {
 
     switch (auto version = pMultiGPUCaps->version) { // NOLINT(*-multiway-paths-covered)
         case NV_MULTIGPU_CAPS_VER2:
-            *pMultiGPUCaps = {};
-            pMultiGPUCaps->version = version;
-            pMultiGPUCaps->multiGPUVersion = 3; // Observed on Windows
-            pMultiGPUCaps->nTotalGPUs = nvapiAdapterRegistry->GetAdapterCount();
-            // Report on purpose that no SLI GPUs are available by
-            // keeping pMultiGPUCaps->nSLIGPUs at zero
-            break;
+            pMultiGPUCaps->NvLinkPresent = 0;
+            pMultiGPUCaps->fastNvLinkReads = 0;
+            [[fallthrough]];
         default: {
             // NV_MULTIGPU_CAPS_V1 has no version field
             auto pMultiGPUCapsV1 = reinterpret_cast<NV_MULTIGPU_CAPS_V1*>(pMultiGPUCaps);
@@ -97,7 +93,8 @@ NVAPI_FUNCTION NvAPI_D3D11_MultiGPU_GetCaps(PNV_MULTIGPU_CAPS pMultiGPUCaps) {
             pMultiGPUCapsV1->reserved = version;  // This is a union field with version in V2
             pMultiGPUCapsV1->multiGPUVersion = 3; // Observed on Windows
             pMultiGPUCapsV1->nTotalGPUs = nvapiAdapterRegistry->GetAdapterCount();
-            // See above about reporting no SLI
+            // Report on purpose that no SLI GPUs are available by
+            // keeping pMultiGPUCapsV1->nSLIGPUs at zero
             break;
         }
     }
