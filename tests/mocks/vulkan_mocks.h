@@ -13,6 +13,7 @@ struct ConfigureProps {
     VkPhysicalDeviceFragmentShadingRatePropertiesKHR* fragmentShadingRateProps;
     VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR* computeShaderDerivativesProps;
     VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV* rayTracingInvocationReorderProps;
+    VkPhysicalDeviceOpticalFlowPropertiesNV* opticalFlowProps;
 };
 
 class VkDeviceMock {
@@ -29,6 +30,14 @@ class VkDeviceMock {
     MAKE_MOCK3(vkLatencySleepNV, VkResult(VkDevice, VkSwapchainKHR, const VkLatencySleepInfoNV*));
     MAKE_MOCK3(vkGetLatencyTimingsNV, void(VkDevice, VkSwapchainKHR, VkGetLatencyMarkerInfoNV*));
     MAKE_MOCK3(vkSetLatencyMarkerNV, void(VkDevice, VkSwapchainKHR, const VkSetLatencyMarkerInfoNV*));
+    MAKE_MOCK4(vkGetDeviceQueue, void(VkDevice, uint32_t, uint32_t, VkQueue*));
+    MAKE_MOCK4(vkCreateCommandPool, VkResult(VkDevice, const VkCommandPoolCreateInfo*, const VkAllocationCallbacks*, VkCommandPool*));
+    MAKE_MOCK3(vkDestroyCommandPool, void(VkDevice, VkCommandPool, const VkAllocationCallbacks*));
+    MAKE_MOCK3(vkAllocateCommandBuffers, VkResult(VkDevice, const VkCommandBufferAllocateInfo*, VkCommandBuffer*));
+    MAKE_MOCK4(vkCreateOpticalFlowSessionNV, VkResult(VkDevice, const VkOpticalFlowSessionCreateInfoNV*, const VkAllocationCallbacks*, VkOpticalFlowSessionNV*));
+    MAKE_MOCK3(vkDestroyOpticalFlowSessionNV, void(VkDevice, VkOpticalFlowSessionNV, const VkAllocationCallbacks*));
+    MAKE_MOCK5(vkBindOpticalFlowSessionImageNV, VkResult(VkDevice, VkOpticalFlowSessionNV, VkOpticalFlowSessionBindingPointNV, VkImageView, VkImageLayout));
+    MAKE_MOCK3(vkCmdOpticalFlowExecuteNV, void(VkCommandBuffer, VkOpticalFlowSessionNV, const VkOpticalFlowExecuteInfoNV*));
 
     static VkResult CreateSemaphore(VkDevice device, const VkSemaphoreCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSemaphore* pSemaphore) {
         return reinterpret_cast<VkDeviceMock*>(device)->vkCreateSemaphore(device, pCreateInfo, pAllocator, pSemaphore);
@@ -68,6 +77,30 @@ class VkDeviceMock {
     }
     static void SetLatencyMarkerNV(VkDevice device, VkSwapchainKHR swapchain, const VkSetLatencyMarkerInfoNV* pLatencyMarkerInfo) {
         reinterpret_cast<VkDeviceMock*>(device)->vkSetLatencyMarkerNV(device, swapchain, pLatencyMarkerInfo);
+    }
+    static void GetDeviceQueue(VkDevice device, uint32_t queueFamilyIndex, uint32_t queueIndex, VkQueue* pQueue) {
+        reinterpret_cast<VkDeviceMock*>(device)->vkGetDeviceQueue(device, queueFamilyIndex, queueIndex, pQueue);
+    }
+    static VkResult CreateCommandPool(VkDevice device, const VkCommandPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCommandPool* pCommandPool) {
+        return reinterpret_cast<VkDeviceMock*>(device)->vkCreateCommandPool(device, pCreateInfo, pAllocator, pCommandPool);
+    }
+    static void DestroyCommandPool(VkDevice device, VkCommandPool commandPool, const VkAllocationCallbacks* pAllocator) {
+        reinterpret_cast<VkDeviceMock*>(device)->vkDestroyCommandPool(device, commandPool, pAllocator);
+    }
+    static VkResult AllocateCommandBuffers(VkDevice device, const VkCommandBufferAllocateInfo* pAllocateInfo, VkCommandBuffer* pCommandBuffers) {
+        return reinterpret_cast<VkDeviceMock*>(device)->vkAllocateCommandBuffers(device, pAllocateInfo, pCommandBuffers);
+    }
+    static VkResult CreateOpticalFlowSessionNV(VkDevice device, const VkOpticalFlowSessionCreateInfoNV* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkOpticalFlowSessionNV* pSession) {
+        return reinterpret_cast<VkDeviceMock*>(device)->vkCreateOpticalFlowSessionNV(device, pCreateInfo, pAllocator, pSession);
+    }
+    static void DestroyOpticalFlowSessionNV(VkDevice device, VkOpticalFlowSessionNV session, const VkAllocationCallbacks* pAllocator) {
+        reinterpret_cast<VkDeviceMock*>(device)->vkDestroyOpticalFlowSessionNV(device, session, pAllocator);
+    }
+    static VkResult BindOpticalFlowSessionImageNV(VkDevice device, VkOpticalFlowSessionNV session, VkOpticalFlowSessionBindingPointNV bindingPoint, VkImageView view, VkImageLayout layout) {
+        return reinterpret_cast<VkDeviceMock*>(device)->vkBindOpticalFlowSessionImageNV(device, session, bindingPoint, view, layout);
+    }
+    static void CmdOpticalFlowExecuteNV(VkCommandBuffer commandBuffer, VkOpticalFlowSessionNV session, const VkOpticalFlowExecuteInfoNV* pExecuteInfo) {
+        reinterpret_cast<VkDeviceMock*>(commandBuffer)->vkCmdOpticalFlowExecuteNV(commandBuffer, session, pExecuteInfo);
     }
 };
 
@@ -174,7 +207,8 @@ class VkMock final : public mock_interface<dxvk::Vk> {
             .driverProps = nullptr,
             .fragmentShadingRateProps = nullptr,
             .computeShaderDerivativesProps = nullptr,
-            .rayTracingInvocationReorderProps = nullptr};
+            .rayTracingInvocationReorderProps = nullptr,
+            .opticalFlowProps = nullptr};
 
         auto next = reinterpret_cast<VkBaseOutStructure*>(props);
         while (next != nullptr) {
@@ -201,6 +235,10 @@ class VkMock final : public mock_interface<dxvk::Vk> {
                 }
                 case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_INVOCATION_REORDER_PROPERTIES_NV: {
                     vkProps.rayTracingInvocationReorderProps = reinterpret_cast<VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV*>(next);
+                    break;
+                }
+                case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_PROPERTIES_NV: {
+                    vkProps.opticalFlowProps = reinterpret_cast<VkPhysicalDeviceOpticalFlowPropertiesNV*>(next);
                     break;
                 }
                 default:
