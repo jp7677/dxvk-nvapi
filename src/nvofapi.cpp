@@ -78,6 +78,9 @@ NVOFAPI_FUNCTION OFSessionGetCaps(NvOFHandle hOf, NV_OF_CAPS capsParam, uint32_t
         log::trace(n, log::fmt::hnd(hOf), capsParam, log::fmt::ptr(capsVal), log::fmt::ptr(size));
 
     auto nvOF = reinterpret_cast<NvOFInstance*>(hOf);
+    if (!nvOF) {
+        return ErrorGeneric(n);
+    }
 
     return nvOF->GetCaps(capsParam, capsVal, size);
 }

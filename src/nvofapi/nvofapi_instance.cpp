@@ -55,8 +55,55 @@ namespace dxvk {
         return -1;
     }
 
+    namespace {
+        VkOpticalFlowGridSizeFlagBitsNV ToVkOutputGridSize(NV_OF_OUTPUT_VECTOR_GRID_SIZE grid) {
+            switch (grid) {
+                case NV_OF_OUTPUT_VECTOR_GRID_SIZE_1:
+                    return VK_OPTICAL_FLOW_GRID_SIZE_1X1_BIT_NV;
+                case NV_OF_OUTPUT_VECTOR_GRID_SIZE_2:
+                    return VK_OPTICAL_FLOW_GRID_SIZE_2X2_BIT_NV;
+                case NV_OF_OUTPUT_VECTOR_GRID_SIZE_4:
+                default:
+                    return VK_OPTICAL_FLOW_GRID_SIZE_4X4_BIT_NV;
+            }
+        }
+
+        VkOpticalFlowGridSizeFlagBitsNV ToVkHintGridSize(NV_OF_HINT_VECTOR_GRID_SIZE grid) {
+            switch (grid) {
+                case NV_OF_HINT_VECTOR_GRID_SIZE_1:
+                    return VK_OPTICAL_FLOW_GRID_SIZE_1X1_BIT_NV;
+                case NV_OF_HINT_VECTOR_GRID_SIZE_2:
+                    return VK_OPTICAL_FLOW_GRID_SIZE_2X2_BIT_NV;
+                case NV_OF_HINT_VECTOR_GRID_SIZE_4:
+                    return VK_OPTICAL_FLOW_GRID_SIZE_4X4_BIT_NV;
+                case NV_OF_HINT_VECTOR_GRID_SIZE_8:
+                    return VK_OPTICAL_FLOW_GRID_SIZE_8X8_BIT_NV;
+                default:
+                    return VK_OPTICAL_FLOW_GRID_SIZE_4X4_BIT_NV;
+            }
+        }
+    }
+
+    bool NvOFInstance::QueryOpticalFlowProperties(VkPhysicalDeviceOpticalFlowPropertiesNV& props) const {
+        if (!m_vk || !m_vk->IsAvailable() || !m_vkPhysicalDevice)
+            return false;
+
+        props = {};
+        props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_OPTICAL_FLOW_PROPERTIES_NV;
+
+        VkPhysicalDeviceProperties2 props2{};
+        props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        props2.pNext = &props;
+
+        m_vk->GetPhysicalDeviceProperties2(m_vkInstance, m_vkPhysicalDevice, &props2);
+        return true;
+    }
+
     NV_OF_STATUS NvOFInstance::InitSession(const NV_OF_INIT_PARAMS* initParams) {
         static constexpr auto n = FUNC;
+
+        if (!initParams)
+            return NV_OF_ERR_INVALID_PTR;
 
         if (log::tracing())
             log::trace(n,
@@ -78,7 +125,28 @@ namespace dxvk {
         createInfo.sType = VK_STRUCTURE_TYPE_OPTICAL_FLOW_SESSION_CREATE_INFO_NV;
         createInfo.width = initParams->width;
         createInfo.height = initParams->height;
-        createInfo.outputGridSize = VK_OPTICAL_FLOW_GRID_SIZE_4X4_BIT_NV;
+        createInfo.outputGridSize = ToVkOutputGridSize(initParams->outGridSize);
+
+        if (!initParams->hPrivData) {
+            createInfo.flowVectorFormat = VK_FORMAT_R16G16_SINT;
+        }
+        if (initParams->enableOutputCost == NV_OF_TRUE) {
+            createInfo.flags |= VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_COST_BIT_NV;
+            createInfo.costFormat = VK_FORMAT_R8_UINT;
+        }
+        if (initParams->predDirection == NV_OF_PRED_DIRECTION_BOTH) {
+            createInfo.flags |= VK_OPTICAL_FLOW_SESSION_CREATE_BOTH_DIRECTIONS_BIT_NV;
+        }
+        if (initParams->enableGlobalFlow == NV_OF_TRUE) {
+            createInfo.flags |= VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_GLOBAL_FLOW_BIT_NV;
+        }
+        if (initParams->enableRoi == NV_OF_TRUE) {
+            createInfo.flags |= VK_OPTICAL_FLOW_SESSION_CREATE_ALLOW_REGIONS_BIT_NV;
+        }
+        if (initParams->enableExternalHints == NV_OF_TRUE) {
+            createInfo.flags |= VK_OPTICAL_FLOW_SESSION_CREATE_ENABLE_HINT_BIT_NV;
+            createInfo.hintGridSize = ToVkHintGridSize(initParams->hintGridSize);
+        }
 
         switch (initParams->perfLevel) {
             case NV_OF_PERF_LEVEL_SLOW:
@@ -150,16 +218,88 @@ namespace dxvk {
     }
 
     NV_OF_STATUS NvOFInstance::GetCaps(NV_OF_CAPS param, uint32_t* capsVal, uint32_t* size) const {
-        if (param == NV_OF_CAPS_SUPPORTED_OUTPUT_GRID_SIZES) {
-            *size = 1;
-            if (capsVal) {
-                *capsVal = NV_OF_OUTPUT_VECTOR_GRID_SIZE_4;
-            }
+        if (!size)
+            return NV_OF_ERR_INVALID_PTR;
 
-            // XXX[ljm] query VkPhysicalDevice for actual support
+        VkPhysicalDeviceOpticalFlowPropertiesNV props{};
+        const bool hasProps = QueryOpticalFlowProperties(props);
+
+        auto writeGridSizes = [&](const uint32_t* grids, uint32_t count) -> NV_OF_STATUS {
+            if (!capsVal) {
+                *size = count;
+                return NV_OF_SUCCESS;
+            }
+            if (count > 0 && *size == 0)
+                return NV_OF_ERR_INVALID_PARAM;
+
+            const uint32_t toCopy = std::min(*size, count);
+            for (uint32_t i = 0; i < toCopy; ++i)
+                capsVal[i] = grids[i];
+            *size = toCopy;
             return NV_OF_SUCCESS;
+        };
+
+        auto writeScalar = [&](uint32_t value) -> NV_OF_STATUS {
+            if (!capsVal) {
+                *size = 1;
+                return NV_OF_SUCCESS;
+            }
+            if (*size == 0)
+                return NV_OF_ERR_INVALID_PARAM;
+
+            *capsVal = value;
+            *size = 1;
+            return NV_OF_SUCCESS;
+        };
+
+        switch (param) {
+            case NV_OF_CAPS_SUPPORTED_OUTPUT_GRID_SIZES: {
+                const VkOpticalFlowGridSizeFlagsNV mask = hasProps ? props.supportedOutputGridSizes : 0;
+                uint32_t grids[3]{};
+                uint32_t count = 0;
+                if (mask & VK_OPTICAL_FLOW_GRID_SIZE_1X1_BIT_NV)
+                    grids[count++] = NV_OF_OUTPUT_VECTOR_GRID_SIZE_1;
+                if (mask & VK_OPTICAL_FLOW_GRID_SIZE_2X2_BIT_NV)
+                    grids[count++] = NV_OF_OUTPUT_VECTOR_GRID_SIZE_2;
+                if (mask & VK_OPTICAL_FLOW_GRID_SIZE_4X4_BIT_NV)
+                    grids[count++] = NV_OF_OUTPUT_VECTOR_GRID_SIZE_4;
+                if (count == 0)
+                    grids[count++] = NV_OF_OUTPUT_VECTOR_GRID_SIZE_4;
+                return writeGridSizes(grids, count);
+            }
+            case NV_OF_CAPS_SUPPORTED_HINT_GRID_SIZES: {
+                const VkOpticalFlowGridSizeFlagsNV mask = hasProps ? props.supportedHintGridSizes : 0;
+                uint32_t grids[4]{};
+                uint32_t count = 0;
+                if (mask & VK_OPTICAL_FLOW_GRID_SIZE_1X1_BIT_NV)
+                    grids[count++] = NV_OF_HINT_VECTOR_GRID_SIZE_1;
+                if (mask & VK_OPTICAL_FLOW_GRID_SIZE_2X2_BIT_NV)
+                    grids[count++] = NV_OF_HINT_VECTOR_GRID_SIZE_2;
+                if (mask & VK_OPTICAL_FLOW_GRID_SIZE_4X4_BIT_NV)
+                    grids[count++] = NV_OF_HINT_VECTOR_GRID_SIZE_4;
+                if (mask & VK_OPTICAL_FLOW_GRID_SIZE_8X8_BIT_NV)
+                    grids[count++] = NV_OF_HINT_VECTOR_GRID_SIZE_8;
+                return writeGridSizes(grids, count);
+            }
+            case NV_OF_CAPS_SUPPORT_HINT_WITH_OF_MODE:
+                return hasProps ? writeScalar(props.hintSupported ? 1u : 0u) : NV_OF_ERR_GENERIC;
+            case NV_OF_CAPS_SUPPORT_HINT_WITH_ST_MODE:
+                return hasProps ? writeScalar(0u) : NV_OF_ERR_GENERIC;
+            case NV_OF_CAPS_WIDTH_MIN:
+                return hasProps ? writeScalar(props.minWidth) : NV_OF_ERR_GENERIC;
+            case NV_OF_CAPS_HEIGHT_MIN:
+                return hasProps ? writeScalar(props.minHeight) : NV_OF_ERR_GENERIC;
+            case NV_OF_CAPS_WIDTH_MAX:
+                return hasProps ? writeScalar(props.maxWidth) : NV_OF_ERR_GENERIC;
+            case NV_OF_CAPS_HEIGHT_MAX:
+                return hasProps ? writeScalar(props.maxHeight) : NV_OF_ERR_GENERIC;
+            case NV_OF_CAPS_SUPPORT_ROI:
+                return hasProps ? writeScalar(props.maxNumRegionsOfInterest > 0 ? 1u : 0u) : NV_OF_ERR_GENERIC;
+            case NV_OF_CAPS_SUPPORT_ROI_MAX_NUM:
+                return hasProps ? writeScalar(props.maxNumRegionsOfInterest) : NV_OF_ERR_GENERIC;
+            default:
+                return NV_OF_ERR_GENERIC;
         }
-        return NV_OF_ERR_GENERIC;
     }
 
     void NvOFInstance::RegisterBuffer(const NV_OF_REGISTER_RESOURCE_PARAMS_VK* registerParams) const {
@@ -171,6 +311,7 @@ namespace dxvk {
     void NvOFInstance::RecordCmdBuf(const NV_OF_EXECUTE_INPUT_PARAMS_VK* inParams, NV_OF_EXECUTE_OUTPUT_PARAMS_VK* outParams, VkCommandBuffer cmdBuf) const {
         BindImageToSession(inParams->inputFrame, VK_OPTICAL_FLOW_SESSION_BINDING_POINT_INPUT_NV);
         BindImageToSession(inParams->referenceFrame, VK_OPTICAL_FLOW_SESSION_BINDING_POINT_REFERENCE_NV);
+        BindImageToSession(inParams->externalHints, VK_OPTICAL_FLOW_SESSION_BINDING_POINT_HINT_NV);
         BindImageToSession(outParams->outputBuffer, VK_OPTICAL_FLOW_SESSION_BINDING_POINT_FLOW_VECTOR_NV);
         BindImageToSession(outParams->outputCostBuffer, VK_OPTICAL_FLOW_SESSION_BINDING_POINT_COST_NV);
         BindImageToSession(outParams->bwdOutputBuffer, VK_OPTICAL_FLOW_SESSION_BINDING_POINT_BACKWARD_FLOW_VECTOR_NV);
