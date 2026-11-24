@@ -74,5 +74,6 @@ namespace dxvk {
         PFN_vkGetPhysicalDeviceQueueFamilyProperties m_vkGetPhysicalDeviceQueueFamilyProperties{};
 
         [[nodiscard]] uint32_t GetVkOFAQueue() const;
+        [[nodiscard]] bool QueryOpticalFlowProperties(VkPhysicalDeviceOpticalFlowPropertiesNV& props) const;
     };
 }
