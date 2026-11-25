@@ -1172,9 +1172,10 @@ NVAPI_FUNCTION NvAPI_GPU_GetAllClockFrequencies(NvPhysicalGpuHandle hPhysicalGpu
     if (pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_1 && pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_2 && pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_3)
         return IncompatibleStructVersion(n, pClkFreqs->version);
 
-    // Only check for CURRENT_FREQ, and not for the other types i.e. BOOST or DEFAULT for now
-    if ((pClkFreqs->version == NV_GPU_CLOCK_FREQUENCIES_VER_2 || pClkFreqs->version == NV_GPU_CLOCK_FREQUENCIES_VER_3)
-        && pClkFreqs->ClockType != static_cast<NvU32>(NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ))
+    if (pClkFreqs->version == NV_GPU_CLOCK_FREQUENCIES_VER_1)
+        // Tests show nvapi.dll sets the ClockType to CURRENT_FREQ for VER_1.
+        pClkFreqs->ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
+    else if (pClkFreqs->ClockType == NV_GPU_CLOCK_FREQUENCIES_BASE_CLOCK)
         return NotSupported(n, alreadyLoggedNotSupported);
 
     auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -1208,7 +1209,15 @@ NVAPI_FUNCTION NvAPI_GPU_GetAllClockFrequencies(NvPhysicalGpuHandle hPhysicalGpu
     // Seemingly we need to do nvml call on a "per clock unit" to get the clock
     // Set the availability of the clock to TRUE and the nvml read clock in the nvapi struct
     for (auto& [nvmlId, nvapiId] : clockEnums) {
-        auto result = nvml->DeviceGetClockInfo(nvmlDevice, nvmlId, &clock);
+        nvmlReturn_t result = NVML_ERROR_NOT_SUPPORTED;
+        switch (pClkFreqs->ClockType) {
+            case NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ:
+                result = nvml->DeviceGetClockInfo(nvmlDevice, nvmlId, &clock);
+                break;
+            case NV_GPU_CLOCK_FREQUENCIES_BOOST_CLOCK:
+                result = nvml->DeviceGetMaxClockInfo(nvmlDevice, nvmlId, &clock);
+                break;
+        }
         switch (result) {
             case NVML_SUCCESS:
                 switch (pClkFreqs->version) {
