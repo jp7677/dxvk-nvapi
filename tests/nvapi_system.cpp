@@ -422,6 +422,28 @@ TEST_CASE("Sysinfo methods succeed against local system", "[system]") {
                 std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency / 1000 << "MHz" << std::endl;
             else
                 std::cout << "N/A" << std::endl;
+
+            frequencies.version = NV_GPU_CLOCK_FREQUENCIES_VER_2;
+            frequencies.ClockType = NV_GPU_CLOCK_FREQUENCIES_BOOST_CLOCK;
+            result = nvAPI_GPU_GetAllClockFrequencies(handle, &frequencies);
+
+            std::cout << "    Boost graphics clock:     ";
+            if (result == NVAPI_OK && frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent)
+                std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency / 1000 << "MHz" << std::endl;
+            else
+                std::cout << "N/A" << std::endl;
+
+            std::cout << "    Boost memory clock:       ";
+            if (result == NVAPI_OK && frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent)
+                std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency / 1000 << "MHz" << std::endl;
+            else
+                std::cout << "N/A" << std::endl;
+
+            std::cout << "    Boost video clock:        ";
+            if (result == NVAPI_OK && frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent)
+                std::cout << std::dec << frequencies.domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency / 1000 << "MHz" << std::endl;
+            else
+                std::cout << "N/A" << std::endl;
         }
 
         if (nvAPI_GPU_GetTachReading) {

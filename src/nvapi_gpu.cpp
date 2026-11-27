@@ -1150,6 +1150,11 @@ NVAPI_FUNCTION NvAPI_GPU_GetCurrentPstate(NvPhysicalGpuHandle hPhysicalGpu, NV_G
 
 NVAPI_FUNCTION NvAPI_GPU_GetAllClockFrequencies(NvPhysicalGpuHandle hPhysicalGpu, NV_GPU_CLOCK_FREQUENCIES* pClkFreqs) {
     static constexpr auto n = FUNC;
+    constexpr std::array<std::pair<nvmlClockType_t, NV_GPU_PUBLIC_CLOCK_ID>, 3> clockEnums{{
+        {NVML_CLOCK_GRAPHICS, NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS},
+        {NVML_CLOCK_MEM, NVAPI_GPU_PUBLIC_CLOCK_MEMORY},
+        {NVML_CLOCK_VIDEO, NVAPI_GPU_PUBLIC_CLOCK_VIDEO},
+    }};
     thread_local bool alreadyLoggedNotSupported = false;
     thread_local bool alreadyLoggedNoNvml = false;
     thread_local bool alreadyLoggedHandleInvalidated = false;
@@ -1167,9 +1172,10 @@ NVAPI_FUNCTION NvAPI_GPU_GetAllClockFrequencies(NvPhysicalGpuHandle hPhysicalGpu
     if (pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_1 && pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_2 && pClkFreqs->version != NV_GPU_CLOCK_FREQUENCIES_VER_3)
         return IncompatibleStructVersion(n, pClkFreqs->version);
 
-    // Only check for CURRENT_FREQ, and not for the other types i.e. BOOST or DEFAULT for now
-    if ((pClkFreqs->version == NV_GPU_CLOCK_FREQUENCIES_VER_2 || pClkFreqs->version == NV_GPU_CLOCK_FREQUENCIES_VER_3)
-        && pClkFreqs->ClockType != static_cast<NvU32>(NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ))
+    if (pClkFreqs->version == NV_GPU_CLOCK_FREQUENCIES_VER_1)
+        // Tests show nvapi.dll sets the ClockType to CURRENT_FREQ for VER_1.
+        pClkFreqs->ClockType = NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ;
+    else if (pClkFreqs->ClockType == NV_GPU_CLOCK_FREQUENCIES_BASE_CLOCK)
         return NotSupported(n, alreadyLoggedNotSupported);
 
     auto adapter = reinterpret_cast<NvapiAdapter*>(hPhysicalGpu);
@@ -1199,95 +1205,51 @@ NVAPI_FUNCTION NvAPI_GPU_GetAllClockFrequencies(NvPhysicalGpuHandle hPhysicalGpu
     }
 
     unsigned int clock{};
+    unsigned int numUnsupported{};
     // Seemingly we need to do nvml call on a "per clock unit" to get the clock
     // Set the availability of the clock to TRUE and the nvml read clock in the nvapi struct
-    auto resultGpu = nvml->DeviceGetClockInfo(nvmlDevice, NVML_CLOCK_GRAPHICS, &clock);
-    switch (resultGpu) {
-        case NVML_SUCCESS:
-            switch (pClkFreqs->version) {
-                case NV_GPU_CLOCK_FREQUENCIES_VER_1: {
-                    auto pClkFreqsV1 = reinterpret_cast<NV_GPU_CLOCK_FREQUENCIES_V1*>(pClkFreqs);
-                    pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent = 1;
-                    pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency = (clock * 1000);
-                    break;
+    for (auto& [nvmlId, nvapiId] : clockEnums) {
+        nvmlReturn_t result = NVML_ERROR_NOT_SUPPORTED;
+        switch (pClkFreqs->ClockType) {
+            case NV_GPU_CLOCK_FREQUENCIES_CURRENT_FREQ:
+                result = nvml->DeviceGetClockInfo(nvmlDevice, nvmlId, &clock);
+                break;
+            case NV_GPU_CLOCK_FREQUENCIES_BOOST_CLOCK:
+                result = nvml->DeviceGetMaxClockInfo(nvmlDevice, nvmlId, &clock);
+                break;
+        }
+        switch (result) {
+            case NVML_SUCCESS:
+                switch (pClkFreqs->version) {
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_1: {
+                        auto pClkFreqsV1 = reinterpret_cast<NV_GPU_CLOCK_FREQUENCIES_V1*>(pClkFreqs);
+                        pClkFreqsV1->domain[nvapiId].bIsPresent = 1;
+                        pClkFreqsV1->domain[nvapiId].frequency = (clock * 1000);
+                        break;
+                    }
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_2: // Both versions use the same NV_GPU_CLOCK_FREQUENCIES_V2 struct
+                    case NV_GPU_CLOCK_FREQUENCIES_VER_3:
+                        pClkFreqs->domain[nvapiId].bIsPresent = 1;
+                        pClkFreqs->domain[nvapiId].frequency = (clock * 1000);
+                        break;
+                    default:
+                        return Error(n); // Unreachable, but just to be sure
                 }
-                case NV_GPU_CLOCK_FREQUENCIES_VER_2: // Both versions use the same NV_GPU_CLOCK_FREQUENCIES_V2 struct
-                case NV_GPU_CLOCK_FREQUENCIES_VER_3:
-                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].bIsPresent = 1;
-                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_GRAPHICS].frequency = (clock * 1000);
-                    break;
-                default:
-                    return Error(n); // Unreachable, but just to be sure
-            }
-            break;
-        case NVML_ERROR_FUNCTION_NOT_FOUND:
-            return NoImplementation(n, alreadyLoggedNoNvml);
-        case NVML_ERROR_NOT_SUPPORTED:
-            break;
-        case NVML_ERROR_GPU_IS_LOST:
-            return HandleInvalidated(n);
-        default:
-            return Error(str::format(n, ": ", nvml->ErrorString(resultGpu)));
+                break;
+            case NVML_ERROR_FUNCTION_NOT_FOUND:
+                return NoImplementation(n, alreadyLoggedNoNvml);
+            case NVML_ERROR_NOT_SUPPORTED:
+                numUnsupported++;
+                break;
+            case NVML_ERROR_GPU_IS_LOST:
+                return HandleInvalidated(n);
+            default:
+                return Error(str::format(n, ": ", nvml->ErrorString(result)));
+        }
     }
 
-    auto resultMem = nvml->DeviceGetClockInfo(nvmlDevice, NVML_CLOCK_MEM, &clock);
-    switch (resultMem) {
-        case NVML_SUCCESS:
-            switch (pClkFreqs->version) {
-                case NV_GPU_CLOCK_FREQUENCIES_VER_1: {
-                    auto pClkFreqsV1 = reinterpret_cast<NV_GPU_CLOCK_FREQUENCIES_V1*>(pClkFreqs);
-                    pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent = 1;
-                    pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency = (clock * 1000);
-                    break;
-                }
-                case NV_GPU_CLOCK_FREQUENCIES_VER_2: // Both versions use the same NV_GPU_CLOCK_FREQUENCIES_V2 struct
-                case NV_GPU_CLOCK_FREQUENCIES_VER_3:
-                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].bIsPresent = 1;
-                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_MEMORY].frequency = (clock * 1000);
-                    break;
-                default:
-                    return Error(n); // Unreachable, but just to be sure
-            }
-            break;
-        case NVML_ERROR_NOT_SUPPORTED:
-            break;
-        case NVML_ERROR_GPU_IS_LOST:
-            return HandleInvalidated(n);
-        default:
-            return Error(str::format(n, ": ", nvml->ErrorString(resultMem)));
-    }
-
-    auto resultVid = nvml->DeviceGetClockInfo(nvmlDevice, NVML_CLOCK_VIDEO, &clock);
-    switch (resultVid) {
-        case NVML_SUCCESS:
-            switch (pClkFreqs->version) {
-                case NV_GPU_CLOCK_FREQUENCIES_VER_1: {
-                    auto pClkFreqsV1 = reinterpret_cast<NV_GPU_CLOCK_FREQUENCIES_V1*>(pClkFreqs);
-                    pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent = 1;
-                    pClkFreqsV1->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency = (clock * 1000);
-                    break;
-                }
-                case NV_GPU_CLOCK_FREQUENCIES_VER_2: // Both versions use the same NV_GPU_CLOCK_FREQUENCIES_V2 struct
-                case NV_GPU_CLOCK_FREQUENCIES_VER_3:
-                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].bIsPresent = 1;
-                    pClkFreqs->domain[NVAPI_GPU_PUBLIC_CLOCK_VIDEO].frequency = (clock * 1000);
-                    break;
-                default:
-                    return Error(n); // Unreachable, but just to be sure
-            }
-            break;
-        case NVML_ERROR_NOT_SUPPORTED:
-            break;
-        case NVML_ERROR_GPU_IS_LOST:
-            return HandleInvalidated(n);
-        default:
-            return Error(str::format(n, ": ", nvml->ErrorString(resultVid)));
-    }
-
-    if (resultGpu == NVML_ERROR_NOT_SUPPORTED
-        && resultMem == NVML_ERROR_NOT_SUPPORTED
-        && resultVid == NVML_ERROR_NOT_SUPPORTED)
-        return NotSupported(n);
+    if (numUnsupported == clockEnums.size())
+        return NotSupported(n, alreadyLoggedNotSupported);
 
     return Ok(n, alreadyLoggedOk);
 }
